@@ -705,7 +705,7 @@ class controller  {
 		  
 		  define($iclass,true); //define instance
 		
-	      $__DPCMEM[$iclass] =  & new $__DPC[$class];
+	      $__DPCMEM[$iclass] =  new $__DPC[$class];
 		  $__DPCOBJ[$idpc] =  & $__DPCMEM[$iclass];//alias of new name object array
 		  $__DPCID[$iclass] = $idpc; //new name index array		 
 		
@@ -738,7 +738,7 @@ class controller  {
 		  
 		  define($iclass,true); //define instance
 		
-	      $__DPCMEM[$iclass] =  & new $instname;
+	      $__DPCMEM[$iclass] =  new $instname;
 		  $__DPCOBJ[$idpc] =  & $__DPCMEM[$iclass];//alias of new name object array
 		  $__DPCID[$iclass] = $idpc; //new name index array		 
 		
@@ -817,7 +817,7 @@ class controller  {
 	  if ((defined($class)) &&
 	      (class_exists($__DPC[$class])) ) {
 		//echo '>>>',strtoupper($parts[1]),'_DPC','=',$__DPC[strtoupper($parts[1]).'_DPC'];
-	    $__DPCMEM[$class] =  & new $__DPC[$class];
+	    $__DPCMEM[$class] =  new $__DPC[$class];
 		$__DPCOBJ[$dpc] =  & $__DPCMEM[$class];//alias of new name object array
 		$__DPCID[$class] = $dpc; //new name index array		 
 		

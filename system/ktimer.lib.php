@@ -24,7 +24,7 @@ if( !isset( $inc_ktimer_geladen ) )
   # (make it short)
   # this message will be shown when the timer is
   # started but not stopped yet
-  define( NEW_TIMER, 'not stopped, still running' );
+  define( 'NEW_TIMER', 'not stopped, still running' );
    
   class ktimer
   {

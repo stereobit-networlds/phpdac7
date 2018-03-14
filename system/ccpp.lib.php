@@ -237,12 +237,12 @@ class CCPP
 		}
 		
 	    //login (special vars)
-		if ($GLOBALS['UserName'] || $_SESSION['UserName'])
+		if (isset($GLOBALS['UserName']) || isset($_SESSION['UserName']))
 		$special_macros['USERLOGIN'] = 1 ;
-	    if ($GLOBALS['ADMIN'] || $_SESSION['ADMIN'])
+	    if (isset($GLOBALS['ADMIN']) || isset($_SESSION['ADMIN']))
 		$special_macros['ISADMIN'] = 1 ;
-	    if ($GLOBALS['AdminSecID'] || $_SESSION['AdminSecID'])
-		$special_macros['ADMINSECID'] = $GLOBALS['AdminSecID'] ? $GLOBALS['AdminSecID'] : $_SESSION['AdminSecID'];
+	    if (isset($GLOBALS['AdminSecID']) || isset($_SESSION['AdminSecID']))
+		$special_macros['ADMINSECID'] = isset($GLOBALS['AdminSecID']) ? $GLOBALS['AdminSecID'] : $_SESSION['AdminSecID'];
 		if (!empty($special_macros))
 			$this->macros += $special_macros;		
 	}
@@ -268,7 +268,8 @@ class CCPP
     
     public function execute($filename, $offset = 0, $isString=false, $ishtml=false)
     {
-        if ($this->options['execute.method'] == 'include') {
+        if ( isset($this->options['execute.method']) &&
+		    ($this->options['execute.method'] == 'include')) {
             //tmpname()
 			$STDERR = fopen('php://stderr', 'w+');
             fwrite($STDERR, '#error Not implemented execution method "include"');
