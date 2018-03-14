@@ -41,7 +41,8 @@ class storebuffer {
     function notempty() {
 
         reset ($this->buffer); 
-        while (list ($buffer_num, $buffer_data) = each ($this->buffer)) {
+        //while (list ($buffer_num, $buffer_data) = each ($this->buffer)) {
+		foreach ($this->buffer as $buffer_num=>$buffer_data) {	
            $mchar = strlen($buffer_data); 
            if ($mchar > 1) return true;
         }                       

@@ -7,7 +7,6 @@ define("SHTRANSACTIONS_DPC",true);
 
 $__DPC['SHTRANSACTIONS_DPC'] = 'shtransactions';
 
-require_once(_r('libs/browser2.lib.php'));
 require_once(_r('bshop/transactions.dpc.php'));
 
 GetGlobal('controller')->get_parent('TRANSACTIONS_DPC','SHTRANSACTIONS_DPC');

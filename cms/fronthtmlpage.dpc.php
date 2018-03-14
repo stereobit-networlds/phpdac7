@@ -97,7 +97,7 @@ class fronthtmlpage {
 		
 		$this->BASE_URL = $this->baseURL();
 		$this->MC_TEMPLATE = $theme ? $theme : 
-		                     (strstr($_SERVER[REQUEST_URI], 'cp/') ? //is in cp
+		                     (strstr($_SERVER['REQUEST_URI'], 'cp/') ? //is in cp
 								$this->cptemplate : $this->template); 		
 		$this->MC_ROOT = $this->mcRoot($this->MC_TEMPLATE);
 		$this->MC_DEBUG = remote_paramload('FRONTHTMLPAGE','debug',$this->prpath);
@@ -114,12 +114,12 @@ class fronthtmlpage {
 		//cmsTemplate stack - start/reset	
 		self::$cmsTemplates[$this->htmlfile] = 1;
 		/*if (isset($_GET['modify'])) {}
-		elseif (strpos($_SERVER[REQUEST_URI], 'cp/')) {}
+		elseif (strpos($_SERVER['REQUEST_URI'], 'cp/')) {}
         else {		
 			echo '!!!sss';
 			SetSessionParam('cmsTemplates', self::$cmsTemplates);	//reset / start ehen not in cp	
 		}*/
-		//echo $_SERVER[REQUEST_URI];
+		//echo $_SERVER['REQUEST_URI'];
 	}	
 	
     public function render($actiondata) { 	
@@ -1249,13 +1249,13 @@ function cc(name,value,days) {
 
 	function __destruct() {
 		if (isset($_GET['modify'])) {
-			//echo 'modify:',$_SERVER[REQUEST_URI];	
+			//echo 'modify:',$_SERVER['REQUEST_URI'];	
 		}
-		elseif (strstr($_SERVER[REQUEST_URI], 'cp/')) {
-			//echo 'cp:', $_SERVER[REQUEST_URI];		
+		elseif (strstr($_SERVER['REQUEST_URI'], 'cp/')) {
+			//echo 'cp:', $_SERVER['REQUEST_URI'];		
 		}
         else {
-			//echo $_SERVER[REQUEST_URI];	
+			//echo $_SERVER['REQUEST_URI'];	
 			SetSessionParam('cmsTemplates', self::$cmsTemplates);
 			//print_r(GetSessionParam('cmsTemplates'));
 		}

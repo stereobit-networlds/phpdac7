@@ -1,13 +1,32 @@
 <?php
-$environment = @parse_ini_file("phpdac5.ini");
+
+// Report simple running errors
+//error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
+// Reporting E_NOTICE can be good too (to report uninitialized
+// variables or catch variable name misspellings ...)
+//error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
+
+// Report all errors except E_NOTICE
+// This is the default value set in php.ini
+error_reporting(E_ALL & ~E_NOTICE);
+// For PHP < 5.3 use: E_ALL ^ E_NOTICE
+
+// Report all PHP errors (see changelog)
+//error_reporting(E_ALL);
+
+// Report all PHP errors
+//error_reporting(-1);
+
+$environment = @parse_ini_file("phpdac7.ini");
 $dpcpath = $environment['dpcpath'] ? $environment['dpcpath'] : 'dpc';
 
-define(_APPNAME_,$environment['appname']);
-define(_APPPATH_,$environment['apppath']);
-define(_DPCTYPE_,$environment['dpctype']);
-define(_PRJPATH_,$environment['prjpath']);
-define(_DPCPATH_,$dpcpath);
-define(_ISAPP_,$environment['app']); 
+define('_APPNAME_', $environment['appname']);
+define('_APPPATH_', $environment['apppath']);
+define('_DPCTYPE_', $environment['dpctype']);
+define('_PRJPATH_', $environment['prjpath']);
+define('_DPCPATH_', $dpcpath);
+define('_ISAPP_', $environment['app']); 
 
 require_once("system.lib.php");	
 require_once("parser.lib.php");
@@ -65,8 +84,9 @@ class pcntl extends controller {
 		$this->file_name = $p[0]; 
 		$this->file_extension = $p[1];  
 	  
-		$lan = $locales ? $locales :(getlocal() ? getlocal() : 0);
-		setlocal($lan);		 
+		$lan = getlocal();
+		$_lan = $lan ? $lan : 0;
+		setlocal($_lan);		 
 	        
 		//CCPP preprocessor
 		$this->preprocess = $preprocess;   	  
@@ -319,7 +339,7 @@ parse_ini_string_m:
 			  
 			    $part = explode(' ',$tcmd); //one space anyway (preg before)
 				//$part = preg_replace('/\s\s+/', ' ', $tcmd); //one or more spaces between
-				
+				$i = 0;
 			    switch ($part[0]) {
 			     case 'system'	: 	//include and load a set of system lib dpc
 									$syslibs = explode(",",$part[1]);
@@ -820,7 +840,7 @@ parse_ini_string_m:
 
 			//echo '<br/>' . $dpc . ':' . $pchain;
 			if (class_exists($__DPC[$class])) {
-				$__DPCMEM[$class] =  & new $__DPC[$class]($pchain);
+				$__DPCMEM[$class] =  new $__DPC[$class]($pchain);
 				$__DPCOBJ[$dpc] =  & $__DPCMEM[$class];//alias of new name object array
 				$__DPCID[$class] = $dpc; //new name index array		 
 				SetGlobal("_DPCMEM",$__DPCMEM);
@@ -831,7 +851,7 @@ parse_ini_string_m:
 				//echo $__DPCMEM[$class];
 				@eval($__DPCMEM[$class]);
 				
-				$__DPCMEM[$class] =  & new $__DPC[$class]($pchain);
+				$__DPCMEM[$class] =  new $__DPC[$class]($pchain);
 				$__DPCOBJ[$dpc] =  & $__DPCMEM[$class];//alias of new name object array
 				$__DPCID[$class] = $dpc; //new name index array		 
 				SetGlobal("_DPCMEM",$__DPCMEM);

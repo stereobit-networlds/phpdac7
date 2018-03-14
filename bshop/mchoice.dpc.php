@@ -15,7 +15,7 @@ class multichoice {
 	var $cform;
 	var $initchecked;
 	
-	function multichoice($choicename='multichoice',$ctextsstring=null,$checked=null,$cform=FALSE) {
+	function __construct($choicename='multichoice',$ctextsstring=null,$checked=null,$cform=FALSE) {
 	   $UserSecID = GetGlobal('UserSecID');
 	
        $this->userLevelID = (((decode($UserSecID))) ? (decode($UserSecID)) : 0);

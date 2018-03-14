@@ -1188,7 +1188,8 @@ class shkategories {
 			$options[] = null;
 			unset($option_tokens);		
 		  
-			while (list ($value, $title) = each ($values)) {
+			//while (list ($value, $title) = each ($values)) {
+			foreach ($values as $value=>$title) {	
 		  
 				if ($selected_cat) {
 					switch ($cid) {

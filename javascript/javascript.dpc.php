@@ -259,10 +259,12 @@ function load_js($jscript,$ver='',$istext=0,$additional_text=null,$nopath=null) 
 	//test purposes (used to pass css text!!!!!!!!)		 
 	$js .= $additional_text;		 
 
-	//check for doubles		 
-    for ($i=0;$i<count($externalcodebuffer);$i++)
-	  if ($externalcodebuffer[$i] == $js) $isin=1;	
-	  
+	//check for doubles	
+	$isin = 0;
+	if (!empty($externalcodebuffer)) {	
+		for ($i=0;$i<count($externalcodebuffer);$i++)
+			if ($externalcodebuffer[$i] == $js) $isin=1;	
+	}  
 	if (!$isin) $externalcodebuffer[] = $js;	
 	
     SetGlobal('externalcodebuffer',$externalcodebuffer);
@@ -291,11 +293,15 @@ function setLoadParams($params) {
 function onLoad() {
    $loader_code = GetGlobal('loader_code');
    
-   $ar_code = (array) $loader_code;
-   for ($i=0;$i<count($loader_code);$i++)
+   $out = null;
+   if (!empty($loader_code)) {
+	   
+	$ar_code = (array) $loader_code;
+	for ($i=0;$i<count($loader_code);$i++)
       $code .= $loader_code[$i];
 	 
-   $out = "onLoad=\"$code\"";
+	$out = "onLoad=\"$code\"";
+   }
    
    return ($out);
 }
