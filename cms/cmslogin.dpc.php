@@ -678,9 +678,9 @@ window.setTimeout('neu()',10);
 	    //recaptcha NOT FOR PASSWORDS FORM 
         //if ($this->valid_recaptcha()) {		   		
 
-        if (!$user) $sUsername = GetParam("Username", adText);
+        if (!$user) $sUsername = GetParam("Username");
 	        else $sUsername = $user; 
-        if (!$pwd) $sPassword = GetParam("Password", adText);
+        if (!$pwd) $sPassword = GetParam("Password");
 	        else $sPassword = $pwd;
 
 	    if (($sUsername) && ($sPassword)) {

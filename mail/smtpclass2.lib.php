@@ -208,7 +208,8 @@ class smtp_class
 
 	Function ConnectToHost($domain, $port, $resolve_message)
 	{
-		if(ereg('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$',$domain))
+		//if(ereg('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$',$domain))
+		if (preg_match('/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/i', $domain))	
 			$ip=$domain;
 		else
 		{

@@ -28,8 +28,10 @@ class storebuffer {
         $i=0;
 		if ($this->buffer) {
           reset ($this->buffer); 
-          while (list ($buffer_num, $buffer_data) = each ($this->buffer)) {                            
-             if ($buffer_data != 'x') $i+=1;                                    
+          //while (list ($buffer_num, $buffer_data) = each ($this->buffer)) {                            
+		  foreach ($this->buffer as $buffer_num=>$buffer_data) {
+             if ($buffer_data != 'x') 
+				 $i+=1;                                    
           }                       
           return ($i);
 		}
@@ -54,7 +56,8 @@ class storebuffer {
         if (!($this->isin($id))) {
            $x=0;
            reset ($this->buffer);
-           while (list ($buffer_num, $buffer_data) = each ($this->buffer)) {                             
+           //while (list ($buffer_num, $buffer_data) = each ($this->buffer)) {                             
+		   foreach ($this->buffer as $buffer_num=>$buffer_data) {
               if ($buffer_data=="x") {
                  $this->buffer[$buffer_num] = $id;
                  $x = 1; 

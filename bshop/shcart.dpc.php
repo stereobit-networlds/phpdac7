@@ -235,8 +235,9 @@ class shcart extends storebuffer {
 		$this->urlpath = paramload('SHELL','urlpath');
 
 		//$this->baseurl = paramload('SHELL','urlbase');
-		$this->baseurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$this->baseurl.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];
+		//$this->baseurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
+		//$this->baseurl.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];
+		$this->baseurl = _v('cmsrt.httpurl');
 		$this->url = $this->baseurl; 		
 		
 		$this->minus = remote_paramload('SHCART','minusqtyclass',$this->path);

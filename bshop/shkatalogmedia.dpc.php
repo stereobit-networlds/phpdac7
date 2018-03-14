@@ -140,9 +140,11 @@ class shkatalogmedia {
 		
 		//$murl = arrayload('SHELL','ip');
 		//$this->url = $murl[0];
-		//$this->httpurl = paramload('SHELL','urlbase');  
-		$this->httpurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$this->httpurl.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];						
+		//$this->httpurl = paramload('SHELL','urlbase'); 
+		
+		//$this->httpurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
+		//$this->httpurl.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];						
+		$this->httpurl = _v('cmsrt.httpurl');
 		
 		$languange = getlocal();
 		$this->lan = $languange ? $languange : '0';
@@ -950,7 +952,8 @@ JSFILTER;
                      $stype = '';		   
 		}
 	  
-		if ($interface = $this->photodb) { 
+		$interface = $this->photodb; 
+		if (isset($interface)) {
 			if (is_numeric($interface))	  
 				$photo = _m("cmsrt.seturl use t=showimage&id=$code&type=$stype");
 			else  
@@ -1505,7 +1508,8 @@ JSFILTER;
 			$mytemplate_alt = $this->select_template('fpkatalog-alt',$cat);
 	    }
    
-		if (count($this->result->fields)>1) {
+		if ((!empty($this->result->fields)) &&
+		    (count($this->result->fields)>1)) {
 
 			$aliasID = _m("cmsrt.useUrlAlias");
 			$aliasExt = _v("cmsrt.aliasExt");
@@ -1821,7 +1825,7 @@ JSFILTER;
 		   }//foreach	 
 		}//for		 
 		 
-	    $itemscount = count($items); 
+	    $itemscount = (!empty($items)) ? count($items) : 0; 
 		if (($itemscount>0) && ($this->additional_files_perline>1))	 
 		   $out = $this->make_table($items, $this->additional_files_perline, 'fptreetable', $cat);	 
 		else 

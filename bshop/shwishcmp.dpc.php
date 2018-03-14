@@ -186,7 +186,7 @@ class shwishcmp extends shkatalogmedia {
 		return ($out);	
 	} 	
 
-	protected function viewWishList() {
+	public function viewWishList() {
        $db = GetGlobal('db');
 	   $a = GetReq('a');
        $UserName = GetGlobal('UserName');	   
@@ -282,7 +282,7 @@ class shwishcmp extends shkatalogmedia {
 		return ($out);		
 	} 	
 	
-	protected function viewCompareList() {
+	public function viewCompareList() {
        $db = GetGlobal('db');
 	   $a = GetReq('a');
        $UserName = GetGlobal('UserName');	   

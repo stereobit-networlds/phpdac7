@@ -60,7 +60,7 @@ class cms extends fronthtmlpage {
 		
 		//$this->httpurl = paramload('SHELL','protocol') . $this->url;	
 		$this->httpurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$this->httpurl.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];				
+		$this->httpurl.= $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];				
 		
 		$this->useragent = $_SERVER['HTTP_USER_AGENT'];	
 		$this->mobile = $this->isMobile();		

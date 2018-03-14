@@ -861,7 +861,8 @@ goBack();
                      $stype = '';		   
 		}
 
-		if ($interface = $this->photodb) { 
+		$interface = $this->photodb;
+		if (isset($interface)) { 
 			if (is_numeric($interface))	  
 				$photo = seturl('t=showimage&id='.$code.'&type='.$stype);
 			else  
@@ -1373,7 +1374,7 @@ EOF;
 			if (file_exists($imgfile)) 	 
 				$item_photo_url = $this->httpurl . $this->image_size_path . '/' . $itemcode . $this->restype;
 			else 
-				$item_photo_url = $this->httpurl .'/'. $this->photodb . '?id='.$itemcode.'&stype='.$this->sizeDB;
+				$item_photo_url = $this->httpurl .'/'. $this->photodb . '?id='.$itemcode.'&type='.$this->sizeDB;
 
 			$item_photo_html = "<img src=\"" . $item_photo_url . "\">";
 			$item_photo_link = "<a href='$item_url'><img src=\"" . $item_photo_url . "\"></a>";			

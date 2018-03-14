@@ -42,7 +42,7 @@ class fronthtmlpage {
 		$this->session_use_cookie = paramload('SHELL','sessionusecookie');	
 				
 		$this->url = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$this->url.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
+		$this->url.= $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
 		
 		$this->lan = getlocal() ? getlocal() : '0';		
 		$lans = arrayload('SHELL','languages');
@@ -155,7 +155,7 @@ class fronthtmlpage {
 			$ret = str_replace("<?". $this->argument ."?>",$data,$ret);
 			
 			$tokens[] = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';	
-			$tokens[] = (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];
+			$tokens[] = $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];
 			$tokens[] = $_SERVER['REQUEST_URI'];
 			$tokens[] = 'utf-8';			
 			

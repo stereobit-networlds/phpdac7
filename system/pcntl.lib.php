@@ -685,8 +685,9 @@ parse_ini_string_m:
 	}
 	
 	protected function get_server_url() {
-   
-	    if (!ereg("Microsoft", $_SERVER["SERVER_SOFTWARE"])) {//APACHE
+        //ereg removed in php7, use preg_match
+	    //if (!ereg("Microsoft", $_SERVER["SERVER_SOFTWARE"])) {//APACHE
+		if (!preg_match("/Microsoft/i", $_SERVER["SERVER_SOFTWARE"])) {//APACHE
 			$url = $_SERVER['REQUEST_URI'];//seems to be common with IIS ?????	   
 	    }     
 	    else //IIS

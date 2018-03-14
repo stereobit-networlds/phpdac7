@@ -474,28 +474,8 @@ function seturl($query='',$title='',$ssl=0,$jscript='',$sid=1,$rewrite=null) {
  
 	if ($subpath=="\\") $subpath = null;  
   
-/* 
-	$protocol = paramload('SHELL','protocol');
-	$secprotocol = paramload('SHELL','secureprotocol');  
-	$sslpath  = paramload('SHELL','sslpath');
-  
-	
-    $ipool = arrayload('SHELL','ip'); //print_r($ipool);
-    if (in_array($_SERVER['HTTP_HOST'],$ipool)) 
-		$ip = $_SERVER['HTTP_HOST']; //remote user call
-    else 
-		$ip = $ipool[0]; //default  
-  
-    $activeSSL = paramload('SHELL','ssl');
-    $encURLparam = paramload('SHELL','encodeurl');  //echo '>>>',$encURLparam,'<<<';
-
-    if (($activeSSL) && ($ssl)) 
-	    $name = $secprotocol . $ip . $sslpath; 
-    else 
-	   $name = $protocol . $ip; 
-*/
 	$name = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-	$name.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
+	$name.= $_SERVER['HTTP_HOST']; //(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
                            
 						 //mv controller or page controller caller???
 						 $xurl = "/".pathinfo($_SERVER['PHP_SELF'],PATHINFO_BASENAME);
@@ -623,12 +603,16 @@ function seturl($query='',$title='',$ssl=0,$jscript='',$sid=1,$rewrite=null) {
 		} 
 	}
 
-function checkmail($data) {
-
-  if( !eregi("^[a-z0-9]+([_\\.-][a-z0-9]+)*" . "@([a-z0-9]+([\.-][a-z0-9]{1,})+)*$",
-   $data, $regs) )  {
-
-   SetInfo("Error: '$mail' isn't a valid mail address!");
+function checkmail($email) {
+	
+  return filter_var($email, FILTER_VALIDATE_EMAIL);	
+  
+  //ereg removed in php7, use preg_match
+  $exp = "^[a-z0-9]+([_\\.-][a-z0-9]+)*" . "@([a-z0-9]+([\.-][a-z0-9]{1,})+)*$";
+  
+  //if( !eregi($exp,$email, $regs) )  {
+  if( !preg_match($exp,$email, $regs) )  {
+   //SetInfo("Error: '$email' isn't a valid mail address!");
    return false;
   }
 
@@ -637,10 +621,12 @@ function checkmail($data) {
 }
 
 function checkmail_mx($email) {
-
-   $exp = "^[a-z\'0-9]+([._-][a-z\'0-9]+)*@([a-z0-9]+([._-][a-z0-9]+))+$";
-
-   if(eregi($exp,$email)){
+   //ereg removed in php7, use preg_match
+   //$exp = "^[a-z\'0-9]+([._-][a-z\'0-9]+)*@([a-z0-9]+([._-][a-z0-9]+))+$";
+   //if(eregi($exp,$email)){
+   //if(preg_match($exp,$email)){
+	   
+   if (filter_var($email, FILTER_VALIDATE_EMAIL)) {	   
 
      if (strstr(PHP_OS, 'WIN')) {//win..  
    
@@ -722,13 +708,13 @@ function getmxrr_winNT( $hostname, &$mxhosts )
 
        while( list( $k, $line ) = each( $output ) )
        {
-
+           //ereg removed in php7, use preg_match
+		   
            # Valid records begin with hostname:
-           if( ereg( "^$hostname\tMX preference = ([0-9]+), mail exchanger = (.*)$", $line, $parts ) )
+           //if( ereg( "^$hostname\tMX preference = ([0-9]+), mail exchanger = (.*)$", $line, $parts ) )
+		   if( preg_match( "^$hostname\tMX preference = ([0-9]+), mail exchanger = (.*)$", $line, $parts ) )		
            {
-
                $mxhosts[ $parts[1] ] = $parts[2];
-
            }
 
        }
