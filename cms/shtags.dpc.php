@@ -33,7 +33,7 @@ class shtags {
    
    var $tmpl_path, $tmpl_name;   
 
-   function shtags() {
+   function __construct() {
    
      $this->prpath = paramload('SHELL','prpath');
    

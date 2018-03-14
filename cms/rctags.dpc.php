@@ -62,7 +62,7 @@ class rctags extends shtags {
 
 	public function __construct() {
 	
-      shtags::shtags(); 
+      shtags::__construct(); 
 	  	
 	  $this->title = localize('RCTAGS_DPC',getlocal());	
 	  $this->post = false;  

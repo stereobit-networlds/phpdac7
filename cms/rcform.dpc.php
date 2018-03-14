@@ -35,7 +35,7 @@ class rcform extends cmsform {
     var $title;
 
 
-	function rcform() {
+	function __construct() {
 	
 	  cmsform::__construct();
 	

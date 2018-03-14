@@ -463,6 +463,9 @@ EOF;
     }
 
     protected function app_is_oversized() {
+		
+		if(substr(PHP_OS, 0, 3) == "WIN")
+			return false; //never
   
         $allowed_size = intval(@file_get_contents($this->prpath .'/maxsize.conf.php'));	
 		$current_size = $this->get_app_size();				
@@ -486,10 +489,10 @@ EOF;
 	    if (is_file($path)) return filesize($path);
 		$ret = 0;
 		
-		$glob = glob($path."/*");
+		$glob = glob($path."/*", GLOB_NOSORT);
 		
 		if (is_array($glob)) {
-			foreach(glob($path."/*") as $fn)
+			foreach(glob($path."/*", GLOB_NOSORT) as $fn)
 				$ret += $this->filesize_r($fn);
 		}	
 		return $ret;

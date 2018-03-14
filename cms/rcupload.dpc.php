@@ -65,7 +65,7 @@ class rcupload {
 	var $uploadres, $allowed_filetypes;
 	var $urlbase, $encodeimageid, $restype;	
 
-    function rcupload($path=null,$maxsize=null) {
+    function __construct($path=null,$maxsize=null) {
 	
 	    $this->title = localize('RCUPLOAD_DPC',getlocal());		
 		$this->post = false; //hold successfull posting	

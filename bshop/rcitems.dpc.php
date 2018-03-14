@@ -16,8 +16,8 @@ require_once($e);
 $f= GetGlobal('controller')->require_dpc('images/SimpleImage.lib.php');
 require_once($f);
 
-$g = GetGlobal('controller')->require_dpc('shell/pxml.lib.php');
-require_once($g);		
+//$g = GetGlobal('controller')->require_dpc('shell/pxml.lib.php');
+//require_once($g);		
 
 
 $__EVENTS['RCITEMS_DPC'][0]='cpitems';
@@ -194,7 +194,7 @@ class rcitems {
     var $editimage, $phototype;	
 	var $eshop, $cptemplate;
 	
-	function rcitems() {
+	function __construct() {
 	  $GRX = GetGlobal('GRX');		 
 	
 	  $this->debug_sql = true;	

@@ -20,7 +20,7 @@ class jscript {
 		$this->encoding = 'utf-8';
 		//$this->url = paramload('SHELL','urlbase');
 		$this->url = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$this->url.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];
+		$this->url.= $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];
 
 		//js path
 		$jp = paramload('JAVASCRIPT','jspath');
