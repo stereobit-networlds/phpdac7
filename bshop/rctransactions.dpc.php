@@ -66,7 +66,7 @@ class rctransactions extends shtransactions {
     var $title, $path;
     var $status_sid, $status_sidexp;
 		
-	public function rctransactions() {
+	public function __construct() {
 	
 		shtransactions::__construct();
 

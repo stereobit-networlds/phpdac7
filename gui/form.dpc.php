@@ -31,7 +31,7 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 		var         $showhide;
 		var         $state;
 		
-		function form_group ($name, $title, $showhide=null, $state=null)
+		function __construct ($name, $title, $showhide=null, $state=null)
 		{
 			$this->name		= $name;
 			$this->title	= $title;
@@ -48,7 +48,7 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 		
 		var         $encoding;
 		
-		function form_element ($title, $name, $value)
+		function __construct ($title, $name, $value)
 		{
 			$this->title	= $title;
 			$this->name		= $name;
@@ -65,9 +65,9 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 		var			$maxlength;
 		var			$isreadonly = false;
 		
-		function form_element_text ($title, $name, $value, $style, $size, $maxlength, $isreadonly)
+		function __construct ($title, $name, $value, $style, $size, $maxlength, $isreadonly)
 		{
-			$this->form_element		($title, $name, $value);
+			parent::__construct	($title, $name, $value);
 			
 			if ($style != "") $this->style = $style;
 			else $this->style = paramload('FORM','text_style');
@@ -87,9 +87,9 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 	{
 		var	$style =  "formTextOnly";
 		
-		function form_element_onlytext ($title, $value, $style)
+		function __construct ($title, $value, $style)
 		{
-			$this->form_element		($title, "", $value);
+			parent::__construct($title, "", $value);
 			if ($style != "") $this->style = $style;
 			else $this->style = paramload('FORM','textonly_style');
 		}
@@ -106,9 +106,9 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 		var			$size;
 		var			$maxlength;
 		
-		function form_element_password ($title, $name, $value, $style, $size, $maxlength)
+		function __construct ($title, $name, $value, $style, $size, $maxlength)
 		{
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style			= $style;
 			else $this->style = paramload('FORM','text_style');
@@ -130,9 +130,9 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 		var			$values;
 		var			$multiple;
 		
-		function form_element_combo ($title, $name, $value, $style, $size, $values, $multiple)
+		function __construct ($title, $name, $value, $style, $size, $values, $multiple)
 		{
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style			= $style;
 			else $this->style = paramload('FORM','combo_style');
@@ -159,9 +159,9 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 		var			$size;
 		var			$values;
 		
-		function form_element_radio ($title, $name, $value, $style, $size, $values)
+		function __construct ($title, $name, $value, $style, $size, $values)
 		{
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style			= $style;
 			else $this->style = paramload('FORM','radio_style');
@@ -186,9 +186,9 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 		var			$size;
 		var			$values;
 		
-		function form_element_checkbox ($title, $name, $value, $style)
+		function __construct ($title, $name, $value, $style)
 		{
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style			= $style;
 			else $this->style = paramload('FORM','checkbox_style');
@@ -212,9 +212,9 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 		var			$cols;
 		var			$rows;
 		
-		function form_element_textarea ($title, $name, $value, $style, $cols, $rows)
+		function __construct ($title, $name, $value, $style, $cols, $rows)
 		{
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style			= $style;
 			else $this->style = paramload('FORM','textarea_style');
@@ -231,9 +231,9 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 	
 	class form_element_hidden extends form_element
 	{
-		function form_element_hidden ($name, $value)
+		function __construct ($name, $value)
 		{
-			$this->form_element		("", $name, $value);
+			parent::__construct("", $name, $value);
 		}
 		
 		function getTag ()
@@ -276,7 +276,7 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 		
 		var         $tokens;
 		
-		function form ($title, $name, $method, $action, $resetbutton=false, $enctype=null)
+		function __construct ($title, $name, $method, $action, $resetbutton=false, $enctype=null)
 		{
             $this->width	        = paramload('FORM','width');		
 		    $this->title_bgcolor    = paramload('FORM','title_bgcolor');
@@ -350,7 +350,7 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 				}
 				
 				$color = 0;
-				for ($element_i=0; $element_i<sizeof ($this->elements[$this->groups[$group_i]->name]); $element_i++)
+				for ($element_i=0; $element_i<@sizeof ($this->elements[$this->groups[$group_i]->name]); $element_i++)
 					switch ($group->name)
 					{
 						case FORM_GROUP_HIDDEN:
@@ -449,10 +449,10 @@ $__LOCALE['FORM_DPC'][1]='_RESET;Reset;Καθαρισμός';
 		var			$isreadonly = false;
         var         $ckfinder_button ;		
 		
-		function form_element_ckfinder ($title, $name, $value, $style, $size, $maxlength, $isreadonly)
+		function __construct ($title, $name, $value, $style, $size, $maxlength, $isreadonly)
 		{
 					
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style = $style;
 			else $this->style = paramload('FORM','text_style');
@@ -572,7 +572,7 @@ function selectFileWithCKFinder( elementId ) {
 		var			$maxlength;
 		var			$isreadonly = false;
 		
-		function form_element_date ($title, $formname, $name, $value, $style, $size, $maxlength, $isreadonly)
+		function __construct ($title, $formname, $name, $value, $style, $size, $maxlength, $isreadonly)
 		{	
 	
             if (iniload('JAVASCRIPT')) {	
@@ -584,7 +584,7 @@ function selectFileWithCKFinder( elementId ) {
 		
             $this->datepick_button  = "[D]";
 			$this->formname = $formname;	
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style = $style;
 			else $this->style = paramload('FORM','text_style');
@@ -610,7 +610,7 @@ function selectFileWithCKFinder( elementId ) {
         var         $pubkey;	
 		var         $privkey;
 		
-		function form_element_recaptcha ($pubkey=null, $privkey=null)
+		function __construct ($pubkey=null, $privkey=null)
 		{
 			
 			$this->pubkey			= $pubkey;
@@ -656,7 +656,7 @@ if ($_POST["recaptcha_response_field"]) {
 		var			$isreadonly = false;
 		var         $path;
 		
-		function form_element_greekmap ($title, $formname, $name, $value, $style, $size, $maxlength, $isreadonly)
+		function __construct ($title, $formname, $name, $value, $style, $size, $maxlength, $isreadonly)
 		{	
 			
             $ip = paramload('SHELL','ip');//$_SERVER['HTTP_HOST'];
@@ -672,7 +672,7 @@ if ($_POST["recaptcha_response_field"]) {
 		
             $this->map_button  = "[M]";
 			$this->formname = $formname;	
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style = $style;
 			else $this->style = paramload('FORM','text_style');
@@ -701,9 +701,9 @@ if ($_POST["recaptcha_response_field"]) {
 		var			$values;
 		var			$multiple;
 		
-		function form_element_combo_file ($title, $name, $value, $style, $size, $multiple, $lookupfile, $valueasid=null)
+		function __construct ($title, $name, $value, $style, $size, $multiple, $lookupfile, $valueasid=null)
 		{
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style			= $style;
 			else $this->style = paramload('FORM','combo_style');
@@ -777,9 +777,9 @@ if ($_POST["recaptcha_response_field"]) {
 		var			$size;
 		var			$values;
 		
-		function form_element_radio_file ($title, $name, $value, $style, $size, $lookupfile)
+		function __construct ($title, $name, $value, $style, $size, $lookupfile)
 		{
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style			= $style;
 			else $this->style = paramload('FORM','radio_style');
@@ -825,9 +825,9 @@ if ($_POST["recaptcha_response_field"]) {
 	
 	class form_element_radio_file_images extends form_element_radio_file {
 	
-		function form_element_radio_file_images ($title, $name, $value, $style, $size, $lookupfile,$imgtype='.jpg') {
+		function __construct ($title, $name, $value, $style, $size, $lookupfile,$imgtype='.jpg') {
 		
-		  form_element_radio_file::form_element_radio_file($title, $name, $value, $style, $size, $lookupfile);
+		  parent::__construct($title, $name, $value, $style, $size, $lookupfile);
 		  $this->imgtype = $imgtype;
 		}
 		
@@ -850,9 +850,9 @@ if ($_POST["recaptcha_response_field"]) {
 		var			$size;
 		var			$values;
 		
-		function form_element_checkboxes ($title, $name, $value, $style,$lookupfile)
+		function __construct ($title, $name, $value, $style,$lookupfile)
 		{
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style			= $style;
 			else $this->style = paramload('FORM','checkbox_style');
@@ -900,7 +900,7 @@ if ($_POST["recaptcha_response_field"]) {
 	class form_element_dpcode extends form_element
 	{
 		
-		function form_element_dpcode ($title,$code)
+		function __construct ($title,$code)
 		{
 		
 		}
@@ -919,10 +919,10 @@ if ($_POST["recaptcha_response_field"]) {
 	{
 		var $MAXSIZE;
 		
-		function form_element_upload ($title, $name, $value, $style, $size, $maxlength,$mxsize=null)
+		function __construct ($title, $name, $value, $style, $size, $maxlength,$mxsize=null)
 		{
 		   $this->MAXSIZE = $mxsize;
-           $this->form_element_text ($title, $name, $value, $style, $size, $maxlength,0);		
+           parent::__construct($title, $name, $value, $style, $size, $maxlength,0);		
 		}
 		
 		function getTag ()
@@ -942,9 +942,9 @@ if ($_POST["recaptcha_response_field"]) {
 		var			$cols;
 		var			$rows;
 		
-		function form_element_htmlarea ($title, $name, $value, $style, $cols, $rows)
+		function __construct ($title, $name, $value, $style, $cols, $rows)
 		{
-			$this->form_element		($title, $name, $value);
+			parent::__construct($title, $name, $value);
 			
 			if ($style != "") $this->style			= $style;
 			else $this->style = paramload('FORM','textarea_style');
@@ -968,9 +968,9 @@ if ($_POST["recaptcha_response_field"]) {
 		
 		var $query;
 		
-		function form_element_link ($title, $query, $name, $value=null)
+		function __construct ($title, $query, $name, $value=null)
 		{
-			$this->form_element		($title, $name, $value=null);
+			parent::__construct($title, $name, $value=null);
 			
 			//if ($style != "") $this->style = $style;
 			//else $this->style = paramload('FORM','text_style');
@@ -997,9 +997,9 @@ if ($_POST["recaptcha_response_field"]) {
 	//sdded
 	class mform extends form {
 	
-	   function mform($title, $name, $method, $action,$resetbutton=false,$enctype=null) {
+	   function __construct($title, $name, $method, $action,$resetbutton=false,$enctype=null) {
 	     
-		  form::form($title, $name, $method, $action,$resetbutton,$enctype);
+		  parent::__construct($title, $name, $method, $action,$resetbutton,$enctype);
 	   }
 	   
 	   //override ($actions_array,)
