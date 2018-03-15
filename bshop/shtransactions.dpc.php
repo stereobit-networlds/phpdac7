@@ -349,7 +349,7 @@ class shtransactions extends transactions {
 		 
 		 if ($tdata) {
 		   $cdata = unserialize($tdata);
-		   if (count($cdata)>1) {//if many items
+		   if (@count($cdata)>1) {//if many items
 		     foreach ($cdata as $i=>$buffer_data) {
 		 
 		       $param = explode(";",$buffer_data);

@@ -681,22 +681,25 @@ $(document).ready(function(){
 				$catSQL .= " AND cat$c = " . $db->qstr(_m("cmsrt.replace_spchars use $category+1"));
 			
 			//items
+			$items = array();
 			$sSQL = "select $activecode from products where active>0 AND itmactive>0 " . $catSQL;
 			$result = $db->Execute($sSQL,2);
-			foreach ($result as $i=>$rec) $items[] = $rec[0];
-			$this->stats['Items']['active'] = count($items);
+			foreach ($result as $i=>$rec) 
+				$items[] = $rec[0];
+				
+			$this->stats['Items']['active'] = @count($items);
 			
 			$sSQL = "select count($activecode) from products where (active=0 OR itmactive=0) " . $catSQL;
 			$res = $db->Execute($sSQL,2);
             $this->stats['Items']['inactive'] = $this->nformat($res->fields[0]);				
 
 	        //stats (items)
-			$sSQL = "select count(id) from stats where tid in ('" . implode("','", $items) . "') " . $timeins;
+			$sSQL = "select count(id) from stats where tid in ('" . @implode("','", $items) . "') " . $timeins;
 			$res = $db->Execute($sSQL,2);
             $this->stats['Items']['visits'] = $this->nformat($res->fields[0]);				
 			
 			//wishlists
-			$sSQL = "select count(recid) from wishlist where tid in ('" . implode("','", $items) . "') ";
+			$sSQL = "select count(recid) from wishlist where tid in ('" . @implode("','", $items) . "') ";
 			$res = $db->Execute($sSQL,2);
             $this->stats['Items']['wishall'] = $this->nformat($res->fields[0]);
 			
@@ -705,11 +708,11 @@ $(document).ready(function(){
 			//transactions
 			$timeins = $this->sqlDateRange('tdate', false, true);
 			
-			$sSQL = "select count(recid) from transactions where tstatus>=0 and tdata REGEXP '". implode('|', $items) ."'" . $timeins;
+			$sSQL = "select count(recid) from transactions where tstatus>=0 and tdata REGEXP '". @implode('|', $items) ."'" . $timeins;
 			$res = $db->Execute($sSQL,2);
             $this->stats['Items']['transactions'] = $this->nformat($res->fields[0]);
 
-			$sSQL = "select tdata from transactions where tstatus>=0 and tdata REGEXP '". implode('|', $items) ."'" . $timeins;
+			$sSQL = "select tdata from transactions where tstatus>=0 and tdata REGEXP '". @implode('|', $items) ."'" . $timeins;
 			$result = $db->Execute($sSQL,2);
 			//echo $sSQL;	   
 			$counter = 0;
