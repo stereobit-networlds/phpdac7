@@ -1,6 +1,5 @@
 #!/usr/bin/env php
 <?php
-
 /**
  *
  * Copyright (c) 2009-2018, Vassilis Alexiou <balexiou@stereobit.com>.

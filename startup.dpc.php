@@ -39,7 +39,7 @@ define(_DPCPATH_,_APPPATH_.$environment['dpcpath']);//echo _DPCPATH_,'>>';
 //echo _APPPATH_;
 
 
-require_once("dpclass.dpc.php");	 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< PHP 5
+require_once("dpclass.dpc.php");	 // PHP 5
 //require_once("system/system.lib.php");
     
 //if (iniload('SHELL')) { 
@@ -58,7 +58,7 @@ class startup {
      $this->time = $this->getthemicrotime(); 
      */     
 	 
-	 $this->_loadinifiles($path,$proj);   //<<<ERROR at startup must be at the start of script
+	 $this->_loadinifiles($path,$proj);   //ERROR at startup must be at the start of script
 	 
 	 
 	 

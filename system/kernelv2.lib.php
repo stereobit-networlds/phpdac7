@@ -1404,6 +1404,9 @@ class kernelv2 {
    
 	function __destruct() 
 	{
+		//when ctrl-c
+		@unlink("shm.id"); 
+		
         if(!$this->shm_id)
             return;		
 		

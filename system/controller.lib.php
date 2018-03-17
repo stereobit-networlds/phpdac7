@@ -10,23 +10,65 @@ class controller  {
 	private $_security;
     private $systemdb;
 	
+	protected $shm;
+	
     public function __construct($code=null,$preprocess=null,$locales=null) {
 
 		$this->_events  = array();	  	
 		$this->_actions = array();
 		$this->_attr    = array();
-		$this->_security= array();		  
+		$this->_security= array();
+
+		//$this->server = $this->exist_dpc_server('127.0.0.1',19123);	  
+		$this->shm = $this->exist_shm();
+		if ($this->shm) {
+		  
+			$this->shm_id = $this->load_shm_id();	 //echo $this->shm_id; 
+			$this->shm_addr = $this->load_shm_addr();	
+			$this->shm_length = $this->load_shm_length();	
+			
+			//REGISTER PHPDAC (server side) protocol...
+			require_once("dacstream.lib.php");			
+			$phpdac_s = stream_wrapper_register("phpdac","dacstream");
+			if (!$phpdac_s) _echo('CLI',"Server protocol failed to registered!\n");
+				//else _echo('CLI',"Server protocol registered!\n");
+  
+			//REGISTER PHPDAC (client side)protocol...(used by webserver due to shm error!!!)
+			require_once("dacstreamc.lib.php");			
+			$phpdac_c = stream_wrapper_register("phpdac5","c_dacstream");
+			if (!$phpdac_c) _echo('CLI',"Client protocol failed to registered!\n");
+				//else _echo('CLI',"Client protocol registered!\n"); 
+		}		
     }
    
     public function include_dpc($dpc) {
 
-	    require_once(_DPCPATH_."/".$dpc);
+		if ($this->shm) {
+			//if (GetGlobal('__USERAGENT')=='HTML')
+				require_once("phpdac5://127.0.0.1:19123/".$dpc);
+				//echo $dpc . ' :shared<br/>';	
+			//else	  
+				//require_once("phpdac://".$dpc);
+		}	
+		else {
+			require_once(_DPCPATH_."/".$dpc);
+			//echo $dpc . ' :local<br/>';
+		}	
     }
    
 	public function require_dpc($dpc, $cgipath=null) {
 
-		$ret = _DPCPATH_."/".$dpc;
-		//echo '>',$ret,'<br>';	
+		if ($this->shm) {
+			//if (GetGlobal('__USERAGENT')=='HTML')
+				$ret = "phpdac5://127.0.0.1:19123/".$dpc;
+				//echo $dpc . ' :shared<br/>';	
+			//else	  
+				//$ret = "phpdac://".$dpc;
+		}	
+		else	
+			$ret = _DPCPATH_."/".$dpc;
+		
+		//echo '>',$ret,'<br>';		
 		return $ret;	
 	}   
    
@@ -201,12 +243,20 @@ class controller  {
 
       $argdpc = _DPCPATH_;// paramload('DIRECTIVES','dpc_type');	  
 	  //echo $argdpc,'>'; 
-	  $includer = $argdpc . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";
+  
+	  if ($this->shm) {//SHARED MEM 
+		//if (GetGlobal('__USERAGENT')=='HTML')
+			$includer = "phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";
+		//else	  
+			//$includer = "phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";
+	  }	
+	  else	
+		$includer = $argdpc . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";
 	  //echo $includer,'|',$argdpc,'|',_DPCPATH_,'<br>';	
 	  //try {
-	  //if (is_file($includer)) {
-	  require($includer);	//REQUIRE NOT REQUIRE ONCE DUE TO RE-INIT DPC
-	  	  
+	  //if (is_file($includer)) 
+	  require($includer);	//REQUIRE NOT REQUIRE ONCE DUE TO RE-INIT DPC			  
+	 
 	  //START THE OBJECT
       $parts = explode(".",trim($dpc)); 
 	  $class = strtoupper($parts[1]).'_DPC';
@@ -383,16 +433,27 @@ class controller  {
 	   define($defname,'true');
 
        $argdpc = _DPCPATH_; //paramload('DIRECTIVES','dpc_type');
-	   $includer = $argdpc . "/system/extensions/" . str_replace(".","/",trim($extension)) . ".ext.php";	
+	   
+	   if ($this->shm) {
+	      //if (GetGlobal('__USERAGENT')=='HTML')
+	        $includer = "phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($extension)) .  ".ext.php";
+		  //else
+		    //$includer = "phpdac://" . str_replace(".","/",trim($extension)) . ".ext.php";  
+	   }	
+	   else 	   
+		  $includer = $argdpc . "/system/extensions/" . str_replace(".","/",trim($extension)) . ".ext.php";	
+	  
 	   //echo $defname;           
 	   //echo $includer; 		
 	   require_once($includer);	  		   
 	   
-	   return TRUE;
+	   return true;
 	 }
 	 else {
-	   if (!$noerror) die("$extension defined more than once!");  
-	   return FALSE;
+	   if (!$noerror) 
+		   echo "$extension defined more than once!"; 
+	   
+	   return false;
 	 }  
     }	
 	
@@ -405,8 +466,15 @@ class controller  {
 	
 	  //echo $dpc,"\n";
       $argdpc = _DPCPATH_; //paramload('DIRECTIVES','dpc_type');
-	  	 
-	  $includer = $argdpc . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";
+	  
+	  if ($this->shm) {
+	    //if (GetGlobal('__USERAGENT')=='HTML')
+	      $includer = "phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";
+		//else
+		  //$includer = "phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";  
+	  }	
+	  else 	  	 
+		$includer = $argdpc . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";
 
 	  require($includer);	//REQUIRE NOT REQUIRE ONCE DUE TO RE-INIT DPC	
 	  
@@ -827,6 +895,98 @@ class controller  {
 	  }	  
 	
 	  return FALSE; 	  		
+	}
+
+
+
+
+	// REMOTE & SHARED MEM
+	
+	protected function exist_dpc_server($address,$port) {
+	
+      $fp = @stream_socket_client("tcp://$address:$port", $errno, $errstr, 30);
+	  
+      if (!$fp) {
+        return false;
+      } 
+	  else {
+        $ret = fgets($fp,7);
+        fclose($fp);
+		
+        if (stristr('phpdac5',$ret)) 
+		  return true;
+		else 
+		  return false;
+      }	    
+	}
+	
+	protected function query_dpc_server($query,$address,$port,$feedback=7,$blocking=true) {
+	  
+      if (!$fp=@stream_socket_client("tcp://$address:$port", $errno, $errstr, 30)) {
+        return false;
+      } 
+	  else {
+	  	if ($blocking) 
+			stream_set_blocking($fp,$blocking);	
+		
+        fwrite($fp, $query."\n");
+        $ret = fgets($fp,$feedback);
+        //echo $ret;
+        fclose($fp);
+		
+        return $ret; 
+      }	
+	}
+	
+	protected function load_tcp_dpc($dpc,$address,$port) {
+	
+	}
+	
+	protected function load_shm_id() {
+	
+		$data = @file_get_contents(_DPCPATH_."/shm.id");
+		$parts = explode("^",$data);
+				
+		return ($parts[0]);
+	}
+	
+	protected function load_shm_addr() {
+	
+		$data = @file_get_contents(_DPCPATH_."/shm.id");
+		$parts = explode("^",$data);
+
+		return (unserialize($parts[1]));	
+	}
+	
+	protected function load_shm_length() {
+	
+		$data = @file_get_contents(_DPCPATH_."/shm.id");
+		$parts = explode("^",$data);
+		
+		return (unserialize($parts[2]));	
+	}
+	
+	//cgi do it ...iis ?????
+	protected function load_shm_dpc($dpc,$shm_max,$dpc_addr,$dpc_length) {
+	    
+      if (isset($dpc_addr[$dpc])) {
+
+	    $shm_id = $this->dpc_shm_id = shmop_open(0xfff, "a",0,0);//, 0644, $shm_max);
+   
+        if ($shm_id) 
+		  $ret = shmop_read($shm_id,$dpc_addr[$dpc],$dpc_length[$dpc]);
+		//echo $dpc,'>',$dpc_addr[$dpc],':',$dpc_length[$dpc],"\n";
+	  }
+	  else
+	    $ret = null;
+			
+	  return ($ret);		           
+	}	
+	
+	protected function exist_shm() {	  
+	  $ret = is_file(_DPCPATH_."/shm.id");
+	  //echo _DPCPATH_."/shm.id".$ret;
+	  return ($ret);
 	}		
 	
 	function __destruct() {

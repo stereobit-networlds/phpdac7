@@ -725,9 +725,17 @@ parse_ini_string_m:
 
 	//override
 	public function require_dpc($dpc, $cgipath=null) {
-
 		$path = $cgipath ? $cgipath : _DPCPATH_;  
-		$ret = $path . "/" . $dpc;
+		
+		if ($this->shm) {
+			//if (GetGlobal('__USERAGENT')=='HTML')
+				$ret = "phpdac5://127.0.0.1:19123/". $dpc; //nopath
+				echo $dpc . ' :shared<br/>';	
+			//else	  
+				//$ret = "phpdac://". $dpc; //nopath
+		}	
+		else		
+			$ret = $path . "/" . $dpc;
 		
 		return $ret;	
 	} 
@@ -910,7 +918,7 @@ parse_ini_string_m:
 			//die("Error: There is not [$dpc] class to extend!");    	  
 		
 		return false;
-	}	
+	}
    
 	public function __destruct() {		  
 	  
