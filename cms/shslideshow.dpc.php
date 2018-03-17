@@ -240,7 +240,7 @@ class shslideshow {
    
     protected function javascript() {
    
-        $jsapi = "http://www.google.com/jsapi";
+        $jsapi = "https://www.google.com/jsapi";
    
         $jquery = "google.load(\"jquery\", \"1.6.2\");";   
    

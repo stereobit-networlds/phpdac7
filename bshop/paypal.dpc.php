@@ -73,7 +73,8 @@ class paypal {
 			$this->p->paypal_url = 'https://www.paypal.com/cgi-bin/webscr';     // paypal url
             
 		// setup a variable for this script (ie: 'http://www.micahcarrick.com/paypal.php')
-		$this->this_script = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+		$h = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
+		$this->this_script = $h . $_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
 
 		// if there is not action variable, set the default action of 'process'
 		if (empty($_GET['action'])) $_GET['action'] = 'process';     
@@ -206,7 +207,7 @@ class paypal {
 		                 $ret = $this->set_message('cancel');			
 		                 break;
 		case 'ipn'     : $ret = $this->error; break; 
-	    default ://no action
+	    default 	   :
 		}
 	 
 		return ($ret);

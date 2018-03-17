@@ -33,10 +33,10 @@ class shagent extends cmsagent {
 		
 		$this->http_referer = $_SESSION['http_referer']; //as saved at vstats
 		
-		//XMLHttpRequest cannot load http://www.stereobit.gr/jsdialog.php?t=jsdcode&id=ff134785e032f39bd9509e58262c4c6c&div=last&_=1487604756270. 
+		//XMLHttpRequest cannot load www.stereobit.gr/jsdialog.php?t=jsdcode&id=ff134785e032f39bd9509e58262c4c6c&div=last&_=1487604756270. 
 		//No 'Access-Control-Allow-Origin' header is present on the requested resource. 
 		//Origin 'http://www.e-basis.gr' is therefore not allowed access.
-		$this->remoteScript = null;//'//www.stereobit.gr/'; //remote js call
+		$this->remoteScript = null; // 'www.stereobit.gr/'; //remote js call
 		
 		$this->agnStartsAfterNMsg = 0;
 		$this->agnStopsAfterNMsg = $this->agnStartsAfterNMsg + 9990; //a big no if not a limit

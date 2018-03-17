@@ -61,7 +61,7 @@ class pcntl extends controller {
 		controller::__construct();
 
 		$this->httpurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$this->httpurl.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
+		$this->httpurl.= $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
 		
 		$this->_loadinifiles(); 
 		

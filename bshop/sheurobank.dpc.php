@@ -284,7 +284,7 @@ class sheurobank  {
 			$fin .= dechex(ord($str[$i])); 
 		 
 			if ($this->debug_return) {
-				echo '<br>'.$str[$i].'<<<>>>'.ord($str[$i]).'<<<>>>'.dechex(ord($str[$i])); 
+				echo '<br>'.$str[$i].'------'.ord($str[$i]).'------'.dechex(ord($str[$i])); 
 			}
 		} 
 		return $fin;    

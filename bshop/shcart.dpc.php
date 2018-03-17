@@ -491,7 +491,8 @@ class shcart extends storebuffer {
 									$this->status = 0; 
 
 									if ($goto = $this->aftercancelgoto) {
-										header("Location: http://".$goto); 
+										$h = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
+										header("Location: ". $h . $goto); 
 										exit;
 									}
 
@@ -1277,7 +1278,7 @@ function addtocart(id,cartdetails)
 		}
 		catch(Exception $e){
 			
-			//http://stackoverflow.com/questions/1214043/find-out-which-class-called-a-method-in-another-class	
+			//stackoverflow.com/questions/1214043/find-out-which-class-called-a-method-in-another-class	
 			//list($childClass, $caller) = debug_backtrace(false, 2);				
 			echo "[$caller -> $childClass]:";
 			
@@ -2028,7 +2029,7 @@ function addtocart(id,cartdetails)
 			$this->setStore();
 			$this->colideCart();
 			
-			$this->js_cleanCart(); //<<<< clean cookie
+			$this->js_cleanCart(); // clean cookie
 			  
 			return true;			
 		}*/
@@ -2044,7 +2045,7 @@ function addtocart(id,cartdetails)
 				$this->setStore();
 				$this->colideCart();
 				
-				$this->js_cleanCart(); //<<<< clean cookie
+				$this->js_cleanCart(); // clean cookie
 				
 				return true;
 			}		
@@ -3655,7 +3656,7 @@ function addtocart(id,cartdetails)
 		$roadway = array_pop($w);
 		/*$shipway = GetParam("roadway") ? //no table in greek
 						($this->lan ? //if in greek, get the english descr
-								str_replace('/'.GetParam("roadway"),'',$ways[0]) ://standart english descr 0array ??? 
+								str_replace('/'.GetParam("roadway"),'',$ways[0]) : standart english descr 0array  
 								GetParam("roadway")
 						) :
 						(GetSessionParam("roadway") ? 
@@ -3697,10 +3698,10 @@ function addtocart(id,cartdetails)
 		
 				switch ($method) {
 		
-					case 2 ://use weight as param..invoke sql
+					case 2 : //use weight as param..invoke sql
 							break;
 		
-					case 1 ://use items num as param
+					case 1 : //use items num as param
 							$selector = floatval($this->qtytotal);
 							break;
 		

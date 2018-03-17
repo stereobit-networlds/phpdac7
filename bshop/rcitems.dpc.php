@@ -189,7 +189,7 @@ class rcitems {
 	var $autoinc, $syncurl;
 	var $photodb, $erase2db;
 	var $mixphoto, $photoquality, $mixx, $mixy;
-	var $url;
+	var $url, $baseurl;
 	var $cseparator, $encodeimageid, $replacepolicy;
     var $editimage, $phototype;	
 	var $eshop, $cptemplate;
@@ -208,8 +208,10 @@ class rcitems {
 	  $this->thubpath = $this->path . $this->infolder . '/images/thub/';	  
 	  $this->urlpath = paramload('SHELL','urlpath').$this->infolder.'/';		  
 	  $this->urlbase = paramload('SHELL','urlbase').$this->infolder.'/';
-	  $murl = arrayload('SHELL','ip');
-      $this->url = $murl[0]; 	  
+	  //$murl = arrayload('SHELL','ip');
+      //$this->url = $murl[0]; 	  
+	  $this->baseurl = _v('cmsrt.httpurl');
+	  $this->url = $this->baseurl; 	
 	  
 	  $this->defptp = '/images/thub/';
 	  $this->ptp = remote_paramload('RCITEMS','respath',$this->path);
@@ -1568,7 +1570,7 @@ class rcitems {
 		
 		if ($myfile[0]=='local:')  //local path
 			$remotefilename = $this->urlpath . $myfile[1];
-		else //url...http://
+		else 
 			$remotefilename = $rfile; //as is
 			
 		//if has no id .jpg ..it is category sync  
@@ -1713,7 +1715,8 @@ class rcitems {
 
 	     if ($mysource) {
 		    //echo $mysource;
-		    if (!stristr($mysource,'http://')) {//local file
+			$h = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
+		    if (!stristr($mysource,$h)) {//local file
 			  if (is_readable($mysource))
 			    return $mysource;
 			  else
@@ -1832,7 +1835,7 @@ class rcitems {
 			$affected = $db->Affected_Rows();
 	  
 			if (($affected) && ($this->erase2db))
-				unlink($photo); //<<<<<<<<<< !!!! DELETE	
+				unlink($photo); 
 			
 		}//65535 limit
 		else
@@ -2123,11 +2126,11 @@ class rcitems {
                    $price = number_format($price1,2);					 
 			       //echo $price,'>';
 				      			      		   
-				   $item_url = 'http://' . $this->url . '/' . seturl('t=kshow&cat='.GetReq('cat').'&id='.$rec[$code],null,null,null,null,1);
+				   $item_url = $this->baseurl . '/' . seturl('t=kshow&cat='.GetReq('cat').'&id='.$rec[$code],null,null,null,null,1);
                    if ($this->photodb)
-				     $item_photo_url = 'http://' . $this->url . '/showphoto.php?id='.$rec[$code].'&type=LARGE';
+				     $item_photo_url = $this->baseurl . '/showphoto.php?id='.$rec[$code].'&type=LARGE';
 				   else
-				     $item_photo_url = 'http://' . $this->url . '/' . $this->img_large . '/' . $rec[$code] . $this->restype;
+				     $item_photo_url = $this->baseurl . '/' . $this->img_large . '/' . $rec[$code] . $this->restype;
 				   
 				   
 		           $p[] = $rec[$code];
@@ -2219,7 +2222,7 @@ class rcitems {
 			                    $xml->addtag('rss',null,null,"version=2.0");							
 	                            $xml->addtag('channel','rss',$xml->urltitle,null);
 	                            $xml->addtag('title','channel',$xml->urltitle.', '.GetReq('cat'),null);								
-	                            $xml->addtag('link','channel','http://' . $this->url,null);									
+	                            $xml->addtag('link','channel',$this->baseurl,null);									
 	                            $xml->addtag('description','channel',$xml->urltitle.', '.GetReq('cat'),null);									
 	                            $xml->addtag('language','channel','en',null);									
 	                            $xml->addtag('pubDate','channel',$date,null);									
@@ -2231,11 +2234,11 @@ class rcitems {
 	                            $xml->addtag('ttl','channel','15',null);									
 	   					        break; 
 			   case 'atom'    : $enc ='utf-8';
-			                    $xml->addtag('feed',null,null,"xmlns=http//www.w3.org/2005/Atom");							
+			                    $xml->addtag('feed',null,null,"xmlns=http://www.w3.org/2005/Atom");							
 	                            $xml->addtag('title','feed',$xml->urltitle,null);
 	                            $xml->addtag('subtitle','feed',null,null);								
-	                            $xml->addtag('link','feed','/',"href=http://".$this->url."/atom/|rel=self");									
-	                            $xml->addtag('link','feed','/',"href=http://".$this->url);									
+	                            $xml->addtag('link','feed','/',"href=".$this->baseurl."/atom/|rel=self");									
+	                            $xml->addtag('link','feed','/',"href=".$this->baseurl);									
 	                            $xml->addtag('id','feed',null,null);									
 	                            $xml->addtag('updated','feed',null,null);									
 	                            $xml->addtag('author','feed',$xml->urltitle,null);	
@@ -2264,11 +2267,11 @@ class rcitems {
                $xml->addtag('product','products',null,"id=".$params[0]);
 			   
                $xml->addtag('name','product',$xml->cdata($params[1]),null);  //cdata val
-               $xml->addtag('link','product',$params[2],null);  //http://... val
+               $xml->addtag('link','product',$params[2],null);  
                $xml->addtag('price_with_vat','product',$params[6],null);  //price 11.11
                $xml->addtag('category','product',$xml->cdata($category),"id=".$params[3]); //cdata val = descr, id=code
-               $xml->addtag('image','product',$params[5],"width=$xf|height=$yf");  //http://... image
-               $xml->addtag('thumbnail','product',$params[5],"width=$xt|height=$yt");  //http://... thumbnail
+               $xml->addtag('image','product',$params[5],"width=$xf|height=$yf");  
+               $xml->addtag('thumbnail','product',$params[5],"width=$xt|height=$yt");
                $xml->addtag('manufacturer','product',$xml->cdata($manufacturer),null);  //cdata val
                $xml->addtag('shipping','product',null,"type=accurate|currency=euro");  //ship cost 11.11
                $xml->addtag('sku','product','/',null);  //...
@@ -2298,15 +2301,15 @@ class rcitems {
                $xml->addtag('updated','entry',$date,null);				   			   
                $xml->addtag('summary','entry',$params[4],null);				   
 	   		   break; 
-			   default ://seo links
+			   default :
                $xml->addtag('product','products',null,"id=");
 			   
                $xml->addtag('name','product',$xml->cdata('name'),null);  //cdata val
-               $xml->addtag('link','product',null,null);  //http://... val
+               $xml->addtag('link','product',null,null);  
                $xml->addtag('price_with_vat','product',null,null);  //price 11.11
                $xml->addtag('category','product',$xml->cdata('category'),"id=\"\""); //cdata val = descr, id=code
-               $xml->addtag('image','product',null,"width=|height=");  //http://... image
-               $xml->addtag('thumbnail','product',null,"width=|height=");  //http://... thumbnail
+               $xml->addtag('image','product',null,"width=|height=");  
+               $xml->addtag('thumbnail','product',null,"width=|height=");  
                $xml->addtag('manufacturer','product',$xml->cdata('manufacturer'),null);  //cdata val
                $xml->addtag('shipping','product',null,"type=|currency=");  //ship cost 11.11
                $xml->addtag('description','product',$xml->cdata('description'),null);  //cdata val		  			   
@@ -2877,7 +2880,7 @@ function photo_item() {
 	  if ($affected) {
 	    //remove file
 		if ($this->delete_attached_file)
-		  unlink($this->attachpath.$itmcode.$slan.$type); //<<<<<<<<<< !!!! NO DELETE
+		  unlink($this->attachpath.$itmcode.$slan.$type); 
 		$msg = "Attached successfully!";
 	  }
 	  else {
@@ -2974,7 +2977,7 @@ function photo_item() {
 	function add_attachment($post=null) {
 	
 	  if (defined("RCUPLOAD_DPC"))
-		$out = GetGlobal('controller')->calldpc_method('rcupload.uploadform use +'.GetReq('path'));	
+		$out = _m('rcupload.uploadform use +'.GetReq('path'));	
 	  else
 	    $out = 'Upload module missing!';
 	  
@@ -2985,7 +2988,7 @@ function photo_item() {
     </script>
 
     <!-- load the main HTMLArea files -->
-    <script type=\"text/javascript\" src=\"http://www.networlds.org/javascripts/html_area/htmlarea.js\"></script>
+    <script type=\"text/javascript\" src=\"http://www.stereobit.gr/javascripts/html_area/htmlarea.js\"></script>
 
     <script type=\"text/javascript\">
       HTMLArea.loadPlugin(\"FullPage\");
@@ -3056,16 +3059,16 @@ function submitform()
 			$cat .= $rec['cat3'] ? $this->cseparator.$rec['cat3'] : null;
 			$cat .= $rec['cat4'] ? $this->cseparator.$rec['cat4'] : null;
 			
-			$item_url = 'http://' . $this->url . '/' . seturl('t=kshow&cat='.$cat.'&id='.$id,null,null,null,null,1);
+			$item_url = $this->baseurl . '/' . seturl('t=kshow&cat='.$cat.'&id='.$id,null,null,null,null,1);
 			$item_name_url = seturl('t=kshow&cat='.$cat.'&id='.$id,$rec['itmname'],null,null,null,1);//$this->rewrite);			   
 		
             if ($this->has_photo2db($id,$this->restype,'LARGE')) {
-				$item_photo_url = 'http://' . $this->url . '/showphoto.php?id='.$id.'&type=LARGE';
+				$item_photo_url = $this->baseurl . '/showphoto.php?id='.$id.'&type=LARGE';
 				$item_photo_html = "<img src=\"" . $item_photo_url . "\" $width $height>";
 				$item_photo_link = "<a href='$item_url'><img src=\"" . $item_photo_url . "\" $width $height></a>";
             }  		 
 			elseif (file_exists($this->urlpath.$this->img_large. $id . $this->restype)) { 	 
-				$item_photo_url = 'http://' . $this->url . '/' . $this->img_large . '/' . $id . $this->restype;
+				$item_photo_url = $this->baseurl . '/' . $this->img_large . '/' . $id . $this->restype;
 				$item_photo_html = "<img src=\"" . $item_photo_url . "\" $width $height>";
 				$item_photo_link = "<a href='$item_url'><img src=\"" . $item_photo_url . "\" $width $height></a>";
 		    }		

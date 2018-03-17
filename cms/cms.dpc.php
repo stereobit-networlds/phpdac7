@@ -126,7 +126,7 @@ class cms extends fronthtmlpage {
 		return $ret;
 	}	
 	
-	//http://stackoverflow.com/questions/4117555/simplest-way-to-detect-a-mobile-device
+	//stackoverflow.com/questions/4117555/simplest-way-to-detect-a-mobile-device
 	public function isMobile() {
 		//return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $this->useragent);
 		$pregmob = strtolower($this->mobileMatchDev());

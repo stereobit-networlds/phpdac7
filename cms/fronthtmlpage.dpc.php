@@ -388,7 +388,7 @@ EOF;
 			    $mainframe_url = $is_oversized ?  $this->self_addspace(true) : $this->cpfp($turl);
 	  	}
 	
-	    //loading text : http://stackoverflow.com/questions/8626638/how-to-display-loading-message-when-an-iframe-is-loading
+	    //loading text : stackoverflow.com/questions/8626638/how-to-display-loading-message-when-an-iframe-is-loading
 		$fp = <<<EOF
  
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
@@ -838,12 +838,6 @@ EOF;
 	
 	public function baseURL($uri=null){
 	    $request_uri = $uri ? $uri : $_SERVER['REQUEST_URI'];
-		/*return sprintf(
-			"%s://%s%s",
-			isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https' : 'http',
-			$_SERVER['SERVER_NAME'],
-			dirname($request_uri) 
-		);*/
 		return ($this->url);
 	}
 

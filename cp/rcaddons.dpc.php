@@ -441,7 +441,7 @@ class rcaddons {
 					case 'google_analytics' :	if (is_readable($this->prpath.'ganalytics.html')) 
 													$url = "ganalytics.html";
 												else 
-													$url = "http://analytics.google.com";	   
+													$url = "https://analytics.google.com";	   
 												$text .= "<IFRAME SRC=\"$url\" TITLE=\"analytics\" WIDTH=100% HEIGHT=400>
 													<!-- Alternate content for non-supporting browsers -->
 													<H2>Google analytics</H2>

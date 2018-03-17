@@ -45,7 +45,6 @@ class swfcharts {
       $w = $width?$width:400;
       $h = $height?$height:250;	  
 
-      //$ret =   "<OBJECT classid=\"clsid:D27CDB6E-AE6D-11cf-96B8-444553540000\"	codebase=\"http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0\" 	WIDTH=\"$width\" 	HEIGHT=\"$height\" 	id=\"$id\" 	ALIGN=\"\"><PARAM NAME=movie VALUE=\"gauge.swf?library_path=$this->charts_library&xml_source=$this->xml_source\"><PARAM NAME=quality VALUE=high><PARAM NAME=bgcolor VALUE=#666666><EMBED src=\"gauge.swf?library_path=$this->library_path&xml_source=$this->xml_source\"       quality=high        bgcolor=#666666         WIDTH=\"$width\"        HEIGHT=\"$height\"        NAME=\"charts\"        ALIGN=\"\"        swLiveConnect=\"true\"        TYPE=\"application/x-shockwave-flash\"        PLUGINSPAGE=\"http://www.macromedia.com/go/getflashplayer\"></EMBED></OBJECT>";
 	  $ret  = "
 	  <OBJECT classid=\"clsid:D27CDB6E-AE6D-11cf-96B8-444553540000\"
 	codebase=\"http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0\" 
@@ -165,7 +164,7 @@ class swfcharts {
 			   $nd[$month][$year] = $datalines[$month][$year];
 			 break;
 			
-			 case 0 ://all years as one
+			 case 0 : //all years as one
 			 default:	
 		     $h = 0;   		   				   
 		     //foreach ($datalines[$month] as $year=>$hits)
@@ -194,7 +193,7 @@ class swfcharts {
 		 $chart_data .= '<string>'. implode('</string><string>',$labels) . '</string></row>';
 		 
 		 switch ($show) {
-		 case 1:// multiyear view		 
+		 case 1: // multiyear view		 
 		 foreach ($yk as $i=>$year) {		 
 		   $chart_data .= '<row><string>'.$year.'</string>';
 		   reset($nd);		 
@@ -727,7 +726,7 @@ function SendChartData( $chart=array() ){
 						else{$xml.=" />\r\n";}
 						break;
 
-						default://link, etc.
+						default: //link, etc.
 						$xml.="\t\t<value";
 						for($i3=0;$i3<count($Keys3);$i3++){
 							$xml.=" ".$Keys3[$i3]."=\"".$chart[$Keys1[$i1]][$Keys2[$i2]][$Keys3[$i3]]."\"";

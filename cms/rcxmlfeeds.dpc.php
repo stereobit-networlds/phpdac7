@@ -258,7 +258,7 @@ class rcxmlfeeds {
 			
 			$recarray['itemurl'] = $this->httpurl . '/' . seturl('t=kshow&cat='.$_cat.'&id='.$id,null,null,null,null,1);
 			$recarray['itemimg'] = $this->httpurl . '/' . $this->imgpath . $id . $this->restype;
-			$recarray['itemcat'] = $cat; /** <<<<<<<<<<<<<<<<<<<<<<<<<<< also add **/
+			$recarray['itemcat'] = $cat; 
 			
 			$ret_array[] = (array) $recarray;
 		
@@ -289,7 +289,7 @@ class rcxmlfeeds {
             }	
 			$tokens[] = $rec['itemurl'];
 			$tokens[] = $rec['itemimg'];
-			$tokens[] = $rec['itemcat']; /** <<<<<<<<<<<<<<<<<<<<<<<<<<< also add **/
+			$tokens[] = $rec['itemcat']; 
 			//if ($n==0) print_r($tokens);
 			$items[] = $this->combine_tokens($xmltemplate_products, $tokens, true);
             unset($tokens);						
@@ -304,7 +304,7 @@ class rcxmlfeeds {
 	}	
 
 	protected function combine_tokens($template_contents,$tokens, $execafter=null) {
-	    //print_r($tokens); //<<<<<<<<<<<<<, test
+	    //print_r($tokens); 
 	    if (!is_array($tokens)) return;
 		
 		if ((!$execafter) && (defined('FRONTHTMLPAGE_DPC'))) {

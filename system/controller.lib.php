@@ -108,7 +108,7 @@ class controller  {
 								}		 
 				                break;		
 								
-				 case 'include' ://include NOT load a set of dpc		
+				 case 'include' : //include NOT load a set of dpc		
 				                $dpcs = explode(",",$part[1]);
 						        //print_r($dpcs);
 								foreach ($dpcs as $did=>$dpc) {

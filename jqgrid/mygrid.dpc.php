@@ -91,10 +91,10 @@ class mygrid {
 			    $col["width"] = '10';
 	    }
         elseif ($at[2]=='link') {
-            $col["link"] = $at[4];//"http://localhost/?id={id}"; // e.g. http://domain.com?id={id} given that, there is a column with $col["name"] = "id" exist
-            $col["linkoptions"] = $at[5];//"target='_blank'"; // extra params with <a> tag
-		    $col["width"] = $at[3] ? $at[3] : "10";//use editable attr for width
-			$col["editable"] = false;//editable always false for link
+            $col["link"] = $at[4];
+            $col["linkoptions"] = $at[5];
+		    $col["width"] = $at[3] ? $at[3] : "10";
+			$col["editable"] = false;
         }		
 		else {
 		  $col["width"] = '10';
@@ -102,50 +102,6 @@ class mygrid {
 			//$col["editoptions"] = array("value"=>$at[4]);
 		}  
 		  
-		
-		//search
-        //$col["search"] = false;
-		
-		//$col["sortable"] = false; // this column is not sortable
-		//$col["search"] = false; // this column is not searchable
-		//$col["align"] = "center";
-	    //$col["edittype"] = "checkbox";
-		//$col["edittype"] = "textarea"; // render as textarea on edit
-		//$col["editoptions"] = array("rows"=>2, "cols"=>20); // with these attributes		
-		// To mask password field, apply following attribs
-		# $col["edittype"] = "password";
-		# $col["formatter"] = "password";
-
-		// default render is textbox
-		// $col["editoptions"] = array("value"=>'10');
-
-		// can be switched to select (dropdown)
-		# $col["edittype"] = "select"; // render as select
-		# $col["editoptions"] = array("value"=>'10:$10;20:$20;30:$30;40:$40;50:$50'); // with these values "key:value;key:value;key:value"
-		//$col["editoptions"] = array("value"=>"1:0"); // with these values "checked_value:unchecked_value"
-		#$col["editoptions"] = array("value"=>'No:Not Booked eg. N, I,E;Yes:Yes it is Booked eg. N, I,E'); // with these values "key:value;key:value;key:value"
-		//$col["editoptions"] = array("size"=>20); // with default display of textbox with size 20
-		//$col["editrules"] = array("required"=>true, "edithidden"=>true); // and is required
-		//$col["hidden"] = true;	
-		//$col["formatter"] = "date"; // format as date
-		// $col["formatoptions"] = array("srcformat"=>'Y-m-d',"newformat"=>'d/m/Y'); // @todo: format as date, not working with editing
-		
-		// default render is textbox
-		//$col["editoptions"] = array("value"=>'10');
-		//select
-		// can be switched to select (dropdown)
-		# $col["edittype"] = "select"; // render as select
-		# $col["editoptions"] = array("value"=>'10:$10;20:$20;30:$30;40:$40;50:$50'); // with these values "key:value;key:value;key:value"
-		
-		//export
-		//$col["export"] = false; // this column will not be exported
-		//links
-		//$col["link"] = "http://localhost/?id={id}"; // e.g. http://domain.com?id={id} given that, there is a column with $col["name"] = "id" exist
-		//$col["linkoptions"] = "target='_blank'"; // extra params with <a> tag		
-		//group
-		//$col["summaryType"] = "sum"; // available grouping fx: sum, count, min, max
-        //$col["summaryTpl"] = '<b>Total: ${0}</b>'; // display html for summary row - work when "groupSummary" is set true. search below
-
 		
 		$this->_cols[$grid_id][] = $col;
 		return true;
@@ -194,7 +150,7 @@ class mygrid {
 	  print_r($this->_cols);
 	}
 	
-	//http://stackoverflow.com/questions/5272850/is-there-an-api-in-jqgrid-to-add-advanced-filters-to-post-data/5273385#5273385
+	//stackoverflow.com/questions/5272850/is-there-an-api-in-jqgrid-to-add-advanced-filters-to-post-data/5273385#5273385
 	public function jquery() {
 	
 	}

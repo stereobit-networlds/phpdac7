@@ -55,9 +55,10 @@ class cpmhtmleditor {
 	
 		$this->urlpath = paramload('SHELL','urlpath');		  
 		//$this->urlbase = paramload('SHELL','urlbase');	
-		$this->urlbase = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$this->urlbase.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
-				
+		//$this->urlbase = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
+		//$this->urlbase.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
+		$this->urlbase = _v('cmsrt.httpurl');
+		
 		$this->prpath = paramload('SHELL','prpath');
 		$tmpl_path = remote_paramload('FRONTHTMLPAGE','template',$this->prpath);
 		$this->template = $tmpl_path ? $tmpl_path .'/' : null;
@@ -77,7 +78,7 @@ class cpmhtmleditor {
 		//ckeditor 4
 
 		//$ckeditor4 = GetReq('cke4') ? GetReq('cke4') : false;
-		//$this->ckeditor4 = true;//((GetReq('cke4'))||($template)) ? /*true*/false : false; //<<<<
+		//$this->ckeditor4 = true;//((GetReq('cke4'))||($template)) ? false : false; 
 		$this->ckeditor4 = remote_paramload('CKEDITOR','ckeditor4',$this->prpath);
 		$this->cke4_inline = $this->ckeditor4 ? true/*false*/ : false; 
 
@@ -525,7 +526,7 @@ class cpmhtmleditor {
 							 }							 
 			                 break;
 							 
-			  case 'MEDIUM' ://resize medium, small and save at once
+			  case 'MEDIUM' : //resize medium, small and save at once
                              if (!empty($autoresize)) {							 
                                $image = new SimpleImage();
                                $image->load($s);
@@ -939,7 +940,7 @@ class cpmhtmleditor {
 			$affected = $db->Affected_Rows();
 	  
 			if (($affected) && ($this->erase2db))
-				unlink($photo); //<<<<<<<<<< !!!! DELETE	
+				unlink($photo); 	
 			
 		}//limit
 		//else

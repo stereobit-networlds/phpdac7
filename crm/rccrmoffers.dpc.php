@@ -1077,7 +1077,7 @@ class rccrmoffers {
         //check expiration key
         if ($this->appkey->isdefined('RCCRMOFFERS_DPC')==false) {
 	        $this->messages[] = "Failed, module expired.";
-		    //return false;  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< appkey --------------------------!!
+		    //return false;  
 	    }
 					
 		$res = $this->sendit($docid, $from, $to, $subject, $body); 				

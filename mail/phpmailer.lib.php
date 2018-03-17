@@ -390,7 +390,7 @@ private /*. string .*/ function Lang(/*. string .*/ $key)
 		$PHPMAILER_LANG = /*. (array[string]string) .*/ array();
 
 		/*include($this->language_path . "/phpmailer.lang-"
-			. $this->language_type . ".php");*/  //<<<<<<<<<<<<<<<<<<<<<<<<<<< NO LANG
+			. $this->language_type . ".php");*/  
 			
 $PHPMAILER_LANG = array();
 

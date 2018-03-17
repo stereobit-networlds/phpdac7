@@ -188,7 +188,7 @@ class shpiraeus  {
 	public function action($action=null) {
    
 		switch ($action) {
-		case 'payreturn' ://return from bank.. have to get params..there is no known info
+		case 'payreturn' : //return from bank.. have to get params..there is no known info
 		                  $tid = $this->piraeus_get_post_params(1); 
 						  //echo '>'.$tid;
 		
@@ -626,7 +626,7 @@ class shpiraeus  {
 			$fin .= dechex(ord($str[$i])); 
 		 
 			if ($this->debug_return) {
-				echo '<br>'.$str[$i].'<<<>>>'.ord($str[$i]).'<<<>>>'.dechex(ord($str[$i])); 
+				echo '<br>'.$str[$i].'------'.ord($str[$i]).'------'.dechex(ord($str[$i])); 
 			}
 		} 
 		return $fin;   

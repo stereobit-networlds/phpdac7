@@ -59,7 +59,6 @@ class window2 extends window {
 	function javascript() {
 	    
 		$out = <<<EOF
-               //expand/show element
                function expand(listID) {
 	             listID = document.getElementById(listID);
                  if (listID.style.display == "none") {
@@ -70,7 +69,6 @@ class window2 extends window {
                  }
                }
 
-               //contract/hide element
                function contract(listID) {
 	             listID = document.getElementById(listID);
 	             if (listID.style.display == "show") {

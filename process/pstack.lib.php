@@ -838,9 +838,10 @@ class pstack {
 	} 	
 
 	protected function getPageLink($rid=null, $url=false, &$processName=null) {
-		$httpurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$httpurl.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
-		$u = $url ? $url : $httpurl;//"http://www.stereobit.gr/";
+		//$httpurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
+		//$httpurl.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
+		$httpurl = _v('cmsrt.httpurl');
+		$u = $url ? $url : $httpurl;
 		$n = pathinfo($_SERVER['PHP_SELF'],PATHINFO_BASENAME);
 		$p = explode('.', $n);
 		
@@ -861,7 +862,8 @@ class pstack {
  	}
 	
 	protected function getPageProcessName($rid=null, $url=false) {
-		$u = $url ? $url : "http://www.stereobit.gr/";
+		$httpurl = _v('cmsrt.httpurl');
+		$u = $url ? $url : $httpurl . '/'; //"www.stereobit.gr/";
 		$n = pathinfo($_SERVER['PHP_SELF'],PATHINFO_BASENAME);
 		$p = explode('.', $n);
 		

@@ -895,7 +895,7 @@ window.setTimeout('neu()',10);
 			unset($_COOKIE[$cookie_name]);
 			unset($_COOKIE[$cookie_name2]);*/
 		
-			$this->facebook->destroySession();	//<<<<<<< not destroyed
+			$this->facebook->destroySession();	//not destroyed
 			SetSessionParam('fbhash', null);
 			SetSessionParam('fbin', null);
 		//}			

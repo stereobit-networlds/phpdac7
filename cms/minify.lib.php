@@ -1,6 +1,6 @@
 <?php
 
-// Based on <https://github.com/mecha-cms/extend.minify>
+// Based on <github.com/mecha-cms/extend.minify>
 
 define('MINIFY_STRING', '"(?:[^"\\\]|\\\.)*"|\'(?:[^\'\\\]|\\\.)*\'');
 define('MINIFY_COMMENT_CSS', '/\*[\s\S]*?\*/');
@@ -61,9 +61,9 @@ function fn_minify_css($input, $comment = 2, $quote = 2) {
             $q = $part[0];
             if (
                 $quote !== 1 && (
-                    // <https://www.w3.org/TR/CSS2/syndata.html#uri>
+                    // www.w3.org/TR/CSS2/syndata.html#uri>
                     substr($prev, -4) === 'url(' && preg_match('#\burl\($#', $prev) ||
-                    // <https://www.w3.org/TR/CSS2/syndata.html#characters>
+                    // www.w3.org/TR/CSS2/syndata.html#characters>
                     substr($prev, -1) === '=' && preg_match('#^' . $q . '[a-zA-Z_][\w-]*?' . $q . '$#', $part)
                 )
             ) {

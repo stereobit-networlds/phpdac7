@@ -35,7 +35,7 @@ if ( !defined("DOWNLOADFILE_H") ) {
 
 		// get file size
 		function df_size() {                                         //--------------------------------------------------------
-			if($this->df_exists()) return filesize($this->df_path)+2;//<<<<< in IIS6 (production)returns -2 bytes!!!=firewall???
+			if($this->df_exists()) return filesize($this->df_path)+2;// in IIS6 (production)returns -2 bytes!!!=firewall???
 			return false;                                            //--------------------------------------------------------
 		}
 

@@ -38,7 +38,7 @@ class clientdpc {
 	  $suddendeath = paramload('ID','suddendeath');
 	  
 	  $this->refresh = 1000;
-	  $this->renew_link = 'http://www.networlds.org/renew.php?app='.$this->instance_name;
+	  $this->renew_link = 'https://www.stereobit.gr/renew.php?app='.$this->instance_name;
 	  
 	  $this->logger = new rclog();
 	  
@@ -299,8 +299,8 @@ $domain = paramload('SHELL','url');//'www.stereobit.net';
 
 $serverIP = $_SERVER['REMOTE_ADDR'];
 $message = "Expired Application. Are you the owner? Renew...";
-$renewurl = "http://www.networlds.org/renew.php";
-$expiredurl = "http://www.networlds.org";
+$renewurl = "https://www.stereobit.gr/renew.php";
+$expiredurl = "https://www.stereobit.gr";
 $gracedays = $this->suddendeath;//12;
 $interval = 0;//25000;
 $testmode=0; //test mode

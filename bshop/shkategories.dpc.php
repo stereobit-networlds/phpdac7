@@ -865,12 +865,12 @@ class shkategories {
 	  
 		if ($toplevel) {
 			switch ($toplevel) {
-				case 2  ://prevlevel
+				case 2  : //prevlevel
 						$dummy = array_pop($mycattree);
 						if (!$ret = array_pop($mycattree)) 	  
 							$ret = $dummy;	 
 						break;
-				case 1  ://toplevel
+				case 1  : //toplevel
 				default :if ($url) { 
 							//$ret = _m("cmsrt.url use t=klist&cat=" . GetReq('cat') . "+" . array_pop($mycattree)); 
 							$_t = array_pop($mycattree);

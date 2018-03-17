@@ -411,7 +411,7 @@ class rcbackup  {
 		}
 		else {
 		
-			$picpath = $this->urlpath . realpath($path); //<<< urlpath /this->path = cp
+			$picpath = $this->urlpath . realpath($path); 
 			if (is_dir($picpath)) {
 				$source = $picpath;
 				if (is_dir($source)) {

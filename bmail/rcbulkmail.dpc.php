@@ -1682,7 +1682,7 @@ EOF;
         //check expiration key
         if ($this->appkey->isdefined('RCBULKMAIL')==false) {
 	        //$this->messages[] = "Failed, module expired.";
-		    //return false;  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< appkey --------------------------!!
+		    //return false;  
 	    }
 		
 		if (is_readable($this->savehtmlpath .'/'. $this->cid.'.html')) {

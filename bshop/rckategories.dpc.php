@@ -88,8 +88,9 @@ class rckategories extends shkategories {
 	  	
 		$this->title = localize('RCKATEGORIES_DPC',getlocal());	 
 		//$this->urlbase = paramload('SHELL','urlbase');
-		$this->urlbase = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$this->urlbase.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
+		//$this->urlbase = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
+		//$this->urlbase.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
+		$this->urlbase = _v('cmsrt.httpurl');
 		
 		$csep = remote_paramload('SHKATEGORIES','csep',$this->path); 
 		$this->cseparator = $csep ? $csep : '^';	

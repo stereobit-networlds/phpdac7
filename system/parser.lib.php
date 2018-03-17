@@ -139,7 +139,7 @@ class parser {
           	$pic_param2 = chop ("$split[2]"); //width     
             $pic_param3 = chop ("$split[3]"); //height     
             if ($split[4]) {
-			  if (eregi("^http://",$split[4]))
+			  if (preg_match("^http://",$split[4]))
 			    $pic_param4 = $split[4];//link 
 			  else
 			    $pic_param4 = seturl(str_replace(',','&',$split[4]));//link 

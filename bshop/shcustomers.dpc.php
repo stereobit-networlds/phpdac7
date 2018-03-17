@@ -1856,7 +1856,7 @@ window.onload=function(){
 	   
 	    ///// FETCH also mail=userid !!!!!!!!
 	    if ($this->fkey)
-			$sSQL .= " or " . $this->fkey . "=" . $db->qstr($myui);//<<<<compatibility	  
+			$sSQL .= " or " . $this->fkey . "=" . $db->qstr($myui);//compatibility	  
 		  
 	    $sSQL.= " order by active DESC"; //last to first..selected last address inserted	   
 	    //echo $sSQL;	   

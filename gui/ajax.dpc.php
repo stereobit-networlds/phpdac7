@@ -97,8 +97,8 @@ function sndReqArg(url) {
     http.setRequestHeader("Content-Type", "text/html; charset=$this->encoding");
     //http.setRequestHeader("charset", "$this->encoding");
     http.setRequestHeader("encoding", "$this->encoding");	
-    //http.setRequestHeader("Content-length", params.length);//<<<	
-    //http.setRequestHeader("Connection", "close");	//<<<
+    //http.setRequestHeader("Content-length", params.length);	
+    //http.setRequestHeader("Connection", "close");	
     http.onreadystatechange = handleResponse;	
     http.send(null);
 };

@@ -18,7 +18,7 @@ $__DPCATTR['CMSVSTATS_DPC']['cmsvstats'] = 'cmsvstats,1,0,0,0,0,0,0,0,0,0,0,1';
 $__LOCALE['CMSVSTATS_DPC'][0]='CMSVSTATS_DPC;Statistics;Στατιστική';
 
 
-//http://stackoverflow.com/questions/12257584/how-to-detect-fake-users-crawlers-and-curl
+//stackoverflow.com/questions/12257584/how-to-detect-fake-users-crawlers-and-curl
 
 //test
 //SELECT count(tid), count(attr1),`HTTP_USER_AGENT` FROM `stats` where `HTTP_USER_AGENT` NOT LIKE 'Mozilla%' group by `HTTP_USER_AGENT` order by date DESC LIMIT 5000

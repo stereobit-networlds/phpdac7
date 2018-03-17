@@ -117,7 +117,7 @@ class jq_grid {
 		  //$themes = array("redmond","smoothness","start","dot-luv","excite-bike","flick","ui-darkness","ui-lightness","cupertino","dark-hive");
 		  //$i = rand(0,8);
 		
-		  $this->javascript();//<<<<<load js
+		  $this->javascript();
 		/*  
         }//if connection
 		*/
@@ -144,37 +144,6 @@ class jq_grid {
 		}
 			
 	}	
-	
-	function javascript_OLD() {
-		
-        $jsapi = "http://www.google.com/jsapi";
-   
-        $jquery = "google.load(\"jquery\", \"1.6.2\");";   
-   
- 	    $jscode = "";  	
- 
-		if (iniload('JAVASCRIPT')) {
-			$js = new jscript;		   
-		    //$js->load_js('http://www.google.com/jsapi',"",null,null,1);
-		    //$js->load_js($jquery,"",1);
-		    //$js->load_js('fpss.packed.js');
-            //$js->load_js($jscode,"",1);			   
-			
-			//$js->load_css('xxx.css'); 
-			
-			//put into javascript root dir
-			$js->load_css('javascripts/themes/redmond/jquery-ui.custom.css'); 
-			$js->load_css('javascripts/jqgrid/css/ui.jqgrid.css');
-            
-			//put into javascript root dir
-            $js->load_js('jquery.min.js');
-			$js->load_js('jqgrid/js/i18n/grid.locale-en.js');			
-			$js->load_js('jqgrid/js/jquery.jqGrid.min.js');
-			$js->load_js('themes/jquery-ui.custom.min.js');
-			unset ($js);
-		}
-			
-	}
 	
 	function showgrid($name=null,$cols=null) {
 	    //$myjgrid = GetGlobal('mygrid'); //test global

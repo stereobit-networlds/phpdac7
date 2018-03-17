@@ -146,9 +146,9 @@ goBack();
 	    location.href=unescape(gfg('u'));
 	  else 
 	  if(location.hostname=='".$this->url."' && lang_pair!='".$lang_pair."')
-	    location.href='http://translate.google.com/translate?client=tmpg&hl=en&langpair='+lang_pair+'&u='+escape(location.href);
+	    location.href='https://translate.google.com/translate?client=tmpg&hl=en&langpair='+lang_pair+'&u='+escape(location.href);
 	  else 
-	    location.href='http://translate.google.com/translate?client=tmpg&hl=en&langpair='+lang_pair+'&u='+unescape(gfg('u'));
+	    location.href='https://translate.google.com/translate?client=tmpg&hl=en&langpair='+lang_pair+'&u='+unescape(gfg('u'));
 	}
 	
     function gfg(name) {
@@ -182,11 +182,11 @@ goBack();
       
 	  switch ($action) {
 	    case 'shlangs' : $ret = null; break;
-		default           ://if ($this->message)
+		default           : //if ($this->message)
 		                     $ret = $this->message;
-						   //else	  
+						    //else	  
 		                     //$ret = confbar::action($action);
-		                   // $ret .= "Languange change to <" . $this->selected_lan . ">";
+		                    // $ret .= "Languange change to <" . $this->selected_lan . ">";
 	  }
 	  
 	  return ($ret);

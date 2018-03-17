@@ -222,8 +222,8 @@ class cmsrt extends cms  {
 		
 		return "$('html, body').animate({ scrollTop: sw }, 'slow',function(){ $('html,body').clearQueue();});";
 	}
-	//http://stackoverflow.com/questions/12260279/scrolltop-not-working-in-android-mobiles
-	//http://stackoverflow.com/questions/12225456/jquery-scrolltop-does-not-work-in-scrolling-div-on-mobile-browsers-alternativ
+	//stackoverflow.com/questions/12260279/scrolltop-not-working-in-android-mobiles
+	//stackoverflow.com/questions/12225456/jquery-scrolltop-does-not-work-in-scrolling-div-on-mobile-browsers-alternativ
 	//if(navigator.userAgent.match(/(iPod|iPhone|iPad|Android)/)) { 
 	protected function scrolltop_javascript_code() {
 		$mobileDevices = $this->mobileMatchDev();
@@ -812,12 +812,12 @@ goBack();
 	  
 	  if ($toplevel) {
 	    switch ($toplevel) {
-		  case 2  ://prevlevel
+		  case 2  : //prevlevel
 		           $dummy = array_pop($mycattree);
 				   if (!$ret = array_pop($mycattree)) 	  
 				     $ret = $dummy;	 
 		           break;
-          case 1  ://toplevel
+          case 1  : //toplevel
 		  default :if ($url) {
 			          $title = array_pop($mycattree);
 		              $ret = $this->url('t=klist&cat='. GetReq('cat'), $title);

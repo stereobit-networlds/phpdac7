@@ -481,8 +481,9 @@ class rcpmenu {
 	    //, -> ^  comma is language separator
 	    //www. -> http://www. (CCPP takes // as remark)
 	
+	    $h = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
 		$ret = str_replace(array('@','^','www.','|','_CAT','_ID','_SCAT'),
-		                   array('?t=',$csep,'http://www.','?',$cat, $id, $selected_cat),$link);
+		                   array('?t=',$csep,$h.'www.','?',$cat, $id, $selected_cat),$link);
 		/*				   	
 		$sslMenu = _m('cmsrt.paramload use CMS+ssl');					
 		//$httpurl = _v('cms.httpurl');
