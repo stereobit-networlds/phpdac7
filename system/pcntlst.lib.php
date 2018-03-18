@@ -29,13 +29,13 @@ define('_DPCTYPE_', $environment['dpctype']);
 define('_PRJPATH_', $environment['prjpath']);
 define('_DPCPATH_', $dpcpath);
 define('_ISAPP_', $environment['app']); 
-
-require_once("system.lib.php");	
-require_once("parser.lib.php");
-require_once("ktimer.lib.php");
-require_once("azdgcrypt.lib.php"); 	    
-require_once("ccpp.lib.php");
-require_once("controller.lib.php");
+	
+require_once("phpdac5://127.0.0.1:19123/system/system.lib.php");	
+require_once("phpdac5://127.0.0.1:19123/system/parser.lib.php");
+require_once("phpdac5://127.0.0.1:19123/system/ktimer.lib.php");
+require_once("phpdac5://127.0.0.1:19123/system/azdgcrypt.lib.php"); 	    
+require_once("phpdac5://127.0.0.1:19123/system/ccpp.lib.php");
+require_once("phpdac5://127.0.0.1:19123/system/controllst.lib.php");
 
 define("PCNTL_DPC",true);
 $__DPC['PCNTL_DPC'] = 'pcntl'; 
@@ -102,8 +102,7 @@ class pcntl extends controller {
 		$this->noqueue = $noqueue;		
 		$this->myaction = null;
 		
-		SetGlobal('controller',$this);
-		//SetGlobal('dispatcher',$this);			
+		SetGlobal('controller',$this);			
 		
 		$this->init();
 		

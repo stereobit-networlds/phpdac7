@@ -139,7 +139,7 @@ class kernelv2 {
       
 		//init printer	  
 		//$printer = "FinePrint pdfFactory Pro";
-		$printer = "\\\http://www.e-basis.gr\\e-Enterprise.printer";
+		$printer = "\\\http://127.0.0.1\\e-Enterprise.printer";
 		$printout = @printer_open($printer);//true;
 		if (is_resource($printout) &&
 			get_resource_type($printout)=='printer') 
@@ -701,7 +701,7 @@ class kernelv2 {
 				$sf = filesize($this->dpcpath . $dpc);
 				_("Size:" . $rlength .':' . $sf,2);
 				if ($rlength != $sf) {
-					$data = @file_get_contents($this->dpcpath . $dpc); 
+					$data = $this->_readPHP($this->dpcpath . $dpc); 
 					_($data,3); 
 				}	
 				else
@@ -802,7 +802,7 @@ class kernelv2 {
 			*/
 			//https://raw.github.com/stereobit-networlds/phpdac6/master/
 			//local storage
-			$data = @file_get_contents($this->dpcpath . $dpc);
+			$data = $this->_readPHP($this->dpcpath . $dpc);
 		}
 		else 
 			_($this->dpcpath . $dpc . ' not found!',1);	
@@ -994,6 +994,7 @@ class kernelv2 {
 		           if (($subfileread!='.') && ($subfileread!='..'))  
 				   {
                        if ((stristr ($subfileread,".dpc.php")) || 
+						   (stristr ($subfileread,".ext.php")) || 
 					       (stristr ($subfileread,".lib.php")))  
 				           $mydpc[] = $fileread . DIRECTORY_SEPARATOR . $subfileread;								     
 				   }
@@ -1057,7 +1058,7 @@ class kernelv2 {
 		{
 	      if (($dpcf!='') && ($dpcf[0]!=';')) 
 		  {
-		    if ($f = @file_get_contents($dpcf)) 
+		    if ($f = $this->_readPHP($dpcf)) //@file_get_contents($dpcf)) 
 			{	
 			  $this->dpc_addr[$dpcf] = $offset + 1; //\0head			
 			  $this->dpc_length[$dpcf] = strlen($f) + $this->extra_space;
@@ -1401,6 +1402,35 @@ class kernelv2 {
 		$key = sprintf("%u", (($st['ino'] & 0xffff) | (($st['dev'] & 0xff) << 16) | (($proj_id & 0xff) << 24)));
 		return $key;
 	}	
+	
+	protected function _readPHP($filename=null) {
+		if (!$filename) return false;
+		
+		//return @file_get_contents($filename);
+		return  (
+						  preg_replace("/^<\?php/","<?php",						  
+ 						  //preg_replace(	
+							//'/<<<(\w+).*(\1);/' , "\r\n$0\r\n",
+						  //preg_replace(
+						    //"/\s\s+/", " ", /* beware spaces at heredocs else err*/
+						    preg_replace(
+							    "/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", PHP_EOL,
+								//preg_replace(	
+							    //"/<<<(\w+).*(\1);/" , "\r\n$1\r\n",
+								preg_replace( /* comments // without : at back char :* */
+								    "/(?<![*:\"'])[ \t]*\/\/.*/", '',
+									preg_replace( /* comments * */		
+										'!/\*.*?\*/!s', '',
+										@file_get_contents($filename)
+									)
+								)
+								//)
+							)
+						  //)	
+						  //)
+						  )
+				);
+    }						
    
 	function __destruct() 
 	{

@@ -1,13 +1,10 @@
 <?php
-//if (defined("PHTML_DPC")) {
-
 if (!defined("JAVASCRIPT_DPC")) {
 define("JAVASCRIPT_DPC",true);
 
 $__DPC['JAVASCRIPT_DPC'] = 'jscript';
 
-$e = GetGlobal('controller')->require_dpc('javascript/minifier.lib.php');
-require_once($e);
+GetGlobal('controller')->_require('javascript/minifier.lib.php');
 
 class jscript {
 
@@ -83,12 +80,6 @@ function callJavaS() {
    return ($js);
 }
 
-///////////////////////////////////////////////////////////
-// this function do two things 
-// 1. print out the js command as returned text
-// 2. collect all the called jscripts function to a buffer
-//    for printing as client-side code
-//////////////////////////////////////////////////////////
 function JS_function($code,$params) {
 
   $codebuffer = GetGlobal('codebuffer');
@@ -145,8 +136,6 @@ function isincodebuffer($command) {
   return true;
 }
 
-/////////////////////////////////////////////////////////// lib
-
 //open browser new window
 //onLoad="MM_openBrWindow('...
 function js_openwin() {
@@ -160,28 +149,28 @@ function js_openwin() {
 function js_chromewin() {
   $js  = "<!-- start java script -->\n";  
   $js .= "function openIT(u,W,H,X,Y,n,b,x,m,r) {\n";
-  $js .= "var cU  ='close.gif'   //gif for close on normal state.\n";
-  $js .= "var cO  ='close.gif'  //gif for close on mouseover.\n";
-  $js .= "var cL  ='clock.gif'      //gif for loading indicator.\n";
-  $js .= "var mU  ='minimize.gif'     //gif for minimize to taskbar on normal state.\n";
-  $js .= "var mO  ='minimize.gif'    //gif for minimize to taskbar on mouseover.\n";
-  $js .= "var xU  ='max.gif'     //gif for maximize normal state.\n";
-  $js .= "var xO  ='max.gif'    //gif for maximize on mouseover.\n";
-  $js .= "var rU  ='restore.gif'     //gif for minimize on normal state.\n";
-  $js .= "var rO  ='restore.gif'    //gif for minimize on mouseover.\n";
-  $js .= "var tH  ='<font face=verdana size=2>Chromeless Window</font>'   //title for the title bar in html format.\n";
-  $js .= "var tW  ='Chromeless Window'   //title for the task bar of Windows.\n";
-  $js .= "var wB  ='#D5D5FF'   //Border color.\n";
-  $js .= "var wBs ='#D5D5FF'   //Border color on window drag.\n";
-  $js .= "var wBG ='#D5D5FF'   //Background of the title bar.\n";
-  $js .= "var wBGs='#D5D5FF'   //Background of the title bar on window drag.\n";
-  $js .= "var wNS ='toolbar=0,location=0,directories=0,status=0,menubar=0,scrollbars=1,resizable=0'  //Html parameters for Netscape.\n";
-  $js .= "var fSO ='scrolling=auto noresize'   //Html parameters for main content frame.\n";
-  $js .= "var brd =b||5;   //Extra border size.\n";
-  $js .= "var max =x||false;   //Maxzimize option (true|false).\n";
-  $js .= "var min =m||false;   //Minimize to taskbar option (true|false).\n";
-  $js .= "var res =r||false;   //Resizable window (true|false).\n";
-  $js .= "var tsz =20;   //Height of title bar.\n";
+  $js .= "var cU  ='close.gif'\n";
+  $js .= "var cO  ='close.gif'\n";
+  $js .= "var cL  ='clock.gif'\n";
+  $js .= "var mU  ='minimize.gif'\n";
+  $js .= "var mO  ='minimize.gif'\n";
+  $js .= "var xU  ='max.gif'\n";
+  $js .= "var xO  ='max.gif'\n";
+  $js .= "var rU  ='restore.gif'\n";
+  $js .= "var rO  ='restore.gif'\n";
+  $js .= "var tH  ='<font face=verdana size=2>Chromeless Window</font>' \n";
+  $js .= "var tW  ='Chromeless Window'   \n";
+  $js .= "var wB  ='#D5D5FF' \n";
+  $js .= "var wBs ='#D5D5FF' \n";
+  $js .= "var wBG ='#D5D5FF' \n";
+  $js .= "var wBGs='#D5D5FF' \n";
+  $js .= "var wNS ='toolbar=0,location=0,directories=0,status=0,menubar=0,scrollbars=1,resizable=0' \n";
+  $js .= "var fSO ='scrolling=auto noresize'   \n";
+  $js .= "var brd =b||5;   \n";
+  $js .= "var max =x||false;\n";
+  $js .= "var min =m||false; \n";
+  $js .= "var res =r||false;\n";
+  $js .= "var tsz =20;\n";
   $js .= "return chromeless(u,n,W,H,X,Y,cU,cO,cL,mU,mO,xU,xO,rU,rO,tH,tW,wB,wBs,wBG,wBGs,wNS,fSO,brd,max,min,res,tsz)\n";
   $js .= "}\n";
 
@@ -207,8 +196,8 @@ function js_printwin() {
 function js_popimage() {
 
   $js = <<<EOF
-var popbackground="lightskyblue" //specify backcolor or background image for pop window
-var windowtitle="Image Window"  //pop window title
+var popbackground="lightskyblue" 
+var windowtitle="Image Window"  
 
 function detectexist(obj){
 return (typeof obj !="undefined")
@@ -231,8 +220,6 @@ var bodyattribute=(popbackground.indexOf(".")!=-1)? 'background="'+popbackground
 if (typeof jkpopwin=="undefined" || jkpopwin.closed)
 jkpopwin=window.open("","",winattributes)
 else{
-//getpos() //uncomment these 2 lines if you wish subsequent popups to be centered too
-//jkpopwin.moveTo(leftpos, toppos)
 jkpopwin.resizeTo(popwidth, popheight+30)
 }
 jkpopwin.document.open()
@@ -256,7 +243,7 @@ function load_js($jscript,$ver='',$istext=0,$additional_text=null,$nopath=null) 
 	else 
 		$js = "<script type=\"text/javascript\">\n" . $this->obfuscate($jscript) . "</script>\n";
 	
-	//test purposes (used to pass css text!!!!!!!!)		 
+	//test purposes (used to pass css text)		 
 	$js .= $additional_text;		 
 
 	//check for doubles	
@@ -339,13 +326,12 @@ function obfuscate($script=null) {
 	if (!$script) return false;
 	
 	if (($this->obf) || (paramload('CMS','obfuscate')))
-		return \JShrink\Minifier::minify($script);
-	
+		//return \JShrink\Minifier::minify($script);
+		return Minifier::minify($script);
+		
 	return ($script);
 }
 
 };
 }
-//}
-//else die("HTML OUTPUT MUST BE ENABLED!");
 ?>

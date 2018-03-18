@@ -602,7 +602,7 @@ class shcart extends storebuffer {
 			case "fastpick" 	:	//$out = $this->fastpick ? localize('_FASTPICKON',$this->lan) : localize('_FASTPICKOFF',$this->lan);
 									$out .= $this->cartview();
 									break;
-		          
+		    case 'viewcart'     :      
 			default          	:	$out = $this->todo ? $this->todolist() : $this->cartview();
         }
 

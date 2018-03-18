@@ -1,7 +1,7 @@
 <?php
 if (!defined("CONTROLLER_DPC")) {
 define("CONTROLLER_DPC",true);
-		
+/* streamed version */		
 class controller  {
 
     private $_actions;
@@ -19,6 +19,7 @@ class controller  {
 		$this->_attr    = array();
 		$this->_security= array();
 
+		/*
 		//$this->server = $this->exist_dpc_server('127.0.0.1',19123);	  
 		$this->shm = $this->exist_shm();
 		if ($this->shm) {
@@ -38,7 +39,9 @@ class controller  {
 			$phpdac_c = stream_wrapper_register("phpdac5","c_dacstream");
 			if (!$phpdac_c) _echo('CLI',"Client protocol failed to registered!\n");
 				//else _echo('CLI',"Client protocol registered!\n"); 
-		}		
+		}	
+		*/	
+		$this->shm = 1;
     }
    
     public function include_dpc($dpc) {

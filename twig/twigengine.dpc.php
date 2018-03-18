@@ -4,11 +4,8 @@ define("TWIGENGINE_DPC",true);
 
 $__DPC['TWIGENGINE_DPC'] = 'twigengine';
 
-$a = GetGlobal('controller')->require_dpc('twig/twigengine.lib.php');
-require_once($a);
-
-$b = GetGlobal('controller')->require_dpc('twig/phpdac.dpc.php');
-require_once($b);
+GetGlobal('controller')->_require('twig/twigengine.lib.php');
+GetGlobal('controller')->_require('twig/phpdac.dpc.php');
 	   
 class twigengine extends Twig_Autoloader {
 

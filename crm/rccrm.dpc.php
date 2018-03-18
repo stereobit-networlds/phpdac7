@@ -1083,6 +1083,7 @@ class rccrm  {
 	public function itemsPurchased() {
        $db = GetGlobal('db');
 	   $user = urldecode(GetReq('id'));
+	   $ret = array();
 	   
 	   //search serialized data for id
 	   $sSQL = "select tdata from transactions where " . $this->sqlDateRange('timein', true, false);

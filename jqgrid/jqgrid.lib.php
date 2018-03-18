@@ -4,7 +4,8 @@ define("JQGRID_DPC",true);
 
 $__DPC['JQGRID_DPC'] = 'jqgrid';
 
-require_once("inc/jqgrid_dist.php"); //ERR REPORTING
+//require_once("inc/jqgrid_dist.php"); //ERR REPORTING
+GetGlobal('controller')->_require('jqgrid/inc/jqgrid_dist.php');
 
 //test******************************************************
 /*		 $conn = mysql_connect(paramload('DATABASE','dbhost'), 

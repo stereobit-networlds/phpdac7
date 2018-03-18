@@ -1744,8 +1744,7 @@ class httpclient
 					$mechanisms[]=$mechanism;
 			}
 			
-			//$sasl = new sasl_client_class($this->env); //<<<<
-			$sasl = new saslclient($this->env); //<<<<
+			$sasl = new sasl_client_class($this->env); 
 			
 			if(IsSet($user))
 				$sasl->SetCredential("user",$user);

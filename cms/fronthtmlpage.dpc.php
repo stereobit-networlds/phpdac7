@@ -597,6 +597,10 @@ EOF;
 	public function phpcode($evalCode=null) {
 		if (!$evalCode) return null;
 		
+		/*if ((substr($evalCode,0,2)=='<?') &&
+		   (substr($evalCode,0,5)!='<?php'))
+			echo "php:($evalCode)<br/>";
+		*/
 		if (strstr($evalCode, '?>')) {
 			//$evalCode = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", "", $evalCode)));
 			$evalCode = '?>' . $evalCode . ((substr($evalCode, -2) == '?>') ? '<?php ' : '');

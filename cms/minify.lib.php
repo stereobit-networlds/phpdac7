@@ -1,5 +1,5 @@
 <?php
-
+//check for '*' replace with open-close asterisk comments
 // Based on <github.com/mecha-cms/extend.minify>
 
 define('MINIFY_STRING', '"(?:[^"\\\]|\\\.)*"|\'(?:[^\'\\\]|\\\.)*\'');
@@ -41,10 +41,9 @@ function fn_minify_css($input, $comment = 2, $quote = 2) {
     $output = $prev = "";
     foreach (fn_minify([MINIFY_COMMENT_CSS, MINIFY_STRING], $input) as $part) {
         if (trim($part) === "") continue;
-        if ($comment !== 1 && strpos($part, '/*') === 0 && substr($part, -2) === '*/') {
+        if (($comment !== 1) && strpos($part, '/*') === 0 && substr($part, -2) === '*/') {
             if (
-                $comment === 2 && (
-                    // Detect special comment(s) from the third character. It should be a `!` or `*` → `/*! keep */` or `/** keep */`
+                ($comment === 2) && (
                     strpos('*!', $part[2]) !== false ||
                     // Detect license comment(s) from the content. It should contains character(s) like `@license`
                     stripos($part, '@licence') !== false || // noun
@@ -60,7 +59,7 @@ function fn_minify_css($input, $comment = 2, $quote = 2) {
             // Remove quote(s) where possible …
             $q = $part[0];
             if (
-                $quote !== 1 && (
+                ($quote !== 1) && (
                     // www.w3.org/TR/CSS2/syndata.html#uri>
                     substr($prev, -4) === 'url(' && preg_match('#\burl\($#', $prev) ||
                     // www.w3.org/TR/CSS2/syndata.html#characters>
@@ -86,54 +85,54 @@ function fn_minify_css_union($input) {
         }, $input);
     }
     $input = preg_replace([
-        // Fix case for `#foo<space>[bar="baz"]`, `#foo<space>*` and `#foo<space>:first-child` [^1]
+        
         '#(?<=[\w])\s+(\*|\[|:[\w-]+)#',
-        // Fix case for `[bar="baz"]<space>.foo`, `*<space>.foo`, `:nth-child(2)<space>.foo` and `@media<space>(foo: bar)<space>and<space>(baz: qux)` [^2]
+        
         '#([*\]\)])\s+(?=[\w\#.])#', '#\b\s+\(#', '#\)\s+\b#',
-        // Minify HEX color code … [^3]
+        
         '#\#([a-f\d])\1([a-f\d])\2([a-f\d])\3\b#i',
-        // Remove white–space(s) around punctuation(s) [^4]
+        
         '#\s*([~!@*\(\)+=\{\}\[\]:;,>\/])\s*#',
-        // Replace zero unit(s) with `0` [^5]
+        
         '#\b(?:0\.)?0([a-z]+\b)#i',
-        // Replace `0.6` with `.6` [^6]
+        
         '#\b0+\.(\d+)#',
-        // Replace `:0 0`, `:0 0 0` and `:0 0 0 0` with `:0` [^7]
+        
         '#:(0\s+){0,3}0(?=[!,;\)\}]|$)#',
-        // Replace `background(?:-position)?:(0|none)` with `background$1:0 0` [^8]
+        
         '#\b(background(?:-position)?):(?:0|none)([;,\}])#i',
-        // Replace `(border(?:-radius)?|outline):none` with `$1:0` [^9]
+        
         '#\b(border(?:-radius)?|outline):none\b#i',
-        // Remove empty selector(s) [^10]
+        
         '#(^|[\{\}])(?:[^\{\}]+)\{\}#',
-        // Remove the last semi–colon and replace multiple semi–colon(s) with a semi–colon [^11]
+        
         '#;+([;\}])#',
-        // Replace multiple white–space(s) with a space [^12]
+        
         '#\s+#'
     ], [
-        // [^1]
+        
         X . '$1',
-        // [^2]
+        
         '$1' . X, X . '(', ')' . X,
-        // [^3]
+        
         '#$1$2$3',
-        // [^4]
+        
         '$1',
-        // [^5]
+        
         '0',
-        // [^6]
+        
         '.$1',
-        // [^7]
+        
         ':0',
-        // [^8]
+        
         '$1:0 0$2',
-        // [^9]
+        
         '$1:0',
-        // [^10]
+        
         '$1',
-        // [^11]
+        
         '$1',
-        // [^12]
+        
         ' '
     ], $input);
     return trim(str_replace(X, ' ', $input));
@@ -146,12 +145,12 @@ function fn_minify_html($input, $comment = 2, $quote = 1) {
         if ($part === "\n") continue;
         if ($part !== ' ' && trim($part) === "" || $comment !== 1 && strpos($part, '<!--') === 0) {
             // Detect IE conditional comment(s) by its closing tag …
-            if ($comment === 2 && substr($part, -12) === '<![endif]-->') {
+            if (($comment === 2) && substr($part, -12) === '<![endif]-->') {
                 $output .= $part;
             }
             continue;
         }
-        if ($part[0] === '<' && substr($part, -1) === '>') {
+        if (($part[0] === '<') && substr($part, -1) === '>') {
             $output .= fn_minify_html_union($part, $quote);
         } else if ($part[0] === '&' && substr($part, -1) === ';' && $part !== '&lt;' && $part !== '&gt;' && $part !== '&amp;') {
             $output .= html_entity_decode($part); // Evaluate HTML entit(y|ies)
@@ -241,10 +240,8 @@ function fn_minify_js($input, $comment = 2, $quote = 2) {
             strpos($part, '/*') === 0 && substr($part, -2) === '*/'
         )) {
             if (
-                $comment === 2 && (
-                    // Detect special comment(s) from the third character. It should be a `!` or `*` → `/*! keep */` or `/** keep */`
+                ($comment === 2) && (
                     strpos('*!', $part[2]) !== false ||
-                    // Detect license comment(s) from the content. It should contains character(s) like `@license`
                     stripos($part, '@licence') !== false || // noun
                     stripos($part, '@license') !== false || // verb
                     stripos($part, '@preserve') !== false

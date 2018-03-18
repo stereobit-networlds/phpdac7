@@ -115,11 +115,9 @@
 							    "/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", PHP_EOL,
 								//preg_replace(	
 							    //"/<<<(\w+).*(\1);/" , "\r\n$1\r\n",
-								preg_replace( /* comments // without : at back (http://) */
-								    "/(?<!:)[ \t]*\/\/.*/", '',
-									//'![ \t]*//.*[ \t]*[\r\n]!', '',
-									preg_replace( /* comments * */
-										//"!^[ \t]*/\*.*?\*/[ \t]*[\r\n]!s", '',		
+								preg_replace( /* comments // without : at back char *: */
+								    "/(?<![*:\"'])[ \t]*\/\/.*/", '',
+									preg_replace( /* comments * */	
 										'!/\*.*?\*/!s', '',
 										@file_get_contents($path)
 									)

@@ -15,7 +15,9 @@
  * under the License.
  */
 
-require_once "base_facebook.php";
+//require_once "base_facebook.php";
+$a = GetGlobal('controller')->require_dpc('fb/base_facebook.lib.php');
+require_once($a);
 
 /**
  * Extends the BaseFacebook class with the intent of using

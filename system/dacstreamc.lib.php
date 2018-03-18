@@ -20,7 +20,7 @@ class c_dacstream {
 		
         //$socket = fsockopen($server, $port, $errno, $errstr, $timeout); 
 		//PERSISTENT CONNECTION
-		$socket = pfsockopen($server, $port, $errno, $errstr, $timeout); 
+		$socket = @pfsockopen($server, $port, $errno, $errstr, $timeout); 
 		
 		if (!$socket) {
 		  echo $errstr,"(",$errno,")\n";
