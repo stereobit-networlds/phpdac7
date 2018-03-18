@@ -3,7 +3,7 @@ define("GANTTI_DPC",true);
 
 $__DPC['GANTTI_DPC'] = 'Gantti';
 
-require_once('calendar.lib.php'); 
+GetGlobal('controller')->_require('crm/calendar.lib.php');
 
 class Gantti {
 
