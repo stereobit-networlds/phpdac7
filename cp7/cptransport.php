@@ -1,9 +1,7 @@
 <?php
 require('phpdac7.php');
 $page = new pcntl('
-
 super javascript;
-/super rcserver.rcssystem;
 
 load_extension adodb refby _ADODB_; 
 super database;

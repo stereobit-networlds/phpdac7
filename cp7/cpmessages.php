@@ -2,7 +2,6 @@
 require('phpdac7.php');
 $page = new pcntl('
 super javascript;
-/super rcserver.rcssystem;
 
 load_extension adodb refby _ADODB_; 
 super database;
@@ -26,7 +25,7 @@ public i18n.i18nL;
 
 ',1);
 
-	$cptemplate = _m('rcserver.paramload use FRONTHTMLPAGE+cptemplate');
+	$cptemplate = _m('cmsrt.paramload use FRONTHTMLPAGE+cptemplate');
 
 	switch ($_GET['t']) {
 		case 'cpcatvisits'   :

@@ -1,9 +1,7 @@
 <?php
 require('phpdac7.php');
 $page = new pcntl('
-
 super javascript;
-/super rcserver.rcssystem;
 
 /---------------------------------load and create libs
 use xwindow.window,xwindow.window2,browser;

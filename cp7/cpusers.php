@@ -33,7 +33,7 @@ public i18n.i18nL;
 
 ',1);
 
-$cptemplate = _m('rcserver.paramload use FRONTHTMLPAGE+cptemplate');
+$cptemplate = _m('cmsrt.paramload use FRONTHTMLPAGE+cptemplate');
 
 $mc_page = (GetSessionParam('LOGIN')) ? 'cp-users' : 'cp-login'; 
 echo $page->render(null,getlocal(), null, $cptemplate.'/index.php');
