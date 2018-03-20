@@ -40,7 +40,7 @@ class smdr {
 	var $message;
 	var $year;
 
-	function smdr() {
+	function __construct() {
 	
 /*	  if (!paramload('SMDR','sourcetype')) {
 	    $this->smdrfilename = paramload('SHELL','prpath') . paramload('SMDR','sourcefile');

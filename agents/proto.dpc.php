@@ -14,7 +14,7 @@ $__ACTIONS['PROTO_DPC'][0]='proro';
 class proto {
 
 
-	function proto($coordinator=null) {
+	function __construct($coordinator=null) {
 	
 	
 	  echo $coordinator->env['ip'];

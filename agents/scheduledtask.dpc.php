@@ -11,7 +11,7 @@ class scheduledtask {
     var $env, $resources;
 	var $value, $printer;
 
-	function scheduledtask($env=null) {
+	function __construct($env=null) {
 	
 	  //var_dump($env->agn_addr);
 	  //var_dump($env->agn_length);  

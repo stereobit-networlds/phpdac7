@@ -549,7 +549,7 @@ class daemon {
 												    
 													if (is_array($function)) {//ADDED TO SUPPORT CLASS METHOD CALLS...
 													    //echo 'zzz';
-													    $status = $function[0]->$function[1] (strtoupper($command_set['command']), $command_set['params'], $this); 
+													    $status = $function[0]->{$function[1]} (strtoupper($command_set['command']), $command_set['params'], $this); 
                                                         if (false == $status) {
                                                                 //function says that we should exit...
                                                                 //$this->resetConnection($id);
@@ -573,7 +573,7 @@ class daemon {
 										elseif ($function = $this->CommandAction ("***")) {////check phpdac(kernel) dispatcher ADDED BY ME TO SUPPORT PHPDAC CMDS
 										    //print_r($this->callbacks['***'][0]); 
 											//$this->Println ( $function[0][0].'.'.$function[0][1]);
-                                            $status = $function[0][0]->$function[0][1] ($command_set['command'], $command_set['params'], $this); 
+                                            $status = $function[0][0]->{$function[0][1]} ($command_set['command'], $command_set['params'], $this); 
                                             if (false == $status) {
                                                //function says that we should exit...
                                                //$this->resetConnection($id);
@@ -782,7 +782,7 @@ class connect_pool {
   var $resource;
   var $session; 
   
-  function connect_pool() {
+  function __construct() {
     $this->resource = null;
   }
   

@@ -10,7 +10,7 @@ class timer {
 
    var $time;
 
-   function timer($env = null) {
+   function __construct($env = null) {
    
      $this->env = $env;   
      $this->time = time();

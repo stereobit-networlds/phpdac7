@@ -15,7 +15,7 @@ class askbill {
    var $proj;
 
 
-   function askbill($env=null) {	
+   function __construct($env=null) {	
       global $argv; 
 	  
 	  $this->proj = null;  

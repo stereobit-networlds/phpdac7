@@ -356,7 +356,8 @@ class shtransactions extends transactions {
 		       if ($param[0] != $id) 
 		         $ret[] = $param[0]; //save code
 			 
-		       if (count($ret)>$limit) break; //limit to fetch	 
+		       if ((!empty($ret)) && (count($ret)>$limit)) 
+				   break; //limit to fetch	 
 		     }	 
 		   }
 		 } 

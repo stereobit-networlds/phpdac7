@@ -13,7 +13,7 @@ class resources {
    var $env;
    var $daemon_port;
 
-   function resources($env=null) {
+   function __construct($env=null) {
    
       $this->env = $env;
    

@@ -1,5 +1,5 @@
 <?php
-
+error_reporting(E_ALL & ~E_NOTICE);
 /**
  * https://www.php-fig.org
  * An example of a project-specific implementation.
@@ -56,7 +56,7 @@ require_once("agents/scheduler.lib.php");
 
 define ("GLEVEL", 2);   
 
-   function _($str, $level=0, $crln=true) 
+   function _say($str, $level=0, $crln=true) 
    {
 
 	    $cr = $crln ? PHP_EOL : null;
@@ -107,22 +107,23 @@ class kernelv2 {
 	  $this->agent = 'SH';//default !?!
 	  $this->verboseLevel = GLEVEL;	  
 	  $this->extra_space = 1024 * 10; //kb //1000;// per file
-	  $this->dataspace = 1024000 * 1; //mb //50000;
+	  $this->dataspace = 1024000 * 5; //mb //50000;
 		  
-	  $this->dpcpath = $argv[1] ? ((substr($argv[1],0,1)!='-') ? $argv[1] . '/' : './') : './';
-	  $this->daemon_type = $argv[1] ? ((substr($argv[1],0,1)=='-') ? substr($argv[1],1) : '') : '';//str_replace("-","",$dtype);
-	  $this->daemon_ip = $argv[2] ? $argv[2] : '127.0.0.1';
-	  $this->daemon_port = $argv[3] ? $argv[3] : '19123';
+  	  $this->dpcpath = isset($argv[1]) ? ((substr($argv[1],0,1)!='-') ? $argv[1] . '/' : './') : './'; //getcwd().'/' php7
+	  $this->daemon_type = isset($argv[1]) ? ((substr($argv[1],0,1)=='-') ? substr($argv[1],1) : '') : '';
+	  $this->daemon_ip = isset($argv[2]) ? $argv[2] : '127.0.0.1';
+	  $this->daemon_port = isset($argv[3]) ? $argv[3] : '19123';
 	  	  
-	  _("Daemon repository at $this->daemon_ip:$this->daemon_port",1);
+	  _say("Daemon repository at $this->daemon_ip:$this->daemon_port",1);
 	  
  	  //REGISTER PHPRES (client side,resources) 		
       require_once("agents/resstream.lib.php"); 
 	  $phpdac_c = stream_wrapper_register("phpres5","c_resstream");
-	  if (!$phpdac_c) _("Client resource protocol failed to registered!");
-		         else _("Client resource protocol registered!",2); 	  
+	  if (!$phpdac_c) _say("Client resource protocol failed to registered!");
+		         else _say("Client resource protocol registered!",2); 	  
 	  
 	  //create ipc key (if..)	
+	  $pathname = null;//$argv[0]
 	  $this->ipcKey = $this->_ftok($pathname, 's'); //create ipc Key
 	  //start mem	  
 	  if ($this->startmemdpc()) 
@@ -138,20 +139,21 @@ class kernelv2 {
 		$this->resources->set_resource('variable','myservervalue');	  
       
 		//init printer	  
-		//$printer = "FinePrint pdfFactory Pro";
-		$printer = "\\\http://127.0.0.1\\e-Enterprise.printer";
-		$printout = @printer_open($printer);//true;
-		if (is_resource($printout) &&
-			get_resource_type($printout)=='printer') 
-		{  
-			printer_set_option($printout, PRINTER_MODE, 'RAW'); 
-			$this->resources->set_resource('printer',$printout);
-			_("printer:" . $printer . " connected.",1);
-			//printer_close($printout);
-		}
-		else
-			_("printer:" . $printer . " error: Could not connect!",1);  
-		  	  
+		if (extension_loaded('printer')) {
+			//$printer = "FinePrint pdfFactory Pro";
+			$printer = "\\\http://127.0.0.1\\e-Enterprise.printer";
+			$printout = @printer_open($printer);//true;
+			if (is_resource($printout) &&
+				get_resource_type($printout)=='printer') 
+			{  
+				printer_set_option($printout, PRINTER_MODE, 'RAW'); 
+				$this->resources->set_resource('printer',$printout);
+				_say("printer:" . $printer . " connected.",1);
+				//printer_close($printout);
+			}
+			else
+				_say("printer:" . $printer . " error: Could not connect!",1);  
+		}  	  
 		  
 		//init scheduler
 		$this->scheduler = new scheduler($this);
@@ -163,18 +165,18 @@ class kernelv2 {
 		try 
 		{
 		  $this->pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
-		  _("PDO connection: ok!" ,1);
+		  _say("PDO connection: ok!" ,1);
 	    } 
 		catch (PDOException $e) 
 		{
-            _("Failed to get DB handle: " . $e->getMessage(),1);
+            _say("Failed to get DB handle: " . $e->getMessage(),1);
         }
 		
 		$this->startdaemon();
 	  }
 	  else 
 	  {
-		  _('Shared memory critical error!');
+		  _say('Shared memory critical error!');
 		  $this->shutdown(true);
 	  }	  
    }
@@ -250,7 +252,7 @@ class kernelv2 {
 		
 		if ((is_readable($batchfile)) && ($f = @file($batchfile))) {
 			
-			_('Init batch file: ' . $batchfile,1); 
+			_say('Init batch file: ' . $batchfile,1); 
 			if (!empty($f)) {
 			  //print_r($f);
 		      foreach ($f as $command_line) {
@@ -451,7 +453,7 @@ class kernelv2 {
 	  if (!extension_loaded('shmop')) 
 		  dl('php_shmop.dll');
 	  
-	  _("Start",1);   
+	  _say("Start",1);   
 	  
 	  $data =null;
       $this->shm_max = $this->load_dpc_tree($data); //\0 included
@@ -463,7 +465,7 @@ class kernelv2 {
 	  // Create shared memory block with system id if 0xff3
 	  $space = $this->shm_max + $this->dataspace;
 	  
-	  _("Allocate shared memory segment... $space bytes",2);
+	  _say("Allocate shared memory segment... $space bytes",2);
       $this->shm_id = shmop_open($ikey, "c", 0644, $space);
 	  
       if ($this->shm_id) 
@@ -494,7 +496,7 @@ class kernelv2 {
             echo "shm_id not saved!!!\n";
 			return false;
 		}
-		_("Save state",2);
+		_say("Save state",2);
 		$data = $this->shm_max ."@^@". serialize($this->dpc_addr) . 
 		                       "@^@". serialize($this->dpc_length). 
 							   "@^@". serialize($this->dpc_free);//. 
@@ -562,13 +564,13 @@ class kernelv2 {
 			if (isset($data)) //replace
 			{				
 			  $remaining = $length - $dataLength;			  
-			  _("diff:" . $rlength.':'.$dataLength,2);
+			  _say("diff:" . $rlength.':'.$dataLength,2);
 			  
 			  //$oldData = $this->loaddpcmem($dpc);		
 			  $oldData = shmop_read($this->shm_id, $offset, $rlength); 				
 			  $hold = md5($oldData);	
 			  $hnew = md5($data);// . str_repeat(' ',$remaining));
-			  _("md5:" . $hold . ':'. $hnew,2);
+			  _say("md5:" . $hold . ':'. $hnew,2);
 						
 			  if ($dataLength < $length) 
 			  {
@@ -576,13 +578,13 @@ class kernelv2 {
 					$this->dpc_free[$dpc] = $remaining;
 									    
 					if ($this->checkSpinLock($dpc)===false)
-						_(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 0:$dpc",1);		
+						_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 0:$dpc",1);		
 			
 			        $data .=  str_repeat(' ',$remaining);
 					if (shmop_write($this->shm_id, $data, $offset))
 					{	
 						$this->savestate();
-						_("$dpc saved",1);
+						_say("$dpc saved",1);
 						_dump("SAVE\n\n\n\n" . $data);
 					}	
 			  }
@@ -594,7 +596,7 @@ class kernelv2 {
 	   else { //write first time (append)
 	   
 			if (!$data) return false;	
-			_($data,3);
+			_say($data,3);
 		
 			$offset = $this->getShmOffset();
 			
@@ -606,13 +608,13 @@ class kernelv2 {
 				$this->dpc_free[$dpc] = $this->extra_space;
 
 				if ($this->checkSpinLock($dpc)===false)
-					_(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 1:$dpc",1); 
+					_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 1:$dpc",1); 
 					
 				$data .= str_repeat(' ',$this->extra_space);
 				if (shmop_write($this->shm_id, "\0". $data ."\0", $offset))
 				{
 					$this->savestate();
-					_("$dpc loaded",1);
+					_say("$dpc loaded",1);
 					_dump("LOAD\n\n\n\n" . $data);
 				}
 			}
@@ -621,7 +623,7 @@ class kernelv2 {
 			     
 	   }
 	   
-	   _("Data : " . $dataLength, 2);	   
+	   _say("Data : " . $dataLength, 2);	   
 	   return ($data);
    }    
    
@@ -670,13 +672,13 @@ class kernelv2 {
 						$_data[] = $row;
 					}
 					$data = json_encode($_data);
-					_($data,3); //show new data
+					_say($data,3); //show new data
 				}
 				else 
 				{
 					$data = null; //bypass and read
-					_('Scheduled PDO stream:' . $dpc,1);
-					_($data,3);
+					_say('Scheduled PDO stream:' . $dpc,1);
+					_say($data,3);
 				}
 			}
 			elseif (substr($dpc,0,4)==='www.') 
@@ -685,13 +687,13 @@ class kernelv2 {
 				if (!$this->scheduler->findschedule($dpc)) 
 				{
 					$data = $this->httpcl($dpc);
-					_($data,3); //show new data
+					_say($data,3); //show new data
 				}
 				else 
 				{
 					$data = null; //bypass and read
-					_('Scheduled data stream:' . $dpc,1);
-					_($data,3);
+					_say('Scheduled data stream:' . $dpc,1);
+					_say($data,3);
 				}	
 			}
 			elseif (is_readable($this->dpcpath . $dpc)) 
@@ -699,16 +701,16 @@ class kernelv2 {
 				//echo "222222222222222222222222\n";
 				//local storage reload  
 				$sf = filesize($this->dpcpath . $dpc);
-				_("Size:" . $rlength .':' . $sf,2);
+				_say("Size:" . $rlength .':' . $sf,2);
 				if ($rlength != $sf) {
 					$data = $this->_readPHP($this->dpcpath . $dpc); 
-					_($data,3); 
+					_say($data,3); 
 				}	
 				else
 					$data = null; //bypass and read
 			}
 			else  { //variable
-				_($dpc . ' reading variable',1);	
+				_say($dpc . ' reading variable',1);	
 				$data = null ;//bypass and read
 			}	
 			
@@ -716,7 +718,7 @@ class kernelv2 {
 			{ 			
 			  $dataLength = strlen($data); 
 			  $remaining = $length - $dataLength;
-			  _("diff:" . $rlength.':'.$dataLength,2);
+			  _say("diff:" . $rlength.':'.$dataLength,2);
 				
 			  //$oldData = $this->loaddpcmem($dpc);	
 			  $oldData = shmop_read($this->shm_id, $offset, $rlength);
@@ -724,7 +726,7 @@ class kernelv2 {
 			  
 			  $hold = md5($oldData);	
 			  $hnew = md5($data);
-			  _("md5:" . $hold . ':'. $hnew,2);
+			  _say("md5:" . $hold . ':'. $hnew,2);
 						
 			  if ($dataLength < $length) 
 			  {
@@ -732,13 +734,13 @@ class kernelv2 {
 				$this->dpc_free[$dpc] = $remaining;				  
 				  
 				if ($this->checkSpinLock($dpc)===false)
-					_(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 2:$dpc",1); 
+					_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 2:$dpc",1); 
 					
 				$data .= str_repeat(' ',$remaining);
 				if (shmop_write($this->shm_id, $data, $offset))
 				{
 					$this->savestate();
-					_("$dpc saved",1);
+					_say("$dpc saved",1);
 					_dump("UPDATE\n\n\n\n" . $data);//$this->shared_buffer);
 				}	
 			  }
@@ -749,16 +751,16 @@ class kernelv2 {
 		}
 		
 		//else read mem
-		_("reading $dpc ",2);
+		_say("reading $dpc ",2);
 		
 		if ($this->checkSpinLock($dpc)===true)
-			_(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock reader:$dpc",1);
+			_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock reader:$dpc",1);
 		
 		$data = shmop_read($this->shm_id, 
 	                       $offset, 
 			  			   $length);
 						   
-		_("Data : " . strlen($data), 2);
+		_say("Data : " . strlen($data), 2);
 	  }
 	  else 
 	  { 
@@ -805,10 +807,10 @@ class kernelv2 {
 			$data = $this->_readPHP($this->dpcpath . $dpc);
 		}
 		else 
-			_($this->dpcpath . $dpc . ' not found!',1);	
+			_say($this->dpcpath . $dpc . ' not found!',1);	
 		
 		if (!$data) return false;	
-		_($data,3);		
+		_say($data,3);		
 		
 		$dataLength = strlen($data);
 		
@@ -825,20 +827,20 @@ class kernelv2 {
 			$this->dpc_free[$dpc] = $this->extra_space;
 			
 			if ($this->checkSpinLock($dpc)===false)
-				_(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 3:$dpc",1); 
+				_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 3:$dpc",1); 
 			
 			$data .= str_repeat(' ',$this->extra_space);
 			if (shmop_write($this->shm_id, "\0". $data ."\0", $offset))
 			{
 				$this->savestate();
-				_("$dpc inserted",1);
+				_say("$dpc inserted",1);
 				_dump("INSERT\n\n\n\n" . $data);
 			}	
 		}
 		else	
-			die($dpc . " error, increase data space!");		
+			die($dpc . " error, increase data space!\n");		
 		
-		_("Data : " . $dataLength, 2);		
+		_say("Data : " . $dataLength, 2);		
 	  }
 	  
 	  return ($data);	      
@@ -851,7 +853,7 @@ class kernelv2 {
 		
 	    if ($this->checkSpinLock($dpc)===true) {
 			//spinLock = \0
-			_("Locked segment (must written):" . $dpc);
+			_say("Locked segment (must written):" . $dpc);
 			return false;
 		}	
 		$offset = $this->dpc_addr[$dpc];
@@ -873,7 +875,7 @@ class kernelv2 {
 		
 	    if ($this->checkSpinLock($dpc)===false) 
 		{   //spinLock = \1
-			_("Locked segment (not readed):" . $dpc);
+			_say("Locked segment (not readed):" . $dpc);
 			return false;
 		}	  
 		
@@ -888,19 +890,19 @@ class kernelv2 {
 			if ($dataSize < $size)
 			{
 				$remaining = $size - $dataSize;
-				_("diff:" . $oldSize.':'.$dataSize,1);
+				_say("diff:" . $oldSize.':'.$dataSize,1);
 				
 				$oldData = shmop_read($this->shm_id,$offset,$oldSize);
 				$hold = md5($oldData);	
 				$hnew = md5($newData);
-				_("md5:" . $hold . ':'. $hnew,1);				
+				_say("md5:" . $hold . ':'. $hnew,1);				
 				
 				$newData = $data . str_repeat(' ',$remaining);								
 			}	
 			else	
 			{	
 				//throw new Exception('dataSize > block');
-				_("Error::::::::::::::: Update: DataSize > block :" . $dpc);
+				_say("Error::::::::::::::: Update: DataSize > block :" . $dpc);
 			}			
         }
 		else 
@@ -921,7 +923,7 @@ class kernelv2 {
 			else			
 			{
 				//throw new Exception('dataSize > block');
-				_("Error::::::::::::::: Insert: DataSize > dataspace :" . $dpc);
+				_say("Error::::::::::::::: Insert: DataSize > dataspace :" . $dpc);
 			}	
 		}
 	    // set spinlocks	
@@ -936,14 +938,14 @@ class kernelv2 {
     {
       if (!shmop_delete($this->shm_id)) 
 	  {
-        _("Couldn't mark shared memory block for deletion",1);
+        _say("Couldn't mark shared memory block for deletion",1);
 		return false;
       }	  
 	  shmop_close($this->shm_id);	
 	  $this->shm_id = null;   
 	  
 	  @unlink("shm.id");
-	  _("Deleting state..!",2); 
+	  _say("Deleting state..!",2); 
 	  
 	  return true;	
     }     
@@ -1004,6 +1006,7 @@ class kernelv2 {
 	      }
 	      $mydir->close ();
         }
+		//echo $dpath,'>';
 		//print_r($mydpc);
 		return ($mydpc);   
    }
@@ -1039,10 +1042,11 @@ class kernelv2 {
    }   
    
    private function load_dpc_tree(&$data) {
+	   $libs = null;
+	   $exts = null;
    	
-	   _("loading dpc modules...",2);	
+	   _say("loading dpc modules...",2);	   
 	   $libs = $this->read_dpcs();
-	   
 	   //echo "loading dpc extensions...\n";	
 	   //$exts = $this->read_extensions();
 	   
@@ -1079,16 +1083,16 @@ class kernelv2 {
 			  //add foot sign
 			  $data .= "\0";
 			  
-			  _($dpcf . " loaded",2);
+			  _say($dpcf . " loaded",1);
 		    }
 		    else 
-	          _($dpcf . " Error",2);
+	          _say($dpcf . " Error",1);
 	 
 		  }
 	    }
 	    //print $shared_buffer;
 	    $totalbytes = strlen($data);//$this->shared_buffer);
-	    _("\nTotal Bytes : ".$totalbytes,2);
+	    _say("\nTotal Bytes : ".$totalbytes,2);
 		
 		//print_r($this->dpc_addr);
 		//print_r($this->dpc_length);
@@ -1125,11 +1129,11 @@ class kernelv2 {
 			printer_start_doc($pr, $doctitle);	  
 			printer_write($pr,$message."\n\r");  	 
 			//printer_end_doc($pr, $doctitle); //double print 0 bytes when enabled !!!!
-			_($message,1);
+			_say($message,1);
 			return true;
 		}
 	  
-		_("printing error!",1); 
+		_say("printing error!",1); 
 		return false;	
     }
    
@@ -1180,13 +1184,13 @@ class kernelv2 {
 	  //if ($this->loaddpcmem('srvSchedules')) 
 	  //{ 
 	  
-	  	  _("Loading schedules from dump file",1);
+	  	  _say("Loading schedules from dump file",1);
 		 $sh = json_decode($jsonsh); 
 		 //print_r($sh);
 		 
 		 //override (stdClass error, needs re-arrange)
 		 //if ($this->scheduler->overwriteschedules($sh)) 
-			// _("Ok!",1); else _("Error",1);
+			// _say("Ok!",1); else _say("Error",1);
 		 
 		 //save in resources (..to disable)
          //$this->resources->set_resource('_schedules',serialize($sh));
@@ -1205,10 +1209,10 @@ class kernelv2 {
 		
 		//start a client (auto)
 		exec("start /D d:\github\phpdac7\bin agentds pdo");// -inetd");
-		
+		//exec("start /D c:\xampp-phpdac7\bin agentds pdo"); //php 7
 		//powershell (can ret value /pipes ) 
 		//$ret = 
-			//!!shell_exec("start powershell.exe -executionPolicy Unrestricted -NoExit -Command d:\php\php.exe agents\agentds.dpc.php");
+			//shell_exec("start powershell.exe -executionPolicy Unrestricted -NoExit -Command c:\xampp-phpdac7\php.exe agents\agentds.dpc.php pdo");
 		
         /*
 			C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -InputFormat none -File file.ps1
@@ -1219,19 +1223,19 @@ class kernelv2 {
 
     public function scheduleprint() 
 	{	
-		//_("SERVER print",1);
+		//_say("SERVER print",1);
 		//printer_write($this->resources->get_resource('printer'), "SERVER print"."\n\r");  
 		
-		_($this->show_connections(),1);
-		_($this->show_schedules(),1);
+		_say($this->show_connections(),1);
+		_say($this->show_schedules(),1);
 		
 		$this->grapffiti();		
 			
-		//$totalbytes = strlen($this->shared_buffer);
+		$totalbytes = 0;
 		foreach ($this->dpc_length as $_dpc=>$_length)
 			$totalbytes+= $_length + $this->dpc_free[$_dpc]; //calc
 	
-	    _("Total buffer : ".$totalbytes. ', usage: ' . memory_get_usage(),1);
+	    _say("Total buffer : ".$totalbytes. ', usage: ' . memory_get_usage(),1);
 		
 		return true;
     } 	
@@ -1271,67 +1275,67 @@ class kernelv2 {
 		$http->authentication_mechanism=""; // force a given authentication mechanism;
 		$arguments["Headers"]["Pragma"]="nocache";
 				
-		_("Opening connection to: " . HtmlSpecialChars($arguments["HostName"]),1);
+		_say("Opening connection to: " . HtmlSpecialChars($arguments["HostName"]),1);
 		flush();
 		$error=$http->Open($arguments);
 				
 		if ($error=="") 
 		{
-			_("Sending request for page: " . HtmlSpecialChars($arguments["RequestURI"]),1);
+			_say("Sending request for page: " . HtmlSpecialChars($arguments["RequestURI"]),1);
 			if(strlen($user))
-				_("\nLogin:    ".$user."\nPassword: ".str_repeat("*",strlen($password)),2);
-			_('',2);
+				_say("\nLogin:    ".$user."\nPassword: ".str_repeat("*",strlen($password)),2);
+			_say('',2);
 			flush();
 			$error=$http->SendRequest($arguments);
-			_('',2);
+			_say('',2);
 
 			if($error=="") 
 			{
-				_("Request:\n\n".HtmlSpecialChars($http->request),2);
-				_("Request headers:\n",2);
+				_say("Request:\n\n".HtmlSpecialChars($http->request),2);
+				_say("Request headers:\n",2);
 				for(Reset($http->request_headers),$header=0;$header<count($http->request_headers);Next($http->request_headers),$header++)
 				{
 					$header_name=Key($http->request_headers);
 					if(GetType($http->request_headers[$header_name])=="array")
 					{
 						for($header_value=0;$header_value<count($http->request_headers[$header_name]);$header_value++)
-							_($header_name.": ".$http->request_headers[$header_name][$header_value],2);
+							_say($header_name.": ".$http->request_headers[$header_name][$header_value],2);
 					}
 					else
-						_($header_name.": ".$http->request_headers[$header_name],2);
+						_say($header_name.": ".$http->request_headers[$header_name],2);
 				}
-				_('',2);
+				_say('',2);
 				flush();
 				
 				$headers=array();
 				$error=$http->ReadReplyHeaders($headers);
-				_('',2);
+				_say('',2);
 				if($error=="")
 				{
-					_("Response status code:\n".$http->response_status,2);
+					_say("Response status code:\n".$http->response_status,2);
 					switch($http->response_status)
 					{
 						case "301":
 						case "302":
 						case "303":
 						case "307":
-							_(" (redirect to ".$headers["location"].")\nSet the follow_redirect variable to handle redirect responses automatically.",2);
+							_say(" (redirect to ".$headers["location"].")\nSet the follow_redirect variable to handle redirect responses automatically.",2);
 							break;
 					}
-					_('');
-					_("Response headers:\n",2);
+					_say('');
+					_say("Response headers:\n",2);
 					for(Reset($headers),$header=0;$header<count($headers);Next($headers),$header++)
 					{
 						$header_name=Key($headers);
 						if(GetType($headers[$header_name])=="array")
 						{
 							for($header_value=0;$header_value<count($headers[$header_name]);$header_value++)
-								_($header_name.": ".$headers[$header_name][$header_value],2);
+								_say($header_name.": ".$headers[$header_name][$header_value],2);
 						}
 						else
-							_($header_name.": ".$headers[$header_name],2);
+							_say($header_name.": ".$headers[$header_name],2);
 					}
-					_('',2);
+					_say('',2);
 					flush();
 					
 					//echo "Response body:\n\n";
@@ -1352,7 +1356,7 @@ class kernelv2 {
 						//return...
 					}*/
 
-					_('',2);
+					_say('',2);
 					//flush();
 				}
 			}
@@ -1362,7 +1366,7 @@ class kernelv2 {
 		
 		if(strlen($error)) 
 		{
-			_("Error: ".$error,1);
+			_say("Error: ".$error,1);
 			return null;	
 		}
 
@@ -1379,14 +1383,15 @@ class kernelv2 {
    {
 	  if ($now) die(); 
    	
-	  _("Shutdown....",1);
+	  _say("Shutdown....",1);
 	  
       //close printer
-      $printout = $this->resources->get_resource('printer');   
-	  if (is_resource($printout) &&
-	      get_resource_type($printout)=='printer')
-   	    printer_close($printout);	  
-	
+	  if (extension_loaded('printer')) {
+		$printout = $this->resources->get_resource('printer');   
+		if (is_resource($printout) &&
+			get_resource_type($printout)=='printer')
+			printer_close($printout);	  
+	  }
       //close mem	
 	  return ($this->closememdpc());
     }
@@ -1406,7 +1411,8 @@ class kernelv2 {
 	protected function _readPHP($filename=null) {
 		if (!$filename) return false;
 		
-		//return @file_get_contents($filename);
+		return @file_get_contents($filename);
+		
 		return  (
 						  preg_replace("/^<\?php/","<?php",						  
  						  //preg_replace(	
@@ -1445,7 +1451,7 @@ class kernelv2 {
 
   public static function ClassLoader($className) 
   {
-        _("Trying to load ". $className. ' via '. __METHOD__ ,1);
+        _say("Trying to load ". $className. ' via '. __METHOD__ ,1);
 		require_once('tcp/'. $className . '.lib.php'); 
 		
 		/*try 
@@ -1462,20 +1468,20 @@ class kernelv2 {
 			}
 	 
 		    //$class = str_replace(array('\\DPC\\','\\'), array('','/'), $className); 
-			_("Class $class loaded!",1);
+			_say("Class $class loaded!",1);
 		} 
 		catch (Exception $e) 
 		{
-            _("\r\n File $className not exist!",1);
+            _say("\r\n File $className not exist!",1);
 			//debug_print_backtrace();		
         }*/
 		
-        //_("End of load ". $class. ' via '. __METHOD__. "()\r\n",1);		
+        //_say("End of load ". $class. ' via '. __METHOD__. "()\r\n",1);		
     } 
 
    public static function autoload($className) 
    {
-        _("Trying to load lib ". $className. ' via '. __METHOD__ ,1);
+        _say("Trying to load lib ". $className. ' via '. __METHOD__ ,1);
 		
 		$className = ltrim($className, '\\');
 		$classType = strstr($className,'LIB\\') ? 'LIB' : 'DPC';
@@ -1490,14 +1496,14 @@ class kernelv2 {
 			
 			//$fileName .= str_replace('_', DIRECTORY_SEPARATOR, $className) . '.'.strtolower($classType).'.php';
 			$fileName .= $className .'.'.strtolower($classType).'.php';
-			_("End of load ". $filename,1);
+			_say("End of load ". $filename,1);
 			require_once($fileName);
 			return true;
 		}
 		
-		_("\r\n************************************************************",1);
-		_("******      Loading failed for ". $className . "      ******",1);
-		_("************************************************************",1);
+		_say("\r\n************************************************************",1);
+		_say("******      Loading failed for ". $className . "      ******",1);
+		_say("************************************************************",1);
 		return false;
 				
     } 	
@@ -1542,7 +1548,7 @@ echo "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 		break;
 				
 		case 8 :	
-echo "\n~~~oo_~~~(o)__(o)~~~~~))~~~~~~~~~~~~~.-.~~~~~_~~~wW~~Ww(o)__(o)~~~~~~~~~~~~~~~~";
+echo "\n~~~oo_~~~(o)__say(o)~~~~~))~~~~~~~~~~~~~.-.~~~~~_~~~wW~~Ww(o)__say(o)~~~~~~~~~~~~~~~~";
 echo "\n~~/~~_)-<(__~~__)wWw~(Oo)-.~wWw~~~~c(O_O)c~~/||_~(O)(O)(__~~__)~~~~~~~~~~~~~~~~";
 echo "\n~~\__~\`.~~~(~~)~~(O)_~|~(_))(O)_~~,'.---.\`,~~/\`_)~(..)~(~~)~~~~~~~~~~~~~~~~~";
 echo "\n~~~~~\`.~|~~~)(~~.'~__)|~~.'.'~__)/~/|_|_|\~\|~~\`.~~||~~~~~)(~~~~~~~~~~~~~~~~~";

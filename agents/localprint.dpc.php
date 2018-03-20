@@ -9,7 +9,7 @@ $__DPC['LOCALPRINT_DPC'] = 'localprint';
 class localprint {
 
 
-	function localprint($env=null) {
+	function __construct($env=null) {
 	
 	  //var_dump($env->agn_addr);	
 	  $this->env = $env;

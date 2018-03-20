@@ -9,7 +9,7 @@ $__DPC['REMOTEPRINT_DPC'] = 'remoteprint';
 class remoteprint {
 
 
-	function remoteprint($env=null) {
+	function __construct($env=null) {
 	
 	  $this->env = $env;
 	  

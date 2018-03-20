@@ -1000,10 +1000,13 @@ class rccrmtrace  {
 				$section = ' &gt; ' . $itmname;
 			}	
 			elseif ($cat = $cpGet['cat']) {
-				//$section = ' &gt; ' . str_replace($this->cseparator, ' &gt; ', _m("cmsrt.replace_spchars use $cat+1"));
-				$ccat = explode($this->cseparator, $cat);
-				foreach ($ccat as $i=>$mycat)
-					$section .= _m("cmsrt.replace_spchars use $mycat+1") . ' &gt; ';
+				//$section = ' &gt; ' . str_replace($csep, ' &gt; ', _m("cmsrt.replace_spchars use $cat+1"));
+				$csep = _m('cmsrt.sep');
+				$ccat = explode($csep, $cat);
+				if (!empty($ccat)) {
+					foreach ($ccat as $i=>$mycat)
+						$section .= _m("cmsrt.replace_spchars use $mycat+1") . ' &gt; ';
+				}	
 			}	
 			else
 				$section = null;
