@@ -1,60 +1,12 @@
 <?php
 error_reporting(E_ALL & ~E_NOTICE);
-/**
- * https://www.php-fig.org
- * An example of a project-specific implementation.
- *
- * After registering this autoload function with SPL, the following line
- * would cause the function to attempt to load the \Foo\Bar\Baz\Qux class
- * from /path/to/project/src/Baz/Qux.php:
- *
- *      new \Foo\Bar\Baz\Qux;
- *
- * @param string $class The fully-qualified class name.
- * @return void
- */
-/*spl_autoload_register(function ($class) 
-  {
-
-    // project-specific namespace prefix
-    $prefix = 'Foo\\Bar\\';
-
-    // base directory for the namespace prefix
-    $base_dir = __DIR__ . '/src/';
-
-    // does the class use the namespace prefix?
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        // no, move to the next registered autoloader
-        return;
-    }
-
-    // get the relative class name
-    $relative_class = substr($class, $len);
-
-    // replace the namespace prefix with the base directory, replace namespace
-    // separators with directory separators in the relative class name, append
-    // with .php
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-
-    // if the file exists, require it
-    if (file_exists($file)) {
-        require $file;
-    }
-  });
-*/
-
-//namespace LIB\agents;
-
-//spl_autoload_register('kernelv2::ClassLoader');
-//spl_autoload_register('kernelv2::autoload'); //!!!
 	
 require_once("system/daemon.lib.php");
 require_once("system/timer.lib.php");
 require_once("agents/resources.lib.php");
 require_once("agents/scheduler.lib.php");
 
-define ("GLEVEL", 2);   
+define ("GLEVEL", 1);   
 
    function _say($str, $level=0, $crln=true) 
    {
@@ -1447,66 +1399,7 @@ class kernelv2 {
             return;		
 		
 		shmop_delete($this->shm_id);	
-	}
-
-  public static function ClassLoader($className) 
-  {
-        _say("Trying to load ". $className. ' via '. __METHOD__ ,1);
-		require_once('tcp/'. $className . '.lib.php'); 
-		
-		/*try 
-		{
-			if (substr($className, 0,3)=='DPC') 
-			{
-				$class = str_replace(array('DPC\\','\\'), array('','/'), $className);
-				require_once($class . '.dpc.php'); 
-			}
-			else 
-			{
-				$class = str_replace(array('LIB\\','\\'), array('','/'), $className);
-				require_once($class . '.lib.php'); 
-			}
-	 
-		    //$class = str_replace(array('\\DPC\\','\\'), array('','/'), $className); 
-			_say("Class $class loaded!",1);
-		} 
-		catch (Exception $e) 
-		{
-            _say("\r\n File $className not exist!",1);
-			//debug_print_backtrace();		
-        }*/
-		
-        //_say("End of load ". $class. ' via '. __METHOD__. "()\r\n",1);		
-    } 
-
-   public static function autoload($className) 
-   {
-        _say("Trying to load lib ". $className. ' via '. __METHOD__ ,1);
-		
-		$className = ltrim($className, '\\');
-		$classType = strstr($className,'LIB\\') ? 'LIB' : 'DPC';
-		$fileName  = '';
-		$namespace = '';
-		if ($lastNsPos = strrpos($className, '\\')) 
-		{
-			$namespace = str_replace($classType.'\\','',substr($className, 0, $lastNsPos));
-			$className = substr($className, $lastNsPos + 1);
-			$fileName  = str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
-			echo $namespace,':',$className,':',$classType,"\n";
-			
-			//$fileName .= str_replace('_', DIRECTORY_SEPARATOR, $className) . '.'.strtolower($classType).'.php';
-			$fileName .= $className .'.'.strtolower($classType).'.php';
-			_say("End of load ". $filename,1);
-			require_once($fileName);
-			return true;
-		}
-		
-		_say("\r\n************************************************************",1);
-		_say("******      Loading failed for ". $className . "      ******",1);
-		_say("************************************************************",1);
-		return false;
-				
-    } 	
+	}	
 
 	//http://patorjk.com/software/taag
 	public function grapffiti($x=null) 
@@ -1681,6 +1574,7 @@ echo "\n****************************************";
 		
 		case 1 :
 		//default:	
+/*		
 echo "\n**************************************************";
 echo "\n* stereobit daemon - a minimal script agency*.   *";
 echo "\n*                                                *";
@@ -1717,12 +1611,46 @@ echo "\n*   specialise in handling this type of material *";
 echo "\n*                                                *";
 echo "\n**************************************************";
 
-	    echo "\n\r\n\r";
-			
-			
+	    echo "\n\r\n\r";*/
+		echo $this->licence();
 			
 		}//switch
-	}	
-   
+	}
+
+	public function licence() {
+		$ret =
+ "\n/*************************************************".
+ "\n*   stereobit.networlds e-Enterprise (phpdac7)   *".
+ "\n*                                                *".
+ "\n*   Copyright 2015-18,  balexiou@stereobit.com   *".
+ "\n*                                                *".
+ "\n*   This digital loop is owned by the numbers.   *".
+ "\n*   Is free for them but you can play as long    *".
+ "\n*   your personal pc can consume electric energy.*".
+ "\n*   Distribute with care and ask for detailsit   *".
+ "\n*   if you like to modify it under the terms of  *".
+ "\n*   the GNU Library General Public License.      *".
+ "\n*                                                *".
+ "\n*   License as published by the Free Software    *".
+ "\n*   Foundation; either version 2 of the License, *".
+ "\n*   (at your option) any later version.          *".
+ "\n*                                                *".
+ "\n*   This piece of software is distributed in the *".
+ "\n*   hope that it will be useful somehow,         *".
+ "\n*   but WITHOUT ANY WARRANTY without even        *".
+ "\n*   the implied warranty of MERCHANTABILITY or   *".
+ "\n*   FITNESS FOR A PARTICULAR PURPOSE.            *".
+ "\n*   See the GNU Library General Public License   *".
+ "\n*   for Library General Public License for more  *".
+ "\n*   details.                                     *".
+ "\n*                                                *".
+ "\n*   You should have received a copy of the GNU   *".
+ "\n*   Library General Public License along with    *".
+ "\n*   this library.                                *".
+ "\n*                                                *".
+ "\n*                                                *".
+ "\n**************************************************/\n";	
+		return ($ret);
+	}
 }
 ?>

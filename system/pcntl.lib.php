@@ -41,7 +41,7 @@ class pcntl extends controller {
 		$xtime = $this->getthemicrotime(); 		
 		date_default_timezone_set('Europe/Athens');
 		
-		controller::__construct();
+		controller::__construct();	
 
 		$this->httpurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
 		$this->httpurl.= $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
@@ -89,7 +89,7 @@ class pcntl extends controller {
 		$this->init();
 		
 		if ($this->shm)
-			ob_clean (); //clean phpdac5 prompts
+			ob_clean (); //clean phpdac5 prompts				
 		
 		$this->event($this->myaction);
 		
@@ -689,20 +689,21 @@ parse_ini_string_m:
 
 		global $activeDPC,$info,$xerror,$GRX,$argdpc; 	 
 	
-		//echo $dpc,"<br/>";
-		$argdpc = _DPCPATH_;//paramload('DIRECTIVES','dpc_type');
-	  	 
-		$_argdpc = $myargdpc ? paramload('SHELL','urlpath').$myargdpc : $argdpc;
-		//echo $_argdpc,'<>';
-		$includer = $_argdpc . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";
+		if (($this->shm) && (!$myargdpc)) {
+			//if (GetGlobal('__USERAGENT')=='HTML')
+				require_once("phpdac5://127.0.0.1:19123/". str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+			//else	  
+				//require_once("phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+		}
+		else {
+			//echo $dpc,"<br/>";
+			$argdpc = _DPCPATH_;
+			$_argdpc = $myargdpc ? paramload('SHELL','urlpath').$myargdpc : $argdpc;
+			//echo $_argdpc,'<>';
+			$includer = $_argdpc . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";
 
-		try {
 			require_once($includer);	
-		}
-		catch (Exception $e) {
-			echo 'Caught exception: ',  $e->getMessage(), "\n";
-		}
-	  
+	    }
 		//update local table
 		$parts = explode(".",trim($dpc)); 
 		$class = strtoupper($parts[1]).'_DPC';	  

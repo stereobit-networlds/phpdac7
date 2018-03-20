@@ -1,1 +1,1 @@
-[{"agent":"env.scheduleprint","freq":1,"time":"20","lasttime":1521163865,"counter":12},{"agent":"env.internalClient","freq":1,"time":"50","lasttime":1521163845,"counter":5}]
+[{"agent":"env.scheduleprint","freq":1,"time":"20","lasttime":1521297285,"counter":10},{"agent":"env.internalClient","freq":1,"time":"50","lasttime":1521297255,"counter":4}]
