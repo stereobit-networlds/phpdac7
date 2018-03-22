@@ -20,9 +20,7 @@
     <link href="assets/fancybox/source/jquery.fancybox.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="assets/uniform/css/uniform.default.css" />
 	
-   <phpdac>fronthtmlpage.nvl use rcbulkmail.ckeditver+<script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script>+<script type="text/javascript" src="assets/ckeditor/ckeditor.js">+3</phpdac>
-   </script>		
-
+    <phpdac>rcbulkmail.ckjavascript</phpdac>
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
@@ -57,7 +55,7 @@
                         </span>
                         </div>
                         <div class="widget-body">
-                            <form id="tForm" method="post" action="#" class="form-horizontal">
+                            <form id="tForm" name="tForm" method="post" action="cpbulkmail.php" class="form-horizontal">
 							
 								<input type="hidden" name="FormName" value="cpsavemailadv" />
 								<input type="hidden" name="FormAction" value="cpsavemailadv" />
@@ -232,7 +230,7 @@
                                     <ul class="pager wizard">
                                         <li class="previous"><a href="javascript:;"><phpdac>frontpage.slocale use _prev</phpdac></a></li>
                                         <li class="next"><a href="javascript:;"><phpdac>frontpage.slocale use _next</phpdac></a></li>
-                                        <li class="next finish" style="display:none;"><a href="javascript:document.getElementById('tForm').submit();"><phpdac>frontpage.slocale use _finish</phpdac></a></li>
+                                        <li class="next finish" style="display:none;"><a href="javascript:document.tForm.submit();"><phpdac>frontpage.slocale use _finish</phpdac></a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -382,7 +380,6 @@ $(document).ready(function() {
 	   
    </script>
    <script src="js/aSimpleTour.js" type="text/javascript"></script>
-   
    <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
 
 </body>

@@ -7,11 +7,11 @@ define("RCBULKMAIL_DPC",true);
 
 $__DPC['RCBULKMAIL_DPC'] = 'rcbulkmail';
 
+$v = GetGlobal('controller')->require_dpc('crypt/ciphersaber.lib.php');
+require_once($v); 
+
 $a = GetGlobal('controller')->require_dpc('libs/appkey.lib.php');
 require_once($a);
-
-//$b = GetGlobal('controller')->require_dpc('crypt/ciphersaber.lib.php');
-//require_once($b); //!!!
 
 
 $__EVENTS['RCBULKMAIL_DPC'][0]='cpbulkmail';
@@ -259,9 +259,10 @@ class rcbulkmail {
 		$ckeditorVersion = remote_paramload('RCBULKMAIL','ckeditor',$this->prpath);		
 		$this->ckeditver = $ckeditorVersion ? $ckeditorVersion : 4; //default version 4
 		//override ckeditver
-		$this->ckeditver = (($_GET['t']=='cptemplatenew')||($_GET['t']=='cptemplatesav')) ? 3 : 4; //depends on select or edit/new template
-				
-		
+		$this->ckeditver = (($_GET['t']=='cptemplatenew') ||
+							($_GET['t']=='cptemplatesav')) ? 
+							3 : 4; //depends on select or edit/new template
+
 		$this->newtemplatebody = null;	
 		$this->newsubtemplatebody = null;
 		$this->newpatternbody = null;
@@ -1682,7 +1683,7 @@ EOF;
         //check expiration key
         if ($this->appkey->isdefined('RCBULKMAIL')==false) {
 	        //$this->messages[] = "Failed, module expired.";
-		    //return false;  
+		    //return false;  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< appkey --------------------------!!
 	    }
 		
 		if (is_readable($this->savehtmlpath .'/'. $this->cid.'.html')) {
@@ -2156,6 +2157,15 @@ This email and any files transmitted with it are confidential and intended solel
 	}
 	
 
+	public function ckjavascript() {
+		if ($this->ckeditver==3)
+			return '<script src="' . 
+					_v('cms.paramload use CKEDITOR+ckeditorjs') .
+					'"></script>';
+		else
+			return '<script src="assets/ckeditor/ckeditor.js"></script>';
+	}
+	
     public function ckeditorjs($element=null, $maxmininit=false, $disable=false) {
 
 		$readonly = $disable ? 1 : 0;  	

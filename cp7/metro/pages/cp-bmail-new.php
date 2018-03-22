@@ -20,7 +20,7 @@
     <link href="assets/fancybox/source/jquery.fancybox.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="assets/uniform/css/uniform.default.css" />
 	
-   <phpdac>fronthtmlpage.nvl use rcbulkmail.ckeditver+<script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script>+<script type="text/javascript" src="assets/ckeditor/ckeditor.js">+3</phpdac>
+   <phpdac>rcbulkmail.ckjavascript</phpdac>
    </script>		
 
 </head>
