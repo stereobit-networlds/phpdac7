@@ -36,7 +36,7 @@ $__LOCALE['CMSRT_DPC'][0]='SHLANGS_DPC;Languanges;Γλώσσα';
 $__LOCALE['CMSRT_DPC'][1]='_HOME;Home;Αρχική';
 
 $a = GetGlobal('controller')->require_dpc('cms/cms.dpc.php');
-require_once($a); //_r('cms/cms.dpc.php')); not loaded yet
+require_once($a);//_r('cms/cms.dpc.php')); 
 
 class cmsrt extends cms  {
 	

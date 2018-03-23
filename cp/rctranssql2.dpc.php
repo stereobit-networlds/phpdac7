@@ -53,10 +53,10 @@ class rctranssql2 extends rcsyncsql {
 	var $islocalfile;
 	var $urlpath;
 		
-	function rctranssql2() {
+	function __construct() {
 	  $GRX = GetGlobal('GRX');	
 	
-      rcsyncsql::rcsyncsql();
+      parent::__construct();
 	  
 	  $this->prpath = paramload('SHELL','prpath');
 	  $this->urlpath = paramload('SHELL','urlpath');	  
@@ -579,7 +579,7 @@ class rctranssql2 extends rcsyncsql {
 	   return ($out);		   
 	}		
 	
-	function reset_db($db, $tablename) {
+	function reset_db(&$db, $tablename) {
         $db = GetGlobal('db'); 
 	 
 	    $sSQL0 = "delete from transsql";

@@ -1,7 +1,5 @@
 <?php
 
-require_once('cp/dpc/system/pcntl.lib.php'); 
-
 class cronscript {
 	
 	var $name, $prpath;
@@ -42,7 +40,6 @@ class cronscript {
 	
 	protected function testscript() {
 			$page = new pcntl('
-super rcserver.rcssystem;
 load_extension adodb refby _ADODB_; 
 super database;
 ',1);				

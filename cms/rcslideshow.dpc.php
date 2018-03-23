@@ -752,7 +752,7 @@ class rcslideshow extends cmsmenu {
 		if ($id = _m("cmsrt.getRealItemCode use " . $cpGet['id'])) {
 			$cat = $cpGet['cat'];
 			$ctitles = $this->getCategoriesTitles($cat);
-			$title = array_pop($ctitles);			
+			$title = is_array($ctitles) ? array_pop($ctitles) : 'Empty';			
 			
 			//current id item
 			$sSQL = "select $code,$itmname,$itmdescr from products WHERE $code=" . $db->qstr($id);

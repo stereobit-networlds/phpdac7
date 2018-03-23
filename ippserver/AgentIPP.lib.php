@@ -105,7 +105,8 @@ if (USE_DATABASE==true) {
 		
 		try {
 		    $class = str_replace('\\', '/', $className);
-            require_once('handlers/'. $class . '.dpc.php');  //handlers as handlers/xxx
+            //require_once('handlers/'. $class . '.dpc.php');  //handlers as handlers/xxx
+			require_once(_r("ippserver/handlers/". $class . '.dpc.php'));
 			
 			$ok = "\r\n Class $className loaded!";
 			self::write2disk($this->logfile,$ok);
@@ -207,8 +208,10 @@ if (USE_DATABASE==true) {
 		
         $mydir->close ();	
 		
-		if ($this->network_log)
-		    self::write2disk($this->netfile,":COUNT:".count($jobs).':');		
+		if ($this->network_log) {
+			$_jobs = is_array($jobs) ? count($jobs) : 0;
+		    self::write2disk($this->netfile,":COUNT:".$_jobs.':');		
+		}	
 
 		if (is_array($jobs)) {
 		    

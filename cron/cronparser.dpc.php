@@ -64,7 +64,7 @@ class cronparser {
 	
 	var $prpath;
 
-	function cronparser($cronString = '') {
+	function __construct($cronString = '') {
 		
 		$this->prpath = paramload('SHELL','prpath');
 		

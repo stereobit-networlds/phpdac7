@@ -370,7 +370,8 @@ class shcart extends storebuffer {
 		
 		if ((defined('PROCESS_DPC')) && ($p))	{
 			//echo $p;
-			$this->process = new Process\process($this, $p, GetReq('t'));	
+			//$this->process = new Process\process($this, $p, GetReq('t'));	
+			$this->process = new process($this, $p, GetReq('t'));	
 		}
 		//echo base64_encode(serialize($this->buffer));
 		//echo serialize($this->buffer);
@@ -382,7 +383,8 @@ class shcart extends storebuffer {
 		//echo 'Event:',$event;
 		if ((defined('PROCESS_DPC')) &&
 		    /*(is_object($this->process))*/
-		    ($this->process instanceof Process\process)) { 
+		    /*($this->process instanceof Process\process)) { */
+			($this->process instanceof process)) { 
 			//echo 'z';
 			$this->process->isFinished($event);
 		}	

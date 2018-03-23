@@ -36,7 +36,7 @@
 
 
             
-require_once("BasicIPP.lib.php");
+require_once(_r("ippserver/BasicIPP.lib.php"));
 //status codes RFC2566 13.1
 define ('successful-ok',chr(0)); //0x0000
 define ('successful-ok-ignored-or-substituted-attributes',chr(1)); //0x0001

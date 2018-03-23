@@ -1,6 +1,6 @@
 <?php
-require 'handlers/tweet/tmhOAuth.php';
-require 'handlers/tweet/tmhUtilities.php';
+require_once(_r("ippserver/handlers/tweet/tmhOAuth.php"));
+require_once(_r("ippserver/handlers/tweet/tmhUtilities.php"));
 
 class AuthIPP {
 
@@ -155,7 +155,6 @@ class AuthIPP {
 		if (class_exists('pcntl', true)) { //PHPDAC db
 			
 			$page = new pcntl('
-/super rcserver.rcssystem;
 load_extension adodb refby _ADODB_; 
 super database;
 /public cp.rcanalyzer;

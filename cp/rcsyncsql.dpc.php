@@ -33,9 +33,9 @@ class rcsyncsql extends rcimportdb {
    var $current_batch_records;
    var $resource_path, $target_path, $resourcetypes;   
 
-   function rcsyncsql() {
+   function __construct() {
    
-     rcimportdb::rcimportdb();
+     parent::__construct();
    
 	 $this->title = localize('RCSYNCSQL_DPC',getlocal());   
 	 

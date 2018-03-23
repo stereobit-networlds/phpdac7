@@ -40,7 +40,7 @@ ignore_user_abort(true);
 	$class = str_replace('\\', '/', $class);
 	require_once($class . '.php');
 });*/            
-require_once("ServerIPP.lib.php");
+require_once(_r("ippserver/ServerIPP.lib.php"));
 //pcntl loaded at phpdac7
 //require_once('cp/dpc/system/pcntl.lib.php'); 
 
@@ -50,12 +50,13 @@ define("AUTH_USER", true);
 define("FILE_DELIMITER", '|'); //-
 
 if (USE_DATABASE==true) {
-    require_once("DBStream.php");
+    require_once(_r("ippserver/DBStream.php"));
     stream_register_wrapper('db', 'DBStream');
 }
 
+$__DPC['IPP_DPC'] = 'ipp';
 
-class IPPlistener extends ServerIPP {
+class ipp extends ServerIPP {
 
     const AUTH_USER_METHOD = 'BASIC';//''DIGEST';//BASIC//'OAUTH'//'NONE'
 
@@ -176,7 +177,7 @@ class IPPlistener extends ServerIPP {
 		  
 		  $ui = 'UiIPP';
 		  $subclass = str_replace('.php','',pathinfo($_SERVER['PHP_SELF'],PATHINFO_BASENAME));
-		  $uiclass = $ui.$subclass;
+		  $uiclass = $ui . str_replace('-','_',$subclass);
 		  
 		  if (class_exists($uiclass)) {//custom ui class per printer
 		    //echo $subclass;
@@ -213,7 +214,7 @@ class IPPlistener extends ServerIPP {
 		$this->force_raw_text = false;
 		
 		//timezone	   
-        date_default_timezone_set('Europe/Athens'); 		
+        //date_default_timezone_set('Europe/Athens'); 		
     }
 	
     private function loader($className) {
@@ -222,7 +223,7 @@ class IPPlistener extends ServerIPP {
         self::write2disk($this->printer_name.'.log',"\r\nListerer:Trying to load ". $className. ' via '. __METHOD__ . "()\r\n");
 		
 		try {
-            include $className . '.lib.php';//....PRELOAD UI..NAME ABOVE
+            require (_r("ippserver/$className" . '.lib.php'));//....PRELOAD UI..NAME ABOVE
 			
 			//$class = str_replace('\\', '/', $className);
 			//require_once($class . '.php');//..error if not exist..

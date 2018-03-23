@@ -23,9 +23,10 @@
  *
  */   
  
-require_once('shell/pxml.lib.php');
-require_once('handlers/addhoc.dpc.php');
-
+//require_once('shell/pxml.lib.php');
+//require_once('handlers/addhoc.dpc.php');
+require_once(_r('cms/pxml.lib.php'));
+require_once(_r('ippserver/handlers/addhoc.dpc.php'));
 
 define("AUTH_USER", true);
 define("FILE_DELIMITER", '-'); 

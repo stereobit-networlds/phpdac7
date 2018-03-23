@@ -773,7 +773,7 @@ class rcmenu extends cmsmenu {
 			
 			$cat = $cpGet['cat'];
 			$ctitles = $this->getCategoriesTitles($cat);
-			$title = array_pop($ctitles);
+			$title = is_array($ctitles) ? array_pop($ctitles) : 'Empty';
 			
 			//add new element if any
 			$new = $this->element; 			

@@ -1,8 +1,9 @@
 <?php
 
-require_once("UiIPP.lib.php");
+//require_once("UiIPP.lib.php");
+require_once(_r("ippserver/UiIPP.lib.php"));
 
-class UiIPPe-Enterprise extends UiIPP {
+class UiIPPe_Enterprise extends UiIPP {
 
     var $newuser;
 	
@@ -279,7 +280,7 @@ class UiIPPe-Enterprise extends UiIPP {
 		    $params = $this->parse_printer_file($printername, $printerdir);
 		    //print_r($params);
 		    if (empty($params))
-		        return ('Unknown printer file!');
+		        return ("Unknown printer file ($printerdir , $printername)!");
 				
 		    $printerusers = (array) $params['users'];
 		   

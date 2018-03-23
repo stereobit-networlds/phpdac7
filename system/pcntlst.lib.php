@@ -39,7 +39,7 @@ class pcntl extends controller {
 		session_start(); 
 		$this->mytime = $this->getthemicrotime();    
 		$xtime = $this->getthemicrotime(); 		
-		date_default_timezone_set('Europe/Athens');
+		//date_default_timezone_set('Europe/Athens');
 		
 		controller::__construct();		
 
@@ -85,12 +85,15 @@ class pcntl extends controller {
 		
 		SetGlobal('controller',$this);			
 		
-		$this->init();
-		
-		if ($this->shm)
-			ob_clean (); //clean phpdac5 prompts		
+		$this->init();	
+
+		if ($this->shm) // && (!$this->debug)
+			ob_clean (); //clean phpdac5 prompts before event (pre ajax die)			
 				
 		$this->event($this->myaction);
+		
+		if ($this->shm) // && (!$this->debug) 
+			ob_clean (); //clean phpdac5 prompts after event		
 		
 		if ($this->debug) 
 			echo "<!-- construct elapsed " . $this->getthemicrotime() - $xtime . " sec -->"; 	   	  		
