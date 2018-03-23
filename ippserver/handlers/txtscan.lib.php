@@ -1,8 +1,8 @@
 <?php
 
-require_once(_r('ippserver/handlers/skeleton.lib.php'));
+require_once(_r('ippserver/handlers/skeleton.dpc.php'));
 
-class txtscan extends skeleton {
+class handlers_txtscan extends skeleton {
  
  public function __construct($user,$data=null, $job_id=null, $job_file=null, $job_attr=null, $printer_name=null) {
   

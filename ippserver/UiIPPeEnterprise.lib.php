@@ -3,7 +3,7 @@
 //require_once("UiIPP.lib.php");
 require_once(_r("ippserver/UiIPP.lib.php"));
 
-class UiIPPe_Enterprise extends UiIPP {
+class UiIPPeEnterprise extends UiIPP {
 
     var $newuser;
 	
@@ -279,8 +279,10 @@ class UiIPPe_Enterprise extends UiIPP {
 			   
 		    $params = $this->parse_printer_file($printername, $printerdir);
 		    //print_r($params);
-		    if (empty($params))
-		        return ("Unknown printer file ($printerdir , $printername)!");
+		    if (empty($params)) {
+		        //return ("Unknown printer file ($printerdir , $printername)!");
+				return self::html_window(null, "Unknown printer file ($printername)", $this->printer_name);
+			}	
 				
 		    $printerusers = (array) $params['users'];
 		   
@@ -998,8 +1000,7 @@ EOF;
         
 			
 		    if ((class_exists('AgentIPP', true)) && ($username)) {
-		        $srv = new AgentIPP($this->authentication,
-			                    $printername,
+		        $srv = new AgentIPP($printername,
 			                    $username,
 			                    $callback_function,
 							    $callback_param,

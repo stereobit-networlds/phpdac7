@@ -1,8 +1,8 @@
 <?php
 
-require_once('skeleton.dpc.php');
+require_once(_r('ippserver/handlers/skeleton.lib.php'));
 
-class addhoc extends skeleton {
+class handlers_addhoc extends skeleton {
 
  var $path;  
  

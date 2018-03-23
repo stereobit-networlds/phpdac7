@@ -1041,7 +1041,9 @@ class ServerIPP extends BasicIPP {
             $job_index = "job_".$job_nbr;
             $this->client_job_attributes->$job_index = new stdClass();
 			
-            for ($i = 0 ; $i < count($this->parsed[$job_nbr]) ; $i ++) {
+			$pjob = (is_array($this->parsed[$job_nbr])) ? 
+						count($this->parsed[$job_nbr]) : 0;
+            for ($i = 0 ; $i < $pjob ; $i ++) {
                     $name = $this->parsed[$job_nbr][$i]['name'];
                     $php_name = str_replace('-','_',$name);
                     $type = $this->parsed[$job_nbr][$i]['type'];

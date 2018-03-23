@@ -1,9 +1,8 @@
 <?php
 
-require_once('skeleton.dpc.php');
-require_once('cp/dpc2/system/pcntl.lib.php'); 
+require_once(_r('ippserver/handlers/skeleton.lib.php'));
 
-class rccron extends skeleton {
+class handlers_rccron extends skeleton {
  
  public function __construct($user,$data=null, $job_id=null, $job_file=null, $job_attr=null, $printer_name=null) {
   

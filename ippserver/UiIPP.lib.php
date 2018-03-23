@@ -23,13 +23,14 @@
  *
  */   
  
-//require_once('shell/pxml.lib.php');
-//require_once('handlers/addhoc.dpc.php');
+
 require_once(_r('cms/pxml.lib.php'));
-require_once(_r('ippserver/handlers/addhoc.dpc.php'));
+require_once(_r('ippserver/handlers/addhoc.lib.php'));
 
 define("AUTH_USER", true);
-define("FILE_DELIMITER", '-'); 
+define("_DS", DIRECTORY_SEPARATOR);
+define("FILE_DELIMITER", (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '~' : '|'); //-
+
 
 //define("USE_DATABASE", false);
 //define("SERVER_LOG", true);
@@ -467,8 +468,7 @@ EOF;
             //$ret .= nl2br(file_get_contents($file_name));
 
 		    if ((class_exists('AgentIPP', true)) && ($this->username)) {//ONLY IF USERNAME..GET JOBS PER USER
-		        $srv = new AgentIPP($this->authentication,
-			                    self::get_printer_name(),
+		        $srv = new AgentIPP(self::get_printer_name(),
 			                    $this->username,//??? when called what is the name ??
 			                    $callback_function,//must be inside pragent class
 							    $callback_param,
@@ -2069,7 +2069,7 @@ EOF;
 		   $job_id = 1;
 		   $job_filename = $_SERVER['DOCUMENT_ROOT'] .'/'.$dir .'job_test.txt';
 		   $job_attr = array('test'=>'test');
-		   $testbed = new addhoc($dummy_auth, $dummy_fp,$job_id,$job_filename,$job_attr,$printername);
+		   $testbed = new handlers_addhoc($dummy_auth, $dummy_fp,$job_id,$job_filename,$job_attr,$printername);
 		   
 		   $testbed->dummy_auth = 'dummy';
 		   $testbed->dummy_fp = 'fp_';

@@ -1,9 +1,8 @@
 <?php
 
-require_once('skeleton.dpc.php');
-require_once('cp/dpc/system/pcntl.lib.php'); 
+require_once(_r('ippserver/handlers/skeleton.lib.php'));
 
-class sqlparser extends skeleton {	
+class handlers_sqlparser extends skeleton {	
 
  var $i, $now;
  
@@ -119,7 +118,6 @@ class sqlparser extends skeleton {
    protected function istextCSV($name=null) {
 	
 	  $page = new pcntl('
-super rcserver.rcssystem;
 load_extension adodb refby _ADODB_; 
 super database;
 ',0);	   
@@ -525,7 +523,6 @@ super database;
 	   	
 
 	$page = new pcntl('
-super rcserver.rcssystem;
 load_extension adodb refby _ADODB_; 
 super database;
 ',0);

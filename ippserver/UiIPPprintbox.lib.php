@@ -997,8 +997,7 @@ EOF;
         
 			
 		    if ((class_exists('AgentIPP', true)) && ($username)) {
-		        $srv = new AgentIPP($this->authentication,
-			                    $printername,
+		        $srv = new AgentIPP($printername,
 			                    $username,
 			                    $callback_function,
 							    $callback_param,

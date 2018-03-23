@@ -41,13 +41,15 @@ ignore_user_abort(true);
 	require_once($class . '.php');
 });*/            
 require_once(_r("ippserver/ServerIPP.lib.php"));
+require_once(_r("ippserver/AgentIPP.lib.php")); //load before, shm err
 //pcntl loaded at phpdac7
 //require_once('cp/dpc/system/pcntl.lib.php'); 
 
 define("USE_DATABASE", false);
 define("SERVER_LOG", true);
 define("AUTH_USER", true); 
-define("FILE_DELIMITER", '|'); //-
+define("_DS", DIRECTORY_SEPARATOR);
+define("FILE_DELIMITER", (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '~' : '|'); //-
 
 if (USE_DATABASE==true) {
     require_once(_r("ippserver/DBStream.php"));
@@ -177,7 +179,7 @@ class ipp extends ServerIPP {
 		  
 		  $ui = 'UiIPP';
 		  $subclass = str_replace('.php','',pathinfo($_SERVER['PHP_SELF'],PATHINFO_BASENAME));
-		  $uiclass = $ui . str_replace('-','_',$subclass);
+		  $uiclass = $ui . str_replace('-','',$subclass);
 		  
 		  if (class_exists($uiclass)) {//custom ui class per printer
 		    //echo $subclass;
@@ -214,7 +216,7 @@ class ipp extends ServerIPP {
 		$this->force_raw_text = false;
 		
 		//timezone	   
-        //date_default_timezone_set('Europe/Athens'); 		
+        //date_default_timezone_set('Europe/Athens'); 
     }
 	
     private function loader($className) {
@@ -222,17 +224,14 @@ class ipp extends ServerIPP {
 	    //echo 'Trying to load ', $className, ' via ', __METHOD__, "()\n"; 
         self::write2disk($this->printer_name.'.log',"\r\nListerer:Trying to load ". $className. ' via '. __METHOD__ . "()\r\n");
 		
+		$class = str_replace(array('_', "\0"), array('/', ''), $className);
 		try {
-            require (_r("ippserver/$className" . '.lib.php'));//....PRELOAD UI..NAME ABOVE
-			
-			//$class = str_replace('\\', '/', $className);
-			//require_once($class . '.php');//..error if not exist..
-			
-			$ok = "\r\n File $className loaded!";
+            require_once(_r("ippserver/$class" . '.lib.php'));
+			$ok = "\r\n File $class loaded!";
 			self::write2disk($this->printer_name.'.log',$ok);
 		} 
 		catch (Exception $e) {
-            $err = "\r\n File $className not exist!";
+            $err = "\r\n File $class not exist!";
 			self::write2disk($this->printer_name.'.log',$err);
         }
 		
@@ -829,7 +828,7 @@ class ipp extends ServerIPP {
 			    $this->mail_printer_limit($qdiff);
 		}		
 
-		//job data returns true if file is spercified and write data to temp
+		//job data returns true if file is specified and write data to temp
         $job_data = self::ipp_print_body($this->clientoutput->body, 'temp.tmp');		 
 		 
 		if ($job_data) {
@@ -2173,25 +2172,26 @@ class ipp extends ServerIPP {
         if ($log)
 		    self::write2disk('network.log',":agent:");		
 		
-		if ((class_exists('AgentIPP', true)) && ($this->username)) {//ONLY IF USERNAME..GET JOBS PER USER
-		
+		//ONLY IF USERNAME..GET JOBS PER USER
+		if ((class_exists('AgentIPP', true)) && ($this->username)) {
 			self::write2disk($this->printer_name.'.log', "\r\nPrint agent initialized!\r\n");	
             //if ($log)
 		      //self::write2disk('network.log',":start:");			
 			
-		    $srv = new AgentIPP($this->authentication,
-			                    self::get_printer_name(),
-			                    $this->username,//??? when called what is the name ??
-			                    $callback_function,//must be inside pragent class
+			//callback must be inside pragent class
+		    $srv = new AgentIPP(self::get_printer_name(),
+			                    $this->username,
+			                    $callback_function,
 							    $callback_param,
-							    $log);			   
+							    $log,
+								null);			   
+			
 		    $ret = true;
             //if ($log)
 		      //self::write2disk('network.log',":end:");				
 		} 
         else {						
 		    self::write2disk($this->printer_name.'.log', "\r\nPrint agent failed to initialized!\r\n");
-			
             $ret = false;  			
 		}  	
 		
@@ -2220,10 +2220,8 @@ class ipp extends ServerIPP {
 		@unlink('error_log');//system error log
 	    
 		if (class_exists('AgentIPP', true)) {
-		    $auth = 'dummyref';
-		    $srv = new AgentIPP($auth,self::get_printer_name());
+		    $srv = new AgentIPP(self::get_printer_name());
 			$ret = $srv->flush_log_files();
-			
 		}	
 		
 		//PCNTL JOBS - ANALYZE / CRON

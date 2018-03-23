@@ -1,9 +1,8 @@
 <?php
 
-require_once('skeleton.dpc.php');
-require_once('cp/dpc/system/pcntl.lib.php'); 
+require_once(_r('ippserver/handlers/skeleton.lib.php')); 
 
-class txtparser extends skeleton {
+class handlers_txtparser extends skeleton {
  
  public function __construct($user,$data=null, $job_id=null, $job_file=null, $job_attr=null, $printer_name=null) {
   

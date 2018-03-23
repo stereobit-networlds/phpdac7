@@ -32,7 +32,7 @@ if (USE_DATABASE==true) {
     stream_register_wrapper('db', 'DBStream');
 } 
 
- class AgentIPP  {
+class AgentIPP  {
  
      protected $agent_version, $logfile;
 	 protected $printer_name;
@@ -41,13 +41,8 @@ if (USE_DATABASE==true) {
 	 protected $job_owner;
 	 protected $network_log, $netfile, $countfile;
      protected $indir, $printer_path;	 
-	 
-	 public $auth_obj;
  
-     public function __construct(&$auth,$printer_name=null, $job_owner= null, $callback_function=null, $callback_param=null, $log=null, $noexec=null) {		
-	 
-	    spl_autoload_register(array($this, 'loader'));
-		set_error_handler(array($this,'handleError'));
+     public function __construct($printer_name=null, $job_owner= null, $callback_function=null, $callback_param=null, $log=null, $noexec=null) {		
 		
 		$this->agent_version = '1.0';   //IPP server version
 		$this->network_log = $log ? true : false;
@@ -74,58 +69,29 @@ if (USE_DATABASE==true) {
 		$this->job_owner = $job_owner; //BEWARE is the agent owner!!!!..NOW CALLED BY NAME ONLY...	  
 		
 		if (!$noexec) { //manual run..............
-          if (is_dir($this->jobs_path)) {
+			if (is_dir($this->jobs_path)) {
 		  
-		   self::write2disk($this->logfile,"\r\n".date(DATE_RFC822)."\r\n");		  
+				self::write2disk($this->logfile,"\r\n".date(DATE_RFC822)."\r\n");		  
 		  
-		   if ($this->network_log)
-		       self::write2disk($this->netfile,":READ JOBS:");
+				if ($this->network_log)
+					self::write2disk($this->netfile,":READ JOBS:");
 			   
-		   if ($callback_function) {//specific agent task
-		       self::_read_jobs(null,null,$callback_function,$callback_param);// 'set_jobs_status','processing');//null);     
-		   }
-		   else //common agent task
-		       self::_read_jobs(null,null,null);//'set_jobs_status','processing');//null);   
-          }	
-          else {
-		   self::write2disk($this->logfile,"\r\n".date(DATE_RFC822)."\r\n".$this->jobs_path . ' not exist!');
+				if ($callback_function) {//specific agent task
+					self::_read_jobs(null,null,$callback_function,$callback_param);// 'set_jobs_status','processing');//null);     
+				}
+				else //common agent task
+					self::_read_jobs(null,null,null);//'set_jobs_status','processing');//null);   
+			}	
+			else {
+				self::write2disk($this->logfile,"\r\n".date(DATE_RFC822)."\r\n".$this->jobs_path . ' not exist!');
 		   
-		   if ($this->network_log)
-		       self::write2disk($this->netfile,":JOB PATH NOT EXIST:");
-          }
+				if ($this->network_log)
+					self::write2disk($this->netfile,":JOB PATH NOT EXIST:");
+			}
 		}
-		$this->auth_obj = (object) $auth;
 		
     }
-	
-    private function loader($className) {
-	
-	    //echo 'Trying to load ', $className, ' via ', __METHOD__, "()\n"; 
-        self::write2disk($this->logfile,"\r\nAgentIPP:Trying to load ". $className. ' via '. __METHOD__ . "()\r\n");
-		
-		try {
-		    $class = str_replace('\\', '/', $className);
-            //require_once('handlers/'. $class . '.dpc.php');  //handlers as handlers/xxx
-			require_once(_r("ippserver/handlers/". $class . '.dpc.php'));
-			
-			$ok = "\r\n Class $className loaded!";
-			self::write2disk($this->logfile,$ok);
-			
-			//if ($this->network_log)
-		      //self::write2disk($this->netfile,":$className:");
-		} 
-		catch (Exception $e) {
-            $err = "\r\n File $className not exist!";
-			self::write2disk($this->logfile,$err);
-			//debug_print_backtrace();
-			
-			//if ($this->network_log)
-		      //self::write2disk($this->netfile,":$className:ERROR");			
-        }
-		
-        self::write2disk($this->logfile,"\r\nAgentIPP:End of load ". $className. ' via '. __METHOD__. "()\r\n");		
-    }	
-	
+
 	//read jobs directory
 	private function _read_jobs($my_jobs=false, $which_jobs=false, $callback_function=null, $callback_param=null) {
 	    $jobs = null;
@@ -154,9 +120,9 @@ if (USE_DATABASE==true) {
 				$jowner = $pf[3];
 				
 				//PER USER CALL...
-			    if (/*($user==$this->get_printer_admin()) ||*/ ($jowner==$user) || (!defined('AUTH_USER'))) {
+			    if (/*($user==$this->get_printer_admin()) ||*/ 
+				    ($jowner==$user) || (!defined('AUTH_USER'))) {
 								
-				
 			    //switch depending on request attr
 			    switch ($which_jobs) {
 				
@@ -349,7 +315,8 @@ if (USE_DATABASE==true) {
 
 		        if ($this->network_log) 
 		          self::write2disk($this->netfile,":$service:$is_on:");			
-			
+
+				$hservice = "handlers_$service";	
 			    $extension = null; //init per service 
 			    $state_message .= $service.'=';		
 
@@ -359,33 +326,11 @@ if (USE_DATABASE==true) {
                 if ($is_on) {
 				
 				    if (($standalone) && (!$silentmode))  
-                        $ret .= " ON."; 	
-				   
-				    /*if ((is_array($file_mod_extensions)) && ($file_mod_extensions[$service])) {
-			            $extension = $file_mod_extensions[$service];
-						if ($extension) {
-						    $new_job_file = self::_add_extension($job_file, $extension, true);
-						
-						    //$c = @copy($this->jobs_path.'/'.$job_file, $this->jobs_path.'/'.$new_job_file);
-						    $c = @rename($this->jobs_path.'/'.$job_file, $this->jobs_path.'/'.$new_job_file);
-						    if ($c===true) {
-						        $current_job_file = $this->jobs_path.'/'.$new_job_file; 
-						        $job_file = $new_job_file;						   
-						        self::write2disk($this->logfile,"\r\nNEW_EXTENSION:".$new_job_file."\r\n");
-						        if (($standalone) && (!$silentmode)) 
-                                    $ret .= "<br>Add extension: $new_job_file";
-						    }
-                        }						
-				    }*/
-					
+                        $ret .= " ON."; 					
 					
 				    try { //prevent from printer hanging....
-                        //@self::write2disk($classpath.'extraclass.txt',"\r\n".$classpath.$_printer_name.'.'.$service.'.php');
-						
-						//$adhoc2load = 'handlers\\addhoc';
-						//$class2load = 'handlers\\'.$service;
-						
-				        if ((class_exists('addhoc', true)) && 
+
+				        if ((class_exists('handlers_addhoc', true)) && 
 						    (is_readable($classpath.$_printer_name.'.'.$service.'.php'))) {
 						
 						  //if user service code file
@@ -417,7 +362,7 @@ if (USE_DATABASE==true) {
 				                           continue;//next loop
 				                         }
 						    //continue...loading class
-						    $srv = new addhoc($this->job_owner,//$this->auth_obj,
+						    $srv = new handlers_addhoc($this->job_owner,
 						                        $data,//IS NULL 
 											    $job_id, 
 						                        $current_job_file, 
@@ -449,14 +394,7 @@ if (USE_DATABASE==true) {
 							}								
                           }//switch										 
 						}
-						elseif (class_exists($service, true)) { 
-						   /* if (is_object($srv = new $service($this->job_owner,//$this->auth_obj,
-						                        $data,//IS NULL 
-											    $job_id, 
-						                        $current_job_file, 
-											    $current_job_attr, 
-												$this->printer_name))) {*/
-						
+						elseif (class_exists($hservice, true)) { 
 						  //@self::write2disk($classpath.$_printer_name.'-agent.log',$service.'>'.$_user."\r\n");
 						  if (($standalone) && (!$silentmode)) 
                             $ret .= "<br>Class exist: true";
@@ -481,7 +419,7 @@ if (USE_DATABASE==true) {
 				                           continue;//next loop
 				                         }	
                             
-				            $srv = new $service($this->job_owner,//$this->auth_obj,
+				            $srv = new $hservice($this->job_owner,
 						                        $data,//IS NULL 
 											    $job_id, 
 						                        $current_job_file, 
