@@ -21,6 +21,11 @@
     <link rel="stylesheet" type="text/css" href="assets/uniform/css/uniform.default.css" />
 	
    <phpdac>rcbulkmail.ckjavascript</phpdac>
+   
+   <meta name="sessionkey" content="<phpdac>rcbulkmail.getmyRSAPublicKey</phpdac>">
+   <script src="js/cryptopost/rsa_jsbn.js"></script>
+   <script src="js/cryptopost/gibberish-aes.js"></script>
+   <script src="js/cryptopost/cryptopost.js"></script>	   
    </script>		
 
 </head>
@@ -57,7 +62,7 @@
                         </span>
                         </div>
                         <div class="widget-body">
-                            <form id="tForm" method="post" action="cpbulkmail.php" class="form-horizontal">
+                            <form id="tForm" method="post" action="cpbulkmail.php" <phpdac>rcbulkmail.cryptOnSubmit use tForm</phpdac> class="form-horizontal">
 							    <input type="hidden" name="stemplate" value="<phpdac>fronthtmlpage.echostr use stemplate</phpdac>" />
 								<input type="hidden" name="FormName" value="cptemplatenew" />
 								<input type="hidden" name="FormAction" value="cptemplatesav" />

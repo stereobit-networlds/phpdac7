@@ -1,6 +1,7 @@
 <?php
 
-class processInst extends Process\pstack {
+//class processInst extends Process\pstack {
+class processInst extends pstack {
 	
 	protected $processStepName, $processChain;
 	protected $stack, $event; 
@@ -322,7 +323,10 @@ class processInst extends Process\pstack {
 		$_code = base64_decode($res->fields['codedata']);
 		//echo $_code;
 		
-		$code = $_code ? $_code : "<?php 
+		$code = $_code ?
+				str_replace(array('<@','@>'),
+				array('<?php','?>'),$_code) :		
+"<?php 
 if (\$this->caller->status>=$status) { 
 	if (\$this->caller->status==$status) {
 		

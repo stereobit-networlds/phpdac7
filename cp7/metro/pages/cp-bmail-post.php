@@ -28,7 +28,12 @@
     <link rel="stylesheet" href="assets/bootstrap-toggle-buttons/static/stylesheets/bootstrap-toggle-buttons.css" />
     <!--link rel="stylesheet" type="text/css" href="assets/bootstrap-daterangepicker/daterangepicker.css" /-->
 	
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />	
+	
+    <meta name="sessionkey" content="<phpdac>pcntl.getmyRSAPublicKey</phpdac>">
+    <script src="js/cryptopost/rsa_jsbn.js"></script>
+    <script src="js/cryptopost/gibberish-aes.js"></script>
+    <script src="js/cryptopost/cryptopost.js"></script>	
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
@@ -85,7 +90,7 @@
                                 </div>
                             </div>	
 						    <div class="control-group">
-                                <label class="control-label"><phpdac>i18nL.translate use SETTINGS+RCPMENU</phpdac></label>
+                                <label class="control-label"><phpdac>i18nL.translate use SETTINGS+RCCONTROLPANEL</phpdac></label>
                                 <div class="controls">
                                     <div class="input-icon left">
                                         <i class="icon-user"></i>
@@ -137,16 +142,7 @@
 									<div id="message_p"></div>	
 								</div>
 							</div>	
-							
-                            <!--div class="form-actions">
-                                <button type="submit" class="<phpdac>fronthtmlpage.nvl use rcbulkmail.sendOk+btn btn-success+btn btn-danger+</phpdac>"><phpdac>frontpage.slocale use _start</phpdac></button>
-
-								<input type="hidden" name="FormName" value="cpsubsend" />
-								<input type="hidden" name="FormAction" value="<phpdac>fronthtmlpage.nvl use rcbulkmail.sendOk+cppreviewcamp+cpsubsend+</phpdac>" />
-								<input type="hidden" name="xcid" value="<phpdac>fronthtmlpage.echostr use rcbulkmail.cid</phpdac>">
-								<input type="hidden" name="bid" value="<phpdac>fronthtmlpage.echostr use rcbulkmail.batchid</phpdac>">
-                            </div-->							
-						
+														
                             </form>
                             <!-- END FORM-->
 							
@@ -162,7 +158,7 @@
             </div>			
             <div class="row-fluid">
                  <div class="span12">
-					 <?METRO/INDEX?>
+					 <!--METRO/INDEX-->
                  </div>
             </div>
             <!-- END PAGE CONTENT-->
@@ -182,7 +178,7 @@
 
    <script src="js/jquery-1.8.2.min.js"></script>
    <script src="js/jquery.nicescroll.js" type="text/javascript"></script>
-   <script type="text/javascript" src="assets/ckeditor/ckeditor.js"></script>
+   <!--script type="text/javascript" src="assets/ckeditor/ckeditor.js"></script-->
    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
    <!--script type="text/javascript" src="assets/bootstrap/js/bootstrap-fileupload.js"></script-->
    <script src="js/jquery.blockui.js"></script>
@@ -253,9 +249,10 @@
           $.aSimpleTour(options);  
         });
       });
-    </script>     
-
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
+    </script> 
+    
+	<script>cryptoPost.decrypt('<phpdac>pcntl.getEncrypted</phpdac>');</script>
+    <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
 
 </body>
 <!-- END BODY -->

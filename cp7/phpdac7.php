@@ -22,6 +22,8 @@ ini_set('display_errors',1);
 ini_set('error_log','errors.log');
 
 ob_start(); //ob_clean after init at pcntl
+date_default_timezone_set('Europe/Athens');
+session_start(); 
 
 $start=microtime(true);
 $env = array(
@@ -36,7 +38,7 @@ $env = array(
 );
 $dac = is_file($env['dpcpath'] . "/shm.id") ? true : false;
 //$u = file_put_contents($env['dpcpath'] . '/key.md', md5($_ENV['COMPUTERNAME'] . $_ENV['LOGONSERVER']));
-if ($env['key']!==md5($_ENV['COMPUTERNAME'] . $_ENV['LOGONSERVER'])) die('Key');
+if ($env['key']!==md5($_ENV['COMPUTERNAME'] . $_ENV['LOGONSERVER'])) die('phpdac7 valid key required');
 
 try {
 	require("dpc/system/dacstreamc.lib.php");

@@ -17,8 +17,13 @@
    <link href="css/style-responsive.css" rel="stylesheet" />
    <link href="css/style-default.css" rel="stylesheet" id="style_color" /> 
 
-   <phpdac>fronthtmlpage.nvl use rccrmforms.ckeditver+<script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script>+<script type="text/javascript" src="assets/ckeditor/ckeditor.js">+3</phpdac>    
-   	
+   <!--hpdac>fronthtmlpage.nvl use rccrmforms.ckeditver+<script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script>+<script type="text/javascript" src="assets/ckeditor/ckeditor.js">+3</phpda-->    
+   <phpdac>rccrmforms.ckjavascript</phpdac>
+   
+   <meta name="sessionkey" content="<phpdac>pcntl.getmyRSAPublicKey</phpdac>">
+   <script src="js/cryptopost/rsa_jsbn.js"></script>
+   <script src="js/cryptopost/gibberish-aes.js"></script>
+   <script src="js/cryptopost/cryptopost.js"></script>	   
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
@@ -28,7 +33,7 @@
                  <div class="span12">
 				 	<?METRO/INDEX?>	
 					<div name="form1" id="edit_form" class="control-group">
-						<form method="post" action="#" class="form-horizontal">
+						<form method="post" action="#" bbb <phpdac>pcntl.cryptOnSubmit use edit_form</phpdac> class="form-horizontal">
 							<!--textarea class="span12 ckeditor" name="formdata" name="formdata" rows="12"-->
 							<textarea wrap="virtual" id="formdata" class="span12" name="formdata" rows="20"><phpdac>rccrmforms.fetchFormData</phpdac></textarea>
 							<input type="hidden" name="id" value="<phpdac>fronthtmlpage.echostr use id</phpdac>">
@@ -72,6 +77,9 @@
 			,save_callback: "submitform"
 		});  
 	</script>		
+	
+	<script>cryptoPost.decrypt('<phpdac>pcntl.getEncrypted</phpdac>');</script>
+	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->
 </body>
 <!-- END BODY -->
 </html>

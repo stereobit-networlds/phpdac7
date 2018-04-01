@@ -19,7 +19,7 @@
    
    <link rel="stylesheet" type="text/css" href="assets/bootstrap-tree/bootstrap-tree/css/bootstrap-tree.css" />      
 
-   <phpdac>fronthtmlpage.nvl use rccmstemplates.ckeditver+<script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script>+<script type="text/javascript" src="assets/ckeditor/ckeditor.js">+3</phpdac>    
+   <phpdac>rccmstemplates.ckjavascript</phpdac>
    	
 </head>
 <!-- END HEAD -->

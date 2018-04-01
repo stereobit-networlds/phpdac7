@@ -1,5 +1,5 @@
 <?php
-require('phpdac7.php'); 
+require('phpdac7.php');
 $page = new pcntl('
 super javascript;
 
@@ -25,7 +25,7 @@ public i18n.i18nL;
 
 ',1);
 
-$cptemplate = _m('cmsrt.paramload use FRONTHTMLPAGE+cptemplate');
+$cptemplate = _m('rcserver.paramload use FRONTHTMLPAGE+cptemplate');
 
 	switch ($_GET['t']) {
 		case 'cprepcrm'      : $p = 'cp-reports-detail'; break;		

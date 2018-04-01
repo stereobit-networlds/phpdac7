@@ -16,6 +16,11 @@
    <link href="css/style.css" rel="stylesheet" />
    <link href="css/style-responsive.css" rel="stylesheet" />
    <link href="css/style-default.css" rel="stylesheet" id="style_color" />    	
+   
+   <meta name="sessionkey" content="<phpdac>pcntl.getmyRSAPublicKey</phpdac>">
+   <script src="js/cryptopost/rsa_jsbn.js"></script>
+   <script src="js/cryptopost/gibberish-aes.js"></script>
+   <script src="js/cryptopost/cryptopost.js"></script>	   
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
@@ -25,7 +30,7 @@
                  <div class="span12">
 				 	<?METRO/INDEX?>	
 					<div id="edit_script" class="control-group">
-						<form name="form1" method="post" action="#" class="form-horizontal">
+						<form id="form1" name="form1" method="post" action="#" <phpdac>pcntl.cryptOnSubmit use form1</phpdac> class="form-horizontal">
 							<textarea wrap="virtual" id="scriptdata" class="span12" name="scriptdata" rows="20"><phpdac>rccmstemplates.fetchScriptData</phpdac></textarea>
 							<input type="hidden" name="id" value="<phpdac>fronthtmlpage.echostr use id</phpdac>">									
 							<input type="hidden" name="module" value="<phpdac>fronthtmlpage.echostr use module</phpdac>">
@@ -70,7 +75,8 @@
 		
 	function submitform() { document.form1.submit();}	
 	</script>	   
-   
+    <script>cryptoPost.decrypt('<phpdac>pcntl.getEncrypted</phpdac>');</script>
+    <!-- e-Enterprise, stereobit.networlds (phpdac5) --> 
 </body>
 <!-- END BODY -->
 </html>

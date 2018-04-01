@@ -1,0 +1,74 @@
+<IfModule mod_cache.c>
+   CacheDisable
+</IfModule>
+
+#<IfModule mod_security.c>
+#   SecFilterEngine Off
+#   SecFilterScanPOST Off
+#</IfModule>
+
+#Order allow,deny
+#Allow from all
+#AuthType        Basic
+#AuthUserFile    /home/stereobi/public_html/cp//htpasswd-basis
+
+#AuthName        "Control Panel"
+#require valid-user
+
+RewriteEngine On
+
+RewriteRule ^control/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=kfilter&cat=$1&input=$2&page=$3 [L]
+RewriteRule ^control/([^/]*)/([^/]*)/$ /katalog.php?t=kfilter&cat=$1&input=$2 [L]
+RewriteRule ^control/([^/]*)/$ /katalog.php?t=kfilter&cat=$1 [L]
+
+RewriteRule ^anel/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=kfilter&cat=$1&input=$2&page=$3 [L]
+RewriteRule ^anel/([^/]*)/([^/]*)/$ /katalog.php?t=kfilter&cat=$1&input=$2 [L]
+RewriteRule ^anel/([^/]*)/$ /katalog.php?t=kfilter&cat=$1 [L]
+
+
+RewriteRule ^awstats/$ cp/cgi-bin/awstats.php [L]
+RewriteRule ^menu/$ cpmenu.php?t=cpmconfig [L]
+RewriteRule ^slide/$ cpslideshow.php?t=cpsconfig [L]
+RewriteRule ^cform/$ cpform.php [L]
+RewriteRule ^subscribers/$ cpsubscribers.php [L]
+RewriteRule ^users/$ cpusers.php [L]
+RewriteRule ^customers/$ cpcustomers.php [L]
+RewriteRule ^transactions/$ cptransactions.php [L]
+RewriteRule ^upload/$ cpupload.php [L]
+RewriteRule ^ckfinder/$ cpmckfinder.php [L]
+
+RewriteRule ^addi/$ cpitems.php?t=cpvinput [L]
+RewriteRule ^addif/([^/]*)/$ cphtmleditor.php?t=cpmnewitem [L]
+RewriteRule ^modi/([^/]*)/$ cphtmleditor.php?t=cpmedititem&id=$1 [L]
+RewriteRule ^tagi/([^/]*)/$ cptags.php?t=cpeditctag&id=$1 [L]
+RewriteRule ^imgi/([^/]*)/$ cphtmleditor.php?t=cpmvphoto&id=$1 [L]
+RewriteRule ^htmi/([^/]*)/$ cphtmleditor.php?id=$1&type=.html [L]
+RewriteRule ^updi/([^/]*)/$ cpupload.php?id=$1 [L]
+RewriteRule ^coli/([^/]*)/$ cpcollections.php?id=$1 [L]
+
+RewriteRule ^addc/$ cpkategories.php?t=cpaddcat [L]
+RewriteRule ^modc/([^/]*)/$ cpkategories.php?cat=$1 [L]
+RewriteRule ^tagc/([^/]*)/$ cptags.php?t=cpeditctag&cat=$1 [L]
+RewriteRule ^htmc/([^/]*)/$ cphtmleditor.php?id=$1&t=type=.html [L]
+RewriteRule ^updc/([^/]*)/$ cpupload.php?cat=$1 [L]
+RewriteRule ^colc/([^/]*)/$ cpcollections.php?cat=$1 [L]
+
+RewriteRule ^chpass/$ cpimportdb.php?t=chpass=1 [L]
+RewriteRule ^import/$ cpimportdb.php [L]
+RewriteRule ^dynsql/$ cpdynsql.php [L]
+RewriteRule ^xmlfeeds/$ cpxmlfeeds.php [L]
+RewriteRule ^config/$ cpconfig.php [L]
+
+RewriteRule ^bmail-addmail/$ cpulists.php?t=cpadvsubscribe [L]
+RewriteRule ^bmail-queue/$ cpulists.php [L]
+RewriteRule ^bmail-stats/$ cpuliststats.php [L]
+RewriteRule ^bmail-campaign/$ cpbulkmail.php?t=cpviewcamp [L]
+RewriteRule ^bmail/$ cpbulkmail.php [L]
+
+RewriteRule ^([^/]*)/$ /cp.php?t=$1 [L]
+
+<FilesMatch "\.(ttf|otf|eot|woff)$">
+      <IfModule mod_headers.c>
+        Header set Access-Control-Allow-Origin "*"
+      </IfModule>
+</FilesMatch>
