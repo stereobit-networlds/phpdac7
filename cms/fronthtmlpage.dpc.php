@@ -148,8 +148,9 @@ class fronthtmlpage {
 		}
 	  
 		if ($this->htmlfile) {
-		
-			$htmdata = file_get_contents($this->htmlfile);
+			//$htmdata = file_get_contents($this->htmlfile);
+			$htmdata = self::streamfile_contents($this->htmlfile);
+			
 			$this->process_javascript($htmdata, $pageout);		
 			$ret = $this->process_commands($pageout);
 			$ret = str_replace("<?". $this->argument ."?>",$data,$ret);
@@ -183,6 +184,26 @@ class fronthtmlpage {
 		
 		return ($ret);	
 	}	
+	
+	//fetch content
+	public function streamfile_contents($f=null, $falt=null) {
+		if (!$f) return null;
+		global $phpdac_c, $dac, $env;
+		//echo $phpdac_c .'.'. $dac . '>'.$f;
+		
+		if (($phpdac_c) && ($dac)) { 
+			//__log('fetch remote:'.$_SERVER['PHP_SELF']);
+			$fp = str_replace($this->prpath,'/cp/',$f);
+			if ($pharApp = $env['app'])
+				return file_get_contents("phar://$pharApp/www7" . $fp);
+			else	
+				return file_get_contents('phpdac5://127.0.0.1:19123/www7' . $fp);
+		}
+		
+		//else filesystem default
+		$fout = $falt ? $falt : $f;
+		return file_get_contents($fout);
+	}
 
 	public function process_commands($data,$is_serialized=null) {
 	
@@ -870,7 +891,8 @@ EOF;
 			    $pathname = $tmpln;
 				
 			//echo 'INCLUDE_PART:'.$pathname;
-			if ($contents = trim(@file_get_contents($pathname))) {	
+			//if ($contents = trim(@file_get_contents($pathname))) {	
+			if ($contents = trim(self::streamfile_contents($pathname))) {	
 			
 				self::stackTemplate($pathname);
 				
@@ -923,7 +945,8 @@ EOF;
 			    $pathname = $tmpln;
 				
 			//echo 'INCLUDE_PART:'.$pathname;
-			if ($contents = trim(@file_get_contents($pathname))) {	
+			//if ($contents = trim(@file_get_contents($pathname))) {	
+			if ($contents = trim(self::streamfile_contents($pathname))) {
 
 			    self::stackTemplate($pathname);
 			

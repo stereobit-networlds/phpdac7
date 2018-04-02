@@ -1,0 +1,351 @@
+	<form name='cartview' method='POST' action='$0$'>
+       <!-- ========================================= CONTENT ========================================= -->
+        <div class="col-xs-12 col-md-9 items-holder no-margin">
+			<!--1 datetime-->				
+	        $3$
+	        <!--4-->  
+			
+			<!-- 2 user data-->	
+			<h2 class='border'>Αγορά</h2>
+			<phpdac>
+				cmsrt.phpcode use
+					<?php
+					    $status = _v('shcart.status');
+						switch ($status) {
+						    case 2  :	$text = 'Στείλτε την αγορά σας';
+							            $text .= (strtoupper(GetParam('payway'))=='EUROBANK') ?
+													' (αποπληρωμή με κάρτα).' : '.';
+										break;
+							case 1  :	$text = 'Ελέγξτε την αγορά σας και τα στοιχεία αποστολής.';
+										break;							
+							default :	$text = 'Προωθήστε την αγορά σας.';	
+						}
+						return $text;
+					?>
+			</phpdac>
+
+			<!-- buttons -->
+			<div id="cart-summary" class="widget cart-summary">
+				<div class="buttons-holder">
+            <phpdac>
+				cmsrt.nvl use shcart.status++
+					<?php	
+						$title =  localize('_CLEARCARTITEMS', getlocal());	
+						$link = _v('shcart.baseurl') . '/clearcart/';	
+						$clearcart = "<a class='le-button' href='$link'>$title</a>";
+						$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.checkout') . '">';
+						
+						return $submit;
+					?>
+				+
+			</phpdac>
+			
+            <phpdac>
+				cmsrt.nvl use shcart.status+
+					<?php
+						$cancel = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.cancel') . '">';
+						$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.order') . '">';
+						return $submit;
+					?>
+				++1
+			</phpdac>			
+			
+            <phpdac>
+				cmsrt.nvl use shcart.status+
+					<?php
+						$cancel = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.cancel') . '">';
+						$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.submit') . '">';
+						return $submit;
+					?>
+				++2
+			</phpdac>
+				</div>
+			</div>
+			
+			<!-- item points to show (user loyalty) -->
+			<phpdac>shcart.pointsview use +fpcartpoints+fpcartpoints-alt</phpdac>   				
+		    	
+			<!-- ppolicy text -->
+	        <phpdac>
+				cmsrt.nvl use shcart.ppolicynotes+
+					<h2 class='border'>Έκπτωση</h2>
+				++
+			</phpdac>	
+	        <phpdac>
+				cmsrt.nvl use shcart.ppolicynotes+
+					<? 
+						return _v('shcart.ppolicynotes');
+					?>
+				++
+			</phpdac>	
+
+			<!-- info 0 text -->
+			<phpdac>
+				cmsrt.nvl use shcart.status++
+					<?php
+						if ($cat = GetReq('cat')) {
+							$ret ="<h2 class='border'>Συνεχίστε τις αγορές σας</h2>Επιστρέψτε στην λίστα προβολής ειδών για την συνέχιση των αγορών σας.";
+							
+							$ret .= '<div class="widget cart-summary"><div class="buttons-holder">';
+							
+							$title =  localize('_CONTINUESHOP', getlocal());	
+							$link = _v('shcart.baseurl') . "/klist/$cat/";							
+							$ret .= "<a class='le-button' href='$link'>$title</a>";							
+							$ret .= '</div></div>';			
+							return $ret;							
+						}	
+					?>
+				+
+			</phpdac>
+			
+			<phpdac>
+				cmsrt.nvl use shcart.fastpick++
+					<?php
+						if (!$status = _v('shcart.status')) {
+							$ret = "<h2 class='border'>Γρήγορη συλλογή</h2>Δυνατότητα τοποθέτησης ειδών στο καλαθι από λίστα προβολής ειδών, χωρίς την προώθηση σας στην σελίδα του καλαθιού. Επιλέξτε εσείς πότε θα προωθήσετε την αγορά σας. Κατάλληλο για την επιλογή πολλών ειδών της ίδιας κατηγορίας.";
+							$ret .= '<div class="widget cart-summary"><div class="buttons-holder">';						
+							
+							$title = localize('_FASTPICK', getlocal());
+							$link = _v('shcart.baseurl') . "/fastpick/";
+							$ret .= "<a class='le-button' href='$link'>$title</a>";
+							$ret .= '</div></div>';
+							return $ret;
+						}	
+					?>
+				+
+			</phpdac>
+
+			<phpdac>
+				cmsrt.nvl use shcart.status++
+					<?php
+						return (GetGlobal('UserID')) ? null : 
+					'<h2 id="guestuser" class="border">Guest χρήστης</h2>
+					 <div class="field-row">
+						<div id="guestdetails">
+							<span class="pull-right">
+							<!--a id="guestsavebutton">Εγγραφή</a-->		
+							<a id="guestdetailsbutton" href="cart/#guestuser" class="le-button">Eγγραφή σε ένα βήμα</a>
+							<!--a class="simple-link block" href="cart/#guestuser" onClick="javascript:ajaxCall(\'katalog.php?t=cartguestuser\' ,\'guestdetails\')" >Eγγραφή σε ένα βήμα</a-->
+							<!--a class="le-button" href="cart/#guestuser" onClick="javascript:sndReqArg(\'katalog.php?t=cartguestuser\' ,\'guestdetails\')" >Eγγραφή σε ένα βήμα</a-->
+							</span>
+						</div>		
+					 </div>';	
+					?>
+				+
+			</phpdac>			
+			
+			<phpdac>
+				cmsrt.nvl use shcart.status++
+					<?php
+					    $fbutton = GetSessionParam('fbin') ? 
+							'<a href="dologin/" class="le-button">Σύνδεση</a>' : 
+							'<div class="fb-login-button" data-size="large" data-show-faces="false" data-auto-logout-link="true" scope="public_profile,email"></div>';
+							
+						return (GetGlobal('UserID')) ? null : 
+					'<h2 class="border">Σύνδεση με Facebook</h2>
+					<div class="field-row">	
+						<span class="pull-right">
+						<!--div class="fb-login-button" data-size="large" data-show-faces="false" data-auto-logout-link="true" scope="public_profile,email"></div-->
+						'.$fbutton.'
+						</span>
+					</div>';	
+					?>
+				+
+			</phpdac>				
+
+			<!-- info 1 text/form -->
+			<phpdac>
+				cmsrt.nvl use shcart.status+
+					<?php
+						$addrs = _m("shcart.addressway2");
+						return str_replace('<ADDR/>',$addrs,'			
+		<div class="row field-row">
+			<div class="col-xs-12">
+				<h2 class="border">Διεύθυνση αποστολής</h2>
+				<ADDR/>					
+			</div>
+		</div>');
+				?>
+				++1|2
+			</phpdac>			
+			
+			<!-- Called by addressway2 as detail hpdac>
+				cmsrt.nvl use shcart.status+
+					<-php
+						$transports = _m("shcart.roadway2");
+						return str_replace('<TRNS/>',$transports,'			
+		<div class="row field-row">
+			<div class="col-xs-12">
+				<TRNS/>
+			</div>
+		</div>');
+				->
+				++1
+			</phpda-->				
+			
+			<phpdac>
+				cmsrt.nvl use shcart.status+
+					<?php
+						return '					
+		<div class="row field-row">
+			<div class="col-xs-12">
+				<!--label >Παρατηρήσεις</label-->
+				<h2 class="border">Παρατηρήσεις</h2>
+				<textarea rows="5" id="inputComment" name="sxolia" class="form-control le-input"></textarea>
+			</div>
+		</div>';
+				?>
+				++1
+			</phpdac>				
+			
+			<!-- terms / posts -->
+			<phpdac>
+				cmsrt.nvldac2 use shcart.status+
+					cmsrt.echostr:<h2 class='border'>::
+					cmsrt.slocaleParam:roadway::
+					cmsrt.echostr:</h2>
+				+
+				cmsrt.phpcode:
+					<?php 
+						return '';
+					?>
+				+2
+			</phpdac>
+			
+			<phpdac>cmsrt.nvldac2 use shcart.status+shcart.roadDetails++2</phpdac>
+			
+			<phpdac>
+				cmsrt.nvldac2 use shcart.status+
+					cmsrt.echostr:<h2 class='border'>::
+					cmsrt.slocaleParam:payway::
+					cmsrt.echostr:</h2>
+				++2
+			</phpdac>
+			
+			<phpdac>cmsrt.nvldac2 use shcart.status+shcart.payDetails++2</phpdac>
+			
+            <phpdac>
+				cmsrt.nvl use shcart.status+
+					<h2 class='border'>Όροι χρήσης</h2>
+					Με την αποστολή της παραπάνω φόρμας αποδέχεστε τους <a href='terms.php'>Όρους Χρήσης</a>.
+				+
+					<?php 
+						/*if (_v('shcart.status')==0) $x='a'; else $x='b'; test */ 
+						return '';
+					?>
+				+2
+			</phpdac>
+			
+           <phpdac>
+				cmsrt.nvl use shcart.status+
+					<?php 
+						return "<h2 class='border'>Παρατηρήσεις</h2>" . GetParam('sxolia');
+					?>	
+				++2
+			</phpdac>	
+
+			<phpdac>
+				cmsrt.phpcode use
+					<?php	
+					    $status = _v('shcart.status');
+						switch ($status) {
+						    case 2  :   $title = 'Επιστροφή στο καλάθι ή προώθηση αγοράς';
+							            $cancel= '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.cancel') . '">';
+							            $submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.submit') . '">';
+							            break;
+							case 1  :   $title = 'Επιστροφή στο καλάθι ή προώθηση αγοράς';
+							            $cancel= '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.cancel') . '">';
+										$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.order') . '">';
+										break;							
+							default :	return null;
+							            $title = 'Προώθηση αγοράς';
+							            $cancel = null;
+										$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.checkout') . '">';
+						}
+						$ret = "<h2 class='border'>$title</h2>";
+						$ret.= '<div class="buttons-holder"><span class="pull-right">';
+						$ret.= $cancel .' '. $submit;
+						$ret.= '</span></div>';
+						return $ret;
+					?>
+			</phpdac>			
+			
+        </div>
+        <!-- ========================================= CONTENT : END ========================================= -->
+
+        <!-- ========================================= SIDEBAR ========================================= -->
+
+        <div class="col-xs-12 col-md-3 no-margin sidebar ">
+            <div class="widget cart-summary">
+                <h1 class="border">Καλάθι αγορών</h1>
+				<div class="body">
+				    <!-- standart method invway -->
+					$4$
+										
+					<phpdac>
+						cmsrt.nvl use shcart.status+
+						<?php
+							$cus = _m("shcart.customerway2");
+							return str_replace('<CUS/>',$cus,'
+									<h2 class="border">Στοιχεία παραστατικού</h2>
+									<CUS/>					
+								');
+						?>
+						++1|2
+					</phpdac>	
+
+					<phpdac>
+						cmsrt.nvl use shcart.status+
+						<?php
+							$cus = _m("shcart.invoiceway2");
+							return str_replace('<INV/>',$cus,'
+									<h2 class="border">Τύπος παραστατικού</h2>
+									<INV/>					
+								');
+						?>
+						++1|2
+					</phpdac>					
+					
+                    <div class="buttons-holder">					
+                        <!--a class="le-button big" href="http://localhost/~ibrahim/themeforest/HTML/mediacenter/upload/PHP/checkout" >checkout</a>
+                        <a class="simple-link block" href="http://localhost/~ibrahim/themeforest/HTML/mediacenter/upload/PHP/home" >continue shopping</a-->
+					<!--hpdac>
+						cmsrt.phpcode use
+					<-php	
+					    $status = _v('shcart.status');
+						switch ($status) {
+						    case 2  :	$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.submit') . '">';
+										break;
+							case 1  :	$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.order') . '">';
+										break;							
+							default :	$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.checkout') . '">';	
+						}
+						return $submit;
+					->
+					</phpda-->						
+                    </div>					
+                </div>
+            </div><!-- /.widget -->
+
+			<!-- coupon 0/1 -->
+			<phpdac>
+				cmsrt.nvl use shcart.status+
+					<?php
+						return _m('shcart.validCoupon') ? null : '	
+            <div id="cupon-widget" class="widget">
+                <h1 class="border">Κουπόνι</h1>
+                <div class="body">
+                    <div class="inline-input">
+                        <input data-placeholder="Εισάγετε κωδικό" type="text" name="coupon" />
+                        <button class="le-button" type="submit">Οκ</button>
+                    </div>
+                </div>
+            </div><!-- /.widget -->';
+				?>
+				++0|1
+			</phpdac>			
+        </div><!-- /.sidebar -->
+
+        <!-- ========================================= SIDEBAR : END ========================================= -->	
+	</form>
+		
