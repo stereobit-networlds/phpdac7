@@ -898,12 +898,12 @@ class shkategories {
 		
 	    //dropdown 2nd template
         if ($dropdown_tmpl) {
-		  
+
 		  	$navdata = $this->view_analyzedir($cmd,$prefix,null,1);
 			//print_r ($navdata);
 			if (!empty($navdata)) { // dropdown			
 			    //$mytemplate1 = _m('cmsrt.select_template use fpkatnav-element');
-				$mytemplate2 = _m('cmsrt.select_template use ' . $dropdown_tmpl);
+				$mytemplate2 = _m('cmsrt.select_template use ' . str_replace('.htm', '', $dropdown_tmpl));
 			
 				foreach ($navdata as $n=>$data) {
 					$tdata = explode('@',$data); 

@@ -1543,27 +1543,20 @@ EOF;
 	    $path = $iscp ? ($theme ? $theme . '/' : ($themePath . $this->cptemplate . '/')) : 
 		                ($theme ? $theme . '/' : ($themePath . $this->template . '/')) ; 
 
+		$phptml = $path . $tfile . '.php';
+		$phpmtml = $path . 'mob@'.$tfile . '.php';
 		
-		//big file to load in every page
-		/*if ($data = trim(@file_get_contents($path . 'template-parts.xml'))) {
-			//echo '.xml';
-			$xparts = new SimpleXMLElement($data);
-
-			if ((string) $xparts->part->name == $tfile) {
-				//echo $tfile . '.xml';
-				return ($xparts->part->body);
-			}
-		}		
-		else*/
-		if (($this->mobile) && ($data = trim(@file_get_contents($path . 'mob@'.$tfile . '.php')))) {
-			//echo 'mobile ver .php';
+		if (($this->mobile) && ($data = trim(@file_get_contents($phpmtml)))) {
+		//if (($this->mobile) && ($data = trim(self::streamfile_contents($phpmtml)))) {	
+			//echo 'Template PHPmob:' . $phpmtml . '</br>';
 			//save cmsTemplates to be able to edit in cp
 			//self::stackTemplate($path . 'mob@'.$tfile . '.php');
 			
 			return $this->dCompile($data);
 		}
-		elseif ($data = trim(@file_get_contents($path . $tfile . '.php'))) {		
-			//echo '.php';
+		elseif ($data = trim(@file_get_contents($phptml))) {
+		//elseif ($data = trim(self::streamfile_contents($phptml))) {
+			//echo 'Template PHP:' . $phptml . '</br>';
 			//self::stackTemplate($path . $tfile . '.php');
 			
 			return $this->dCompile($data);
@@ -1572,8 +1565,10 @@ EOF;
 		//.htm files 
 		//self::stackTemplate($path . str_replace('.', $this->lan.'.', str_replace('.htm', '', $tfile) . '.htm'));
 					
-		//echo '.htm';
-		return @file_get_contents($path . str_replace('.', $this->lan.'.', str_replace('.htm', '', $tfile) . '.htm')); 
+		$fhtml = $path . str_replace('.', $this->lan.'.', str_replace('.htm', '', $tfile) . '.htm');
+		//echo 'Template HTM:' . $fhtml . '</br>';
+		return @file_get_contents($fhtml); 
+		//return self::streamfile_contents($fhtml);
     }		
 	
 	public function createButton($name=null, $urls=null, $t=null, $s=null) {

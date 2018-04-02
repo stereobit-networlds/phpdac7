@@ -202,7 +202,7 @@ class fronthtmlpage {
 		
 		//else filesystem default
 		$fout = $falt ? $falt : $f;
-		return file_get_contents($fout);
+		return @file_get_contents($fout);
 	}
 
 	public function process_commands($data,$is_serialized=null) {

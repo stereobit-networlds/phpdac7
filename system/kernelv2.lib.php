@@ -6,7 +6,8 @@ require_once("system/timer.lib.php");
 require_once("agents/resources.lib.php");
 require_once("agents/scheduler.lib.php");
 
-define ("GLEVEL", 1);   
+define ("GLEVEL", 1); 
+define ("__PHAR", 0);  
 
    function _say($str, $level=0, $crln=true) 
    {
@@ -40,7 +41,7 @@ class kernelv2 {
    
    private $shm_id, $shm_max, $dpc_addr, $dpc_length, $dpc_free;
    private $dataspace, $extra_space;
-   private $ipcKey;
+   private $ipcKey, $phar;
    
    function __construct($dtype=null,$ip='127.0.0.1',$port='19123') 
    {  
@@ -123,6 +124,15 @@ class kernelv2 {
 		{
             _say("Failed to get DB handle: " . $e->getMessage(),1);
         }
+		
+		//init phar
+		if (__PHAR)
+		{   //ini_set('phar.readonly','0');
+	        _say("Phar initialized!" ,1);
+			$this->phar = new Phar(getcwd() . "/phpdac7.phar", 
+			                       FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::KEY_AS_FILENAME, 
+								   "phpdac7.phar");		
+		}
 		
 		$this->startdaemon();
 	  }
@@ -411,8 +421,6 @@ class kernelv2 {
       $this->shm_max = $this->load_dpc_tree($data); //\0 included
 	  //echo ">>>>>>>>>>>>>>>", $this->shm_max;
 	  
-	  _dump($data ,'w', '/dumpmem-loadedtree'.$_SERVER['COMPUTERNAME'].'.log');
-	  
 	  ///////////////allocate dpc tree
 	  // Create shared memory block with system id if 0xff3
 	  $space = $this->shm_max + $this->dataspace;
@@ -422,8 +430,10 @@ class kernelv2 {
 	  
       if ($this->shm_id) 
 	  {
-		// Do not Check SpinLock		
+		// Do not Check SpinLock \0 included		
 		$bw = shmop_write($this->shm_id, $data, 0);
+		//init mem dump w not a+ (dump includes all 1st entries not updates)
+		_dump($data ,'w', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
 		
         if($bw != $this->shm_max) 
 		{
@@ -440,7 +450,7 @@ class kernelv2 {
    
    //save shared mem resource id and mem alloc arrays
    private function savestate() 
-   {
+   {   /*
 		$fd = @fopen( "shm.id", "w" );
 
 		if (!$fd) 
@@ -457,6 +467,13 @@ class kernelv2 {
 		fwrite($fd, $data);
 		fclose($fd);      
 		return true;
+		*/
+		_say("Save state",2);
+		$data = $this->shm_max ."@^@". serialize($this->dpc_addr) . 
+		                       "@^@". serialize($this->dpc_length). 
+							   "@^@". serialize($this->dpc_free);
+							   
+		return file_put_contents('shm.id', $data ,LOCK_EX);
    }
    
    private function getShmOffset() {
@@ -563,8 +580,11 @@ class kernelv2 {
 					_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 1:$dpc",1); 
 					
 				$data .= str_repeat(' ',$this->extra_space);
+				
 				if (shmop_write($this->shm_id, "\0". $data ."\0", $offset))
 				{
+					_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+					
 					$this->savestate();
 					_say("$dpc loaded",1);
 					_dump("LOAD\n\n\n\n" . $data);
@@ -706,7 +726,7 @@ class kernelv2 {
 		_say("reading $dpc ",2);
 		
 		if ($this->checkSpinLock($dpc)===true)
-			_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock reader:$dpc",1);
+			_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock reader:$dpc",3);
 		
 		$data = shmop_read($this->shm_id, 
 	                       $offset, 
@@ -736,7 +756,7 @@ class kernelv2 {
 		{
 			//echo "CCCCCCCCCCCCCCCCCCCC\n";
 			$data = (!$this->scheduler->findschedule($dpc)) ?
-				    $this->httpcl($dpc) : null; //bypass	
+				    $this->httpcl($dpc) : null; //bypass			
 		}	
 	    elseif (is_readable($this->dpcpath . $dpc)) 
 		{
@@ -756,7 +776,7 @@ class kernelv2 {
 			*/
 			//https://raw.github.com/stereobit-networlds/phpdac6/master/
 			//local storage
-			$data = $this->_readPHP($this->dpcpath . $dpc);
+			$data = $this->_readPHP($this->dpcpath . $dpc); //dump inside
 		}
 		else 
 			_say($this->dpcpath . $dpc . ' not found!',1);	
@@ -784,6 +804,8 @@ class kernelv2 {
 			$data .= str_repeat(' ',$this->extra_space);
 			if (shmop_write($this->shm_id, "\0". $data ."\0", $offset))
 			{
+				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+				
 				$this->savestate();
 				_say("$dpc inserted",1);
 				_dump("INSERT\n\n\n\n" . $data);
@@ -1020,7 +1042,7 @@ class kernelv2 {
 			  $this->dpc_length[$dpcf] = strlen($f) + $this->extra_space;
 			  $this->dpc_free[$dpcf] = $this->extra_space;
 			  
-			  $offset+= $this->dpc_length[$dpcf] + 1; //\0foot
+			  $offset+= $this->dpc_length[$dpcf];// + 1; //\0foot
 			  
 			  //add header sign
 			  $data .= "\0";
@@ -1360,10 +1382,18 @@ class kernelv2 {
 		return $key;
 	}	
 	
-	protected function _readPHP($filename=null) {
+	protected function _readPHP($filename=null) 
+	{
 		if (!$filename) return false;
 		
-		return @file_get_contents($filename);
+		$fdata = @file_get_contents($filename);
+
+		if (__PHAR && is_object($this->phar))
+		{	_say("Phar file added: " . $filename ,1);
+			$this->phar[$filename] = $fdata;
+		}
+		
+		return $fdata; //stop here
 		
 		return  (
 						  preg_replace("/^<\?php/","<?php",						  
@@ -1392,6 +1422,12 @@ class kernelv2 {
    
 	function __destruct() 
 	{
+		if (__PHAR && is_object($this->phar))
+		{   _say("Phar completed" ,1);
+			$this->phar->setStub($phar->createDefaultStub("dpclass.dpc.php"));
+			//may be cmd from a client...
+		}	
+		
 		//when ctrl-c
 		@unlink("shm.id"); 
 		

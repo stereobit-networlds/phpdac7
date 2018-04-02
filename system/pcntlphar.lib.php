@@ -12,13 +12,13 @@ define('_PRJPATH_', $environment['prjpath']);
 define('_DPCPATH_', $dpcpath);
 define('_ISAPP_', $environment['app']); 
 	
-require_once("phpdac5://127.0.0.1:19123/system/system.lib.php");	
-require_once("phpdac5://127.0.0.1:19123/system/parser.lib.php");
-require_once("phpdac5://127.0.0.1:19123/system/ktimer.lib.php");
-require_once("phpdac5://127.0.0.1:19123/system/azdgcrypt.lib.php"); 	    
-//require_once("phpdac5://127.0.0.1:19123/system/cryptopost.lib.php");  //load at page use crypt.cryptopost 
-require_once("phpdac5://127.0.0.1:19123/system/ccpp.lib.php");
-require_once("phpdac5://127.0.0.1:19123/system/controllst.lib.php");
+require_once("phar://$pharApp/system/system.lib.php");	
+require_once("phar://$pharApp/system/parser.lib.php");
+require_once("phar://$pharApp/system/ktimer.lib.php");
+require_once("phar://$pharApp/system/azdgcrypt.lib.php"); 	    
+//require_once("phar://$pharApp/system/cryptopost.lib.php");  //load at page use crypt.cryptopost 
+require_once("phar://$pharApp/system/ccpp.lib.php");
+require_once("phar://$pharApp/system/controllst.lib.php");
 
 function _l($value=null) {
 	return (localize($value, getlocal()));
@@ -716,7 +716,7 @@ parse_ini_string_m:
 		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
 				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
 
-		global $activeDPC,$info,$xerror,$GRX,$argdpc,$pharApp; 	 
+		global $activeDPC,$info,$xerror,$argdpc,$pharApp; 	 
 	
 		if (($this->shm) && (!$myargdpc)) {
 			if ($pharApp)
@@ -743,8 +743,8 @@ parse_ini_string_m:
 
 	//override
 	public function require_dpc($dpc, $cgipath=null) {
-		$path = $cgipath ? $cgipath : _DPCPATH_; 
-		global $pharApp;	
+		$path = $cgipath ? $cgipath : _DPCPATH_;  
+		global pharApp;
 		
 		if ($this->shm) {
 			if ($pharApp)
@@ -763,7 +763,7 @@ parse_ini_string_m:
 	
 	//require via ctrl
 	public function _require($dpc, $cgipath=null) {
-		$path = $cgipath ? $cgipath : _DPCPATH_; 
+		$path = $cgipath ? $cgipath : _DPCPATH_;
 		global $pharApp;	
 		
 		if ($this->shm) {
@@ -854,7 +854,7 @@ parse_ini_string_m:
 	protected function _new($dpc,$type) {
 		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
 				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
-		global $activeDPC,$info,$xerror,$GRX,$argdpc; //IMPORTANT GLOBALS!!!
+		global $activeDPC,$info,$xerror,$argdpc; 
 		global $__DPCOBJ; 
 		global $__DPCID; 
 	  
@@ -916,7 +916,7 @@ parse_ini_string_m:
 		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
 				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
 
-		global $activeDPC,$info,$xerror,$GRX,$argdpc; 	
+		global $activeDPC,$info,$xerror,$argdpc; 	
 	  
 		$__DPC = GetGlobal('__DPC');	  
 	  

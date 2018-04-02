@@ -3,6 +3,7 @@
 if (!array($env)) die('phpdac7 required');
 $environment = (array) $env;//@parse_ini_file("phpdac7.ini");
 $dpcpath = $environment['dpcpath'] ? $environment['dpcpath'] : 'dpc';
+$pharApp = $environment['app']; //phar app
 
 define('_APPNAME_', $environment['appname']);
 define('_APPPATH_', $environment['apppath']);
@@ -15,7 +16,7 @@ require_once("system.lib.php");
 require_once("parser.lib.php");
 require_once("ktimer.lib.php");
 require_once("azdgcrypt.lib.php"); 	
-//require_once("cryptopost.lib.php");     //load at page use crypt.cryptopost 
+//require_once("cryptopost.lib.php"); //load at page use crypt.cryptopost 
 require_once("ccpp.lib.php");
 require_once("controller.lib.php");
 
@@ -53,16 +54,16 @@ class pcntl extends controller {
 
 	var $mytime, $myaction, $languange, $code, $myactive;
 	var $file_name, $file_path, $file_extension;
-	var $root_page, $debug, $name, $noqueue; //$sysauth, $data;
+	var $root_page, $debug, $name, $noqueue;
 	var $fp, $lan, $cl, $local_security, $httpurl;
-	var $preprocessor, $preprocess, $startProcess, $processStack;	
+	var $preprocessor, $preprocess, $startProcess, $processStack;
+	var $encrypted;	
 
 	public function __construct($code=null,$preprocess=null,$noqueue=null) { 
 
-		session_start(); 
+		//session_start(); 
 		$this->mytime = $this->getthemicrotime();    
 		$xtime = $this->getthemicrotime(); 		
-		//date_default_timezone_set('Europe/Athens');
 		
 		controller::__construct();	
 
@@ -105,6 +106,7 @@ class pcntl extends controller {
 		$this->code = $code;
 		$this->noqueue = $noqueue;		
 		$this->myaction = null;
+		$this->encrypted = null;
 		
 		SetGlobal('controller',$this);
 		//SetGlobal('dispatcher',$this);			
@@ -715,10 +717,12 @@ parse_ini_string_m:
 		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
 				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
 
-		global $activeDPC,$info,$xerror,$GRX,$argdpc; 	 
+		global $activeDPC,$info,$xerror,$GRX,$argdpc,$pharApp; 	 
 	
 		if (($this->shm) && (!$myargdpc)) {
-			//if (GetGlobal('__USERAGENT')=='HTML')
+			if ($pharApp)
+				require_once("phar://$pharApp/". str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+			else
 				require_once("phpdac5://127.0.0.1:19123/". str_replace(".","/",trim($dpc)) . "." . $type . ".php");
 			//else	  
 				//require_once("phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
@@ -740,10 +744,13 @@ parse_ini_string_m:
 
 	//override
 	public function require_dpc($dpc, $cgipath=null) {
-		$path = $cgipath ? $cgipath : _DPCPATH_;  
+		$path = $cgipath ? $cgipath : _DPCPATH_; 
+		global $pharApp;	
 		
 		if ($this->shm) {
-			//if (GetGlobal('__USERAGENT')=='HTML')
+			if ($pharApp)
+				$ret = "phar://$pharApp/". $dpc;
+			else
 				$ret = "phpdac5://127.0.0.1:19123/". $dpc; //nopath
 				//echo $dpc . ' :shared<br/>';	
 			//else	  
@@ -757,10 +764,13 @@ parse_ini_string_m:
 	
 	//require via ctrl
 	public function _require($dpc, $cgipath=null) {
-		$path = $cgipath ? $cgipath : _DPCPATH_;  
+		$path = $cgipath ? $cgipath : _DPCPATH_;
+		global $pharApp;	
 		
 		if ($this->shm) {
-			//if (GetGlobal('__USERAGENT')=='HTML')
+			if ($pharApp)
+				require_once("phar://$pharApp/". $dpc);
+			else
 				require_once("phpdac5://127.0.0.1:19123/". $dpc); //nopath
 				//echo $dpc . ' :shared<br/>';	
 			//else	  
@@ -845,7 +855,7 @@ parse_ini_string_m:
 	protected function _new($dpc,$type) {
 		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
 				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
-		global $activeDPC,$info,$xerror,$GRX,$argdpc; //IMPORTANT GLOBALS!!!
+		global $activeDPC,$info,$xerror,$argdpc; 
 		global $__DPCOBJ; 
 		global $__DPCID; 
 	  
@@ -907,7 +917,7 @@ parse_ini_string_m:
 		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
 				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
 
-		global $activeDPC,$info,$xerror,$GRX,$argdpc; 	
+		global $activeDPC,$info,$xerror,$argdpc; 	
 	  
 		$__DPC = GetGlobal('__DPC');	  
 	  
@@ -957,25 +967,67 @@ parse_ini_string_m:
 		if ((defined('CRYPTOPOST_DPC')) && (isset($_POST['cryptoPost'])))  {
 				
 			//echo getcwd() . '/openssl.cnf';	
-			$crypto = new Cryptopost(1024, getcwd() . '/openssl.cnf'); 
-				
+			//$crypto = new Cryptopost(1024, getcwd() . '/openssl.cnf'); 
 			//echo 'PCNTL***>>>';// . $_POST['cryptoPost'] . '>';
 			
 			$cryptedPost = $_POST;              // Save crypted data for debug
-			$formId = $crypto->decodeForm();    // Decrypt $_POST contents
+			//$formId = $crypto->decodeForm();    // Decrypt $_POST contents
+			$formId = $this->calldpc_method('cryptopost.decodeForm');
 			//echo $formId . '>';
+			
 			//$this->aesDebug($cryptedPost); //already decrypted use var
 		    //print_r($_POST);
 			// Encrypt processed data if you need to fill form again:
-			$encrypted = $crypto->encodeData($_POST, $formId);		
+			//$encrypted = $crypto->encodeData($_POST, $formId);		
+			$this->encrypted = $this->calldpc_method('cryptopost.encodeData use +'.$formId);
 		}
 		
 		//return $_POST; //decrypted or as is / no need	
 	}
 	
-	protected function aesDebug($crPost=null) {
-		    $cryptedPost = isset($crPost) ? $crPost : $_POST;
+	public function getEncrypted() {
+		return $this->encrypted;
+	}
+	
+	public function cryptOnSubmit($formname) {
 		
+		if (defined('CRYPTOPOST_DPC'))
+			return 'onsubmit="return cryptoPost.encrypt(\''.$formname.'\')"';
+		
+		return null;
+	}
+	
+	public function onSubmitJS($formname) {
+		
+		if (defined('CRYPTOPOST_DPC'))
+			return 'cryptoPost.encrypt(\''.$formname.'\'); document.tForm.submit();';
+		
+		return 'document.getElementById(\''.$formname.'\').submit();';
+	}	
+	
+	// Encrypt processed data if you need to fill form again:
+	// Fill form input fields 
+	public function postDecrypt($enc=null) {
+		
+		if (defined('CRYPTOPOST_DPC'))
+			return "<script>cryptoPost.decrypt('$enc');</script>";
+		
+		return null;
+	}	
+	
+	public function getmyRSAPublickey() {
+		
+		if (defined('CRYPTOPOST_DPC'))
+			return $this->calldpc_method('cryptopost.getmyRSAPublickey');
+		
+		return null;
+	}		
+	
+	protected function aesDebug($crPost=null) {
+		$cryptedPost = isset($crPost) ? $crPost : $_POST;
+		if (!defined('CRYPTOPOST_DPC'))
+			echo "Cryptopost not defined";
+		else {
             // Debug
             echo '<h2>Session keys:</h2>';
             if (isset($_SESSION['RSA_Public_key'])){
@@ -994,7 +1046,8 @@ parse_ini_string_m:
                 echo '<h2>Decrypted POST data:</h2><pre>';
                 var_dump($_POST);
                 echo '</pre><br />';
-            }		
+            }	
+		}	
 	}	
 	
    

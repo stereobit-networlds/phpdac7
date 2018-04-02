@@ -12,42 +12,23 @@ class controller  {
 	
 	protected $shm;
 	
-    public function __construct($code=null,$preprocess=null,$locales=null) {
+    public function __construct($code=null,$preprocess=null,$noqueue=null) {
 
 		$this->_events  = array();	  	
 		$this->_actions = array();
 		$this->_attr    = array();
 		$this->_security= array();
-
-		/*
-		//$this->server = $this->exist_dpc_server('127.0.0.1',19123);	  
-		$this->shm = $this->exist_shm();
-		if ($this->shm) {
-		  
-			$this->shm_id = $this->load_shm_id();	 //echo $this->shm_id; 
-			$this->shm_addr = $this->load_shm_addr();	
-			$this->shm_length = $this->load_shm_length();	
-			
-			//REGISTER PHPDAC (server side) protocol...
-			require_once("dacstream.lib.php");			
-			$phpdac_s = stream_wrapper_register("phpdac","dacstream");
-			if (!$phpdac_s) _echo('CLI',"Server protocol failed to registered!\n");
-				//else _echo('CLI',"Server protocol registered!\n");
-  
-			//REGISTER PHPDAC (client side)protocol...(used by webserver due to shm error!!!)
-			require_once("dacstreamc.lib.php");			
-			$phpdac_c = stream_wrapper_register("phpdac5","c_dacstream");
-			if (!$phpdac_c) _echo('CLI',"Client protocol failed to registered!\n");
-				//else _echo('CLI',"Client protocol registered!\n"); 
-		}	
-		*/	
+	
 		$this->shm = 1;
     }
    
     public function include_dpc($dpc) {
+		global $pharApp;
 
 		if ($this->shm) {
-			//if (GetGlobal('__USERAGENT')=='HTML')
+			if ($pharApp)
+				require_once("phar://$pharApp/". $dpc);
+			else
 				require_once("phpdac5://127.0.0.1:19123/".$dpc);
 				//echo $dpc . ' :shared<br/>';	
 			//else	  
@@ -60,9 +41,12 @@ class controller  {
     }
    
 	public function require_dpc($dpc, $cgipath=null) {
+		global $pharApp;
 
 		if ($this->shm) {
-			//if (GetGlobal('__USERAGENT')=='HTML')
+			if ($pharApp)
+				$ret = "phar://$pharApp/". $dpc;
+			else
 				$ret = "phpdac5://127.0.0.1:19123/".$dpc;
 				//echo $dpc . ' :shared<br/>';	
 			//else	  
@@ -239,22 +223,24 @@ class controller  {
       global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
              $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	
 
-	  global $activeDPC,$info,$xerror,$GRX,$argdpc;  //IMPORTANT GLOBALS!!!
+	  global $activeDPC,$info,$xerror,$argdpc,$pharApp;
 	  
 	  global $__DPCOBJ; //holds objects of new approach of name of type xxx.yyy
 	  global $__DPCID; //array of new name alias  	  	    	  	   
 
-      $argdpc = _DPCPATH_;// paramload('DIRECTIVES','dpc_type');	  
+      //$argdpc = _DPCPATH_;// paramload('DIRECTIVES','dpc_type');	  
 	  //echo $argdpc,'>'; 
   
 	  if ($this->shm) {//SHARED MEM 
-		//if (GetGlobal('__USERAGENT')=='HTML')
-			require_once("phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
-		//else	  
-			//require_once("phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+			if ($pharApp)
+				require_once("phar://$pharApp/". str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+			else
+				require_once("phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+			//else	  
+				//require_once("phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
 	  }	
 	  else	
-		require_once($argdpc . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+			require_once(_DPCPATH_ . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
 
 	  //START THE OBJECT
       $parts = explode(".",trim($dpc)); 
@@ -426,21 +412,25 @@ class controller  {
 	
 	//call a extension ext.php class file as is
     protected function set_extension($extension,$defname,$noerror=null) {
+	 global $pharApp;	
      //echo $extension,"\n";
+	 
 	 if (!defined($defname)) {
 	 
 	   define($defname,'true');
 
-       $argdpc = _DPCPATH_; //paramload('DIRECTIVES','dpc_type');
+       //$argdpc = _DPCPATH_; //paramload('DIRECTIVES','dpc_type');
 	   
 	   if ($this->shm) {
-	      //if (GetGlobal('__USERAGENT')=='HTML')
-	        $includer = "phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($extension)) .  ".ext.php";
-		  //else
-		    //$includer = "phpdac://" . str_replace(".","/",trim($extension)) . ".ext.php";  
+			if ($pharApp)
+				$includer = "phar://$pharApp/". str_replace(".","/",trim($extension)) . ".ext.php";
+			else
+				$includer = "phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($extension)) .  ".ext.php";
+			//else
+				//$includer = "phpdac://" . str_replace(".","/",trim($extension)) . ".ext.php";  
 	   }	
 	   else 	   
-		  $includer = $argdpc . "/system/extensions/" . str_replace(".","/",trim($extension)) . ".ext.php";	
+		  $includer = _DPCPATH_ . "/system/extensions/" . str_replace(".","/",trim($extension)) . ".ext.php";	
 	  
 	   //echo $defname;           
 	   //echo $includer; 		
@@ -461,19 +451,21 @@ class controller  {
       global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
              $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
 
-	  global $activeDPC,$info,$xerror,$GRX,$argdpc; 	//IMPORTANT GLOBALS!!!  
+	  global $activeDPC,$info,$xerror,$argdpc,$pharApp;
 	
 	  //echo $dpc,"\n";
-      $argdpc = _DPCPATH_; //paramload('DIRECTIVES','dpc_type');
+      //$argdpc = _DPCPATH_; //paramload('DIRECTIVES','dpc_type');
 	  
 	  if ($this->shm) {
-	    //if (GetGlobal('__USERAGENT')=='HTML')
-	      require_once("phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
-		//else
-		  //require_once("phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");  
+			if ($pharApp)
+				require_once("phar://$pharApp/". str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+			else
+				require_once("phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+			//else
+				//require_once("phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");  
 	  }	
 	  else 	  	 
-		require_once($argdpc . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+		require_once(_DPCPATH_ . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
 
 	  //update local table
       $parts = explode(".",trim($dpc)); 
@@ -488,7 +480,7 @@ class controller  {
       global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
              $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
 
-	  global $activeDPC,$info,$xerror,$GRX,$argdpc; 	//IMPORTANT GLOBALS!!!  
+	  global $activeDPC,$info,$xerror,$argdpc; 	  
 	  
 	  $__DPC = GetGlobal('__DPC');	  
 	  
@@ -742,7 +734,7 @@ class controller  {
       global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
              $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
 
-	  global $activeDPC,$info,$xerror,$GRX,$argdpc; //IMPORTANT GLOBALS!!!
+	  global $activeDPC,$info,$xerror,$argdpc; 
 	  
 	  global $__DPCOBJ; //holds objects of new approach of name of type xxx.yyy
 	  global $__DPCID; //array of new name alias	  
@@ -790,7 +782,7 @@ class controller  {
       global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
              $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
 
-	  global $activeDPC,$info,$xerror,$GRX,$argdpc; //IMPORTANT GLOBALS!!!
+	  global $activeDPC,$info,$xerror,$argdpc; 
 	  
 	  global $__DPCOBJ; //holds objects of new approach of name of type xxx.yyy
 	  global $__DPCID; //array of new name alias		
@@ -864,7 +856,7 @@ class controller  {
       global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
              $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
 
-	  global $activeDPC,$info,$xerror,$GRX,$argdpc; //IMPORTANT GLOBALS!!!
+	  global $activeDPC,$info,$xerror,$argdpc; 
 	  
 	  global $__DPCOBJ; //holds objects of new approach of name of type xxx.yyy
 	  global $__DPCID; //array of new name alias	  
