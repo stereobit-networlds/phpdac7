@@ -376,6 +376,15 @@ class rccmstemplates {
 ';
 		return ($ret);
 	}
+	
+	public function ckjavascript() {
+		if ($this->ckeditver==3)
+			return '<script src="' . 
+					_v('cmsrt.paramload use CKEDITOR+ckeditorjs') .
+					'"></script>';
+		else
+			return '<script src="assets/ckeditor/ckeditor.js"></script>';
+	}		
 		
     public function ckeditorjs($element=null, $maxmininit=false, $disable=false) {
 		//CKEDITOR.config.basicEntities = false;

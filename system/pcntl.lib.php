@@ -14,9 +14,32 @@ define('_ISAPP_', $environment['app']);
 require_once("system.lib.php");	
 require_once("parser.lib.php");
 require_once("ktimer.lib.php");
-require_once("azdgcrypt.lib.php"); 	    
+require_once("azdgcrypt.lib.php"); 	
+//require_once("cryptopost.lib.php");     //load at page use crypt.cryptopost 
 require_once("ccpp.lib.php");
 require_once("controller.lib.php");
+
+function _l($value=null) {
+	return (localize($value, getlocal()));
+}
+
+function _r($r=null) {
+	return $r ? GetGlobal('controller')->require_dpc($r) : null;
+}
+
+function _v($v=null,$val=null) {
+	return $v ? GetGlobal('controller')->calldpc_var($v, $val) : null;
+}
+
+function _m($m=null, $noerr=null) {
+	return $m ? GetGlobal('controller')->calldpc_method($m, $noerr) : null;
+}
+
+function _m2($m=null, $params=array()) {
+	$mf = $m ? explode('.', $m) : null;
+	return empty($mf) ? null : call_user_func_array(array($mf[0], $mf[1]), $params);
+	//call_user_func_array(array(__NAMESPACE__ . "\\" . $mf[0], $mf[1]), $params); //5.3.0 namespace
+}
 
 define("PCNTL_DPC",true);
 $__DPC['PCNTL_DPC'] = 'pcntl'; 
@@ -509,7 +532,9 @@ parse_ini_string_m:
 		return ($ret);
     }   
 	
-	protected function _getqueue() {		   
+	protected function _getqueue() {
+
+		$this->decryptPost();
 		 
 		if (array_key_exists('FormAction',$_POST)) {
 			//if post has & query cut it from post
@@ -924,6 +949,54 @@ parse_ini_string_m:
 		
 		return false;
 	}
+	
+	//cryptopost funcs (cryptopost js files required at page)
+	protected function decryptPost() {
+		
+		// Check for FORM encrypted data
+		if ((defined('CRYPTOPOST_DPC')) && (isset($_POST['cryptoPost'])))  {
+				
+			//echo getcwd() . '/openssl.cnf';	
+			$crypto = new Cryptopost(1024, getcwd() . '/openssl.cnf'); 
+				
+			//echo 'PCNTL***>>>';// . $_POST['cryptoPost'] . '>';
+			
+			$cryptedPost = $_POST;              // Save crypted data for debug
+			$formId = $crypto->decodeForm();    // Decrypt $_POST contents
+			//echo $formId . '>';
+			//$this->aesDebug($cryptedPost); //already decrypted use var
+		    //print_r($_POST);
+			// Encrypt processed data if you need to fill form again:
+			$encrypted = $crypto->encodeData($_POST, $formId);		
+		}
+		
+		//return $_POST; //decrypted or as is / no need	
+	}
+	
+	protected function aesDebug($crPost=null) {
+		    $cryptedPost = isset($crPost) ? $crPost : $_POST;
+		
+            // Debug
+            echo '<h2>Session keys:</h2>';
+            if (isset($_SESSION['RSA_Public_key'])){
+                echo 'RSA public key (hex) = '. $_SESSION['RSA_Public_key'];
+                echo '<br /><br />';
+            }
+            if (isset($_SESSION['aesKey'])){
+                echo 'AES key (hex) = '. bin2hex($_SESSION['aesKey']);
+                echo '<br />';
+            }
+			
+            if (isset($cryptedPost)){
+                echo '<h2>Received POST data:</h2><pre>';
+                var_dump($cryptedPost);
+                echo '</pre><br />';
+                echo '<h2>Decrypted POST data:</h2><pre>';
+                var_dump($_POST);
+                echo '</pre><br />';
+            }		
+	}	
+	
    
 	public function __destruct() {		  
 	  

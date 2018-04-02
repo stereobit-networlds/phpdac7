@@ -771,15 +771,17 @@ class rccmsctg {
 			echo $sSQL . '<br/>';
 		
 	    $resultset = $db->Execute($sSQL,2);	
-		
-		$objarr = explode(',',$objects);
-		foreach ($resultset as $n=>$rec) {
+		if ($resultset) {		
+		  $objarr = explode(',',$objects);
+		  foreach ($resultset as $n=>$rec) {
 			$ret[] = ((!empty($objarr)) && (in_array($rec[0], $objarr))) ? 
 			            "<option value='".$rec['id']."'>". $rec[$code].'-'.$rec[$itmname]."</option>" :
 			            "<option value='".$rec['id']."'>". '[+]' .$rec[$code].'-'.$rec[$itmname]."</option>";
-        }		
-
-		return (implode('',$ret));			
+          }		
+        
+		  return (implode('',$ret));			
+		}
+		return null;
 	}	
 
 	public function viewList() {

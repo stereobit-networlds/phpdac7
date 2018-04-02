@@ -261,20 +261,20 @@ class rculiststats  {
 		$this->runSql('runningCampaigns', $sSQL);
 
 		//percent of sends and replies (uniques=status)
-		$rpercent = round($sc*100/$tq1); // (on current inactive mails) - tq = all mails
+		$rpercent = @round($sc*100/$tq1); // (on current inactive mails) - tq = all mails
 		$this->stats['percentSucceed']['value'] = intval($rpercent);
 
 		//percent of unread sents
-		$upercent = round($ul*100/$tq1); //tq
+		$upercent = @round($ul*100/$tq1); //tq
 		$this->stats['percentUnread']['value'] = intval($upercent);	
 		
 		//percent of failed sents
 		$this->stats['failed']['value'] = $bl + $fl;	
-		$fpercent = round(($bl+$fl)*100/$tq1); //tq
+		$fpercent = @round(($bl+$fl)*100/$tq1); //tq
 		$this->stats['percentFailed']['value'] = intval($fpercent);		
 
 		//percent of have to sent
-		$spercent = round($sl*100/$tq);
+		$spercent = @round($sl*100/$tq);
 		$this->stats['percentUnsend']['value'] = intval($spercent);			
         //echo $sl,':',$tq,':',$spercent; 
 							

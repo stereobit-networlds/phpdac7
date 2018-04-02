@@ -543,9 +543,10 @@ FB.api('/me?fields=id,email,first_name,last_name,gender,timezone', function(resp
 			
 			$mailbody = $this->combine_tokens($mytemplate,$tokens);
 
-			$ss = $this->tell_subject;
-			$subject = localize($ss, getlocal());
-			$mysubject = $subject ? $subject : localize('_UMAILSUBC',getlocal());
+			//$ss = $this->tell_subject;
+			//$subject = localize($ss, getlocal());
+			//$mysubject = $subject ? $subject : localize('_UMAILSUBC',getlocal());
+			$mysubject = localize('_USERREGISTRATION',getlocal());
 		
 			//$this->mailto($this->usemail2send,$this->tell_it,$mysubject,$mailbody);
 			$body = str_replace('+','<SYN/>',$mailbody); 
@@ -571,9 +572,10 @@ FB.api('/me?fields=id,email,first_name,last_name,gender,timezone', function(resp
 			
 			$mailbody = $this->combine_tokens($mytemplate,$tokens);
 		
-			$ss = $this->tell_subject;
-			$subject = localize($ss, getlocal());
-			$mysubject = $subject ? $subject : localize('_UMAILSUBC',getlocal());
+			//$ss = $this->tell_subject;
+			//$subject = localize($ss, getlocal());
+			//$mysubject = $subject ? $subject : localize('_UMAILSUBC',getlocal());
+			$mysubject = localize('_USERREGISTRATION',getlocal());
 
 			$body = str_replace('+','<SYN/>',$mailbody); 
 			

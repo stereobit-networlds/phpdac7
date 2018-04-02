@@ -112,7 +112,12 @@ class cmsform {
 								$email = GetParam($this->cntform[1]); 
 								$subject = $cperson ? $cperson . ' - ' . GetParam($this->cntform[2]) : GetParam($this->cntform[2]); 
 								$message = GetParam($this->cntform[3]); 
-								$body = $message; 										
+								//$mailbody = $message; 	
+								$mytemplate = _m('cmsrt.select_template use contactformtell');
+								$tokens[0] = $email;
+								$tokens[1] = $subject;
+								$tokens[2] = $message;
+								$mailbody = $this->combine_tokens($mytemplate,$tokens);
 								
 								$sSQL = "insert into cform (email,subject,postform) values (" . 
 								        $db->qstr(addslashes($email)) . "," . 
@@ -123,31 +128,37 @@ class cmsform {
 								
 								$mailinsubject = $subject . ' (' . $email . ')';
 								//$this->mailto($this->sendaddress,$this->sendaddress,$mailinsubject,$message,1);							  
-								$body = str_replace('+','<SYN/>',$message); 
+								$body = str_replace('+','<SYN/>',$mailbody); 
 								$mailerr = _m("cmsrt.cmsMail use {$this->sendaddress}+{$this->sendaddress}+$mailinsubject+$body");
 							  
 								$this->post = true;
 								$this->update_statistics('contact', $email);
 									
-								//verify
-								if ($this->verify) { 
-									//$this->mailto($this->verify_address,$email,$this->verify_subject,$this->verify_message,1);								  									  
-									$body = str_replace('+','<SYN/>',$this->verify_message); 
+								//verify (send to user)
+								//if ($this->verify) { 
+								if (!$mailerr) {
+									$tokens[2] = $this->verify_message; //override
+									$mailbody2 = $this->combine_tokens($mytemplate,$tokens);								
+									$body = str_replace('+','<SYN/>',$mailbody2); 
 									$mailerr = _m("cmsrt.cmsMail use {$this->verify_address}+$email+{$this->verify_subject}+$body");
-								}	
-
-								//subscribe		
-								if (trim(GetParam('subscribe'))) 
-									$this->subscribe($email);	 
+									
+									//subscribe		
+									if (trim(GetParam('subscribe'))) 
+										$this->subscribe($email);	 
 							  
-								$this->msg = localize('_AMTRUE',getlocal());
+									$this->msg = localize('_AMTRUE',getlocal());
 								
-								//set session param that has contact
-								SetSessionParam("FORMSUBMITED",1);
-								//save user mail
-								SetSessionParam("FORMMAIL",$email); //use for something...
+									//set session param that has contact
+									SetSessionParam("FORMSUBMITED",1);
+									//save user mail
+									SetSessionParam("FORMMAIL",$email); //use for something...
 								
-								$this->jsDialog('', localize('_RCAMTRUE', $this->lan));			
+									$this->jsDialog('', localize('_RCAMTRUE', $this->lan));									
+								}
+								else { 
+									$this->msg = $err;						
+									$this->jsDialog($err, localize('_RCAMFALSE', $this->lan));
+								}												
 							}
 							else { 
 								$this->msg = $err;						
@@ -310,6 +321,28 @@ class cmsform {
 			return _m('cmsvstats.update_event_statistics use '.$id.'+'.$user);			
 		
 		return false;
+	}
+
+	protected function combine_tokens($template_contents,$tokens) {
+	
+	    if (!is_array($tokens)) return;
+		
+		if (defined('FRONTHTMLPAGE_DPC')) {
+		  $fp = new fronthtmlpage(null);
+		  $ret = $fp->process_commands($template_contents);
+		  unset ($fp);	  		
+		}		  		
+		else
+		  $ret = $template_contents;
+		  
+		//echo $ret;
+	    foreach ($tokens as $i=>$tok) {
+		    $ret = str_replace("$".$i."$",$tok,$ret);
+	    }
+		//clean unused token marks
+		for ($x=$i;$x<20;$x++)
+		  $ret = str_replace("$".$x."$",'',$ret);
+		return ($ret);
 	}	
   
 };

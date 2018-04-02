@@ -13,6 +13,9 @@ require_once($v);
 $a = GetGlobal('controller')->require_dpc('libs/appkey.lib.php');
 require_once($a);
 
+//use at runtime
+//$b = GetGlobal('controller')->require_dpc('crypt/cryptopost.lib.php');
+//require_once($b);
 
 $__EVENTS['RCBULKMAIL_DPC'][0]='cpbulkmail';
 $__EVENTS['RCBULKMAIL_DPC'][1]='cpsavemailadv';
@@ -179,7 +182,7 @@ class rcbulkmail {
 	
 	var $userDemoIds, $crmLevel, $maxinpvars, $batchid, $ckeditver;
 	var $newtemplatebody, $saved, $savedname, $newsubtemplatebody, $newpatternbody;
-	var $_OPT, $exitCode;
+	var $_OPT, $exitCode, $cryptPost;
 		
     public function __construct() {
 	  
@@ -271,8 +274,11 @@ class rcbulkmail {
 		$this->iscollection = false;
 
 		$this->_OPT = false;
-		$this->exitCode = '-001';	
-	}
+		$this->exitCode = '-001';
+
+		$this->cryptPost = defined('CRYPTOPOST_DPC') ? true : false;	
+		//echo '>'.$this->cryptPost;
+	}	
 	
     public function event($event=null) {
 	
@@ -281,8 +287,9 @@ class rcbulkmail {
 		
 		if (defined('RCCOLLECTIONS_DPC')) //used by wizard html page !!
 			$this->iscollection = _m('rccollection.isCollection');  		
-					
-  
+							
+		$this->aesDebug(); //cryptopost msgs
+							
 	    switch ($event) {
 			
 			case 'cptemplatenew'	: 	$this->newcopyTemplate(); 
@@ -350,14 +357,15 @@ class rcbulkmail {
 										$this->javascript(); 
 										break;				
 														
-			case 'cpbulkmail'     	:
+			case 'cpbulkmail'     	:   
 			default               	:	if ($this->template) {
 											//also when returns in cp and template is selected
 											if ($this->iscollection>0)
 												$this->loadTemplate2(); //subtemp						  
 											else
 												$this->loadTemplate();						  
-										}									
+										}
+										$this->javascript();		
         }			
 			
     }	
@@ -425,19 +433,24 @@ class rcbulkmail {
 	}
 	
 	protected function javascript() {	
-	    return null; //!!!!!!
+	    return null; //disable
+		
 		//if ($this->isDemoUser()) return;
 		//if (!$this->cid) return;
 
         if (iniload('JAVASCRIPT')) {   
-	        $code = $this->javascript_code();	   	
+		
+			//$enc = _m('pcntl.getEncrypted');
+			//$code = "cryptoPost.decrypt('$enc');"; 
+			
+	        //$code .= $this->javascript_code(); //DISABLED			
 		    $js = new jscript;
             $js->load_js($code,null,1);   			   
 		    unset ($js);
 	    }	
 	}		
 	
-	//call from page
+	//disabled: call from page
 	public function javascript_code()  {
 		
 	    $ajaxurl = seturl("t=");	
@@ -502,10 +515,41 @@ function startcampaign(subject, from, xcid, bid, isrecur)
 }		
 EOF;
 		return ($js);	
-    }		
+    }	
 	
+	protected function aesDebug($crPost=null) {
+		    $cryptedPost = isset($crPost) ? $crPost : $_POST;
+			if (!defined('CRYPTOPOST_DPC'))
+				$this->messages[] = "Cryptopost not defined";
+			
+            // Debug
+            //echo '<h2>Session keys:</h2>';
+            if (isset($_SESSION['RSA_Public_key'])){
+                //echo 'RSA public key (hex) = '. $_SESSION['RSA_Public_key'];
+                //echo '<br /><br />';
+				$this->messages[] = 'RSA public key (hex) = '. $_SESSION['RSA_Public_key']; 
+            }
+            if (isset($_SESSION['aesKey'])){
+                //echo 'AES key (hex) = '. bin2hex($_SESSION['aesKey']);
+                //echo '<br />';
+				$this->messages[] = 'AES key (hex) = '. bin2hex($_SESSION['aesKey']);
+            }
+			else
+				$this->messages[] = 'AES key NOT FOUND';
+			
+            if (isset($cryptedPost)){
+                //echo '<h2>Received POST data:</h2><pre>';
+                //var_dump($cryptedPost);
+				//$this->messages[] = 'Received POST data:' . var_export($cryptedPost, true);
+                //echo '</pre><br />';
+                //echo '<h2>Decrypted POST data:</h2><pre>';
+                //var_dump($_POST);
+                //echo '</pre><br />';
+				//$this->messages[] = 'Decrypted POST data:' . var_export($_POST, true);
+            }		
+	}	
 	
-	
+
 	protected function campaigns_grid($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
 	    $height = $height ? $height : 600;
         $rows = $rows ? $rows : 25;
@@ -1295,7 +1339,7 @@ EOF;
 		}	
 		
 		return false;
-	}		
+	}
 	
     /*type : 0 save text as mail body /1 save collections as text to reproduce (offers, katalogs) */	
     protected function save_campaign($type=null) {
@@ -1585,7 +1629,7 @@ EOF;
 		}
 	   
 	    /*app users checkbox (todo, make ulist)*/
-	    if ((!$this->isDemoUser()) && ($users = $_POST['siteusers'])) {		
+	    /*if ((!$this->isDemoUser()) && ($users = $_POST['siteusers'])) {		
 			$seclevid = 1;
 			$this->messages[] = 'Call user mail list ' . $seclevid;			
 			 
@@ -1604,10 +1648,10 @@ EOF;
 			if (!empty($ret)) {  
 				$mails .= $_s . implode($_s,$ret); 
 			}
-	    }
+	    }*/
 		
 	    /*app customers checkbox (todo, make ulist)*/
-	    if ((!$this->isDemoUser()) &&($users = $_POST['sitecusts'])) {
+	    /*if ((!$this->isDemoUser()) &&($users = $_POST['sitecusts'])) {
 		
 			$this->messages[] = 'Call customers mail list ';			
 			  
@@ -1623,7 +1667,7 @@ EOF;
 			if (!empty($ret)) {  
 				$mails .= $_s . implode($_s,$ret); 
 			}
-	    }
+	    }*/
 		
 		if ($mails) {
 			$mcsv = explode($_s, str_replace($_s . $_s, $_s, $mails)); //clean ;;->;
@@ -2121,7 +2165,7 @@ This email and any files transmitted with it are confidential and intended solel
 	
 	public function encUrl($url, $nohost=false) {
 		
-		$url = $url ? $url : _m('cms.getHttpUrl'); //default this
+		$url = $url ? $url : _m('cmsrt.getHttpUrl'); //default this
 		
 		if ($url) {
 			
@@ -2160,7 +2204,7 @@ This email and any files transmitted with it are confidential and intended solel
 	public function ckjavascript() {
 		if ($this->ckeditver==3)
 			return '<script src="' . 
-					_v('cms.paramload use CKEDITOR+ckeditorjs') .
+					_v('cmsrt.paramload use CKEDITOR+ckeditorjs') .
 					'"></script>';
 		else
 			return '<script src="assets/ckeditor/ckeditor.js"></script>';

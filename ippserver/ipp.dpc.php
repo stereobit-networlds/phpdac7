@@ -42,8 +42,6 @@ ignore_user_abort(true);
 });*/            
 require_once(_r("ippserver/ServerIPP.lib.php"));
 require_once(_r("ippserver/AgentIPP.lib.php")); //load before, shm err
-//pcntl loaded at phpdac7
-//require_once('cp/dpc/system/pcntl.lib.php'); 
 
 define("USE_DATABASE", false);
 define("SERVER_LOG", true);

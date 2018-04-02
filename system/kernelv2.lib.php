@@ -1619,37 +1619,24 @@ echo "\n**************************************************";
 
 	public function licence() {
 		$ret =
- "\n/*************************************************".
- "\n*   stereobit.networlds e-Enterprise (phpdac7)   *".
- "\n*                                                *".
- "\n*   Copyright 2015-18,  balexiou@stereobit.com   *".
- "\n*                                                *".
- "\n*   This digital loop is owned by the numbers.   *".
- "\n*   Is free for them but you can play as long    *".
- "\n*   your personal pc can consume electric energy.*".
- "\n*   Distribute with care and ask for detailsit   *".
- "\n*   if you like to modify it under the terms of  *".
- "\n*   the GNU Library General Public License.      *".
- "\n*                                                *".
- "\n*   License as published by the Free Software    *".
- "\n*   Foundation; either version 2 of the License, *".
- "\n*   (at your option) any later version.          *".
- "\n*                                                *".
- "\n*   This piece of software is distributed in the *".
- "\n*   hope that it will be useful somehow,         *".
- "\n*   but WITHOUT ANY WARRANTY without even        *".
- "\n*   the implied warranty of MERCHANTABILITY or   *".
- "\n*   FITNESS FOR A PARTICULAR PURPOSE.            *".
- "\n*   See the GNU Library General Public License   *".
- "\n*   for Library General Public License for more  *".
- "\n*   details.                                     *".
- "\n*                                                *".
- "\n*   You should have received a copy of the GNU   *".
- "\n*   Library General Public License along with    *".
- "\n*   this library.                                *".
- "\n*                                                *".
- "\n*                                                *".
- "\n**************************************************/\n";	
+ "\n/***************************************************************************".
+ "\n*                                                                          *".
+ "\n*  Copyright 2018,     balexiou@stereobit.com                              *".
+ "\n*                                                                          *".
+ "\n*  Licensed under the Apache License, Version 2.0 (the \"License\");       *".
+ "\n*  you may not use this file except in compliance with the License         *".
+ "\n*  You may obtain a copy of the License at                                 *".
+ "\n*                                                                          *".
+ "\n*  http://www.apache.org/licenses/LICENSE-2.0                              *".
+ "\n*                                                                          *".
+ "\n*  Unless required by applicable law or agreed to in writing, software     *".
+ "\n*  distributed under the License is distributed on an \"AS IS\" BASIS,     *".
+ "\n*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.*".
+ "\n*  See the License for the specific language governing permissions and     *".
+ "\n*  limitations under the License.                                          *".
+ "\n*                                                                          *".
+ "\n*                                                                          *".
+ "\n****************************************************************************/\n";	
 		return ($ret);
 	}
 }

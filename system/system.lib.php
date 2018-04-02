@@ -6,7 +6,7 @@
 		if (isset($sec[$modulename])) { 
 			$parts = explode(";",$sec[$modulename]);
 		
-			if ($parts[$levelofsec+1] >= $parts[0])
+			if ($parts[intval($levelofsec)+1] >= intval($parts[0]))
 				return 1;
 		}
 		return 0;

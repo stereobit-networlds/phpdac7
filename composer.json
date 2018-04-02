@@ -1,0 +1,17 @@
+{
+    "name": "stereobit/phpdac7",
+    "description": "phpdac7 framework",
+    "keywords": ["phpdac7", "e-Enterprise", "framework"],
+    "homepage": "https://github.com/stereobit-networlds/phpdac7",
+    "license": "APACHE2",
+    "authors": [
+        {
+            "name": "Alexiou Vassilis",
+            "email": "balexiou@stereobit.com"
+        }
+    ],
+	"php": ">=7.2.2"
+    "require": {
+        "monolog/monolog": "1.0.*"
+    }
+}

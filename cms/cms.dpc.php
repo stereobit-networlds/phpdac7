@@ -1,6 +1,6 @@
 <?php
 $__DPCSEC['CMS_DPC']='1;1;1;1;1;1;1;1;1;1;1';
- //move to phpdac7
+/* move to pcntl 
 function _l($value=null) {
 	return (localize($value, getlocal()));
 }
@@ -22,7 +22,7 @@ function _m2($m=null, $params=array()) {
 	return empty($mf) ? null : call_user_func_array(array($mf[0], $mf[1]), $params);
 	//call_user_func_array(array(__NAMESPACE__ . "\\" . $mf[0], $mf[1]), $params); //5.3.0 namespace
 }
-
+*/
 
 if ((!defined("CMS_DPC")) && (seclevel('CMS_DPC',decode(GetSessionParam('UserSecID')))) ) {
 define("CMS_DPC",true);
@@ -162,6 +162,45 @@ class cms extends fronthtmlpage {
 		$valid = filter_var($mail, FILTER_VALIDATE_EMAIL);
 		return ($valid);		
 	}	
+	
+	//CryptoPost
+	public function getEncrypted() {
+		return _v('pcntl.encrypted');
+	}
+	
+	public function cryptOnSubmit($formname) {
+		
+		if (defined('CRYPTOPOST_DPC'))
+			return 'onsubmit="return cryptoPost.encrypt(\''.$formname.'\')"';
+		
+		return null;
+	}
+	
+	public function onSubmitJS($formname) {
+		
+		if (defined('CRYPTOPOST_DPC'))
+			return 'cryptoPost.encrypt(\''.$formname.'\'); document.tForm.submit();';
+		
+		return 'document.getElementById(\''.$formname.'\').submit();';
+	}	
+	
+	// Encrypt processed data if you need to fill form again:
+	// Fill form input fields 
+	public function postDecrypt($enc=null) {
+		
+		if (defined('CRYPTOPOST_DPC'))
+			return "<script>cryptoPost.decrypt('$enc');</script>";
+		
+		return null;
+	}	
+	
+	public function getmyRSAPublickey() {
+		
+		if (defined('CRYPTOPOST_DPC'))
+			return _m('crryptopost.getmyRSAPublickey');
+		
+		return null;
+	}		
 	
 		
     //URL funcs	

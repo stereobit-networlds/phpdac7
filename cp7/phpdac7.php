@@ -45,8 +45,12 @@ try {
 	$phpdac_c = stream_wrapper_register("phpdac5","c_dacstream");
 	if (!$phpdac_c)
 			echo "Client protocol failed to registered!";	
-	if (($phpdac_c) && ($dac))
-		require('phpdac5://127.0.0.1:19123/system/pcntlst.lib.php');
+	if (($phpdac_c) && ($dac)) {
+		if ($pharApp = $env['app'])
+			require("phar://$pharApp/system/pcntlphar.lib.php");
+		else
+			require('phpdac5://127.0.0.1:19123/system/pcntlst.lib.php');
+	}	
     else	
 		require('dpc/system/pcntl.lib.php');		 
 }
@@ -62,17 +66,21 @@ class dacProcess {
     }
 	
     static public function autoload($class)  {
-		global $env, $phpdac_c, $dac;	
+		global $env, $phpdac_c, $dac, $pharApp;	
 
         if (0 !== strpos($class, 'process')) //check is process dir
             return;
 		
 		$file = 'process/'.str_replace(array('_', "\0"), array('/', ''), $class).'.php';		
         //echo '>>>' . $env['dpcpath'] . $file;
-		if (($phpdac_c) && ($dac))
-			require('phpdac5://127.0.0.1:19123/' . $file);
+		if (($phpdac_c) && ($dac)) {
+			if ($pharApp = $env['app'])		
+				require 'cgi-bin/' . $file; //cgi-bin code
+			else			
+				require('phpdac5://127.0.0.1:19123/' . $file);
+		}	
 		elseif (file_exists($env['dpcpath'] . '/' . $file))
-				require $env['dpcpath'] . '/' . $file;
+			require $env['dpcpath'] . '/' . $file;
 		else
 			die($file . ' required.');
     }
