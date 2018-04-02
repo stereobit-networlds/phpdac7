@@ -23,15 +23,15 @@ ini_set('error_log','errors.log');
 
 ob_start(); //ob_clean after init at pcntl
 date_default_timezone_set('Europe/Athens');
-session_start(); 
-
+session_start(); 		
+		
 $start=microtime(true);
 $env = array(
 'appname' => 'phpdac7',
 'apppath' => '',
 'dpctype' => 'local',
-'dpcpath' => '../../xampp-phpdac7',
-'prjpath' => '.',
+'dpcpath' => '../xampp-phpdac7',
+'prjpath' => '/projects/',
 'app' => '',
 'cppath' =>'home/sterobi/public_html/basis/cp',
 'key' => 'd41d8cd98f00b204e9800998ecf8427e', 
@@ -41,7 +41,7 @@ $dac = is_file($env['dpcpath'] . "/shm.id") ? true : false;
 if ($env['key']!==md5($_ENV['COMPUTERNAME'] . $_ENV['LOGONSERVER'])) die('phpdac7 valid key required');
 
 try {
-	//require("dpc/system/dacstreamc.lib.php");
+	//require("cp/dpc/system/dacstreamc.lib.php");
 	require($env['dpcpath'] . "/system/dacstreamc.lib.php");
 	$phpdac_c = stream_wrapper_register("phpdac5","c_dacstream");
 	if (!$phpdac_c)	echo "Client protocol failed to registered!";	
@@ -49,18 +49,17 @@ try {
 	if (($phpdac_c) && ($dac)) {
 		if ($pharApp = $env['app'])
 			require("phar://$pharApp/system/pcntlphar.lib.php");
-		else
+		else		
 			require('phpdac5://127.0.0.1:19123/system/pcntlst.lib.php');
 	}	
     else	
-		//require('dpc/system/pcntl.lib.php');		 
-		require($env['dpcpath'] . '/system/pcntl.lib.php');
+		//require('cp/dpc/system/pcntl.lib.php');		 
+		require($env['dpcpath'] . '/system/pcntl.lib.php');		 
 }
 catch (Exception $e) {
 	echo 'Caught exception: ',  $e->getMessage() . PHP_EOL;
 	throw $e;
-}
-
+}	
 
 class dacProcess {
     static public function test($name) {
@@ -78,7 +77,7 @@ class dacProcess {
 		if (($phpdac_c) && ($dac)) {
 			if ($pharApp = $env['app'])		
 				require 'cgi-bin/' . $file; //cgi-bin code
-			else			
+			else		
 				require('phpdac5://127.0.0.1:19123/' . $file);
 		}	
 		elseif (file_exists($env['dpcpath'] . '/' . $file))
@@ -89,5 +88,5 @@ class dacProcess {
 }
 
 ini_set('unserialize_callback_func', 'spl_autoload_call');
-spl_autoload_register(__NAMESPACE__ .'\dacProcess::autoload');
+spl_autoload_register(__NAMESPACE__ .'\dacProcess::autoload');	
 ?>
