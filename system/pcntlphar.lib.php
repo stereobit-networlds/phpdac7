@@ -60,8 +60,8 @@ class pcntl extends controller {
 	var $encrypted;	
 
 	public function __construct($code=null,$preprocess=null,$noqueue=null) { 
-
-		//session_start(); 
+		global $_cleanOB;
+		
 		$this->mytime = $this->getthemicrotime();    
 		$xtime = $this->getthemicrotime(); 		
 		
@@ -112,12 +112,12 @@ class pcntl extends controller {
 		
 		$this->init();	
 
-		if ($this->shm) // && (!$this->debug)
+		if (($this->shm) && ($_cleanOB))
 			ob_clean (); //clean phpdac5 prompts before event (pre ajax die)			
 				
 		$this->event($this->myaction);
 		
-		if ($this->shm) // && (!$this->debug) 
+		if (($this->shm) && ($_cleanOB>1)) 
 			ob_clean (); //clean phpdac5 prompts after event		
 		
 		if ($this->debug) 
@@ -744,7 +744,7 @@ parse_ini_string_m:
 	//override
 	public function require_dpc($dpc, $cgipath=null) {
 		$path = $cgipath ? $cgipath : _DPCPATH_;  
-		global pharApp;
+		global $pharApp;
 		
 		if ($this->shm) {
 			if ($pharApp)
