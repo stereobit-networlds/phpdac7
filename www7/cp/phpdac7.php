@@ -22,7 +22,9 @@ ini_set('display_errors',1);
 ini_set('error_log','errors.log');
 //error_log( "Hello, errors!" );
 
-ob_start(); //ob_clean after init at pcntl (echo dismiss)
+ob_start(); //ob_clean needs to start for clean (phpdac5 prompts)
+$_cleanOB = 2; //1 level of ob_clean after-init-,2 after-event,3 after-render before return
+
 date_default_timezone_set('Europe/Athens');
 session_start(); 
 
@@ -31,7 +33,7 @@ $env = array(
 'appname' => 'phpdac7',
 'apppath' => '',
 'dpctype' => 'local',
-'dpcpath' => '../../xampp-phpdac7',
+'dpcpath' => '/xampp-phpdac7',
 'prjpath' => '.',
 'app' => '',
 'cppath' =>'home/sterobi/public_html/basis/cp',
@@ -109,7 +111,7 @@ spl_autoload_register(__NAMESPACE__ .'\dacProcess::autoload');
    }
 
 /* remote script */
-if (($phpdac_c) && ($dac)) { 
+if (($phpdac_c) && ($dac) && (!$localscript)) { 
 	__log('fetch remote:'.$_SERVER['PHP_SELF']);
 	if ($pharApp = $env['app'])
 		require("phar://$pharApp/www7" . $_SERVER['PHP_SELF']);

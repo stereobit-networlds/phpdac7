@@ -18,8 +18,6 @@ class fronthtmlpage {
 	var $modify, $charset, $verbose, $editmode_point;
 	var $edithtml, $prpath, $htmlext;
 	
-	static $staticpath;
-	
 	var $BASE_URL, $MC_ROOT, $MC_TEMPLATE, $MC_DEBUG, $MC_CURRENT_PAGE;
 	var $language, $isolanguage;
 	
@@ -27,7 +25,7 @@ class fronthtmlpage {
 	var $template, $cptemplate;
 	var $preprocess;
 	
-	static  $cmsTemplates;	
+	static $staticpath, $staticprPath, $cmsTemplates;
 	 
 	public function __construct($file=null, $theme=null) { 
         $UserSecID = GetGlobal('UserSecID');			
@@ -91,6 +89,7 @@ class fronthtmlpage {
         $this->htmlext = $htmlfile_extension ? $htmlfile_extension : '.htm'; 		
 		
 		self::$staticpath = paramload('SHELL','urlpath');
+		self::$staticprPath = paramload('SHELL','prpath');
 		
 		$this->template = remote_paramload('FRONTHTMLPAGE','template',$this->prpath);
 		$this->cptemplate = remote_paramload('FRONTHTMLPAGE','cptemplate',$this->prpath);		
@@ -122,7 +121,8 @@ class fronthtmlpage {
 		//echo $_SERVER['REQUEST_URI'];
 	}	
 	
-    public function render($actiondata) { 	
+    public function render($actiondata) { 
+		global $_cleanOB;
 
 	    if ($this->modify) 
 			$out = $this->modify_page();
@@ -131,6 +131,9 @@ class fronthtmlpage {
 	  		   	 
 		//timer
 		$this->t_fronthtmlpage->stop('fronthtmlpage');
+		
+		//if ($_cleanOB > 2) 
+			//ob_clean ();
 	  	  		  
 		return ($out);
     }	
@@ -184,26 +187,6 @@ class fronthtmlpage {
 		
 		return ($ret);	
 	}	
-	
-	//fetch content
-	public function streamfile_contents($f=null, $falt=null) {
-		if (!$f) return null;
-		global $phpdac_c, $dac, $env;
-		//echo $phpdac_c .'.'. $dac . '>'.$f;
-		
-		if (($phpdac_c) && ($dac)) { 
-			//__log('fetch remote:'.$_SERVER['PHP_SELF']);
-			$fp = str_replace($this->prpath,'/cp/',$f);
-			if ($pharApp = $env['app'])
-				return file_get_contents("phar://$pharApp/www7" . $fp);
-			else	
-				return file_get_contents('phpdac5://127.0.0.1:19123/www7' . $fp);
-		}
-		
-		//else filesystem default
-		$fout = $falt ? $falt : $f;
-		return @file_get_contents($fout);
-	}
 
 	public function process_commands($data,$is_serialized=null) {
 	
@@ -805,7 +788,7 @@ EOF;
     }	
 	
 	//used in front page as login / logout
-	public static function myf_button($title,$link=null,$image=null) {
+	static public function myf_button($title,$link=null,$image=null) {
 
 	   $path = self::$staticpath;
 	   
@@ -1260,7 +1243,7 @@ function cc(name,value,days) {
 	}
 	
 	//store templates used
-	protected static function stackTemplate($tmpl=null) {
+	static protected function stackTemplate($tmpl=null) {
 		if (!$tmpl) return false;
 		if (strstr($tmpl, 'metro/')) return false; //static
 		
@@ -1270,6 +1253,26 @@ function cc(name,value,days) {
 		//SetSessionParam('cmsTemplates', $stackT);
 		return true;
 	}
+	
+	//fetch stream content
+	static public function streamfile_contents($f=null, $falt=null) {
+		if (!$f) return null;
+		global $phpdac_c, $dac, $env;
+		//echo $phpdac_c .'.'. $dac . '>'.$f;
+		
+		if (($phpdac_c) && ($dac)) { 
+			//__log('fetch remote:'.$_SERVER['PHP_SELF']);
+			$fp = str_replace(self::$staticprPath,'/cp/',$f);
+			if ($pharApp = $env['app'])
+				return file_get_contents("phar://$pharApp/www7" . $fp);
+			else	
+				return file_get_contents('phpdac5://127.0.0.1:19123/www7' . $fp);
+		}
+		
+		//else filesystem default
+		$fout = $falt ? $falt : $f;
+		return @file_get_contents($fout);
+	}	
 
 	function __destruct() {
 		if (isset($_GET['modify'])) {

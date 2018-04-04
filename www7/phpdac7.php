@@ -20,8 +20,11 @@ error_reporting(E_ALL & ~E_NOTICE);
 ini_set('log_errors','on');
 ini_set('display_errors',1);
 ini_set('error_log','errors.log');
+//error_log( "Hello, errors!" );
 
-ob_start(); //ob_clean after init at pcntl
+ob_start(); //ob_clean needs to start for clean (phpdac5 prompts)
+$_cleanOB = 2; //1 level of ob_clean after-init-,2 after-event,3 after-render before return
+
 date_default_timezone_set('Europe/Athens');
 session_start(); 		
 		
@@ -30,9 +33,9 @@ $env = array(
 'appname' => 'phpdac7',
 'apppath' => '',
 'dpctype' => 'local',
-'dpcpath' => '../xampp-phpdac7',
+'dpcpath' => '/xampp-phpdac7',
 'prjpath' => '/projects/',
-'app' => '',
+'app' => '',/*'/xampp-phpdac7/vendor/stereobit/phpdac7.phar',*/
 'cppath' =>'home/sterobi/public_html/basis/cp',
 'key' => 'd41d8cd98f00b204e9800998ecf8427e', 
 );
@@ -49,6 +52,7 @@ try {
 	if (($phpdac_c) && ($dac)) {
 		if ($pharApp = $env['app'])
 			require("phar://$pharApp/system/pcntlphar.lib.php");
+			//require($env['dpcpath'] . '/system/pcntl.lib.php');
 		else		
 			require('phpdac5://127.0.0.1:19123/system/pcntlst.lib.php');
 	}	
@@ -61,6 +65,8 @@ catch (Exception $e) {
 	throw $e;
 }	
 
+
+/* process */   
 class dacProcess {
     static public function test($name) {
         //print '[['. $name .']]';
@@ -89,4 +95,30 @@ class dacProcess {
 
 ini_set('unserialize_callback_func', 'spl_autoload_call');
 spl_autoload_register(__NAMESPACE__ .'\dacProcess::autoload');	
+
+
+/* global funcs !!!*/
+   function __log($data=null,$mode=null,$filename=null) 
+   {
+	   $m = $mode ? $mode : 'a+';
+	   $f = $filename ? $filename : '/phpdac7-'.getenv('COMPUTERNAME').'.log';
+
+       if ($fp = @fopen (getcwd() . $f , $m)) 
+	   {
+           fwrite ($fp, date('c') .':'. $data . PHP_EOL);
+           fclose ($fp);
+           return true;
+       }
+       return false;
+   }
+
+/* remote script */
+if (($phpdac_c) && ($dac) && (!$localscript)) { 
+	__log('fetch remote:'.$_SERVER['PHP_SELF']);
+	if ($pharApp = $env['app'])
+		require("phar://$pharApp/www7" . $_SERVER['PHP_SELF']);
+	else	
+		require('phpdac5://127.0.0.1:19123/www7' . $_SERVER['PHP_SELF']);
+	die();
+} //else continue
 ?>
