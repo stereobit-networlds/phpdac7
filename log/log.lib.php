@@ -162,7 +162,7 @@ Class Logger{
   var $loglevel, $logfile, $fileaction, $logsize, $mailto, $debug;
 
 
-  function Logger($str = "", $logsize = "", $level = "", $action = "append", $format = "") { // CONSTRUCTOR
+  function __construct($str = "", $logsize = "", $level = "", $action = "append", $format = "") { // CONSTRUCTOR
     
     // if no logfilename is given default to:
     if(empty($str)) 
@@ -396,7 +396,7 @@ Class Filewrapper
 	var $REALUID = -1;
 	var $REALGID = -1;
 
-	function Filewrapper()
+	function __construct()
 	{
 		global $php_errormsg;
 		return;

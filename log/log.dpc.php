@@ -19,7 +19,7 @@ class _log {
    var $clnlog;
    var $srvlog, $log_ison;
 
-   function _log() {	 
+   function __construct() {	 
 	   $UserSecID = GetGlobal('UserSecID');
        $this->userLevelID = (((decode($UserSecID))) ? (decode($UserSecID)) : 0);
 	   
