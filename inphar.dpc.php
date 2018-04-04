@@ -64,7 +64,7 @@ $usage ="[inphar.dpc.php] Generate .phar files from shared memory dump file." . 
 //ini_set('phar.readonly','0'); //use php -d phar.readonly=0 scriptname 
 $pharReadOnly = ini_get('phar.readonly'); 		
 $selected = isset($argv[1]) ? $argv[1] : 0;
-$pharName = isset($argv[2]) ? $argv[2] : 'testapp.phar';
+$pharName = isset($argv[2]) ? $argv[2] : null;//'testapp.phar';
 $selectdir = isset($argv[3]) ? $argv[3] : ''; //getcwd'/' //'/vendor/stereobit/';
 $outputdir = /*getcwd() .*/ $selectdir;
 
@@ -73,6 +73,7 @@ if ($selected=='-?') die($usage);
 if ($shmTable = @file_get_contents('shm.id')) {
 	
 	if (!$pharReadOnly) {
+		echo '-------------' . $output . $pharName . '-------------'.PHP_EOL;
 		$phar = new Phar($outputdir . $pharName, 0, $pharName); 
 					
 		//pre-req files
@@ -82,7 +83,9 @@ if ($shmTable = @file_get_contents('shm.id')) {
 			$phar->addFromString("system/pcntlphar.lib.php", $pharPCNTL);
 			echo 'Prereq : system/pcntlphar.lib.php' . '->' . strlen($pharPCNTL) .  PHP_EOL;
 		}
-	}				
+	}
+	else
+		echo '-------------' . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log' . '-------------'.PHP_EOL;	
 	
 	$parts = explode("@^@",$shmTable);
 	$addr = (array) unserialize($parts[1]);

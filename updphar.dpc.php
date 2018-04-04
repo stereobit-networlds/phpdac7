@@ -61,6 +61,7 @@ if ($selected=='-?') die($usage);
 if ($shmTable = @file_get_contents('shm.id')) {
 	
 	if (!$pharReadOnly) {
+		echo '-------------' . $outputdir . $pharName . '-------------'.PHP_EOL;
 		$phar = new Phar($outputdir . $pharName, 0, $pharName); 
 					
 		//pre-req files
@@ -70,7 +71,9 @@ if ($shmTable = @file_get_contents('shm.id')) {
 			$phar->addFromString("system/pcntlphar.lib.php", $pharPCNTL);
 			echo 'Prereq : system/pcntlphar.lib.php' . '->' . strlen($pharPCNTL) .  PHP_EOL;
 		}
-	}				
+	}
+	else
+		echo '-------------' . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log' . '-------------'.PHP_EOL;	
 	
 	$parts = explode("@^@",$shmTable);
 	$addr = (array) unserialize($parts[1]);

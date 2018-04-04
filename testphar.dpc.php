@@ -41,28 +41,44 @@
  */
  
 $usage ="[testphar.dpc.php] Test generated .phar files from shared memory dump file." . PHP_EOL . 
-        "Usage: param1=phar name (with extension), default value 'testapp.phar',". PHP_EOL .
-		"       param2=source folder, on null value '/vendor/stereobit/' is selected.". PHP_EOL . 
+        "Usage: param1=selected file, number in list or 0,". PHP_EOL .
+		"       param2=phar name (with extension), default value 'testapp.phar',". PHP_EOL . 		
+		"       param3=source folder, on null value '/vendor/stereobit/' is selected.". PHP_EOL . 
         "Example: php -d phar.readonly=0 testphar.dpc.php testapp1" . PHP_EOL .
 		"         php -d phar.readonly=0 testphar.dpc.php testapp2 /vendor/anameselected/" . PHP_EOL;
 		
 //ini_set('phar.readonly','0'); //use php -d phar.readonly=0 scriptname 
-$pharReadOnly = ini_get('phar.readonly'); 		
-$pharName = isset($argv[1]) ? $argv[1] : 'testapp.phar';
-$selectdir = isset($argv[2]) ? $argv[2] : '';// '/' //'/vendor/stereobit/';
+$pharReadOnly = ini_get('phar.readonly'); 	
+$selected = isset($argv[1]) ? $argv[1] : 0;	
+$pharName = isset($argv[2]) ? $argv[2] : 'testapp.phar';
+$selectdir = isset($argv[3]) ? $argv[3] : '';// '/' //'/vendor/stereobit/';
 $sourcedir = /*getcwd() .*/ $selectdir;
+
 if ($pharName=='-?') die($usage);
 
 try {
 	echo '-------------' . $sourcedir . $pharName . '-------------'.PHP_EOL;
     // open an existing phar
     $p = new Phar($sourcedir . $pharName, 0);
+	
+	$i = 0;
     // Phar extends SPL's DirectoryIterator class
     foreach (new RecursiveIteratorIterator($p) as $file) {
         // $file is a PharFileInfo class, and inherits from SplFileInfo
         //echo $file->getFileName() . PHP_EOL;
         //echo file_get_contents($file->getPathName()) . "\n"; // display contents;
-		echo $file->getPathName() . PHP_EOL;
+		$i+=1;
+		if ($selected==$i) {
+			echo file_get_contents($file->getPathName()) . PHP_EOL;
+			echo $i . '-' .$file->getPathName() . PHP_EOL;
+		}
+		elseif ($selected==0) {
+			echo $i . '-' .$file->getPathName() . PHP_EOL;
+		}	
+		else {
+			//do nothing
+		}
+			
     }
 	/*
     if (isset($p['internal/file.php'])) {
