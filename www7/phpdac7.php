@@ -35,7 +35,7 @@ $env = array(
 'dpctype' => 'local',
 'dpcpath' => '/xampp-phpdac7',
 'prjpath' => '/projects/',
-'app' => '',/*'/xampp-phpdac7/vendor/stereobit/phpdac7.phar',*/
+'app' => '/xampp-phpdac7/vendor/stereobit/phpdac7.phar',
 'cppath' =>'home/sterobi/public_html/basis/cp',
 'key' => 'd41d8cd98f00b204e9800998ecf8427e', 
 );

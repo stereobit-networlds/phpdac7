@@ -60,7 +60,7 @@ class kernelv2 {
 	  $this->agent = 'SH';//default !?!
 	  $this->verboseLevel = GLEVEL;	  
 	  $this->extra_space = 1024 * 10; //kb //1000;// per file
-	  $this->dataspace = 1024000 * 5; //mb //50000;
+	  $this->dataspace = 1024000 * 9; //mb //90000;
 		  
   	  $this->dpcpath = isset($argv[1]) ? ((substr($argv[1],0,1)!='-') ? $argv[1] . '/' : './') : './'; //getcwd().'/' php7
 	  $this->daemon_type = isset($argv[1]) ? ((substr($argv[1],0,1)=='-') ? substr($argv[1],1) : '') : '';
@@ -415,36 +415,73 @@ class kernelv2 {
 	  if (!extension_loaded('shmop')) 
 		  dl('php_shmop.dll');
 	  
-	  _say("Start",1);   
-	  
-	  $data =null;
-      $this->shm_max = $this->load_dpc_tree($data); //\0 included
-	  //echo ">>>>>>>>>>>>>>>", $this->shm_max;
-	  
-	  ///////////////allocate dpc tree
-	  // Create shared memory block with system id if 0xff3
-	  $space = $this->shm_max + $this->dataspace;
-	  
-	  _say("Allocate shared memory segment... $space bytes",2);
-      $this->shm_id = shmop_open($ikey, "c", 0644, $space);
-	  
-      if ($this->shm_id) 
-	  {
-		// Do not Check SpinLock \0 included		
-		$bw = shmop_write($this->shm_id, $data, 0);
-		//init mem dump w not a+ (dump includes all 1st entries not updates)
-		_dump($data ,'w', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
-		
-        if($bw != $this->shm_max) 
-		{
-          die("Couldn't write the entire length of data\n");
-		}  
-		else	
-		  $this->savestate();	
-	  }
-	  else
-		die("Couldn't create shared memory segment. System Halted.\n");
+	  _say("Start",1);  
 
+	  $data =null;
+	  $reloadedData = null;
+	  $reloadedDataBytes = 0;	
+	  $loadFromDir = null;//'build/cpdac7/';//null; // trail /
+	  
+	  if ($this->shm_max = $this->loadstate($loadFromDir)) 
+	  {
+		//only calc bytes   
+	    $calc_shm_max = $this->load_dpc_tree($data, true); 
+		
+		if ($calc_shm_max != $this->shm_max)
+		{	
+			_say('Loaded data has diferrent size',1);
+			die($calc_shm_max . '-' . $this->shm_max . PHP_EOL);
+		}
+		$space = $this->shm_max + $this->dataspace;
+		_say("Re-allocate shared memory segment. $space bytes",2);
+		$this->shm_id = shmop_open($ikey, "c", 0644, $space);
+		if ($this->shm_id) 
+		{
+			//re-load dump file
+			$reloadedData = file_get_contents($loadFromDir . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+			
+			// Do not Check SpinLock \0 included		
+			$bw = shmop_write($this->shm_id, $reloadedData, 0);
+			// Do not dump
+			//unlink(getcwd() . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+			
+			if ($bw != strlen($reloadedData)) 
+				die("Couldn't write the entire length of data\n");
+			//do not save state
+		}
+		else
+			die("Couldn't create shared memory segment. System Halted.\n");		
+	  }	
+	  else //new start
+	  {
+		$this->shm_max = $this->load_dpc_tree($data); //\0 included
+		//echo ">>>>>>>>>>>>>>>", $this->shm_max;
+	  
+		///////////////allocate dpc tree
+		// Create shared memory block with system id if 0xff3
+		$space = $this->shm_max + $this->dataspace;
+	  
+		_say("Allocate shared memory segment. $space bytes",2);
+		$this->shm_id = shmop_open($ikey, "c", 0644, $space);
+	  
+		if ($this->shm_id) 
+		{
+			// Do not Check SpinLock \0 included		
+			$bw = shmop_write($this->shm_id, $data, 0);
+			//init mem dump w not a+ (dump includes all 1st entries not updates)
+			_dump($data ,'w', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+		
+			if ($bw != $this->shm_max) 
+			{
+				die("Couldn't write the entire length of data\n");
+			}  
+			else	
+				$this->savestate();	
+		}
+		else
+			die("Couldn't create shared memory segment. System Halted.\n");
+      }
+	  
 	  return true; 	
    } 
    
@@ -461,8 +498,7 @@ class kernelv2 {
 		_say("Save state",2);
 		$data = $this->shm_max ."@^@". serialize($this->dpc_addr) . 
 		                       "@^@". serialize($this->dpc_length). 
-							   "@^@". serialize($this->dpc_free);//. 
-							   //"@^@". serialize($this->shared_buffer); 
+							   "@^@". serialize($this->dpc_free); 
 
 		fwrite($fd, $data);
 		fclose($fd);      
@@ -475,6 +511,29 @@ class kernelv2 {
 							   
 		return file_put_contents('shm.id', $data ,LOCK_EX);
    }
+   
+   //load shared mem resource id and mem alloc arrays
+   private function loadstate($altdir=null) 
+   {
+	   if ($data = @file_get_contents($altdir . 'shm.id'))
+	   {
+		_say("Load state",1);
+		if ($altdir)
+			_say($altdir,1);		   
+		   
+		$entries = explode('@^@', $data);
+		if (is_array($entries)) {
+			$this->dpc_addr = (array) unserialize($entries[1]);
+			$this->dpc_length = (array) unserialize($entries[2]);
+			$this->dpc_free = (array) unserialize($entries[3]);
+			$this->shm_max = $entries[0];
+	   
+	        
+			return ($entries[0]);
+		}
+	   }
+	   return false;
+   }	
    
    private function getShmOffset() {
 		$offset = 0; 
@@ -527,8 +586,7 @@ class kernelv2 {
 			$offset = $this->dpc_addr[$dpc];
 			$length = $this->dpc_length[$dpc]; 
 			$free = $this->dpc_free[$dpc];
-			$rlength = intval($length - $free);
-			//$oldData = substr($this->shared_buffer,$offset,$length);		
+			$rlength = intval($length - $free);		
 		     
 			if (isset($data)) //replace
 			{				
@@ -627,8 +685,7 @@ class kernelv2 {
 	    $length = $this->dpc_length[$dpc]; 
 		$free = $this->dpc_free[$dpc];
 		$rlength = intval($length - $free);
-		//$oldData = substr($this->shared_buffer,$offset,$length);		
-		
+
         //echo "AAAAAAAAAAAAAAAAAAAAAA\n";
 		//dpc and streams that exists in data area only
 		if ($offset >= $this->shm_max) 
@@ -713,7 +770,7 @@ class kernelv2 {
 				{
 					$this->savestate();
 					_say("$dpc saved",1);
-					_dump("UPDATE\n\n\n\n" . $data);//$this->shared_buffer);
+					_dump("UPDATE\n\n\n\n" . $data);
 				}	
 			  }
 			  else
@@ -784,11 +841,7 @@ class kernelv2 {
 		if (!$data) return false;	
 		_say($data,3);		
 		
-		$dataLength = strlen($data);
-		
-		//$sb = strlen($this->shared_buffer);
-		//foreach ($this->dpc_length as $_dpc=>$_length)
-			//$sb+= $_length + $this->dpc_free[$_dpc]; //calc		
+		$dataLength = strlen($data);		
 		$offset = $this->getShmOffset();
 			
 		if ((($offset+1+1) + $dataLength + $this->extra_space) < 
@@ -1015,7 +1068,7 @@ class kernelv2 {
 		return ($mydpcext);   
    }   
    
-   private function load_dpc_tree(&$data) {
+   private function load_dpc_tree(&$data, $reload=false) {
 	   $libs = null;
 	   $exts = null;
    	
@@ -1037,27 +1090,27 @@ class kernelv2 {
 	      if (($dpcf!='') && ($dpcf[0]!=';')) 
 		  {
 		    if ($f = $this->_readPHP($dpcf)) //@file_get_contents($dpcf)) 
-			{	
-			  $this->dpc_addr[$dpcf] = $offset + 1; //\0head			
-			  $this->dpc_length[$dpcf] = strlen($f) + $this->extra_space;
-			  $this->dpc_free[$dpcf] = $this->extra_space;
+			{
+              if ($reload===false) //bypass, just compute bytes
+			  { 		
+				$this->dpc_addr[$dpcf] = $offset + 1; //\0head			
+				$this->dpc_length[$dpcf] = strlen($f) + $this->extra_space;
+				$this->dpc_free[$dpcf] = $this->extra_space;
 			  
-			  $offset+= $this->dpc_length[$dpcf];// + 1; //\0foot
-			  
+				$offset+= $this->dpc_length[$dpcf];// + 1; //\0foot
+			  }
 			  //add header sign
 			  $data .= "\0";
-			  
-			  //add data space
-		      //$this->shared_buffer .= $f;
 			  $data .= $f;
-			  //add extra space for reloading
-			  //$this->shared_buffer .= str_repeat(' ',$this->extra_space);
+			  //add extra space for modifications
 			  $data .= str_repeat(' ',$this->extra_space);
-			  
 			  //add foot sign
 			  $data .= "\0";
 			  
-			  _say($dpcf . " loaded",1);
+			  if ($reload===false)
+				_say($dpcf . " loaded",1);
+			  else
+				_say($dpcf . " re-loaded",1);  
 		    }
 		    else 
 	          _say($dpcf . " Error",1);
@@ -1182,8 +1235,9 @@ class kernelv2 {
 		$batch = $set ? $set : '';//pdo
 		
 		//start a client (auto)
-		exec("start /D d:\github\phpdac7\bin agentds pdo");// -inetd");
-		//exec("start /D c:\xampp-phpdac7\bin agentds pdo"); //php 7
+		//exec("start /D d:\github\phpdac7\bin agentds pdo");// -inetd");
+		
+		//exec("start /D c:\xampp-phpdac7\bin agentds pdo"); //php 7 !!!
 		//powershell (can ret value /pipes ) 
 		//$ret = 
 			//shell_exec("start powershell.exe -executionPolicy Unrestricted -NoExit -Command c:\xampp-phpdac7\php.exe agents\agentds.dpc.php pdo");
@@ -1477,7 +1531,7 @@ echo "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 		break;
 				
 		case 8 :	
-echo "\n~~~oo_~~~(o)__say(o)~~~~~))~~~~~~~~~~~~~.-.~~~~~_~~~wW~~Ww(o)__say(o)~~~~~~~~~~~~~~~~";
+echo "\n~~~oo_~~~(o)__(o)~~~~~))~~~~~~~~~~~~~.-.~~~~~_~~~wW~~Ww(o)__(o)~~~~~~~~~~~~~~~~";
 echo "\n~~/~~_)-<(__~~__)wWw~(Oo)-.~wWw~~~~c(O_O)c~~/||_~(O)(O)(__~~__)~~~~~~~~~~~~~~~~";
 echo "\n~~\__~\`.~~~(~~)~~(O)_~|~(_))(O)_~~,'.---.\`,~~/\`_)~(..)~(~~)~~~~~~~~~~~~~~~~~";
 echo "\n~~~~~\`.~|~~~)(~~.'~__)|~~.'.'~__)/~/|_|_|\~\|~~\`.~~||~~~~~)(~~~~~~~~~~~~~~~~~";

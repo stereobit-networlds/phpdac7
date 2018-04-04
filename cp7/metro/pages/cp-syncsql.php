@@ -5,7 +5,7 @@
 <!-- BEGIN HEAD -->
 <head>
    <meta charset="utf-8" />
-   <title>Tags</title>
+   <title>Sync SQL</title>
    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
    <meta content="" name="description" />
    <meta content="" name="author" />
@@ -96,7 +96,7 @@
    <script> function show_body() {  var str = arguments[0]; sndReqArg('cpdynsql.php?t=cploadframe&tid='+str,'trans');}  </script>
    <!-- END JAVASCRIPTS --> 
 
-	<phpdac>frontpage.include_part use /parts/google-analytics.php+++meteor</phpdac>
+	<phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
 	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
 </body>
 <!-- END BODY -->
