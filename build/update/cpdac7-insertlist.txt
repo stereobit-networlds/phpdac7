@@ -2,3 +2,5 @@ log/log.lib.php
 log/log.dpc.php
 log/rclog.dpc.php
 www7/cp/html/metro/pages/cp-login.php
+ippserver/UiIPP.lib.php
+ippserver/UiIPPeEnterprise.lib.php

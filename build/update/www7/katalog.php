@@ -1,13 +1,6 @@
 <?php
-//$localscript=1;
-
-define('SMTP_PHPMAILER','true');
-//define('SENDMAIL_PHPMAILER','true');
-
-$processMethod = 'balanced'; 
-$processDebug = false;
-
-require_once('phpdac7.php');
+//$processMethod = 'balanced'; 
+//$processDebug = false;
 
 $htmlpage = new pcntl('
 super javascript;
@@ -59,6 +52,5 @@ public i18n.i18nL;
     echo $htmlpage->render(null,getlocal(),null,'media-center/index.php');	
 
 $time = (microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) / 60;
-echo "<!-- local $time -->";
-/*}*/
+echo "<!-- remote $time -->";
 ?>
