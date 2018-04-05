@@ -34,30 +34,38 @@ $env = array(
 'apppath' => '',
 'dpctype' => 'local',
 'dpcpath' => '/xampp-phpdac7',
-'prjpath' => '/projects/',
+'prjpath' => '/cp/',
+'dachost' => '127.0.0.1',
+'dacport' => '19123',
 'app' => '/xampp-phpdac7/vendor/stereobit/fpdac7.phar',
 'cppath' =>'home/sterobi/public_html/basis/cp',
 'key' => 'd41d8cd98f00b204e9800998ecf8427e', 
 );
-$dac = is_file($env['dpcpath'] . "/shm.id") ? true : false;
+$dac = false; //when shm.id exists turns to true
+$pharApp = false; //when phar is enabled turns to true
+$dh = $env['dachost'];
+$dp = $env['dacport'];
+
 //$u = file_put_contents($env['dpcpath'] . '/key.md', md5($_ENV['COMPUTERNAME'] . $_ENV['LOGONSERVER']));
 if ($env['key']!==md5($_ENV['COMPUTERNAME'] . $_ENV['LOGONSERVER'])) die('phpdac7 valid key required');
 
 try {
-	//require("cp/dpc/system/dacstreamc.lib.php");
-	require($env['dpcpath'] . "/system/dacstreamc.lib.php");
-	$phpdac_c = stream_wrapper_register("phpdac5","c_dacstream");
-	if (!$phpdac_c)	echo "Client protocol failed to registered!";	
-	
-	if (($phpdac_c) && ($dac)) {
-		if ($pharApp = $env['app'])
+	if ($dac = @is_file($env['dpcpath'] . "/shm.id")) {
+		if ($pharApp = $env['app']) {
+			require("phar://$pharApp/system/dacstreamc.lib.php");
+			stream_wrapper_register("phpdac5","c_dacstream");
+				
 			require("phar://$pharApp/system/pcntlphar.lib.php");
-			//require($env['dpcpath'] . '/system/pcntl.lib.php');
-		else		
-			require('phpdac5://127.0.0.1:19123/system/pcntlst.lib.php');
+		}	
+		else {
+			require($env['dpcpath'] . "/system/dacstreamc.lib.php");
+			if ($phpdac_c = stream_wrapper_register("phpdac5","c_dacstream"))	
+				require("phpdac5://$dh:$dp/system/pcntlst.lib.php");	
+			else
+				die("Client protocol failed to registered!");
+		}
 	}	
-    else	
-		//require('cp/dpc/system/pcntl.lib.php');		 
+    else			 
 		require($env['dpcpath'] . '/system/pcntl.lib.php');		 
 }
 catch (Exception $e) {
@@ -66,7 +74,32 @@ catch (Exception $e) {
 }	
 
 
-/* process */   
+//global namespace\funcs 
+function __log($data=null,$mode=null,$filename=null) 
+{
+	$m = $mode ? $mode : 'a+';
+	$f = $filename ? $filename : '/phpdac7-'.getenv('COMPUTERNAME').'.log';
+
+	if ($fp = @fopen (getcwd() . $f , $m)) 
+    {
+		fwrite ($fp, date('c') .':'. $data . PHP_EOL);
+		fclose ($fp);
+		return true;
+	}
+    return false;
+}
+   
+//call phpdac7 srv to get some variable 
+function get($call=null) 
+{
+   if (!$call) return false;
+   global $dh, $dp;	   
+	   
+   return file_get_contents("phpdac5://$dh:$dp/" . $call);
+}
+
+
+//namespace\process
 class dacProcess {
     static public function test($name) {
         //print '[['. $name .']]';
@@ -79,12 +112,12 @@ class dacProcess {
             return;
 		
 		$file = 'process/'.str_replace(array('_', "\0"), array('/', ''), $class).'.php';		
-        //echo '>>>' . $env['dpcpath'] . $file;
+
 		if (($phpdac_c) && ($dac)) {
 			if ($pharApp = $env['app'])		
 				require 'cgi-bin/' . $file; //cgi-bin code
 			else		
-				require('phpdac5://127.0.0.1:19123/' . $file);
+				require("phpdac5://$dh:$dp/" . $file);
 		}	
 		elseif (file_exists($env['dpcpath'] . '/' . $file))
 			require $env['dpcpath'] . '/' . $file;
@@ -95,22 +128,7 @@ class dacProcess {
 
 ini_set('unserialize_callback_func', 'spl_autoload_call');
 spl_autoload_register(__NAMESPACE__ .'\dacProcess::autoload');	
-
-
-/* global funcs !!!*/
-   function __log($data=null,$mode=null,$filename=null) 
-   {
-	   $m = $mode ? $mode : 'a+';
-	   $f = $filename ? $filename : '/phpdac7-'.getenv('COMPUTERNAME').'.log';
-
-       if ($fp = @fopen (getcwd() . $f , $m)) 
-	   {
-           fwrite ($fp, date('c') .':'. $data . PHP_EOL);
-           fclose ($fp);
-           return true;
-       }
-       return false;
-   }
+ 
 
 /* remote script */
 if (($phpdac_c) && ($dac) && (!$localscript)) { 
@@ -118,7 +136,7 @@ if (($phpdac_c) && ($dac) && (!$localscript)) {
 	if ($pharApp = $env['app'])
 		require("phar://$pharApp/www7" . $_SERVER['PHP_SELF']);
 	else	
-		require('phpdac5://127.0.0.1:19123/www7' . $_SERVER['PHP_SELF']);
+		require("phpdac5://$dh:$dp/www7" . $_SERVER['PHP_SELF']);
 	die();
 } //else continue
 ?>
