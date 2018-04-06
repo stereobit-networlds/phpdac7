@@ -1547,7 +1547,7 @@ EOF;
 		$phpmtml = $path . 'mob@'.$tfile . '.php';
 		
 		if (($this->mobile) && ($data = trim(@file_get_contents($phpmtml)))) {
-		//if (($this->mobile) && ($data = trim(self::streamfile_contents($phpmtml)))) {	
+		//if (($this->mobile) && ($data = trim(GetGlobal('controller')::streamfile_contents($phpmtml)))) {	
 			//echo 'Template PHPmob:' . $phpmtml . '</br>';
 			//save cmsTemplates to be able to edit in cp
 			//self::stackTemplate($path . 'mob@'.$tfile . '.php');
@@ -1555,7 +1555,7 @@ EOF;
 			return $this->dCompile($data);
 		}
 		elseif ($data = trim(@file_get_contents($phptml))) {
-		//elseif ($data = trim(self::streamfile_contents($phptml))) {
+		//elseif ($data = trim(GetGlobal('controller')::streamfile_contents($phptml))) {
 			//echo 'Template PHP:' . $phptml . '</br>';
 			//self::stackTemplate($path . $tfile . '.php');
 			
@@ -1568,7 +1568,7 @@ EOF;
 		$fhtml = $path . str_replace('.', $this->lan.'.', str_replace('.htm', '', $tfile) . '.htm');
 		//echo 'Template HTM:' . $fhtml . '</br>';
 		return @file_get_contents($fhtml); 
-		//return self::streamfile_contents($fhtml);
+		//return GetGlobal('controller')::streamfile_contents($fhtml);
     }		
 	
 	public function createButton($name=null, $urls=null, $t=null, $s=null) {

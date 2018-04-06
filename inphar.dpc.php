@@ -40,20 +40,6 @@
  *
  */
 
-//https://www.sitepoint.com/packaging-your-apps-with-phar/
-/*
-$srcRoot = "~/myapp/src";
-$buildRoot = "~/myapp/build";
- 
-$phar = new Phar($buildRoot . "/myapp.phar", 
-	FilesystemIterator::CURRENT_AS_FILEINFO |     	FilesystemIterator::KEY_AS_FILENAME, "myapp.phar");
-$phar["index.php"] = file_get_contents($srcRoot . "/index.php");
-$phar["common.php"] = file_get_contents($srcRoot . "/common.php");
-$phar->setStub($phar->createDefaultStub("index.php"));
-
-copy($srcRoot . "/config.ini", $buildRoot . "/config.ini");
-*/
-
 $usage ="[inphar.dpc.php] Generate .phar files from shared memory dump file." . PHP_EOL . 
         "Usage: param1=selected file, number in list or 0 to proceed all files, " . PHP_EOL . 
 		"       param2=phar name (with extension), default value 'testapp.phar',". PHP_EOL .
@@ -62,23 +48,25 @@ $usage ="[inphar.dpc.php] Generate .phar files from shared memory dump file." . 
 		"         php -d phar.readonly=0 inphar.dpc.php 0 vendor/anameselected/" . PHP_EOL;
 		
 //ini_set('phar.readonly','0'); //use php -d phar.readonly=0 scriptname 
-$pharReadOnly = ini_get('phar.readonly'); 		
+$pharReadOnly = ini_get('phar.readonly'); 	
+echo 'Phar Readonly:' . $pharReadOnly . PHP_EOL;	
 $selected = isset($argv[1]) ? $argv[1] : 0;
 $pharName = isset($argv[2]) ? $argv[2] : null;//'testapp.phar';
 $selectdir = isset($argv[3]) ? $argv[3] : ''; //getcwd'/' //'/vendor/stereobit/';
 $outputdir = /*getcwd() .*/ $selectdir;
+$inpath = 'build/' . str_replace('.phar', '', $pharName);
 
 if ($selected=='-?') die($usage);
 
-if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName) . '/shm.id')) {
+if ($shmTable = @file_get_contents($inpath . str_replace('.phar', '', $pharName) . '/shm.id')) {
 	
-	if (!$pharReadOnly) {
+	if ($pharReadOnly == 0) {
 		echo '-------------' . $output . $pharName . '-------------'.PHP_EOL;
 		$phar = new Phar($outputdir . $pharName, 0, $pharName); 
 					
 		//pre-req files
 		if ($selected == 0) {
-
+			/*
 			$pharPCNTL = content_handler(file_get_contents('system/pcntlphar.lib.php'),true);
 			$phar->addFromString("system/pcntlphar.lib.php", $pharPCNTL);
 			echo 'Prereq 1: system/pcntlphar.lib.php' . '->' . strlen($pharPCNTL) .  PHP_EOL;
@@ -86,19 +74,22 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 			$dacPCNTL = content_handler(file_get_contents('system/dacstreamc.lib.php'),true);
 			$phar->addFromString("system/dacstreamc.lib.php", $dacPCNTL);
 			echo 'Prereq 2: system/dacstreamc.lib.php' . '->' . strlen($dacPCNTL) .  PHP_EOL;			
+			*/
 		}
 	}
 	else
-		echo '-------------' . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log' . '-------------'.PHP_EOL;	
+		echo '-------------' . $inpath . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log' . '-------------'.PHP_EOL;	
 	
 	$parts = explode("@^@",$shmTable);
 	$addr = (array) unserialize($parts[1]);
 	$length = (array) unserialize($parts[2]); 
 	$free = (array) unserialize($parts[3]); 
 	
-	$buildMEM = 'build/' . str_replace('.phar', '', $pharName) . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log';
+	$buildMEM = $inpath . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log';
 	$mem = file_get_contents($buildMEM);
 	//echo $mem;
+	
+	$_file = null;	
 	$i=0;
 	foreach ($addr as $name=>$start) {
 		$i+=1;
@@ -111,7 +102,7 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 		
 		if ($selected==$i) { //specified file
 
-			if (!$pharReadOnly)
+			if ($pharReadOnly == 0)
 				$phar->addFromString($_name, $_file);
 			
 			echo $_file;
@@ -120,7 +111,7 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 		}		
 		elseif ($selected==0) { //all
 		
-			if (!$pharReadOnly)
+			if ($pharReadOnly == 0)
 			    $phar->addFromString($_name, $_file);
 			
 			echo $i . '-' . $_name . ' :' . $start .'->'. $ln . '-' . $fr .'->'. ($ln-$fr) . PHP_EOL;
@@ -135,7 +126,7 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 	
 	echo $i . ' files in shmem.' . PHP_EOL;
 	
-	if (!$pharReadOnly)
+	if ($pharReadOnly == 0)
 		$phar->setStub($phar->createDefaultStub("dpclass.dpc.php"));
 		
 }

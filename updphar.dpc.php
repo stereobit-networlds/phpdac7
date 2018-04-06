@@ -50,23 +50,26 @@ $usage ="[updphar.dpc.php] Update and generate .phar files from shared memory du
 		"         php -d phar.readonly=0 updphar.dpc.php 0 vendor/anameselected/" . PHP_EOL;
 		
 //ini_set('phar.readonly','0'); //use php -d phar.readonly=0 scriptname 
-$pharReadOnly = ini_get('phar.readonly'); 		
+$pharReadOnly = ini_get('phar.readonly'); 
+echo 'Phar Readonly:' . $pharReadOnly . PHP_EOL;		
 $selected = isset($argv[1]) ? $argv[1] : 0;
 $pharName = isset($argv[2]) ? $argv[2] : 'testapp.phar';
 $selectdir = isset($argv[3]) ? $argv[3] : ''; //getcwd'/' //'/vendor/stereobit/';
 $outputdir = /*getcwd() .*/ $selectdir;
+$inpath = 'build/' . str_replace('.phar', '', $pharName);
+$updpath = 'build/update/';
 
 if ($selected=='-?') die($usage);
 
 if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName) . '/shm.id')) {
 	
-	if (!$pharReadOnly) {
+	if ($pharReadOnly == 0) {
 		echo '-------------' . $outputdir . $pharName . '-------------'.PHP_EOL;
 		$phar = new Phar($outputdir . $pharName, 0, $pharName); 
 					
 		//pre-req files
 		if ($selected == 0) {
-			
+			/*
 			$pharPCNTL = content_handler(file_get_contents('system/pcntlphar.lib.php'),true);
 			$phar->addFromString("system/pcntlphar.lib.php", $pharPCNTL);
 			echo 'Prereq 1: system/pcntlphar.lib.php' . '->' . strlen($pharPCNTL) .  PHP_EOL;
@@ -74,19 +77,22 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 			$dacPCNTL = content_handler(file_get_contents('system/dacstreamc.lib.php'),true);
 			$phar->addFromString("system/dacstreamc.lib.php", $dacPCNTL);
 			echo 'Prereq 2: system/dacstreamc.lib.php' . '->' . strlen($dacPCNTL) .  PHP_EOL;
+			*/
 		}
 	}
 	else
-		echo '-------------' . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log' . '-------------'.PHP_EOL;	
+		echo '-------------' . $inpath .'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log' . '-------------'.PHP_EOL;	
 	
 	$parts = explode("@^@",$shmTable);
 	$addr = (array) unserialize($parts[1]);
 	$length = (array) unserialize($parts[2]); 
 	$free = (array) unserialize($parts[3]); 
 	
-	$buildMEM = 'build/' . str_replace('.phar', '', $pharName) . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log';
+	$buildMEM = $inpath . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log';
 	$mem = file_get_contents($buildMEM);
 	//echo $mem;
+	
+	$_updfile = null;
 	$i=0;
 	foreach ($addr as $name=>$start) {
 		$i+=1;
@@ -99,7 +105,7 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 		
 		if ($selected==$i) { //specified file
 
-			if (!$pharReadOnly)
+			if ($pharReadOnly == 0)
 				$phar->addFromString($_name, $_file);
 			
 			echo $_file;
@@ -108,9 +114,9 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 		}		
 		elseif ($selected==0) { //all
 		
-			if (!$pharReadOnly)
+			if ($pharReadOnly == 0) {
 				
-				$_updfile = 'build/update/' . $_name;
+				$_updfile = $updpath . $_name;
 				if (file_exists($_updfile)) {
 					$phar->addFromString($_name, file_get_contents($_updfile));
 					echo $i . '-' . $_name . ' : .......................UPDATED' . PHP_EOL;
@@ -118,7 +124,8 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 				else {	
 					$phar->addFromString($_name, $_file);
 					echo $i . '-' . $_name . ' :' . $start .'->'. $ln . '-' . $fr .'->'. ($ln-$fr) . PHP_EOL;
-				}	
+				}
+			}		
 		}
 		else {
 			//do nothing
@@ -130,11 +137,14 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 	echo $i . ' files in shmem.' . PHP_EOL;
 	
 	//insert new files from build/update/ dir 
-	//(depend on insertlist.txt)
 	if ($ins = insertFiles($phar, str_replace('.phar', '.txt', $pharName)))
 		echo $ins . ' files added in phar.' . PHP_EOL;
 	
-	if (!$pharReadOnly)
+	//delete files from build/update/ dir 
+	if ($del = removeFiles($phar, str_replace('.phar', '-exclude.txt', $pharName)))
+		echo $del . ' files removed from phar.' . PHP_EOL;	
+	
+	if ($pharReadOnly == 0)
 		$phar->setStub($phar->createDefaultStub("dpclass.dpc.php"));
 		
 }
@@ -146,10 +156,10 @@ function insertFiles(&$phar, $list=null, $path=null) {
 	if (!is_object($phar)) return false;
 	$_list = $list ? $list : 'insertlist.txt';
 	$_path = $path ? $path : 'build/update/';
-	$_insfile = $_path . $_list; //'build/update/insertlist.txt';
+	$_insfile = $_path . $_list; 
 	$i=0;
 	
-	if (is_file($_insfile)) {
+	if (@is_file($_insfile)) {
 
 		$files = file($_insfile);
 
@@ -165,6 +175,37 @@ function insertFiles(&$phar, $list=null, $path=null) {
 				//if (file_exists($newFile)) {
 					$phar->addFromString($_name, file_get_contents($newFile));
 					echo $i . '-' . $_name . ' : .......................INSERTED' . PHP_EOL;
+				//}				
+			}
+		}
+	}
+	
+	return $i;
+}
+
+function removeFiles(&$phar, $list=null, $path=null) {
+	if (!is_object($phar)) return false;
+	$_list = $list ? $list : 'removelist.txt';
+	$_path = $path ? $path : 'build/update/';
+	$_delfile = $_path . $_list; 
+	$i=0;
+	
+	if (@is_file($_delfile)) {
+
+		$files = file($_delfile);
+
+		if (!empty($files)) {
+
+			foreach ($files as $name) {
+				$i+=1;
+				$_name = str_replace(array('*','\\'),
+									 array('','/'), trim($name));				
+				//$newFile = getcwd() . '/' . $_path . $_name;					 
+				//echo $i . '-' . $newFile; 
+
+				//if (file_exists($newFile)) {
+					$phar->delete($_name);
+					echo $i . '-' . $_name . ' : .......................DELETED' . PHP_EOL;
 				//}				
 			}
 		}

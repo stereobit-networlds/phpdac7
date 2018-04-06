@@ -1,24 +1,10 @@
 <?php
-//required file 'phpdac7.php'
-if (!array($env)) die('phpdac7 required');
-$environment = (array) $env;//@parse_ini_file("phpdac7.ini");
-$dpcpath = $environment['dpcpath'] ? $environment['dpcpath'] : 'dpc';
-$pharApp = $environment['app']; //phar app
-
-define('_APPNAME_', $environment['appname']);
-define('_APPPATH_', $environment['apppath']);
-define('_DPCTYPE_', $environment['dpctype']);
-define('_PRJPATH_', $environment['prjpath']);
-define('_DPCPATH_', $dpcpath);
-define('_ISAPP_', $environment['app']); 
-	
-require_once("phpdac5://127.0.0.1:19123/system/system.lib.php");	
-require_once("phpdac5://127.0.0.1:19123/system/parser.lib.php");
-require_once("phpdac5://127.0.0.1:19123/system/ktimer.lib.php");
-require_once("phpdac5://127.0.0.1:19123/system/azdgcrypt.lib.php"); 	    
-//require_once("phpdac5://127.0.0.1:19123/system/cryptopost.lib.php");  //load at page use crypt.cryptopost 
-require_once("phpdac5://127.0.0.1:19123/system/ccpp.lib.php");
-require_once("phpdac5://127.0.0.1:19123/system/controllst.lib.php");
+require_once("$st/system/system.lib.php");	
+require_once("$st/system/parser.lib.php");
+require_once("$st/system/ktimer.lib.php");
+require_once("$st/system/azdgcrypt.lib.php"); 	    
+require_once("$st/system/ccpp.lib.php");
+require_once("$st/system/controllst.lib.php");
 
 function _l($value=null) {
 	return (localize($value, getlocal()));
@@ -60,7 +46,7 @@ class pcntl extends controller {
 	var $encrypted;	
 
 	public function __construct($code=null,$preprocess=null,$noqueue=null) { 
-		global $_cleanOB;
+		//global $_cleanOB;
 		
 		$this->mytime = $this->getthemicrotime();    
 		$xtime = $this->getthemicrotime(); 		
@@ -68,12 +54,12 @@ class pcntl extends controller {
 		controller::__construct();		
 
 		$this->httpurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$this->httpurl.= $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
+		$this->httpurl.= $_SERVER['HTTP_HOST'];
 		
 		$this->_loadinifiles(); 
 		
-		$this->root_page = 'index.php';//paramload('SHELL','filename');		
-		$this->debug = false;// paramload('SHELL','debug');			
+		$this->root_page = 'index.php';
+		$this->debug = false;
 		//echo $this->root_page,'>',$this->debug;		
 		$this->name = null;
 	  
@@ -82,9 +68,7 @@ class pcntl extends controller {
 		$__DPCMEM['PCNTL_DPC'] =  &$this; 
 		SetGlobal('__DPCMEM',$__DPCMEM);
 	  		  
-		$this->file_path = pathinfo($_SERVER['PHP_SELF'],PATHINFO_DIRNAME); 
-		//if ($this->file_path=="\\") 
-			//$this->file_path = null;   
+		$this->file_path = pathinfo($_SERVER['PHP_SELF'],PATHINFO_DIRNAME);   
 		$this->file_info = pathinfo($_SERVER['PHP_SELF'],PATHINFO_BASENAME);
 
 		$p = explode (".",$this->file_info);		  
@@ -112,13 +96,13 @@ class pcntl extends controller {
 		
 		$this->init();	
 
-		if (($this->shm) && ($_cleanOB))
-			ob_clean (); //clean phpdac5 prompts before event (pre ajax die)			
+		//if (($this->shm) && ($_cleanOB))
+			//ob_clean (); //clean phpdac5 prompts before event (pre ajax die)			
 				
 		$this->event($this->myaction);
 		
-		if (($this->shm) && ($_cleanOB>1)) 
-			ob_clean (); //clean phpdac5 prompts after event		
+		//if (($this->shm) && ($_cleanOB>1)) 
+			//ob_clean (); //clean phpdac5 prompts after event		
 		
 		if ($this->debug) 
 			echo "<!-- construct elapsed " . $this->getthemicrotime() - $xtime . " sec -->"; 	   	  		
@@ -211,19 +195,19 @@ parse_ini_string_m:
 	
 	protected function _loadinifiles() {
 
-		if (is_readable("config.ini.php")) {//in root	  
-			include("config.ini.php");
+		if (is_readable(getcwd() . "/config.ini.php")) {//in root	  
+			include(getcwd() . "/config.ini.php");
 			$config = @parse_ini_string($conf, 1, INI_SCANNER_RAW);//NORMAL); 
 			//$config = $this->parse_ini_string_m($conf);
-			include("myconfig.txt.php");
+			include(getcwd() . "/myconfig.txt.php");
 			$myconfig = parse_ini_string($myconf, 1, INI_SCANNER_RAW);			
 			//$myconfig = $this->parse_ini_string_m($myconf);
 		}	
-		elseif (is_readable("cp/config.ini.php")) {//in cp
-			include("cp/config.ini.php");
+		elseif (is_readable(getcwd() . "/cp/config.ini.php")) {//in cp
+			include(getcwd() . "/cp/config.ini.php");
 			$config = @parse_ini_string($conf, 1, INI_SCANNER_RAW);//NORMAL);
 			//$config = $this->parse_ini_string_m($conf);
-			include("cp/myconfig.txt.php");	
+			include(getcwd() . "/cp/myconfig.txt.php");	
 			$myconfig = parse_ini_string($myconf, 1, INI_SCANNER_RAW);		
 			//$myconfig = $this->parse_ini_string_m($myconf);		
 		}		
@@ -543,29 +527,8 @@ parse_ini_string_m:
 			$ret = $postq[0];// $_POST['FormAction'];
 		}  
 		elseif (array_key_exists('t',$_GET)) {
-			$ret = $_GET['t'];
 			
-			/*
-			if ($t = $_GET['t']) {
-				$ret = $t; 
-			}	
-			else {//redirect to root controller-page	  
-				$current_page = pathinfo($_SERVER['PHP_SELF']);
-				//echo $current_page['dirname'],">>>>",$this->file_path;
-				//if is not the root-page-controller
-				if ($this->root_page != $current_page['basename']) {
-
-					$page = str_replace($this->file_path."/".$current_page['basename'], '/' . $this->root_page,	$this->get_server_url());
-					//echo $page;					  
-					//extract '?t=' due to re-queue recursive error 					  
-					$mypage = substr($page,0,strlen($current_page['basename'])+1);//echo $mypage; die();
-					//unset($_GET['t']);			
-					//echo $this->httpurl . $mypage;
-					$this->redirect($this->httpurl . $mypage);				  
-				}
-				else 
-					$ret = 'index';
-			}*/	
+			$ret = $_GET['t'];
 		}  
 		else {
 			if (strstr($this->file_name,'_')) {
@@ -714,27 +677,15 @@ parse_ini_string_m:
 	//override to load dpc from priv dirs
 	protected function set_include($dpc,$type,$myargdpc=null) {
 		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
-				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
+				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	   
 
-		global $activeDPC,$info,$xerror,$GRX,$argdpc,$pharApp; 	 
-	
-		if (($this->shm) && (!$myargdpc)) {
-			if ($pharApp)
-				require_once("phar://$pharApp/". str_replace(".","/",trim($dpc)) . "." . $type . ".php");
-			else
-				require_once("phpdac5://127.0.0.1:19123/". str_replace(".","/",trim($dpc)) . "." . $type . ".php");
-			//else	  
-				//require_once("phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");		
-		}
-		else {
-			//echo $dpc,"<br/>";
-			$argdpc = _DPCPATH_;
-			$_argdpc = $myargdpc ? paramload('SHELL','urlpath').$myargdpc : $argdpc;
-			//echo $_argdpc,'<>';
-			$includer = $_argdpc . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php";
+		if ($myargdpc) {
+			$_argdpc = paramload('SHELL','urlpath') . $myargdpc;
+			require_once($_argdpc . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+		}	
+		else
+			require_once($this->st . "/". str_replace(".","/",trim($dpc)) . "." . $type . ".php");
 
-			require_once($includer);	
-		}
 		//update local table
 		$parts = explode(".",trim($dpc)); 
 		$class = strtoupper($parts[1]).'_DPC';	  
@@ -743,40 +694,16 @@ parse_ini_string_m:
 
 	//override
 	public function require_dpc($dpc, $cgipath=null) {
-		$path = $cgipath ? $cgipath : _DPCPATH_; 
-		global $pharApp;	
-		
-		if ($this->shm) {
-			if ($pharApp)
-				$ret = "phar://$pharApp/". $dpc;
-			else
-				$ret = "phpdac5://127.0.0.1:19123/". $dpc; //nopath
-				//echo $dpc . ' :shared<br/>';	
-			//else	  
-				//$ret = "phpdac://". $dpc; //nopath
-		}	
-		else		
-			$ret = $path . "/" . $dpc;
-		
-		return $ret;	
+		$path = $cgipath ? $cgipath : $this->st; 
+				
+		return $path .'/'. $dpc;	
 	} 
 	
 	//require via ctrl
 	public function _require($dpc, $cgipath=null) {
-		$path = $cgipath ? $cgipath : _DPCPATH_; 
-		global $pharApp;	
-		
-		if ($this->shm) {
-			if ($pharApp)
-				require_once("phar://$pharApp/". $dpc);
-			else
-				require_once("phpdac5://127.0.0.1:19123/". $dpc); //nopath
-				//echo $dpc . ' :shared<br/>';	
-			//else	  
-				//require_once("phpdac://". $dpc); //nopath
-		}	
-		else		
-			require_once($path . "/" . $dpc);
+		$path = $cgipath ? $cgipath : $this->st; 	
+			
+		require_once($path .'/'. $dpc);
 	}	
 
 	//override
@@ -854,7 +781,6 @@ parse_ini_string_m:
 	protected function _new($dpc,$type) {
 		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
 				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
-		global $activeDPC,$info,$xerror,$GRX,$argdpc; //IMPORTANT GLOBALS!!!
 		global $__DPCOBJ; 
 		global $__DPCID; 
 	  
@@ -914,9 +840,7 @@ parse_ini_string_m:
 	//override
 	protected function set_instance($dpc,$instname,$p=null) {
 		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
-				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
-
-		global $activeDPC,$info,$xerror,$GRX,$argdpc; 	
+				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  	
 	  
 		$__DPC = GetGlobal('__DPC');	  
 	  
@@ -958,6 +882,23 @@ parse_ini_string_m:
 		
 		return false;
 	}
+	
+	//fetch stream content
+	static public function streamfile_contents($f=null, $falt=null) {
+		if (!$f) return null;
+		global $dac, $st;
+		
+		if ($dac) { 
+			$fp = str_replace(paramload('SHELL','prpath'),'/cp/',$f);
+			phpdac7\__log('fetch remote:' . $fp);
+			
+			return file_get_contents("$st/www7" . $fp);	
+		}
+		
+		//else filesystem default
+		$fout = $falt ? $falt : $f;
+		return @file_get_contents($fout);
+	}	
 	
 
 	//cryptopost funcs (cryptopost js files required at page)
@@ -1050,7 +991,6 @@ parse_ini_string_m:
 		}		
 	}	
 	
-   
 	public function __destruct() {		  
 	  
 		if ($this->debug) 

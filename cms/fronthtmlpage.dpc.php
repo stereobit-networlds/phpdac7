@@ -152,7 +152,7 @@ class fronthtmlpage {
 	  
 		if ($this->htmlfile) {
 			//$htmdata = file_get_contents($this->htmlfile);
-			$htmdata = self::streamfile_contents($this->htmlfile);
+			$htmdata = GetGlobal('controller')::streamfile_contents($this->htmlfile);
 			
 			$this->process_javascript($htmdata, $pageout);		
 			$ret = $this->process_commands($pageout);
@@ -875,7 +875,7 @@ EOF;
 				
 			//echo 'INCLUDE_PART:'.$pathname;
 			//if ($contents = trim(@file_get_contents($pathname))) {	
-			if ($contents = trim(self::streamfile_contents($pathname))) {	
+			if ($contents = trim(GetGlobal('controller')::streamfile_contents($pathname))) {	
 			
 				self::stackTemplate($pathname);
 				
@@ -929,7 +929,7 @@ EOF;
 				
 			//echo 'INCLUDE_PART:'.$pathname;
 			//if ($contents = trim(@file_get_contents($pathname))) {	
-			if ($contents = trim(self::streamfile_contents($pathname))) {
+			if ($contents = trim(GetGlobal('controller')::streamfile_contents($pathname))) {
 
 			    self::stackTemplate($pathname);
 			
@@ -1255,7 +1255,7 @@ function cc(name,value,days) {
 	}
 	
 	//fetch stream content
-	static public function streamfile_contents($f=null, $falt=null) {
+	/*static public function streamfile_contents($f=null, $falt=null) {
 		if (!$f) return null;
 		global $phpdac_c, $dac, $env;
 		//echo $phpdac_c .'.'. $dac . '>'.$f;
@@ -1272,7 +1272,7 @@ function cc(name,value,days) {
 		//else filesystem default
 		$fout = $falt ? $falt : $f;
 		return @file_get_contents($fout);
-	}	
+	}*/	
 
 	function __destruct() {
 		if (isset($_GET['modify'])) {

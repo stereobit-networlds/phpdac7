@@ -163,6 +163,7 @@ class i18n {
         $this->cacheFilePath = $this->cachePath . '/php_i18n_' . md5_file(__FILE__) . '_' . $this->prefix . '_' . $this->appliedLang . '.cache.php';
 
         // if no cache file exists or if it is older than the language file create a new one
+		//echo $this->cacheFilePath . '>';
         if (!file_exists($this->cacheFilePath) || filemtime($this->cacheFilePath) < filemtime($this->langFilePath)) {
             switch ($this->get_file_extension()) {
                 case 'properties':
@@ -171,11 +172,14 @@ class i18n {
                     break;
                 case 'yml':
                     if( ! class_exists('Spyc') )
-                        require_once 'vendor/spyc.php';
+                        //require_once 'vendor/spyc.php';
+						_r('libs/spyc.lib.php');
                     $config = spyc_load_file($this->langFilePath);
                     break;
                 case 'json':
-                    $config = json_decode(file_get_contents($this->langFilePath), true);
+					//$config = json_decode(file_get_contents($this->langFilePath), true);
+				    $jsonstr = controller::streamfile_contents($this->langFilePath);
+                    $config = json_decode($jsonstr, true);
                     break;
                 default:
                     throw new InvalidArgumentException($this->get_file_extension() . " is not a valid extension!");
@@ -202,6 +206,7 @@ class i18n {
         }
 
         require_once $this->cacheFilePath;
+		//_r($this->cacheFilePath); //err, is not a dpc class
     }
 
     public function isInitialized() {

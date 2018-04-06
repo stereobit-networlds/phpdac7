@@ -10,53 +10,28 @@ class controller  {
 	private $_security;
     private $systemdb;
 	
-	protected $shm;
+	protected $shm, $st;
 	
     public function __construct($code=null,$preprocess=null,$noqueue=null) {
-
+		global $dac, $st;
+		//echo '>>>>>' . $dac . '<<<<<<'; 
+		$this->st = $st;
+		$this->shm = $dac;			
+		
 		$this->_events  = array();	  	
 		$this->_actions = array();
 		$this->_attr    = array();
-		$this->_security= array();
-	
-		$this->shm = 1;
+		$this->_security= array();	
     }
    
     public function include_dpc($dpc) {
-		global $pharApp;
-
-		if ($this->shm) {
-			if ($pharApp)
-				require_once("phar://$pharApp/". $dpc);
-			else
-				require_once("phpdac5://127.0.0.1:19123/".$dpc);
-				//echo $dpc . ' :shared<br/>';	
-			//else	  
-				//require_once("phpdac://".$dpc);
-		}	
-		else {
-			require_once(_DPCPATH_."/".$dpc);
-			//echo $dpc . ' :local<br/>';
-		}	
+		
+		require_once($this->st .'/'. $dpc);
     }
    
 	public function require_dpc($dpc, $cgipath=null) {
-		global $pharApp;
 
-		if ($this->shm) {
-			if ($pharApp)
-				$ret = "phar://$pharApp/". $dpc;
-			else
-				$ret = "phpdac5://127.0.0.1:19123/".$dpc;
-				//echo $dpc . ' :shared<br/>';	
-			//else	  
-				//$ret = "phpdac://".$dpc;
-		}	
-		else	
-			$ret = _DPCPATH_."/".$dpc;
-		
-		//echo '>',$ret,'<br>';		
-		return $ret;	
+		return $this->st .'/'. $dpc;	
 	}   
    
 	//read project file ...
@@ -220,58 +195,38 @@ class controller  {
 	}
 
 	public function init_object($dpc,$type) {
-      global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
-             $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	
+		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
+				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	
+		global $__DPCOBJ; //holds objects of new approach of name of type xxx.yyy
+		global $__DPCID; //array of new name alias  	  	    	  	   
+ 
+		require_once($this->st .'/'. str_replace(".","/",trim($dpc)) . "." . $type . ".php");
 
-	  global $activeDPC,$info,$xerror,$argdpc,$pharApp;
+		//START THE OBJECT
+		$parts = explode(".",trim($dpc)); 
+		$class = strtoupper($parts[1]).'_DPC';
 	  
-	  global $__DPCOBJ; //holds objects of new approach of name of type xxx.yyy
-	  global $__DPCID; //array of new name alias  	  	    	  	   
+		//update local table
+		$this->make_local_table($class);	  
+	  
+		if ((defined($class)) &&
+			(class_exists($__DPC[$class])) ) {
+				
+			//echo '>>>',strtoupper($parts[1]),'_DPC','=',$__DPC[strtoupper($parts[1]).'_DPC'];
+			$__DPCMEM[$class] =  new $__DPC[$class]; 
+			$__DPCOBJ[$dpc] =  $__DPCMEM[$class];//alias of new name object array
+			$__DPCID[$class] = $dpc; //new name index array
+			return TRUE;
+		}	  
 
-      //$argdpc = _DPCPATH_;// paramload('DIRECTIVES','dpc_type');	  
-	  //echo $argdpc,'>'; 
-  
-	  if ($this->shm) {//SHARED MEM 
-			if ($pharApp)
-				require_once("phar://$pharApp/". str_replace(".","/",trim($dpc)) . "." . $type . ".php");
-			else
-				require_once("phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
-			//else	  
-				//require_once("phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
-	  }	
-	  else	
-			require_once(_DPCPATH_ . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
-
-	  //START THE OBJECT
-      $parts = explode(".",trim($dpc)); 
-	  $class = strtoupper($parts[1]).'_DPC';
-	  
-	  //update local table
-      $this->make_local_table($class);	  
-	  
-	  if ((defined($class)) &&
-	      (class_exists($__DPC[$class])) ) {
-		//echo '>>>',strtoupper($parts[1]),'_DPC','=',$__DPC[strtoupper($parts[1]).'_DPC'];
-	    //SetGlobal('__DPCMEM[$class]',& new GetGlobal('__DPC[$class]');
-		$__DPCMEM[$class] =  new $__DPC[$class]; 
-		$__DPCOBJ[$dpc] =  $__DPCMEM[$class];//alias of new name object array
-		$__DPCID[$class] = $dpc; //new name index array
-		return TRUE;
-	  }	  
-	  //}//is file
-	  return FALSE;  
-	  
-	  /*}//try
-	  catch (Exception $e) {
-		echo 'Caught exception: ',  $e->getMessage(), "\n";
-      } */	  
+		return FALSE;  	  
 	}
 		
 	//alias of _new(parent).....init_object,,,......(mode:one by one)
 	public function calldpc($dpcexpression,$type='dpc') {
 		//echo $dpcexpression,"\n";
-		return $this->init_object($dpcexpression,$type);
-		//return $this->_new($dpcexpression,$type);	   
+		
+		return $this->init_object($dpcexpression,$type);	   
 	}	
 	
 	
@@ -411,119 +366,88 @@ class controller  {
 	}		
 	
 	//call a extension ext.php class file as is
-    protected function set_extension($extension,$defname,$noerror=null) {
-	 global $pharApp;	
-     //echo $extension,"\n";
+    protected function set_extension($extension,$defname,$noerror=null) {	
+		global $dac;
 	 
-	 if (!defined($defname)) {
+		if (!defined($defname)) {
 	 
-	   define($defname,'true');
-
-       //$argdpc = _DPCPATH_; //paramload('DIRECTIVES','dpc_type');
-	   
-	   if ($this->shm) {
-			if ($pharApp)
-				$includer = "phar://$pharApp/". str_replace(".","/",trim($extension)) . ".ext.php";
+			define($defname,'true');	
+			if ($dac)	
+				require_once($this->st .'/'. str_replace(".","/",trim($extension)) . ".ext.php");	  		
 			else
-				$includer = "phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($extension)) .  ".ext.php";
-			//else
-				//$includer = "phpdac://" . str_replace(".","/",trim($extension)) . ".ext.php";  
-	   }	
-	   else 	   
-		  $includer = _DPCPATH_ . "/system/extensions/" . str_replace(".","/",trim($extension)) . ".ext.php";	
-	  
-	   //echo $defname;           
-	   //echo $includer; 		
-	   require_once($includer);	  		   
+				require_once(_DPCPATH_ .'/system/extensions/'. str_replace(".","/",trim($extension)) . ".ext.php");	  		   
 	   
-	   return true;
-	 }
-	 else {
-	   if (!$noerror) 
-		   echo "$extension defined more than once!"; 
+			return true;
+		}
+		else {
+			if (!$noerror) 
+				echo "$extension defined more than once!"; 
 	   
-	   return false;
-	 }  
+			return false;
+		}  
     }	
 	
 	//just include the spec dpc (mode:batch)
 	protected function set_include($dpc,$type) {
-      global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
-             $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
-
-	  global $activeDPC,$info,$xerror,$argdpc,$pharApp;
+		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
+				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
 	
-	  //echo $dpc,"\n";
-      //$argdpc = _DPCPATH_; //paramload('DIRECTIVES','dpc_type');
-	  
-	  if ($this->shm) {
-			if ($pharApp)
-				require_once("phar://$pharApp/". str_replace(".","/",trim($dpc)) . "." . $type . ".php");
-			else
-				require_once("phpdac5://127.0.0.1:19123/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
-			//else
-				//require_once("phpdac://" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");  
-	  }	
-	  else 	  	 
-		require_once(_DPCPATH_ . "/" . str_replace(".","/",trim($dpc)) . "." . $type . ".php");
+		require_once($this->st .'/'. str_replace(".","/",trim($dpc)) . "." . $type . ".php");
 
-	  //update local table
-      $parts = explode(".",trim($dpc)); 
-	  $class = strtoupper($parts[1]).'_DPC';	  
-      $this->make_local_table($class);	  
+		//update local table
+		$parts = explode(".",trim($dpc)); 
+		$class = strtoupper($parts[1]).'_DPC';	  
+		$this->make_local_table($class);	  
 	}
 	
 	
 	//create a subclass of the parent object to re-define constructor
 	protected function set_instance($dpc,$instname,$params=null) {
-	  	
-      global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
-             $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
-
-	  global $activeDPC,$info,$xerror,$argdpc; 	  
+		global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
+				$__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  	  
 	  
-	  $__DPC = GetGlobal('__DPC');	  
+		$__DPC = GetGlobal('__DPC');	  
 	  
-      $parts = explode(".",trim($dpc)); 
-	  $parentclass = strtoupper($parts[1]).'_DPC';	//echo $parentclass;  
-	  $idpc =  $__DPC[$parentclass];	
-	  //print_r($__DPC);
+		$parts = explode(".",trim($dpc)); 
+		$parentclass = strtoupper($parts[1]).'_DPC';	//echo $parentclass;  
+		$idpc =  $__DPC[$parentclass];	
+		//print_r($__DPC);
 	  
-	  //if parent class not exist load it!
-	  if (!class_exists($idpc)) {
-	    //$this->set_include($dpc,'dpc');//NOT WORK BECAUSE OF ACTION 
-		//echo $dpc;
-		$this->calldpc($dpc,'dpc');
-		$__DPC = GetGlobal('__DPC');//re-loadit afer include	
-		$idpc =  $__DPC[$parentclass];	  
-	  }		
+		//if parent class not exist load it!
+		if (!class_exists($idpc)) {
+			$this->calldpc($dpc,'dpc');
+			$__DPC = GetGlobal('__DPC');//re-loadit afer include	
+			$idpc =  $__DPC[$parentclass];	  
+		}		
 	  
-	  if (class_exists($idpc)) {
+		if (class_exists($idpc)) {
 	
-        $x  = "class $instname extends $idpc" . ' {';
-	    $x .= 'function __construct() {';
-	    $x .= $parts[1]."::__construct();";
-	    //now we must pass the init params
-		if (isset($params)) {
-	      $params_array = explode(",",$params);
-	      foreach ($params_array as $id=>$val) {
-	        if (isset($val)) {   
-	          $parts = explode('=',$val);
-	          $x .= '$this->' . $parts[0] . " = '" . $parts[1] . "';";
-		    }  
-	      }
-		}  	
-	    $x .= '}';
-        $x .= '};';
+			$x  = "class $instname extends $idpc" . ' {';
+			$x .= 'function __construct() {';
+			$x .= $parts[1]."::__construct();";
+			
+			//now we must pass the init params
+			if (isset($params)) {
+				$params_array = explode(",",$params);
+				
+				foreach ($params_array as $id=>$val) {
+					if (isset($val)) {   
+						$parts = explode('=',$val);
+						$x .= '$this->' . $parts[0] . " = '" . $parts[1] . "';";
+					}  
+				}
+			}  	
+			$x .= '}';
+			$x .= '};';
 	  
-	    //echo $x;
-        @eval($x);	
+			//echo $x;
+			@eval($x);	
 	  
-	    //$instname = new $instname;
-        $this->_newinstance2($instname); 	
-	  }
-	  else
-	    die("Error: There is not [$dpc] class to extend!");    	  
+			//$instname = new $instname;
+			$this->_newinstance2($instname); 	
+		}
+		else
+			die("Error: There is not [$dpc] class to extend!");    	  
 	}			
 	
     //free dpc resources
@@ -544,7 +468,7 @@ class controller  {
 	          (is_object($__DPCMEM[$dpc])) &&
 	          (method_exists($__DPCMEM[$dpc],'free'))) {
 			 	    
-		    $__DPCMEM[$dpc]->free();	
+				$__DPCMEM[$dpc]->free();	
           }				  
 					  
 		  $__DPCMEM[$dpc] = null; 
@@ -732,10 +656,7 @@ class controller  {
 	//create a new dpc object instance based on a dpc as is
 	protected function _newinstance($instname,$dpc,$type) {
       global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
-             $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
-
-	  global $activeDPC,$info,$xerror,$argdpc; 
-	  
+             $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	   
 	  global $__DPCOBJ; //holds objects of new approach of name of type xxx.yyy
 	  global $__DPCID; //array of new name alias	  
 	  
@@ -780,10 +701,7 @@ class controller  {
 	//create a new dpc object instance based on a subclass of a dpc where construct diferrent	
 	protected function _newinstance2($instname) {
       global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
-             $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
-
-	  global $activeDPC,$info,$xerror,$argdpc; 
-	  
+             $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	   
 	  global $__DPCOBJ; //holds objects of new approach of name of type xxx.yyy
 	  global $__DPCID; //array of new name alias		
 	
@@ -854,10 +772,7 @@ class controller  {
 	//create a new dpc object (mode:batch)
 	protected function _new($dpc,$type) {
       global $__DPC,$__DPCSEC,$__DPCMEM,$__ACTIONS,$__EVENTS,$__LOCALE,$__PARSECOM,
-             $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	  
-
-	  global $activeDPC,$info,$xerror,$argdpc; 
-	  
+             $__BROWSECOM,$__BROWSEACT,$__PRIORITY,$__QUEUE,$__DPCATTR,$__DPCPROC;	   
 	  global $__DPCOBJ; //holds objects of new approach of name of type xxx.yyy
 	  global $__DPCID; //array of new name alias	  
 	  
@@ -885,8 +800,6 @@ class controller  {
 	
 	  return FALSE; 	  		
 	}
-
-
 
 
 	// REMOTE & SHARED MEM

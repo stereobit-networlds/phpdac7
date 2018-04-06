@@ -6,8 +6,7 @@ require_once("system/timer.lib.php");
 require_once("agents/resources.lib.php");
 require_once("agents/scheduler.lib.php");
 
-define ("GLEVEL", 1); 
-define ("__PHAR", 0);  
+define ("GLEVEL", 1);  
 
    function _say($str, $level=0, $crln=true) 
    {
@@ -124,15 +123,6 @@ class kernelv2 {
 		{
             _say("Failed to get DB handle: " . $e->getMessage(),1);
         }
-		
-		//init phar
-		if (__PHAR)
-		{   //ini_set('phar.readonly','0');
-	        _say("Phar initialized!" ,1);
-			$this->phar = new Phar(getcwd() . "/phpdac7.phar", 
-			                       FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::KEY_AS_FILENAME, 
-								   "phpdac7.phar");		
-		}
 		
 		$this->startdaemon();
 	  }
@@ -1451,11 +1441,6 @@ class kernelv2 {
 		if (!$filename) return false;
 		
 		$fdata = @file_get_contents($filename);
-
-		if (__PHAR && is_object($this->phar))
-		{	_say("Phar file added: " . $filename ,1);
-			$this->phar[$filename] = $fdata;
-		}
 		
 		return $fdata; //stop here
 		
@@ -1485,13 +1470,7 @@ class kernelv2 {
     }						
    
 	function __destruct() 
-	{
-		if (__PHAR && is_object($this->phar))
-		{   _say("Phar completed" ,1);
-			$this->phar->setStub($phar->createDefaultStub("dpclass.dpc.php"));
-			//may be cmd from a client...
-		}	
-		
+	{		
 		//when ctrl-c
 		@unlink("shm.id"); 
 		
