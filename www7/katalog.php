@@ -1,14 +1,4 @@
 <?php
-//$localscript=1;
-
-define('SMTP_PHPMAILER','true');
-//define('SENDMAIL_PHPMAILER','true');
-
-$processMethod = 'balanced'; 
-$processDebug = false;
-
-require_once('phpdac7.php');
-
 $htmlpage = new pcntl('
 super javascript;
 load_extension adodb refby _ADODB_; 

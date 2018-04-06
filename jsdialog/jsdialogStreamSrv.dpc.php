@@ -81,7 +81,7 @@ class jsdialogStreamSrv extends jsdialog {
 		//$response = $this->defaultDialog($text, $title); 
 		
 		//..exec scenario..
-		$source = null;
+		$source = 'cdac.php'; //null;
 		
 		$response = $this->sayMsg($text, $title, $source, 2000); 
 		

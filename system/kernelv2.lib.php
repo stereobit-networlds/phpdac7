@@ -835,8 +835,18 @@ class kernelv2 {
 			//local storage
 			$data = $this->_readPHP($this->dpcpath . $dpc); //dump inside
 		}
-		else 
+		else { 
 			_say($this->dpcpath . $dpc . ' not found!',1);	
+			
+			//create var
+			//...explode('/',$var)->foreach run agent pipe
+			/*
+			$var = (new Variable())
+                ->setName('Tom')
+                ->setSurname('Smith')
+                ->setSalary('100');
+			*/
+		}	
 		
 		if (!$data) return false;	
 		_say($data,3);		

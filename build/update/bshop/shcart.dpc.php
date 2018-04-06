@@ -957,13 +957,13 @@ function addtocart(id,cartdetails)
 		return false;	
 	}	
 	
-	protected function jsDialog($text=null, $title=null, $time=null) {
+	public function jsDialog($text=null, $title=null, $time=null, $source=null) {
 	   $stay = $time ? $time : 3000;//2000;
 	   
        if (defined('JSDIALOGSTREAM_DPC')) {
 	   
 			if ($text)	
-				$code = _m("jsdialogstream.say use $text+$title++$stay");
+				$code = _m("jsdialogstream.say use $text+$title+$source+$stay");
 			else
 				$code = _m('jsdialogstream.streamDialog use jsdtime');
 		   

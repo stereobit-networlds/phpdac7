@@ -58,7 +58,7 @@ $outputdir = /*getcwd() .*/ $selectdir;
 
 if ($selected=='-?') die($usage);
 
-if ($shmTable = @file_get_contents('shm.id')) {
+if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName) . '/shm.id')) {
 	
 	if (!$pharReadOnly) {
 		echo '-------------' . $outputdir . $pharName . '-------------'.PHP_EOL;
@@ -66,10 +66,14 @@ if ($shmTable = @file_get_contents('shm.id')) {
 					
 		//pre-req files
 		if ($selected == 0) {
-			//$pharPCNTL = file_get_contents('system/pcntlphar.lib.php');
+			
 			$pharPCNTL = content_handler(file_get_contents('system/pcntlphar.lib.php'),true);
 			$phar->addFromString("system/pcntlphar.lib.php", $pharPCNTL);
-			echo 'Prereq : system/pcntlphar.lib.php' . '->' . strlen($pharPCNTL) .  PHP_EOL;
+			echo 'Prereq 1: system/pcntlphar.lib.php' . '->' . strlen($pharPCNTL) .  PHP_EOL;
+			
+			$dacPCNTL = content_handler(file_get_contents('system/dacstreamc.lib.php'),true);
+			$phar->addFromString("system/dacstreamc.lib.php", $dacPCNTL);
+			echo 'Prereq 2: system/dacstreamc.lib.php' . '->' . strlen($dacPCNTL) .  PHP_EOL;
 		}
 	}
 	else
@@ -80,7 +84,8 @@ if ($shmTable = @file_get_contents('shm.id')) {
 	$length = (array) unserialize($parts[2]); 
 	$free = (array) unserialize($parts[3]); 
 	
-	$mem = file_get_contents('dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+	$buildMEM = 'build/' . str_replace('.phar', '', $pharName) . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log';
+	$mem = file_get_contents($buildMEM);
 	//echo $mem;
 	$i=0;
 	foreach ($addr as $name=>$start) {
@@ -126,7 +131,7 @@ if ($shmTable = @file_get_contents('shm.id')) {
 	
 	//insert new files from build/update/ dir 
 	//(depend on insertlist.txt)
-	if ($ins = insertFiles($phar))
+	if ($ins = insertFiles($phar, str_replace('.phar', '.txt', $pharName)))
 		echo $ins . ' files added in phar.' . PHP_EOL;
 	
 	if (!$pharReadOnly)
@@ -137,10 +142,11 @@ else
 	die('Shared memory data table missing!'.PHP_EOL);
 
 
-function insertFiles(&$phar, $path=null) {
+function insertFiles(&$phar, $list=null, $path=null) {
 	if (!is_object($phar)) return false;
+	$_list = $list ? $list : 'insertlist.txt';
 	$_path = $path ? $path : 'build/update/';
-	$_insfile = 'build/update/insertlist.txt';
+	$_insfile = $_path . $_list; //'build/update/insertlist.txt';
 	$i=0;
 	
 	if (is_file($_insfile)) {
