@@ -531,65 +531,64 @@ class daemon {
 		
 		function dispatch($command_line,$id) {
 		
-                                $this->verbose (4, "Received $command_line");
+			$this->verbose (4, "Received $command_line");
                         
-                                $command_set = $this->Tokenise ($command_line);//command called without strtoupper(!=default cmds) so upper cmd at execute (see below)
-                                $cmd = $command_set['command'];
-                                $params = $command_set['params'];
-                                //$this->Println ( $command_set['command']);
-                                //if ($this->isValidCommand ($cmd)) {
-                                        //see if this is registered in our callback function set
-                                        
-                                        $callbacks = $this->CommandAction ($cmd);
-	                                       //aded by me (isvalidcommand &&)
-                                        if (($this->isValidCommand (strtoupper($cmd))) && (!empty ($callbacks))) {
-                                                //has callback functions... lets call them one by one
+            $command_set = $this->Tokenise ($command_line);//command called without strtoupper(!=default cmds) so upper cmd at execute (see below)
+            $cmd = $command_set['command'];
+            $params = $command_set['params'];
+            //$this->Println ( $command_set['command']);
+               //if ($this->isValidCommand ($cmd)) {
+                  //see if this is registered in our callback function set
+                                    
+                  $callbacks = $this->CommandAction ($cmd);
+	              //aded by me (isvalidcommand &&)
+                  if (($this->isValidCommand (strtoupper($cmd))) && (!empty ($callbacks))) {
+                       //has callback functions... lets call them one by one
                                                 
-                                                foreach ($callbacks as $function) {
+                       foreach ($callbacks as $function) {
 												    
-													if (is_array($function)) {//ADDED TO SUPPORT CLASS METHOD CALLS...
-													    //echo 'zzz';
-													    $status = $function[0]->{$function[1]} (strtoupper($command_set['command']), $command_set['params'], $this); 
-                                                        if (false == $status) {
-                                                                //function says that we should exit...
-                                                                //$this->resetConnection($id);
-																$this->closeConnection($id);
-                                                                //exit;
-                                                        }														
-													}
-													else {//default global functions!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                                        //call the callback function
-                                                        $status = $function ($command_set['command'], $command_set['params'], $this); 
-                                                        if (false == $status) {
-                                                                //function says that we should exit...
-                                                                //$this->resetConnection($id);
-																$this->closeConnection($id);
-                                                                //exit;
-                                                        }
-												   } 		
-                                                }
-
-                                        } 
-										elseif ($function = $this->CommandAction ("***")) {////check phpdac(kernel) dispatcher ADDED BY ME TO SUPPORT PHPDAC CMDS
-										    //print_r($this->callbacks['***'][0]); 
-											//$this->Println ( $function[0][0].'.'.$function[0][1]);
-                                            $status = $function[0][0]->{$function[0][1]} ($command_set['command'], $command_set['params'], $this); 
-                                            if (false == $status) {
-                                               //function says that we should exit...
-                                               //$this->resetConnection($id);
-											   $this->closeConnection($id);
-                                               //exit;
-                                            }	
-										}
-										else {
-                                            //NO EVENTS... 
-                                            $this->Println ("'" . $command_set['command'] . "' defined but not implemented");
-                                            $this->verbose (2, "'" . $command_set['command'] . "' not implemented!");
-                                        }
-                                /*} else {
-                                        $this->showError ('NOTIFY', 'Command `' .
-                                        $command_set['command'] . '\' is unrecognized');
-                                }*/		
+							if (is_array($function)) {//ADDED TO SUPPORT CLASS METHOD CALLS...
+							    //echo 'zzz';
+							    $status = $function[0]->{$function[1]} (strtoupper($command_set['command']), $command_set['params'], $this); 
+                                if (false == $status) {
+                                    //function says that we should exit...
+                                    //$this->resetConnection($id);
+									$this->closeConnection($id);
+                                    //exit;
+                                }														
+							}
+						    else {//default global functions!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                //call the callback function
+                                $status = $function ($command_set['command'], $command_set['params'], $this); 
+                                if (false == $status) {
+                                    //function says that we should exit...
+                                    //$this->resetConnection($id);
+									$this->closeConnection($id);
+                                    //exit;
+                                }
+						    } 		
+                       }
+                  }  //check phpdac(kernel) dispatcher ADDED BY ME TO SUPPORT PHPDAC CMDS
+				  elseif ($function = $this->CommandAction ("***")) {
+					   //print_r($this->callbacks['***'][0]); 
+					   //$this->Println ( $function[0][0].'.'.$function[0][1]);
+                       $status = $function[0][0]->{$function[0][1]} ($command_set['command'], $command_set['params'], $this); 
+                       if (false == $status) {
+                          //function says that we should exit...
+                          //$this->resetConnection($id);
+						  $this->closeConnection($id);
+                          //exit;
+                        }	
+				  }
+				  else {
+                     //NO EVENTS... 
+                     $this->Println ("'" . $command_set['command'] . "' defined but not implemented");
+                     $this->verbose (2, "'" . $command_set['command'] . "' not implemented!");
+                  }
+            /*} else {
+                 $this->showError ('NOTIFY', 'Command `' .
+                 $command_set['command'] . '\' is unrecognized');
+            }*/		
 		}
 		
 		//!!!!!! get the first active client id !!!!

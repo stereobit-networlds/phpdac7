@@ -5,7 +5,11 @@ require_once("system/daemon.lib.php");
 require_once("system/timer.lib.php");
 require_once("agents/resources.lib.php");
 require_once("agents/scheduler.lib.php");
-require_once("agprocess/process.dpc.php");
+
+//require_once('mail/smtpmail.dpc.php'); //mail 2 send
+require_once('agp/pstack.lib.php');
+require_once('agp/processInst.lib.php');
+require_once("agp/process.dpc.php");
 
 define ("GLEVEL", 1);  
 
@@ -194,7 +198,7 @@ class kernelv2 {
 		      foreach ($f as $command_line) {
 				if (trim($command_line)) {
 					 //echo "-" . $command_line;
-                     $dmn->dispatch($command_line,null);
+                     $dmn->dispatch(trim($command_line),null);
                 }
 		      }			  
 			}
@@ -461,23 +465,7 @@ class kernelv2 {
    
    //save shared mem resource id and mem alloc arrays
    private function savestate() 
-   {   /*
-		$fd = @fopen( "shm.id", "w" );
-
-		if (!$fd) 
-		{
-            echo "shm_id not saved!!!\n";
-			return false;
-		}
-		_say("Save state",2);
-		$data = $this->shm_max ."@^@". serialize($this->dpc_addr) . 
-		                       "@^@". serialize($this->dpc_length). 
-							   "@^@". serialize($this->dpc_free); 
-
-		fwrite($fd, $data);
-		fclose($fd);      
-		return true;
-		*/
+   {   
 		_say("Save state",2);
 		$data = $this->shm_max ."@^@". serialize($this->dpc_addr) . 
 		                       "@^@". serialize($this->dpc_length). 
@@ -491,21 +479,21 @@ class kernelv2 {
    {
 	   if ($data = @file_get_contents($altdir . 'shm.id'))
 	   {
-		_say("Load state",1);
-		if ($altdir)
-			_say($altdir,1);		   
+			_say("Load state",1);
+			if ($altdir)
+				_say($altdir,1);		   
 		   
-		$entries = explode('@^@', $data);
-		if (is_array($entries)) {
-			$this->dpc_addr = (array) unserialize($entries[1]);
-			$this->dpc_length = (array) unserialize($entries[2]);
-			$this->dpc_free = (array) unserialize($entries[3]);
-			$this->shm_max = $entries[0];
-	   
-	        
-			return ($entries[0]);
-		}
+			$entries = explode('@^@', $data);
+			if (is_array($entries)) {
+				$this->dpc_addr = (array) unserialize($entries[1]);
+				$this->dpc_length = (array) unserialize($entries[2]);
+				$this->dpc_free = (array) unserialize($entries[3]);
+				$this->shm_max = $entries[0];
+
+				return ($entries[0]);
+			}
 	   }
+	   
 	   return false;
    }	
    
@@ -647,7 +635,7 @@ class kernelv2 {
    }	  
    
    //client version
-   public function getdpcmemc($dpc) 
+   private function getdpcmemc($dpc) 
    {
 	  $dpc = $this->dehttpDpc($dpc);
 	  $data = null; 	  
@@ -822,10 +810,10 @@ class kernelv2 {
 			*/
 
 			$this->processStack(__CLASS__, explode('/',$dpc));
-			//print_r($this->getProcessStack());
+			//print_r(self::getProcessStack());
 			$this->process = new process($this, self::processChain(), null);
 			if ($this->process->isFinished(null)) {
-				echo self::processChain() . ' finished!'; 
+				echo implode(',', self::processChain()) . ' finished!'; 
 			}
 		}	
 		
@@ -1497,12 +1485,14 @@ class kernelv2 {
 	
 	static private function processStack($dpc, $processes) 
 	{
-		self::$processStack[$dpc] = $processes;
+		self::$processStack[$dpc] = array_filter($processes);//, 
+			//function($value) { return $value !== ''; });
 		
 		self::$startProcess = array(); //reset
-		foreach ($processes as $process)
-			self::$startProcess[$dpc][] = $process;		
+		self::$startProcess[$dpc] = array_filter($processes);//, 
+			//function($value) { return $value !== ''; });			
 			
+		//print_r(self::$startProcess);	
 		return true;	
 	}
 	
@@ -1513,18 +1503,28 @@ class kernelv2 {
 	
 	static private function processChain() 
 	{	
-		$processChain = array();
-		foreach (self::$startProcess as $inDpc=>$processArray) {
+		/*$processChain = array();
+		  foreach (self::$startProcess as $inDpc=>$processArray) {
 			if ($inDpc==__CLASS__) {
 				foreach ($processArray as $process)
 					$processChain[] = $process;	
 			}	
-		}	
-		//print_r($processChain);
-		if (!empty($processChain))
-			return implode(',',$processChain);	
+		}*/		
+		//print_r($pChain);
+		//echo implode(',',$processChain) . PHP_EOL;
+		//if (!empty($processChain))
+			//return implode(',',$processChain);	
 			
-		return false;
+		//return false;
+		/*
+		return array_filter(self::$startProcess, 
+			function($value, $key) { 
+				echo $key;
+				print_r($value);
+				return $key ==__CLASS__;
+			}, ARRAY_FILTER_USE_BOTH);		
+		*/
+		return (self::$startProcess[__CLASS__]);	
 	}	
    
 	function __destruct() 

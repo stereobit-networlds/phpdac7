@@ -164,6 +164,8 @@ class agentds {
 			
 			//init printer	 
 			$this->initPrinter();
+		    //init db
+		    //$this->initPDO();	//serialize err 1250		
 						  
 			//(starting at scheduler construction)
 			//register_tick_function(array($this->get_agent('scheduler'),"checkschedules"),true);	  
@@ -286,14 +288,14 @@ class agentds {
 			
 			if (!empty($f)) 
 			{
-		      foreach ($f as $command_line) 
-			  {
-				if (trim($command_line)) 
+				foreach ($f as $command_line) 
 				{
-					 //echo "-" . $command_line;
-                     $dmn->dispatch($command_line,null);
-                }
-		      }		  
+					if (trim($command_line)) 
+					{
+						//echo "-" . $command_line;
+						$dmn->dispatch(trim($command_line),null);
+					}
+				}		  
 			}
 			return true;	
 		}
@@ -1137,7 +1139,7 @@ class agentds {
 	private function create_agent($agent,$domain=null,$include_ip=null,$as_name=null,$type='dpc',$includeonly=false) 
 	{
 		global $__DPC;  
-		$dpc = $domain ? : 'agents';
+		$dpc = $domain ? $domain : 'agents';
 		$class = strtoupper($agent).'_DPC';	  
 		//echo $class;
 	  
@@ -1621,6 +1623,19 @@ class agentds {
 			else
 				_say("printer:" . $printer . " error: Could not connect!",1);  
 		}
+	}
+
+	private function initPDO() 
+	{
+		try 
+		{
+		  $this->pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
+		  _say("PDO connection: ok!" ,1);
+	    } 
+		catch (PDOException $e) 
+		{
+            _say("Failed to get DB handle: " . $e->getMessage(),1);
+        }	
 	}	
    
 	public function httpcl($url=null, $user=null,$password=null) 
@@ -1789,11 +1804,13 @@ class agentds {
 	  	
 		$this->free_agents();
 	  
-		//close printer	  
-		$printout = $this->get_agent('resources')->get_resource('printer');   		
-		if (is_resource($printout) &&
+		//close printer	 
+		if (extension_loaded('printer')) {	
+			$printout = $this->get_agent('resources')->get_resource('printer');   		
+			if (is_resource($printout) &&
 				get_resource_type($printout)=='printer')
-			printer_close($printout);
+				printer_close($printout);
+		}	
 			
 		$this->stopmemagn(); //final	
 		return true;	

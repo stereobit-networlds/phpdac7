@@ -28,7 +28,7 @@ class howru extends processInst {
 			return false;
 		}	
 		
-		if ($this->runCode(1, $event)) {
+		if ($this->runCode(0, $event)) {
 			
 			$this->stackRunStep(1);
 			return true;

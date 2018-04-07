@@ -1,6 +1,5 @@
 <?php
 
-//class processInst extends Process\pstack {
 class processInst extends pstack {
 	
 	protected $processStepName, $processChain;

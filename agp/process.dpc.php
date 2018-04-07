@@ -1,7 +1,8 @@
 <?php
-//require_once('mail/smtpmail.dpc.php'); //mail 2 send
-require_once('agp/pstack.lib.php');
-require_once('agp/processInst.lib.php');
+if (!defined("PROCESS_DPC")) {
+define("PROCESS_DPC",true);
+
+$__DPC['PROCESS_DPC'] = 'process';
 
 class process extends pstack {
 
@@ -11,10 +12,10 @@ class process extends pstack {
 
 		parent::__construct($caller); //not a name or stack in this
 		
-		if (strstr($chain,',')) //process chain
-			$this->proccesChain = explode(',', $chain);
-		else	
-			$this->proccesChain[0] = $chain;
+		//$this->proccesChain = (array) $chain;
+		$this->proccesChain = (array) !empty($chain) ? $chain :
+									  $caller::processChain(); //srv call if not as param
+		//print_r($this->proccesChain);
 		
 		//when no getreq t check at construct else after event
 		//if ((!$cmd) || ($cmd=='process')) 
@@ -22,25 +23,19 @@ class process extends pstack {
 		
 		//echo 'construct: ' . $this->processName . PHP_EOL;
 	}
-	/*
-    static public function autoload($class)  {	
+	
+	//get from caller = this, kernel not exist as caller when run on agent 
+	//else if run from kernel, kernel exist as caller
+	static public function getProcessStack() 
+	{
+		return (array) $caller::$processStack;
+	}	
 
-        //if (0 !== strpos($class, 'agp')) 
-          //  return;
-		
-        //echo dirname(__FILE__).'/'.str_replace(array('_', "\0"), array('/', ''), $class).'.php';
-        //if (file_exists($file = 'agp/'. str_replace(array('_', "\0"), array('/', ''), $class).'.php')) {
-			$file = 'agp/'. str_replace(array('_', "\0"), array('/', ''), $class).'.php';
-			$this->caller->getdpcmem($file);
-            require $file;
-        //}
-    }	
-	*/
 	public function isFinished($event=null) {
 		//if (!$this->user) return false;	//!!!!!!!!!!!!	
-		if ($this->isClosedProcess()) return true;
+		if ($this->isClosedProcess()) return true; //ask sql
 		
-		$stack =  $this->caller->getProcessStack(); 
+		$stack =  $this->caller::getProcessStack(); 
 
 		if ($this->debug) {
 			echo PHP_EOL . 'getEvent:' . $event;
@@ -103,6 +98,7 @@ class process extends pstack {
 				foreach ($this->proccesChain as $i=>$processInst) {
 					if (!$this->runInstance($processInst, $event)) 
 						return false;
+					//echo $processInst . '>';
 				}
 		}
 
@@ -111,24 +107,25 @@ class process extends pstack {
 	
 	protected function runInstance($inst=null, $event=null) {
 		if (!$inst) die('No instance to run!');		
-		$stack =  $this->caller->getProcessStack();			
+		$stack =  $this->caller::getProcessStack();			
 		
-		//echo 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';
+		echo 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';
 		//if (isset($this->dpc_addr[$dpc]))
-        //if (file_exists($file = dirname(__FILE__).'/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php')) {
-		if ($this->caller->getdpcmemc('agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php')) {	
+        if (file_exists($file = 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php')) {
+		//if ($this->caller->getdpcmemc('agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php')) {	
 			echo  PHP_EOL;
             
 			//insert code to shmem
 			/* $code = *///$this->caller->getdpcmemc('agprocess/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php');
 			
-			//require $file;
-            require_once 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';			
+			require_once $file;
+            //require_once 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';			
         	
 			$c = new $inst($this->caller, $this->callerName, $stack);
 			if ($c->isFinished($event)) 
 				return true;
 		}
+		//else
 		echo ' not found!' . PHP_EOL; 	
 
 		return false;	
@@ -145,6 +142,5 @@ class process extends pstack {
 	}
  
 };
-//ini_set('unserialize_callback_func', 'spl_autoload_call');
-//spl_autoload_register('process::autoload');
+}
 ?>
