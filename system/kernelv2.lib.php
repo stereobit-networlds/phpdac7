@@ -5,12 +5,12 @@ require_once("system/daemon.lib.php");
 require_once("system/timer.lib.php");
 require_once("agents/resources.lib.php");
 require_once("agents/scheduler.lib.php");
+require_once("agprocess/process.dpc.php");
 
 define ("GLEVEL", 1);  
 
    function _say($str, $level=0, $crln=true) 
    {
-
 	    $cr = $crln ? PHP_EOL : null;
 		if ($level<=GLEVEL)
 			echo ucfirst($str) . $cr;
@@ -40,7 +40,9 @@ class kernelv2 {
    
    private $shm_id, $shm_max, $dpc_addr, $dpc_length, $dpc_free;
    private $dataspace, $extra_space;
-   private $ipcKey, $phar;
+   private $ipcKey, $process;
+   
+   static private $processStack, $startProcess;
    
    function __construct($dtype=null,$ip='127.0.0.1',$port='19123') 
    {  
@@ -48,7 +50,12 @@ class kernelv2 {
       $argv = $GLOBALS['argv'];
 	  
 	  //graph
-	  $this->grapffiti(1);	  
+	  $this->grapffiti(1);	
+
+	  //process vars
+	  self::$processStack = array();
+	  self::$startProcess = array();	  
+	  $this->process = null;	
 	  
 	  $this->shm_id = null;
 	  $this->shm_max = 0;
@@ -91,38 +98,15 @@ class kernelv2 {
 		$this->resources->set_resource('variable','myservervalue');	  
       
 		//init printer	  
-		if (extension_loaded('printer')) {
-			//$printer = "FinePrint pdfFactory Pro";
-			$printer = "\\\http://127.0.0.1\\e-Enterprise.printer";
-			$printout = @printer_open($printer);//true;
-			if (is_resource($printout) &&
-				get_resource_type($printout)=='printer') 
-			{  
-				printer_set_option($printout, PRINTER_MODE, 'RAW'); 
-				$this->resources->set_resource('printer',$printout);
-				_say("printer:" . $printer . " connected.",1);
-				//printer_close($printout);
-			}
-			else
-				_say("printer:" . $printer . " error: Could not connect!",1);  
-		}  	  
+		$this->initPrinter();
+		//init db
+		$this->initPDO();		
 		  
 		//init scheduler
 		$this->scheduler = new scheduler($this);
 		//$this->scheduler->schedule('env.show_connections','every','20');		  	  		  
 		$this->scheduler->schedule('env.scheduleprint','every','20');	  
 		$this->scheduler->schedule('env.internalClient','every','50');	  		  
-	  	  
-		//init db
-		try 
-		{
-		  $this->pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
-		  _say("PDO connection: ok!" ,1);
-	    } 
-		catch (PDOException $e) 
-		{
-            _say("Failed to get DB handle: " . $e->getMessage(),1);
-        }
 		
 		$this->startdaemon();
 	  }
@@ -663,7 +647,7 @@ class kernelv2 {
    }	  
    
    //client version
-   private function getdpcmemc($dpc) 
+   public function getdpcmemc($dpc) 
    {
 	  $dpc = $this->dehttpDpc($dpc);
 	  $data = null; 	  
@@ -836,6 +820,13 @@ class kernelv2 {
                 ->setSurname('Smith')
                 ->setSalary('100');
 			*/
+
+			$this->processStack(__CLASS__, explode('/',$dpc));
+			//print_r($this->getProcessStack());
+			$this->process = new process($this, self::processChain(), null);
+			if ($this->process->isFinished(null)) {
+				echo self::processChain() . ' finished!'; 
+			}
 		}	
 		
 		if (!$data) return false;	
@@ -872,6 +863,7 @@ class kernelv2 {
 	  
 	  return ($data);	      
     }  
+	
 
  	//set flag to \0, must written before read  
     public function readSafe($dpc)
@@ -1266,7 +1258,39 @@ class kernelv2 {
 	    _say("Total buffer : ".$totalbytes. ', usage: ' . memory_get_usage(),1);
 		
 		return true;
-    } 	
+    } 
+	
+	private function initPrinter() 
+	{
+		if (extension_loaded('printer')) {
+			//$printer = "FinePrint pdfFactory Pro";
+			$printer = "\\\http://{$this->daemon_ip}\\e-Enterprise.printer";
+			$printout = @printer_open($printer);//true;
+			if (is_resource($printout) &&
+				get_resource_type($printout)=='printer') 
+			{  
+				printer_set_option($printout, PRINTER_MODE, 'RAW'); 
+				$this->resources->set_resource('printer',$printout);
+				_say("printer:" . $printer . " connected.",1);
+				//printer_close($printout);
+			}
+			else
+				_say("printer:" . $printer . " error: Could not connect!",1);  
+		}
+	}	
+
+	private function initPDO() 
+	{
+		try 
+		{
+		  $this->pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
+		  _say("PDO connection: ok!" ,1);
+	    } 
+		catch (PDOException $e) 
+		{
+            _say("Failed to get DB handle: " . $e->getMessage(),1);
+        }	
+	}	
    
 	public function httpcl($url=null, $user=null,$password=null) 
 	{
@@ -1467,7 +1491,41 @@ class kernelv2 {
 						  //)
 						  )
 				);
-    }						
+    }	
+
+	//PROCESS
+	
+	static private function processStack($dpc, $processes) 
+	{
+		self::$processStack[$dpc] = $processes;
+		
+		self::$startProcess = array(); //reset
+		foreach ($processes as $process)
+			self::$startProcess[$dpc][] = $process;		
+			
+		return true;	
+	}
+	
+	static public function getProcessStack() 
+	{
+		return (array) self::$processStack;
+	}	
+	
+	static private function processChain() 
+	{	
+		$processChain = array();
+		foreach (self::$startProcess as $inDpc=>$processArray) {
+			if ($inDpc==__CLASS__) {
+				foreach ($processArray as $process)
+					$processChain[] = $process;	
+			}	
+		}	
+		//print_r($processChain);
+		if (!empty($processChain))
+			return implode(',',$processChain);	
+			
+		return false;
+	}	
    
 	function __destruct() 
 	{		

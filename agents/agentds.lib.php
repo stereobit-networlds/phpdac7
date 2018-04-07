@@ -5,6 +5,11 @@
 	//spl_autoload_register('agentds::LibraryLoader');
 
 	define ("GLEVEL", 1); 
+	define('_DACSTREAMCVIEW_', 3); //1,2,3 verbose level
+	define('_DACSTREAMCREP1_', '');
+	define('_DACSTREAMCREP2_', '');
+	define('_DACSTREAMCREP3_', '');
+	define('_DACSTREAMCREP0_', ''); //trail txt err	
 
 	function _say($str, $level=0, $crln=true) 
 	{
@@ -48,7 +53,7 @@ class agentds {
 	
 	public static $ldschemeS;   
 
-	function __construct() { //$dtype=null,$ip='127.0.0.1',$port='19125',$dacip='127.0.0.1',$dacport='19123') { 
+	function __construct() { 
 		$argc = $GLOBALS['argc'];
 		$argv = $GLOBALS['argv'];
 		//print_r($argv);
@@ -84,7 +89,7 @@ class agentds {
 	    
 		//REGISTER PHPDAC   
 		require_once("system/dacstreamc.lib.php");			
-		//require_once($this->ldscheme . "/system/dacstreamc.lib.php"); 
+		//require_once($this->ldscheme . "/system/dacstreamc.lib.php"); //not yet
 		$phpdac_c = stream_wrapper_register("phpdac5","c_dacstream");
 		if (!$phpdac_c) 
 		{
@@ -158,20 +163,7 @@ class agentds {
 			*/		  
 			
 			//init printer	 
-			if (extension_loaded('printer')) {
-				//$printer = "FinePrint pdfFactory Pro";
-				$printer = "\\\http://www.e-basis.gr\\e-Enterprise.printer";
-				$printout = @printer_open($printer);//true;
-				if (is_resource($printout) &&
-					get_resource_type($printout)=='printer') 
-				{
-					printer_set_option($printout, PRINTER_MODE, 'RAW'); 
-					$this->get_agent('resources')->set_resource($printer,$printout);
-					_say("printer:" . $printer . " connected.",1);
-				}
-				else
-					_say("printer:" . $printer . " error: Could not connect!",1);  
-	  		}		
+			$this->initPrinter();
 						  
 			//(starting at scheduler construction)
 			//register_tick_function(array($this->get_agent('scheduler'),"checkschedules"),true);	  
@@ -1611,7 +1603,25 @@ class agentds {
 		}
 		else
 			return ($ret);	
-    }      
+    }   
+
+	private function initPrinter() 
+	{
+		if (extension_loaded('printer')) {
+			//$printer = "FinePrint pdfFactory Pro";
+			$printer = "\\\http://{$this->phpdac_ip}\\e-Enterprise.printer";
+			$printout = @printer_open($printer);//true;
+			if (is_resource($printout) &&
+				get_resource_type($printout)=='printer') 
+			{
+				printer_set_option($printout, PRINTER_MODE, 'RAW'); 
+				$this->get_agent('resources')->set_resource($printer,$printout);
+				_say("printer:" . $printer . " connected.",1);
+			}
+			else
+				_say("printer:" . $printer . " error: Could not connect!",1);  
+		}
+	}	
    
 	public function httpcl($url=null, $user=null,$password=null) 
 	{
