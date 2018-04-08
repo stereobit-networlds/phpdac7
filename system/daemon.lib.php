@@ -70,15 +70,13 @@ class daemon {
 		var $cpool;
 		var $env;
 		
-        function __construct($type='standalone',$prompt=true,$env=null) {
+        function __construct($type='standalone',$prompt=true) {
 		
                 define ("SERVER_TYPE", $type);//added by me!
                 define ("SHOW_PROMPT", $prompt); //should a prompt be displayed? 
 				$this->active = null;
 				$this->timeout = 1*30;//=secs
-				$this->idle_timeout = 1*30;//=secs
-
-				$this->env = $env;	
+				$this->idle_timeout = 1*30;//=sec	
 				
 		        if (!extension_loaded('sockets')) dl('php_sockets.dll');
                 set_time_limit (0); 
@@ -87,13 +85,12 @@ class daemon {
         }
 
         function verbose ($level, $msg) {
-			    $vl = $this->env->verboseLevel ? 
-				      $this->env->verboseLevel :
-					  VERBOSE_LEVEL;
+				$kv = KERNELVERBOSE;
+			    $vl = $kv ? $kv : VERBOSE_LEVEL;
 					  
                 if (VERBOSE && $level <= $vl && SERVER_TYPE != 'inetd') {
                         echo str_repeat ("*", $level) . " $msg " . str_repeat ("*", $level)
-                        . "\n";
+                        . PHP_EOL;
                 }
         }
 

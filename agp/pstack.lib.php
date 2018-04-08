@@ -25,6 +25,8 @@ class pstack {
 		$this->pid = null;//GetParam('pid');
 		$this->clp = null;//GetParam('clp');
 		//echo $this->pid,'-',$this->pMethod,'>';
+		
+		$this->st = $this->caller->getProcessStack();
 	}
 	
 	protected static function pdoSQL($key, $sql=null) {
