@@ -1,29 +1,40 @@
 <?php
 class pstack {
 	
-	protected $debug, $db, $pMethod, $user, $seclevid;
+	protected $debug, $pMethod, $db;
 	protected $caller, $callerName, $processName; 
 	protected $pid, $clp;
 	
-	public function __construct(& $caller, $callerName=null, $stack=null) {
-		/*$UserName = GetGlobal('UserName');		
-		$UserSecID = GetGlobal('UserSecID');
-		$this->user = decode($UserName);			
-		$this->seclevid = $GLOBALS['ADMINSecID'] ? $GLOBALS['ADMINSecID'] : 
-							($_SESSION['ADMINSecID'] ? $_SESSION['ADMINSecID'] :
-								(((decode($UserSecID))) ? (decode($UserSecID)) : 0));		
-		*/			
-		$this->debug = true;//GetGlobal('processDebug'); //false;					
-		$this->db = $caller->pdo; //GetGlobal('db');
-		$this->pMethod = 'balanced'; //GetGlobal('processMethod');
+	protected static $pdo;
+	
+	public function __construct($caller, $callerName=null, $stack=null) {
+		
+		$this->debug = true;	
+		//$this->db = $caller::$pdo;	
+		
+		//this failed to init when agent is serialized (PDO cant serialized)
+		$this->db = null;//@new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
+		//static is ok
+		self::$pdo = $caller::$pdo;//@new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');//$caller::$pdo; 
+		
+		$this->pMethod = 'balanced'; //my method defined here
 		
 		$this->caller = $caller; //obj
-		$this->callerName = get_class($caller);
+		$this->callerName = 'kernelv2';//get_class($caller); !!!!
 		$this->processName = 'process-' . $this->callerName;		
 		$this->pid = null;//GetParam('pid');
 		$this->clp = null;//GetParam('clp');
 		//echo $this->pid,'-',$this->pMethod,'>';
 	}
+	
+	protected static function pdoSQL($key, $sql=null) {
+		if (!$sql) return false;
+		
+		foreach (self::$pdo->query($sql, PDO::FETCH_ASSOC) as $res) 
+			if ($ret = $res[$key]) return ($ret);	
+	
+        return false;	
+	}		
 	
 	protected function stackCalc($stack=null) {
 		$s = $stack ? $stack : $this->caller->getProcessStack();		
@@ -125,7 +136,6 @@ class pstack {
 	
 	//put initial record indicates stack inst is running
 	private function _stackInit($rid, $sid) {
-		//$db = GetGlobal('db');
 		if ((!$rid) || (!$sid)) return false;
 		
 		$sSQL = "insert into pstackrun (rid,sid,puser) values (";
@@ -137,7 +147,6 @@ class pstack {
 	
 	//update running stack step
 	protected function stackRunSave($state, $stackid, $chainid) {
-		//$db = GetGlobal('db');
 		$stack =  $this->caller->getProcessStack();
 		if (empty($stack)) return false;		
 
@@ -188,8 +197,7 @@ class pstack {
 		return false;
 	}	
 	
-	private function _stackPostSave($state, $rid, $sid, $stackid, $chainid) {
-		//$db = GetGlobal('db');		
+	private function _stackPostSave($state, $rid, $sid, $stackid, $chainid) {		
 
 		$pdata = json_encode($_POST); //addslashes(json_encode($_POST));
 		$pSQL = "insert into pstackpoint (rid,sid,sstep,pstep,pstate,pobj,puser,pdata) values (";
@@ -200,8 +208,7 @@ class pstack {
 		return ($this->db->Affected_Rows()) ? true : false;
 	}	
 	
-	private function _stackRunSave($state, $rid, $sid, $stackid, $chainid) {
-		//$db = GetGlobal('db');		
+	private function _stackRunSave($state, $rid, $sid, $stackid, $chainid) {		
 
 		$sSQL = "insert into pstackrun (rid,sid,sstep,pstep,pstate,pobj,puser) values (";
 		$sSQL.= "'$rid','$sid','$stackid','$chainid','$state','{$this->callerName}','{$this->user}')";
@@ -214,20 +221,19 @@ class pstack {
 	
 	//not to rewrite in db
 	private function _stackRunIsSaved($state, $rid, $sid, $stackid, $chainid) {
-		//$db = GetGlobal('db');		
-
-		$sSQL = "select rid from pstackrun ";
+		/*$sSQL = "select rid from pstackrun ";
 		$sSQL.= "where rid='$rid' and sid='$sid' and sstep=$stackid and pstep=$chainid ";
 		$sSQL.= "and pstate=$state and pobj='{$this->callerName}' and puser='{$this->user}'";
 		foreach ($this->db->query($sSQL, PDO::FETCH_ASSOC) as $res)
 			if ($ret = $res['rid']) return ($ret);		
 		
-		return false;
+		return false;*/
+		
+		return self::pdoSQL('rid', "select rid from pstackrun");		
 	}
 	
 	//not to rewrite in db
-	private function _stackPostIsSaved($rid, $sid, $stackid, $chainid) {
-		//$db = GetGlobal('db');	
+	private function _stackPostIsSaved($rid, $sid, $stackid, $chainid) {	
 		
 		$sSQL = "select rid from pstackpoint ";
 		$sSQL.= "where rid='$rid' and sid='$sid' and sstep=$stackid and pstep=$chainid ";
@@ -239,21 +245,22 @@ class pstack {
 	}	
 
 	protected function stackPost($data=false, $stackid, $chainid, $caller=null) {
-		//$db = GetGlobal('db');
 		$df = $data ? 'pdata' : 'rid';
 		$obj = $caller ? $caller : $this->callerName;	
 
 		//return process post
+		/*
 		$cSQL = "select $df from pstackpoint where rid='{$this->pid}' and sstep=$stackid and pstep=$chainid and pobj='$obj' LIMIT 1";
 		foreach ($this->db->query($cSQL, PDO::FETCH_ASSOC) as $res)
 			if ($ret = $res[$df]) return ($ret);	
 
 		return false; 				
+		*/
+		return self::pdoSQL($df, "select $df from pstackpoint where rid='{$this->pid}' and sstep=$stackid and pstep=$chainid and pobj='$obj' LIMIT 1");		
 	}			
 	
 	//check all stack records
-	protected function isClosedStack() {
-		//$db = GetGlobal('db');		
+	protected function isClosedStack() {		
 		$stack =  $this->caller->getProcessStack();
 		if (empty($stack)) return false;		
 		
@@ -292,7 +299,6 @@ class pstack {
 	}	
 	
 	private function _stackProcessFinished($rid, $sid, $stackid, $chainid, $obj) {
-		//$db = GetGlobal('db');
 		if ((!$rid) || (!$sid)) return false;		
 		
 		$sSQL = "select rid from pstackrun where rid='$rid' and sid='$sid' ";
@@ -308,7 +314,6 @@ class pstack {
 	
 	//update init record indicates stack inst is finished 
 	private function _stackFinish($rid, $sid) {
-		//$db = GetGlobal('db');
 		if ((!$rid) || (!$sid)) return false;
 		
 		$sSQL = "update pstackrun set pstate=1 where pobj IS NULL AND rid='$rid' AND sid='$sid'";
@@ -352,8 +357,7 @@ class pstack {
 	
 	//method serialized
 	//return array of process,call object,user,state	
-	protected function getProcessStep() {
-		//$db = GetGlobal('db');	
+	protected function getProcessStep() {	
 	
 		if ($this->isRunningProcess())  {
 			//fetch last run process record
@@ -382,31 +386,32 @@ class pstack {
 		return array();//false; 		
 	}	
 
-	protected function isRunningProcess() {
-		//$db = GetGlobal('db');	
-
+	protected function isRunningProcess() {	
+		/*
 		//check if id is a running process
 		$cSQL = "select rid from pstackrun where rid='{$this->pid}' and pobj IS NULL AND (pstate IS NULL OR pstate=0) LIMIT 1";
 		foreach ($this->db->query($cSQL, PDO::FETCH_ASSOC) as $res)
 			if ($ret = $res['rid'])	return ($ret);
 		
 		return false; 			
+		*/
+		return self::pdoSQL('rid', "select rid from pstackrun where rid='{$this->pid}' and pobj IS NULL AND (pstate IS NULL OR pstate=0) LIMIT 1");		
 	}	
 
 	protected function isClosedProcess($pid=null) {
-		//$db = GetGlobal('db');	
 		$rid = $pid ? $pid : $this->pid;
 	
 		//check if id is an ended process
-		$cSQL = "select rid from pstackrun where pobj IS NULL AND pstate=1 AND rid='$rid' LIMIT 1";
+		/*$cSQL = "select rid from pstackrun where pobj IS NULL AND pstate=1 AND rid='$rid' LIMIT 1";
 		foreach ($this->db->query($cSQL, PDO::FETCH_ASSOC) as $res) 
 			if ($ret = $res['rid']) return ($ret);
 
 		return false; 	
+		*/
+		return self::pdoSQL('rid', "select rid from pstackrun where pobj IS NULL AND pstate=1 AND rid='$rid' LIMIT 1");
 	}		
 
-	protected function showProcess($pid=null,$limit=1) {
-		//$db = GetGlobal('db');	
+	protected function showProcess($pid=null,$limit=1) {	
 		$rid = $pid ? $pid : $this->pid;
 	
 		//fetch last running process record
@@ -432,8 +437,7 @@ class pstack {
 		return ($ret); 		
 	}	
 	
-	protected function showOpenProcess() {
-		//$db = GetGlobal('db');	
+	protected function showOpenProcess() {	
 			
 		//fetch open running process record
 		$pSQL = "select datein,rid,sid,sstep,pstep,pstate,pobj,puser from pstackrun ";
@@ -456,8 +460,7 @@ class pstack {
 		return ($ret); 		
 	}	
 	
-	protected function showClosedProcess() {
-		//$db = GetGlobal('db');	
+	protected function showClosedProcess() {	
 	
 		//fetch closed process record
 		$pSQL = "select datein,rid,sid,sstep,pstep,pstate,pobj,puser from pstackrun ";
@@ -481,7 +484,6 @@ class pstack {
 	}	
 	
 	protected function processRegister() {
-		//$db = GetGlobal('db');
 		$stack =  $this->caller->getProcessStack();
 		if (empty($stack)) return false;
 		
@@ -502,7 +504,6 @@ class pstack {
 	
 	protected function processExist($sid=null) {
 		if (!$sid) return false;
-		//$db = GetGlobal('db');
 		
 		$cSQL = "select sid from process where sid='$sid' LIMIT 1";
 		$res = $this->db->Execute($cSQL);
@@ -522,7 +523,6 @@ class pstack {
 	
 	protected function processIsActive($sid=null) {
 		if (!$sid) return false;
-		//$db = GetGlobal('db');
 		
 		$cSQL = "select sid from process where sid='$sid' and active=1";
 		$res = $this->db->Execute($cSQL);
@@ -601,10 +601,10 @@ class pstack {
 		
 		return false;		
 	}	
-		
+
 	protected function getProcessChain() {
 		$stack = (array) $this->caller->getProcessStack();
-		
+
 		foreach ($stack as $stackName=>$processChain) {
 			$sName = $this->getCallerNameInStack($stackName);
 			if ($sName == $this->callerName) 
@@ -623,8 +623,7 @@ class pstack {
 	}			
 	
 	//get the fire-up user
-	protected function getProcessOwner() {
-		//$db = GetGlobal('db');	
+	protected function getProcessOwner() {	
 
 		//check if there is startup running record
 		$cSQL = "select puser from pstackrun where pobj IS NULL AND rid='{$this->pid}' LIMIT 1";
@@ -635,8 +634,7 @@ class pstack {
 		return false; 
 	}	
 	
-	protected function getProcessUsers() {
-		//$db = GetGlobal('db');	
+	protected function getProcessUsers() {	
 		
 		$cSQL = "select email from ulist where listname='{$this->processStepName}'";
 		$res = $this->db->Execute($cSQL);
@@ -647,8 +645,7 @@ class pstack {
 	}	
 
 	//get the users included in ulist named as process step name
-	protected function isProcessUser($user=null) {
-		//$db = GetGlobal('db');	
+	protected function isProcessUser($user=null) {	
 		$u = $user ? $user : $this->user;
 		//test
 		return 'vasalex21@gmail.com';
@@ -668,8 +665,7 @@ class pstack {
 	}	
 	
 	//ulist named as process mail send
-	protected function processMail($subj=null, $body=null, $to=false) {	
-		//$db = GetGlobal('db');	
+	protected function processMail($subj=null, $body=null, $to=false) {		
 		$rid = $this->pid;
 		$from = 'sales@stereobit.gr';
 		$mailbody = $body ? $body : $this->getPageLink($rid,false,$pname);		
@@ -705,20 +701,20 @@ class pstack {
 		return ($this->seclevid >= $level) ? true : false;
 	}
 
-	protected function hasForm($formName=null) {
-		//$db = GetGlobal('db');		
+	protected function hasForm($formName=null) {		
 		if (!$formName) return null;
-
+		/*
 		//if (defined('CRMFORMS_DPC')) {
 			$sSQL = "select code from crmforms where class='process' AND code='" . $formName . "'";
 			foreach ($this->db->query($sSQL, PDO::FETCH_ASSOC) as $res)
 				if ($ret = $res['code']) return ($ret);						
 		//}
 		return false;
+		*/
+		return self::pdoSQL('code', "select code from crmforms where class='process' AND code='$formName'");
 	}	
 	
-	protected function loadForm($formName=null) {
-		//$db = GetGlobal('db');		
+	protected function loadForm($formName=null) {		
 		if (!$formName) return null;
 
 		//if (defined('CRMFORMS_DPC')) {

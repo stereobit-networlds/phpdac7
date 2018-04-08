@@ -5,7 +5,7 @@ class processInst extends pstack {
 	protected $processStepName, $processChain;
 	protected $stack, $event; 
 	
-	public function __construct(& $caller, $callerName=null, $stack=null) {
+	public function __construct($caller, $callerName=null, $stack=null) {
 				
 		parent::__construct($caller); //not a name or stack in this
 		
@@ -305,14 +305,16 @@ class processInst extends pstack {
 	
 	//test
 	protected function runCode($status=0, $event=null) {
-		//$db = GetGlobal('db');
 		$formName = $this->callerName .'.'. $this->processStepName;// . ($event ? '.'.$event : null);
 		
 		//crm forms
-		$sSQL = "select codedata from crmforms where class='process' AND code='$formName'";		
+		/*$sSQL = "select codedata from crmforms where class='process' AND code='$formName'";		
 		foreach ($this->db->query($sSQL, PDO::FETCH_ASSOC) as $res)
 			$_code = base64_decode($res['codedata']);
 		//echo $_code;
+		*/
+		$c = self::pdoSQL('codedata', "select codedata from crmforms where class='process' AND code='$formName'");		
+		$_code = base64_decode($c);
 		
 		$code = $_code ?
 				str_replace(array('<@','@>'),

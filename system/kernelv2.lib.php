@@ -40,13 +40,14 @@ class kernelv2 {
 
    var $daemon_ip, $daemon_port, $daemon_type;
    var $verboseLevel, $dmn, $agent, $dpcpath;
-   var $scheduler, $resources, $timer, $pdo;
+   var $scheduler, $resources, $timer;
    
    private $shm_id, $shm_max, $dpc_addr, $dpc_length, $dpc_free;
    private $dataspace, $extra_space;
    private $ipcKey, $process;
    
-   static private $processStack, $startProcess;
+   private $processStack, $startProcess;
+   public static $pdo;
    
    function __construct($dtype=null,$ip='127.0.0.1',$port='19123') 
    {  
@@ -57,9 +58,11 @@ class kernelv2 {
 	  $this->grapffiti(1);	
 
 	  //process vars
-	  self::$processStack = array();
-	  self::$startProcess = array();	  
-	  $this->process = null;	
+	  $this->processStack = array();
+	  $this->startProcess = array();	  
+	  $this->process = null;
+
+	  self::$pdo = null;	
 	  
 	  $this->shm_id = null;
 	  $this->shm_max = 0;
@@ -69,8 +72,8 @@ class kernelv2 {
 
 	  $this->agent = 'SH';//default !?!
 	  $this->verboseLevel = GLEVEL;	  
-	  $this->extra_space = 1024 * 10; //kb //1000;// per file
-	  $this->dataspace = 1024000 * 9; //mb //90000;
+	  $this->extra_space = 1024 * 10; //kb //1000;// per file (shmid res inc+)
+	  $this->dataspace = 1024000 * 9; //mb //90000; //sum of shmem without preinsert
 		  
   	  $this->dpcpath = isset($argv[1]) ? ((substr($argv[1],0,1)!='-') ? $argv[1] . '/' : './') : './'; //getcwd().'/' php7
 	  $this->daemon_type = isset($argv[1]) ? ((substr($argv[1],0,1)=='-') ? substr($argv[1],1) : '') : '';
@@ -102,9 +105,9 @@ class kernelv2 {
 		$this->resources->set_resource('variable','myservervalue');	  
       
 		//init printer	  
-		$this->initPrinter();
+		self::initPrinter();
 		//init db
-		$this->initPDO();		
+		self::initPDO();		
 		  
 		//init scheduler
 		$this->scheduler = new scheduler($this);
@@ -470,7 +473,10 @@ class kernelv2 {
 		$data = $this->shm_max ."@^@". serialize($this->dpc_addr) . 
 		                       "@^@". serialize($this->dpc_length). 
 							   "@^@". serialize($this->dpc_free);
-							   
+						
+		//save table in sh mem as resource var
+		//$this->savedpcmem('srvState',$data); /recursion err, at timer
+							
 		return file_put_contents('shm.id', $data ,LOCK_EX);
    }
    
@@ -481,7 +487,10 @@ class kernelv2 {
 	   {
 			_say("Load state",1);
 			if ($altdir)
-				_say($altdir,1);		   
+				_say($altdir,1);
+
+			//save table in sh mem as resource var (already in)
+			//$this->savedpcmem('srvState',$data);	
 		   
 			$entries = explode('@^@', $data);
 			if (is_array($entries)) {
@@ -658,7 +667,7 @@ class kernelv2 {
 				if (!$this->scheduler->findschedule($dpc)) 
 				{
 					$pdodpc = str_replace('-',' ',$dpc);
-					foreach($this->pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) {
+					foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) {
 						//$data.= json_encode($row).'@;@';
 						$_data[] = $row;
 					}
@@ -762,7 +771,7 @@ class kernelv2 {
 		{   //echo "PDO SELECTCCCCCCCCCCCCCCCCCCCCC\n";
 			if (!$this->scheduler->findschedule($dpc)) {
 				$pdodpc = str_replace('-',' ',$dpc);
-				foreach($this->pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) {
+				foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) {
 					//$data.= json_encode($row).'@;@';
 					$_data[] = $row;
 				}
@@ -808,12 +817,19 @@ class kernelv2 {
                 ->setSurname('Smith')
                 ->setSalary('100');
 			*/
-
+ 
+            //MUST BE POOLED
 			$this->processStack(__CLASS__, explode('/',$dpc));
-			//print_r(self::getProcessStack());
-			$this->process = new process($this, self::processChain(), null);
+			$s = $this->getProcessStack(); //print_r($s);
+			$c = $this->getProcessChain(); //print_r($c);
+			
+			//save in sh mem as resource var (not in resources)
+			$this->savedpcmem('srvProcessStack',json_encode($s));
+			$this->savedpcmem('srvProcessChain',json_encode($c));
+			
+			$this->process = new process($this);//, $c, null);
 			if ($this->process->isFinished(null)) {
-				echo implode(',', self::processChain()) . ' finished!'; 
+				echo implode(',', $c) . ' finished!' . PHP_EOL; 
 			}
 		}	
 		
@@ -1243,7 +1259,13 @@ class kernelv2 {
 		foreach ($this->dpc_length as $_dpc=>$_length)
 			$totalbytes+= $_length + $this->dpc_free[$_dpc]; //calc
 	
-	    _say("Total buffer : ".$totalbytes. ', usage: ' . memory_get_usage(),1);
+	    _say("Total buffer : ".$totalbytes. ', mem usage: ' . memory_get_usage(),1);
+		
+		//save table in sh mem as resource var		
+		if ($table = file_get_contents('shm.id')) {
+			$this->savedpcmem('srvState',$table);
+			//_say("Table saved", 1);
+		}
 		
 		return true;
     } 
@@ -1267,18 +1289,24 @@ class kernelv2 {
 		}
 	}	
 
-	private function initPDO() 
+	private static function initPDO() 
 	{
 		try 
 		{
-		  $this->pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
+		  //$dbh = new PDO('sqlite:memory:');	
+		  self::$pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
 		  _say("PDO connection: ok!" ,1);
 	    } 
 		catch (PDOException $e) 
 		{
             _say("Failed to get DB handle: " . $e->getMessage(),1);
         }	
-	}	
+	}
+
+	public function pdoConn()
+	{
+        return self::$pdo;
+    }	
    
 	public function httpcl($url=null, $user=null,$password=null) 
 	{
@@ -1483,25 +1511,25 @@ class kernelv2 {
 
 	//PROCESS
 	
-	static private function processStack($dpc, $processes) 
+	private function processStack($dpc, $processes) 
 	{
-		self::$processStack[$dpc] = array_filter($processes);//, 
-			//function($value) { return $value !== ''; });
+		$this->processStack[$dpc] = array_filter($processes);//, 
+			//function($value) { return $value !== ''; });	
 		
-		self::$startProcess = array(); //reset
-		self::$startProcess[$dpc] = array_filter($processes);//, 
+		$this->startProcess = array(); //reset
+		$this->startProcess[$dpc] = array_filter($processes);//, 
 			//function($value) { return $value !== ''; });			
 			
 		//print_r(self::$startProcess);	
 		return true;	
 	}
 	
-	static public function getProcessStack() 
+	public function getProcessStack() 
 	{
-		return (array) self::$processStack;
+		return (array) $this->processStack;
 	}	
 	
-	static private function processChain() 
+	public function getProcessChain() 
 	{	
 		/*$processChain = array();
 		  foreach (self::$startProcess as $inDpc=>$processArray) {
@@ -1524,7 +1552,7 @@ class kernelv2 {
 				return $key ==__CLASS__;
 			}, ARRAY_FILTER_USE_BOTH);		
 		*/
-		return (self::$startProcess[__CLASS__]);	
+		return $this->startProcess[__CLASS__];	
 	}	
    
 	function __destruct() 

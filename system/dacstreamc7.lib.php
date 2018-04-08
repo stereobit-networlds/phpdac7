@@ -139,7 +139,7 @@ class c_dacstream {
 		switch ($l) {
 			case 3  : $g = str_replace($this->dpcmem, _DACSTREAMCREP3_, $g);
 			case 2  : $g = str_replace("phpdac5> getdpcmemc ", $b, $g);
-			case 1  : $g = str_replace("PHPDAC5 Kernel v2, $dh:$dp", _DACSTREAMCREP1_, $g);		
+			case 1  : $g = str_replace("PHPDAC5 Kernel v2, $dh:$dp\n", _DACSTREAMCREP1_, $g);		
 			default : //do nothing	
 		}		
 		return ($g);// . $d); //error when trail text

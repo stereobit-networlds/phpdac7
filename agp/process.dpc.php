@@ -4,47 +4,59 @@ define("PROCESS_DPC",true);
 
 $__DPC['PROCESS_DPC'] = 'process';
 
-class process extends pstack {
+class process extends pstack /*implements Serializable*/ {
 
-	protected $proccesChain;
+	var $env;
 
-	public function __construct(& $caller, $chain=null, $cmd=null) {
+	public function __construct(& $env, $chain=null, $cmd=null) {
 
-		parent::__construct($caller); //not a name or stack in this
+		parent::__construct($env, null, null); //not a name or stack in this
 		
-		//$this->proccesChain = (array) $chain;
-		$this->proccesChain = (array) !empty($chain) ? $chain :
-									  $caller::processChain(); //srv call if not as param
-		//print_r($this->proccesChain);
-		
-		//when no getreq t check at construct else after event
-		//if ((!$cmd) || ($cmd=='process')) 
-			//$this->isFinished(); //!!! err 2 times
-		
-		//echo 'construct: ' . $this->processName . PHP_EOL;
+		$this->env = $env;
 	}
 	
-	//get from caller = this, kernel not exist as caller when run on agent 
-	//else if run from kernel, kernel exist as caller
-	static public function getProcessStack() 
+	//serialize funcs as agent
+	/*
+	public function serialize()
 	{
-		return (array) $caller::$processStack;
-	}	
+		return serialize(array($this->caller, $this->chain, $this->cmd));
+	}
+
+	public function unserialize($serialized)
+	{
+		list($this->caller, $this->chain, $this->cmd) = unserialize($serialized);
+		//$this->caller::initPDO();
+		//self::$pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
+	}*/	
+	
+	//agent or server, request var
+	/*public function getMyProcessStack() 
+	{
+		//return (array) $this->caller::$processStack;
+		return $this->env->getProcessStack();
+	}
+
+	public function getMyProcessChain() 
+	{	//echo 'XXXXXXXXXX' . $this->env->ldscheme;
+		$c = file_get_contents($this->env->ldscheme . '/srvProcessChain');
+		//echo 'THIS chain:' . $c;	
+		return $c;	
+		//return (array) $this->caller::$processStack;
+		//return $this->env->getProcessChain();
+	}	*/
 
 	public function isFinished($event=null) {
-		//if (!$this->user) return false;	//!!!!!!!!!!!!	
-		if ($this->isClosedProcess()) return true; //ask sql
-		
-		$stack =  $this->caller::getProcessStack(); 
+
+		$stack =  $this->env->getProcessStack(); 
 
 		if ($this->debug) {
 			echo PHP_EOL . 'getEvent:' . $event;
 			echo PHP_EOL . 'getCaller:' . $this->callerName;
-			echo PHP_EOL . 'getChain:' . implode(',',$this->proccesChain);
+			echo PHP_EOL . 'getChain:' . implode(',',$this->env->getProcessChain());
 			echo PHP_EOL . 'getStack:';// . array_map(function($a) { return $a;}, $stack);;		
 			print_r($stack);
 		}
-		
+
 		switch ($this->pMethod) {
 			
 			case 'puzzled'    :	
@@ -53,7 +65,7 @@ class process extends pstack {
 				
 				//run specific process class
 				$usClass = str_replace('-','_', $us);
-				$inChain = in_array($usClass, $this->getProcessChain());		
+				$inChain = in_array($usClass, $this->env->getProcessChain());		
 				if ((class_exists($usClass)) && ($inChain)) {
 					if (!$this->runInstance($usClass, $event)) 
 						return false;	
@@ -79,7 +91,7 @@ class process extends pstack {
 					if (($sCaller = GetSessionParam('pCallerName')) && ($this->callerName != $sCaller))
 						return false;
 				
-					foreach ($this->proccesChain as $i=>$processInst) {
+					foreach ($this->env->getProcessChain() as $i=>$processInst) {
 						if (!$this->runInstance($processInst, $event)) { 
 							SetSessionParam('pCallerName', $this->callerName);
 							return false;
@@ -94,39 +106,42 @@ class process extends pstack {
 			default           :
 				//if ($rid = $this->isRunningProcess()) 
 					//echo 'Running:' . $rid;
-		
-				foreach ($this->proccesChain as $i=>$processInst) {
+
+				foreach ($this->env->getProcessChain() as $i=>$processInst) {
 					if (!$this->runInstance($processInst, $event)) 
 						return false;
-					//echo $processInst . '>';
 				}
 		}
-
+		
 		return true;
 	}
 	
 	protected function runInstance($inst=null, $event=null) {
 		if (!$inst) die('No instance to run!');		
-		$stack =  $this->caller::getProcessStack();			
 		
-		echo 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';
-		//if (isset($this->dpc_addr[$dpc]))
-        if (file_exists($file = 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php')) {
-		//if ($this->caller->getdpcmemc('agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php')) {	
-			echo  PHP_EOL;
-            
-			//insert code to shmem
-			/* $code = *///$this->caller->getdpcmemc('agprocess/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php');
+		$stack =  $this->env->getProcessStack();			
+		
+		$file = 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';
+		if ($dac5 = $this->env->ldscheme) { 
+			//agent	
+			echo  $dac5 .'/'. $file . PHP_EOL;
 			
-			require_once $file;
-            //require_once 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';			
-        	
-			$c = new $inst($this->caller, $this->callerName, $stack);
+			require_once ($dac5 .'/'. $file);
+			$c = new $inst($this->env, $this->callerName, $stack);
+			if ($c->isFinished($event)) 
+				return true;			
+		} 
+        elseif (file_exists($file)) {
+		    //kernel
+			echo  $file . PHP_EOL;
+        
+			require_once $file;			
+			$c = new $inst($this->env, $this->callerName, $stack);
 			if ($c->isFinished($event)) 
 				return true;
 		}
-		//else
-		echo ' not found!' . PHP_EOL; 	
+		else
+			echo $file . ' not found!' . PHP_EOL; 	
 
 		return false;	
 	}

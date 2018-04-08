@@ -5,11 +5,11 @@
 	//spl_autoload_register('agentds::LibraryLoader');
 
 	define ("GLEVEL", 1); 
-	define('_DACSTREAMCVIEW_', 3); //1,2,3 verbose level
+	define('_DACSTREAMCVIEW_', 3); //must be 3 for clean replies
 	define('_DACSTREAMCREP1_', '');
 	define('_DACSTREAMCREP2_', '');
 	define('_DACSTREAMCREP3_', '');
-	define('_DACSTREAMCREP0_', ''); //trail txt err	
+	define('_DACSTREAMCREP0_', ''); 
 
 	function _say($str, $level=0, $crln=true) 
 	{
@@ -51,12 +51,16 @@ class agentds {
 	var $gtk, $gtkds_conn, $window, $agentbox;  
 	var $echoLevel, $ldscheme, $argbatch;
 	
-	public static $ldschemeS;   
+	public static $ldschemeS;  	
+	public static $pdo;
 
 	function __construct() { 
+		global $dh, $dp;
 		$argc = $GLOBALS['argc'];
 		$argv = $GLOBALS['argv'];
 		//print_r($argv);
+		
+		self::$pdo = null;
 	  
 		$this->shm_id = null;
 		$this->shm_max = 1024 * 100 * 100;
@@ -87,8 +91,10 @@ class agentds {
 		$this->phpdac_port = $argv[6] ? $argv[6] : '19123';//$dacport; 
 		_say("Phpdac5 server at $this->phpdac_ip:$this->phpdac_port"); 
 	    
-		//REGISTER PHPDAC   
-		require_once("system/dacstreamc.lib.php");			
+		//REGISTER PHPDAC 7
+		$dh = $this->phpdac_ip;  //global inside dacstreamc7 for gc
+		$dp = $this->phpdac_port;//global inside dacstreamc7 for gc
+		require_once("system/dacstreamc7.lib.php");			
 		//require_once($this->ldscheme . "/system/dacstreamc.lib.php"); //not yet
 		$phpdac_c = stream_wrapper_register("phpdac5","c_dacstream");
 		if (!$phpdac_c) 
@@ -127,7 +133,7 @@ class agentds {
 			_say("Client resource protocol registered!"); 
 				 				 
 		//INITIALIZE ENVIRONMENT
-		$pathname = null;//$argv[0]	
+		$pathname = null;//$argv[0]	!!
 		$this->ipcKey = $this->_ftok($pathname, 's'); //create ipc Key
 		//start mem	  
 		if ($this->startmemagn()) 
@@ -165,7 +171,7 @@ class agentds {
 			//init printer	 
 			$this->initPrinter();
 		    //init db
-		    //$this->initPDO();	//serialize err 1250		
+		    $this->initPDO();	//serialize err 1250 (see inside process)		
 						  
 			//(starting at scheduler construction)
 			//register_tick_function(array($this->get_agent('scheduler'),"checkschedules"),true);	  
@@ -430,7 +436,7 @@ class agentds {
 				//return false;//and quit				
 		        break;										
 				
-		case 'GETRESOURCEC' : //phpdac5 resource
+		case 'GETRESOURCEC' : //phpdac5 resource saved in shmem
 		        //$resource = $this->get_agent('resources')->get_resourcec($arguments[0],$this->phpdac_ip,$this->phpdac_port);
 				$resource = file_get_contents($this->ldscheme .'/'. $arguments[0]);
 				$dmn->Println ($resource);
@@ -1194,6 +1200,7 @@ class agentds {
 				}
 			}
 			catch (Exception $e) {
+				//serialize err !!
 				_say("Agent ($agent) failed to initialize");
 			} 
 		}
@@ -1625,11 +1632,11 @@ class agentds {
 		}
 	}
 
-	private function initPDO() 
+	public static function initPDO() 
 	{
 		try 
 		{
-		  $this->pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
+		  self::$pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
 		  _say("PDO connection: ok!" ,1);
 	    } 
 		catch (PDOException $e) 
@@ -1637,6 +1644,24 @@ class agentds {
             _say("Failed to get DB handle: " . $e->getMessage(),1);
         }	
 	}	
+	
+	public function pdoConn()
+	{
+        return self::$pdo;
+    }
+
+	//client version
+	public function getProcessStack() 
+	{
+		$s = file_get_contents($this->ldscheme . '/srvProcessStack');
+		return (array) json_decode($s);
+	}
+	//client version
+	public function getProcessChain() 
+	{
+		$c = file_get_contents($this->ldscheme . '/srvProcessChain');
+		return (array) json_decode($c);
+	}		
    
 	public function httpcl($url=null, $user=null,$password=null) 
 	{
@@ -1827,18 +1852,9 @@ class agentds {
 		$key = sprintf("%u", (($st['ino'] & 0xffff) | (($st['dev'] & 0xff) << 16) | (($proj_id & 0xff) << 24)));
 		return $key;
 	}   
-   
-	function __destruct() 
+   /*
+	public static function ClassLoader($className) 
 	{
-        //if(!$this->dpc_agn_id)
-		if(!$this->shm_id)	
-            return;			   
-		
-	    shmop_delete($this->shm_id);
-	}
-
-   public static function ClassLoader($className) 
-   {
         _say("Trying to load dpc ". $className. ' via '. __METHOD__ ,1);
 		
 		try 
@@ -1873,8 +1889,17 @@ class agentds {
         }
 		
         _say("End of load ". $className. ' via '. __METHOD__. "()\r\n",1);		
-    } 	
+    } */	
 
+	function __destruct() 
+	{
+        //if(!$this->dpc_agn_id)
+		if(!$this->shm_id)	
+            return;			   
+		
+	    shmop_delete($this->shm_id);
+	}
+	
 }
 
 ?>
