@@ -4,14 +4,14 @@ require_once('agp/pstack.lib.php');
 require_once('agp/processInst.lib.php');
 require_once("agp/process.dpc.php");
 
-class proc {
-	
-	public $env, $envname;
+class proc 
+{	
+	public $env, $envname, $async;
 	private $process, $processStack, $startProcess;	
 	public static $pdo;	
 	
-	function __construct(& $env=null) {
-		
+	public function __construct(& $env=null) 
+	{	
 		$this->env = $env;
 		$this->envname = get_class($env);
 		
@@ -20,11 +20,12 @@ class proc {
 		$this->processStack = array();
 		$this->startProcess = array();	
 		
+		$this->async = false;
 		$this->process = null;	
 
 		//init in shmem as resource var
-		$this->env->savedpcmem('srvProcessStack',json_encode(array()));
-		$this->env->savedpcmem('srvProcessChain',json_encode(array()));				
+		$this->env->mem->savedpcmem('srvProcessStack',json_encode(array()));
+		$this->env->mem->savedpcmem('srvProcessChain',json_encode(array()));				
 	}
 	
 	//dmn Println
@@ -51,19 +52,33 @@ class proc {
         return $data;
     }*/	
 	
-	public function set($cmd=null) {
+	public function set($cmd=null) 
+	{
 		//if (!$cmd) return false; //fluent
 		
-		if (isset($cmd) && ($this->processStack(explode('/',$cmd)))) {
-			$s = $this->getProcessStack(); //print_r($s);
-			$c = $this->getProcessChain(); //print_r($c);
+		if (isset($cmd)) {
+			$this->async = false; //reset
+			$pcmd = explode('/',$cmd);
 			
-			//save in sh mem as resource var (not in resources)
-			$this->env->savedpcmem('srvProcessStack',json_encode($s));
-			$this->env->savedpcmem('srvProcessChain',json_encode($c));
+			if ($pcmd[0]=='async') {
+				//must exist as class
+				$this->async = true;//array_shift($pcmd); 
+	
+				$this->processStack($pcmd);
 			
-			return true; //nofluent
+				$s = $this->getProcessStack(); //print_r($s);
+				$c = $this->getProcessChain(); //print_r($c);
+			
+				//save in sh mem as resource var (not in resources)
+				$this->env->mem->savedpcmem('srvProcessStack',json_encode($s));
+				$this->env->mem->savedpcmem('srvProcessChain',json_encode($c));
+			}
+			else //just execute
+				$this->processStack($pcmd);
+			
+			return $this->async ? 1 : -1; //nofluent
 		}
+		
 		return false; //nofluent
 		
 		//return $this; //fluent
@@ -73,7 +88,8 @@ class proc {
 	{
 		$this->process = new process($this);//, $c, null);
 		if ($this->process->isFinished(null)) {
-			//echo implode('|', $c) . ' finished!' . PHP_EOL; 
+			//echo implode('|', $c) . ' finished!' . PHP_EOL;
+			//$this->env->cnf->_say(implode('|', $this->getProcessChain()) . ' finished', 'TYPE_LION');			
 			
 			//unset chain,stack ?
 			//unset($this->process); //nofluent
@@ -130,6 +146,11 @@ class proc {
 				return $key ==__CLASS__;
 			}, ARRAY_FILTER_USE_BOTH);		
 		*/	
-	}	
+	}
+
+	public function isSyncVar()
+	{
+		return $this->async ? false : true;
+	}
 }	
 ?>	

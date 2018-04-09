@@ -10,8 +10,8 @@ new Config(Config::TYPE_BIRD | Config::TYPE_DOG);
 new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT);
 //rat lion bird
 */
-class Config {
-
+class Config 
+{
     // our constants must be 1,2,4,8,16,32,64 ....so on
     const TYPE_CAT=1; //MEM WRITES
     const TYPE_DOG=2; //SPINLOCKS / READS

@@ -1,12 +1,12 @@
 <?php
 if (!extension_loaded('shmop'))  dl('php_shmop.dll');
 
-class shm {
-	
+class shm 
+{	
 	private $env, $ipcKey;
 	
-	function __construct(& $env=null, $ikey=null) {
-		
+	public function __construct(& $env=null, $ikey=null) 
+	{	
 		$this->env = $env;
 		
 		//create ipc key 	

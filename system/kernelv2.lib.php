@@ -9,6 +9,7 @@ define ("KERNELVERBOSE", 1);//override daemon VERBOSE_LEVEL
 	
 require_once("system/timer.lib.php");
 require_once("kernel/cnf.lib.php");
+require_once("kernel/mem.lib.php");
 require_once("kernel/shm.lib.php");
 require_once("kernel/kfs.lib.php");
 require_once("kernel/dmn.lib.php");
@@ -47,9 +48,9 @@ class kernelv2 {
 	private $timer;
 	private $process, $processStack, $startProcess;	
 	
-	private $shm_id, $shm_max; 
-	private $dpc_addr, $dpc_length, $dpc_free;
-	private $dataspace, $extra_space, $ipcKey;
+	//private $shm_id, $shm_max; 
+	//private $dpc_addr, $dpc_length, $dpc_free;
+	//private $dataspace, $extra_space;
 		
     public $dmn, $daemon_ip, $daemon_port, $daemon_type;
 	public $cnf, $fs, $utl, $dpcpath, $scheduler, $resources;
@@ -65,24 +66,17 @@ class kernelv2 {
 	  
 		$this->utl = new utils($this); //utils
 		$this->utl->grapffiti(1);	
-
-		//process vars
-		$this->processStack = array();
-		$this->startProcess = array();	  
-		$this->process = null;
-
-		self::$pdo = null;	
 	  
-		$this->shm_id = null;
-		$this->shm_max = 0;
-		$this->dpc_attr = array();
-		$this->dpc_length = array();
-		$this->dpc_free = array();	  	  
-		$this->extra_space = 1024 * 10; //kb //1000;// per file (shmid res inc+)
-		$this->dataspace = 1024000 * 9; //mb //90000; //sum of shmem without preinsert
+		//$this->shm_id = null;
+		//$this->shm_max = 0;
+		//$this->dpc_attr = array();
+		//$this->dpc_length = array();
+		//$this->dpc_free = array();	  	  
+		//$this->extra_space = 1024 * 10; //kb //1000;// per file (shmid res inc+)
+		//$this->dataspace = 1024000 * 9; //mb //90000; //sum of shmem without preinsert
 		  
 		$this->dpcpath = isset($argv[1]) ? ((substr($argv[1],0,1)!='-') ? $argv[1] . '/' : './') : './'; //getcwd().'/' php7
-	    $this->fs = new kfs($this); //filesystem
+	    $this->fs = new kfs($this, $this->dpcpath); //filesystem
 		
 		$this->daemon_type = isset($argv[1]) ? ((substr($argv[1],0,1)=='-') ? substr($argv[1],1) : '') : '';
 		$this->daemon_ip = isset($argv[2]) ? $argv[2] : '127.0.0.1';
@@ -96,30 +90,29 @@ class kernelv2 {
 		if (!$phpdac_c) $this->cnf->_say("Client resource protocol failed to registered!" , 'TYPE_LION');
 					else $this->cnf->_say("Client resource protocol registered!", 'TYPE_RAT'); 	  
 	  
-		//create ipc key (if..)	
-		//$pathname = null;//realpath(__FILE__) !!!
-		//$this->ipcKey = null;//$this->_ftok($pathname, 's'); //create ipc Key
-		//start mem	
-		$this->shm = new shm($this); //shmem	
-		if ($this->startmemdpc()) 
+		//start shmem	
+		$this->shm = new shm($this);	
+		//if ($this->startmemdpc()) 
+		$this->mem = new mem($this);
+		if ($this->mem->initialize())
 		{	
 			//clear log
 			@unlink('dumpmem-'.$_SERVER['COMPUTERNAME'].'.log');
 			  
 			//init timer
 			$this->timer = new timer($this);
-		
-			//init in shmem as resource var
-			$this->savedpcmem('srvProcessStack',json_encode(array()));
-			$this->savedpcmem('srvProcessChain',json_encode(array()));		
+			
+			$this->proc = new proc($this); //nofluent
 	  
 			//init resources
 			$this->resources = new resources($this);
 			$this->resources->set_resource('variable','myservervalue');	  
+			$this->resources->set_resource('srvName','kernelv2');//agent use on process?	
       
 			//init printer	  
 			self::initPrinter();
 			//init db
+			self::$pdo = null;	
 			self::initPDO();
 
 			//init daemon
@@ -134,6 +127,13 @@ class kernelv2 {
 				$this->scheduler->schedule('env.scheduleprint','every','20');	  
 				$this->scheduler->schedule('env.internalClient','every','50');	  		  
 		
+				//dispatch batch, before
+				$this->exebatchfile($this->dmn, 'kernel.ash', true);
+	  
+				//continue shceduling after ash run, before
+				$this->retrieve_schedules();
+
+				//listen, now	
 				$this->dmn->listen();
 			}	
 		}
@@ -144,17 +144,48 @@ class kernelv2 {
 		}	  
 	}
    
-	//DAEMON
+    //php 5.5
+	public function getNameOfClass()
+	{
+		return static::class;
+		//older
+		return get_class($this); //__CLASS__
+	}
+	
+	//dmn Println
+	public function _echo($msg) 
+	{
+		$this->dmn->Println($msg);
+	}	
+	
+	//batch commands
+	private function exebatchfile(&$dmn,$file=null,$w=false) 
+	{
+	    if (!$file) return false;
+		
+		$batchfile = getcwd() . DIRECTORY_SEPARATOR . $file;
+		
+		if ((is_readable($batchfile)) && ($f = @file($batchfile))) {
+			
+			$this->env->cnf->_say('Init batch file: ' . $batchfile, 'TYPE_LION'); 
+			if (!empty($f)) {
+			  //print_r($f);
+		      foreach ($f as $command_line) {
+				if (trim($command_line)) {
+					 //echo "-" . $command_line;
+                     $dmn->dispatch(trim($command_line),null);
+                }
+		      }			  
+			}
+			return true;	
+		}
+		return false;
+	}	
    
 	//SHMEM DISPATCHER
 
-	private function startmemdpc() 
+	/*private function startmemdpc() 
 	{   
-      //$iKey = $ipcKey ? $ipcKey : 0xfff;
-	  
-	  //if (!extension_loaded('shmop')) 
-		//  dl('php_shmop.dll');
-	  
 	  $this->cnf->_say("Start", 'TYPE_LION');  
 
 	  $data =null;
@@ -308,7 +339,7 @@ class kernelv2 {
 	}   
    
 	//save calls,urls etc into shared mem
-	private function savedpcmem($dpc, &$data) 
+	public function savedpcmem($dpc, &$data) 
 	{
 	   $dataLength = strlen($data); 	   
 	   $dpc = $this->utl->dehttpDpc($dpc); //if it is a http call
@@ -404,7 +435,7 @@ class kernelv2 {
 		  $ret = "Invalid dpc!";
 	  
 	  return ($ret);	      
-	}	  
+	}	*/  
    
 	//client version
 	public function getdpcmemc($dpc) 
@@ -412,17 +443,20 @@ class kernelv2 {
 	  $dpc = $this->utl->dehttpDpc($dpc);
 	  $data = null; 	  
 
-      if (isset($this->dpc_addr[$dpc])) 
+      //if (isset($this->dpc_addr[$dpc])) 
+	  if ($this->mem->exist($dpc))
 	  {
 		//fetch dpc   
-		$offset = $this->dpc_addr[$dpc];
+		/*$offset = $this->dpc_addr[$dpc];
 	    $length = $this->dpc_length[$dpc]; 
-		$free = $this->dpc_free[$dpc];
-		$rlength = intval($length - $free);
+		$free = $this->dpc_free[$dpc];*/
+		list($offset, $length, $free) = $this->mem->get($dpc);
+		$rlength = intval($length - $free); //real length
 
         //echo "AAAAAAAAAAAAAAAAAAAAAA\n";
 		//dpc and streams that exists in data area only
-		if ($offset >= $this->shm_max) 
+		//if ($offset >= $this->shm_max) 
+		if ($offset >= $this->mem->shmmax()) 
 		{
 			if (substr($dpc,0,7)==='select-') 
 			{
@@ -484,8 +518,9 @@ class kernelv2 {
 			  $remaining = $length - $dataLength;
 			  $this->cnf->_say("diff:" . $rlength.':'.$dataLength, 'TYPE_RAT');
 				
-			  //$oldData = $this->loaddpcmem($dpc);	
-			  $oldData = $this->shm->_shread($this->shm_id, $offset, $rlength);
+			  //$oldData = $this->mem->loaddpcmem($dpc);
+			  $sid = $this->mem->shmid();	
+			  $oldData = $this->shm->_shread($sid, $offset, $rlength);
 			  //$newData = $data;// . str_repeat(' ',$remaining);
 			  
 			  $hold = md5($oldData);	
@@ -495,15 +530,17 @@ class kernelv2 {
 			  if ($dataLength < $length) 
 			  {
 				//update free space and save state
-				$this->dpc_free[$dpc] = $remaining;				  
+				/*$this->dpc_free[$dpc] = $remaining;*/
+				$this->mem->upd($dpc, $remaining);
 				  
-				if ($this->checkSpinLock($dpc)===false)
+				if ($this->mem->checkSpinLock($dpc)===false)
 					$this->cnf->_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 2:$dpc",'TYPE_DOG'); 
 					
 				$data .= str_repeat(' ',$remaining);
-				if ($this->shm->_shwrite($this->shm_id, $data, $offset))
+				$sid = $this->mem->shmid();
+				if ($this->shm->_shwrite($sid, $data, $offset))
 				{
-					$this->savestate();
+					$this->mem->savestate();
 					$this->cnf->_say("$dpc saved",'TYPE_CAT');
 					_dump("UPDATE\n\n\n\n" . $data);
 				}	
@@ -517,10 +554,11 @@ class kernelv2 {
 		//else read mem
 		$this->cnf->_say("reading $dpc ",'TYPE_DOG');
 		
-		if ($this->checkSpinLock($dpc)===true)
+		if ($this->mem->checkSpinLock($dpc)===true)
 			$this->cnf->_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock reader:$dpc",'TYPE_DOG');
 		
-		$data = $this->shm->_shread($this->shm_id, $offset, $length);
+		$sid = $this->mem->shmid();
+		$data = $this->shm->_shread($sid, $offset, $length);
 						   
 		$this->cnf->_say("Data : " . strlen($data), 'TYPE_RAT');
 	  }
@@ -572,16 +610,9 @@ class kernelv2 {
 			$this->cnf->_say($this->dpcpath . $dpc . ' not found!', 'TYPE_LION');	
 			
 			//create var
-			//...explode('/',$var)->foreach run agent pipe
-			/*
-			$var = (new Variable())
-                ->setName('Tom')
-                ->setSurname('Smith')
-                ->setSalary('100');
-			*/
  
             //MUST BE POOLED
-			$this->processStack(__CLASS__, explode('/',$dpc));
+			/*$this->processStack(__CLASS__, explode('/',$dpc));
 			$s = $this->getProcessStack(); //print_r($s);
 			$c = $this->getProcessChain(); //print_r($c);
 			
@@ -592,33 +623,65 @@ class kernelv2 {
 			$this->process = new process($this);//, $c, null);
 			if ($this->process->isFinished(null)) {
 				echo implode(',', $c) . ' finished!' . PHP_EOL; 
+			}*/
+			
+			if ($async = $this->proc->set($dpc) > 0) 
+			{
+				$this->cnf->_say('set async variable for processing:' . $dpc, 'TYPE_LION');
+				//..open client at async class
+				//..data write
+				//re-save chain (remove)
 			}
+			else {	
+				$this->cnf->_say('set sync variable for processing:' . $dpc, 'TYPE_LION');
+			    //proceed at once
+				if ($dataNOWRITE = $this->proc->go()) {
+					//print_r($this->proc->getProcessStack());
+					//echo implode(',', $this->proc->getProcessChain()) . ' finished!' . PHP_EOL; 
+					$this->cnf->_say(implode(',', $this->proc->getProcessChain()) . ' finished', 'TYPE_LION');
+				}
+			}
+				
+			
 			//open client to proceess(s) 
 			//-pool check and reply based on client response..
+			/*
+			$dataTEST = (new proc($this))
+						->set($dpc)
+						->go();
+			echo $dataTest . PHP_EOL;			
+			*/
 		}	
 		
 		if (!$data) return false;	
 		_say($data,3);		
 		
 		$dataLength = strlen($data);		
-		$offset = $this->getShmOffset();
+		$offset = $this->mem->getShmOffset();
+		//$mempage = ($offset+1+1) + $dataLength + $this->extra_space;
+		$extra = $this->mem->extra();
+		$mempage = ($offset+1+1) + $dataLength + $extra;
+		$memmax = $this->mem->maxmem();
 			
-		if ((($offset+1+1) + $dataLength + $this->extra_space) < 
-		    ($this->shm_max + $this->dataspace)) 
+		//if ((($offset+1+1) + $dataLength + $this->extra_space) < 
+		    //($this->shm_max + $this->dataspace)) 
+		if ($mempage < $memmax)	
 		{	  
-			$this->dpc_addr[$dpc] = $offset + 1; //\0 new head			
+			/*$this->dpc_addr[$dpc] = $offset + 1; //\0 new head			
 			$this->dpc_length[$dpc] = $dataLength + $this->extra_space;
-			$this->dpc_free[$dpc] = $this->extra_space;
+			$this->dpc_free[$dpc] = $this->extra_space;*/
+			$this->mem->set($dpc, $offset+1, $dataLength);
 			
-			if ($this->checkSpinLock($dpc)===false)
+			if ($this->mem->checkSpinLock($dpc)===false)
 				$this->cnf->_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 3:$dpc", 'TYPE_DOG'); 
 			
-			$data .= str_repeat(' ',$this->extra_space);
-			if ($this->shm->_shwrite($this->shm_id, "\0". $data ."\0", $offset))
+			$data .= str_repeat(' ', $extra);//$this->extra_space);
+			$sid = $this->mem->shmid();
+			if ($this->shm->_shwrite($sid, "\0". $data ."\0", $offset))
 			{
 				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
 				
-				$this->savestate();
+				$this->mem->savestate();
 				$this->cnf->_say("$dpc inserted",'TYPE_CAT');
 				_dump("INSERT\n\n\n\n" . $data);
 			}	
@@ -632,7 +695,7 @@ class kernelv2 {
 	  return ($data);	      
 	}  
 	
-    private function closememdpc() 
+    /*private function closememdpc() 
     {
 		//if (!shmop_delete($this->shm_id)) 
 		if ($this->shm->_shopen($this->shm_id))	  
@@ -648,7 +711,7 @@ class kernelv2 {
 		$this->cnf->_say("Deleting state..!",'TYPE_CAT'); 
 	  
 		return true;	
-    }     
+    } */    
    
     //return pseudo pointer for comaptibility with agentds class
     public function get_agent($agent,$serialized=null) 
@@ -674,7 +737,7 @@ class kernelv2 {
       //$this->resources->set_resource('_schedules',serialize($sh));	  
 	  
 	  //savein mem,save dump
-	  $this->savedpcmem('srvSchedules',json_encode($sh));
+	  $this->mem->savedpcmem('srvSchedules',json_encode($sh));
 	  _dump(json_encode($sh),'w','/dumpsh-'.$_SERVER['COMPUTERNAME'].'.log');
 	  
 	  //return ($sh);
@@ -702,7 +765,7 @@ class kernelv2 {
          //$this->resources->set_resource('_schedules',serialize($sh));
 		 
 		 //save in sh mem as resource var (not in resources)
-	     $this->savedpcmem('srvSchedules',json_encode($sh));
+	     $this->mem->savedpcmem('srvSchedules',json_encode($sh));
 		 return true;
 	  }
 	  
@@ -738,17 +801,19 @@ class kernelv2 {
 		
 		$this->utl->grapffiti();		
 			
-		$totalbytes = 0;
+		/*$totalbytes = 0;
 		foreach ($this->dpc_length as $_dpc=>$_length)
 			$totalbytes+= $_length + $this->dpc_free[$_dpc]; //calc
-	
-	    $this->cnf->_say("Total buffer : ". $this->utl->convert($totalbytes) . 
+	    */
+		$tb = $this->mem->calc();
+	    $this->cnf->_say("Total buffer : ". $this->utl->convert($tb) . 
 						  ', mem usage: ' . $this->utl->convert(memory_get_usage()), 'TYPE_LION');
 		
 		//save table in sh mem as resource var		
-		if ($table = file_get_contents('shm.id')) {
-			
-			$this->savedpcmem('srvState',$table);
+		//if ($table = file_get_contents('shm.id'))
+		if ($table = $this->mem->getShmContents())	
+		{		
+			$this->mem->savedpcmem('srvState',$table);
 			//$this->cnf->_say("Table saved", 'TYPE_LION');
 		}
 		
@@ -758,7 +823,7 @@ class kernelv2 {
 	
 
 	//FILESYSTEM   
-   
+   /*
     private function load_dpc_tree(&$data, $reload=false) {
 	   $libs = null;
 	   $exts = null;
@@ -819,53 +884,7 @@ class kernelv2 {
 	  }
 	  else
 	    die("Dpc tree error. System Halted.\n"); 		
-	} 		
-
-	//PROCESS
-	
-	private function processStack($dpc, $processes) 
-	{
-		$this->processStack[$dpc] = array_filter($processes);//, 
-			//function($value) { return $value !== ''; });	
-		
-		$this->startProcess = array(); //reset
-		$this->startProcess[$dpc] = array_filter($processes);//, 
-			//function($value) { return $value !== ''; });			
-			
-		//print_r(self::$startProcess);	
-		return true;	
-	}
-	
-	public function getProcessStack() 
-	{
-		return (array) $this->processStack;
-	}	
-	
-	public function getProcessChain() 
-	{	
-		/*$processChain = array();
-		  foreach (self::$startProcess as $inDpc=>$processArray) {
-			if ($inDpc==__CLASS__) {
-				foreach ($processArray as $process)
-					$processChain[] = $process;	
-			}	
-		}*/		
-		//print_r($pChain);
-		//echo implode(',',$processChain) . PHP_EOL;
-		//if (!empty($processChain))
-			//return implode(',',$processChain);	
-			
-		//return false;
-		/*
-		return array_filter(self::$startProcess, 
-			function($value, $key) { 
-				echo $key;
-				print_r($value);
-				return $key ==__CLASS__;
-			}, ARRAY_FILTER_USE_BOTH);		
-		*/
-		return $this->startProcess[__CLASS__];	
-	}
+	}*/ 		
 	
 	//PRINTER
 	
@@ -916,6 +935,7 @@ class kernelv2 {
 		  //$dbh = new PDO('sqlite:memory:');	
 		  self::$pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
 		  _say("PDO connection: ok!" , 1);
+		  //$this->cnf-> ..is static
 	    } 
 		catch (PDOException $e) 
 		{
@@ -923,7 +943,7 @@ class kernelv2 {
         }	
 	}
 
-	public function pdoConn()
+	public static function pdoConn()
 	{
         return self::$pdo;
     }		
@@ -951,10 +971,13 @@ class kernelv2 {
 	function __destruct() 
 	{		
 		//when ctrl-c
-		@unlink("shm.id"); 
+		/*@unlink("shm.id"); 
 		
         if(!$this->shm_id)
             return;		
+		*/
+		//$this->mem->free();
+		unset($this->mem); //destruct
 	}	
 }
 ?>

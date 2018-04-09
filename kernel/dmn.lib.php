@@ -6,7 +6,7 @@ class dmn {
 	private $env, $dmn;
 	public $type, $ip, $port;
 	
-	function __construct(& $env, $type, $ip, $port) {
+	public function __construct(& $env, $type, $ip, $port) {
 		
 	  $this->env = $env;	
 		

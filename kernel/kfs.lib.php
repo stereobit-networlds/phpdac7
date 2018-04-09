@@ -1,12 +1,12 @@
 <?php
-class kfs {
-	
+class kfs 
+{	
 	private $env, $dpcpath;
 	
-	function __construct(& $env=null) {
-		
+	public function __construct(& $env=null, $path=null) 
+	{	
 		$this->env = $env;
-		$this->dpcpath = $env->dpcpath;	
+		$this->dpcpath = $path; //$env->dpcpath;	
 	}
 	
 	public function _readPHP($filename=null) 
