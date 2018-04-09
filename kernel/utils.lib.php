@@ -1,7 +1,32 @@
 <?php
 class utils {
 	
-	static public function httpcl($url=null, $user=null,$password=null) 
+	private $env;
+	
+	public function __construct(& $env=null) {
+		
+		$this->env = $env;
+	}
+	
+	//for data streams dpc address extract args
+	public function dehttpDpc($dpc) 
+	{	
+	  if (strstr($dpc,"\\")) 
+	  {     //data stream
+			//cut cmd params
+			$arg = explode("\\",$dpc);
+			return $arg[1];
+      }
+	  return $dpc; //as is
+    }  
+	
+	public function convert($size)
+	{
+		$unit=array('b','kb','mb','gb','tb','pb');
+		return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
+	}	
+	
+	public function httpcl($url=null, $user=null,$password=null) 
 	{
 		if (!$url) return null;
 		//echo ">>>>>>>>>>>>>$url<<<<<<<<<<<<<<<\n";
@@ -36,67 +61,67 @@ class utils {
 		$http->authentication_mechanism=""; // force a given authentication mechanism;
 		$arguments["Headers"]["Pragma"]="nocache";
 				
-		_say("Opening connection to: " . HtmlSpecialChars($arguments["HostName"]),1);
+		$this->env->cnf->_say("Opening connection to: " . HtmlSpecialChars($arguments["HostName"]), 'TYPE_LION');
 		flush();
 		$error=$http->Open($arguments);
 				
 		if ($error=="") 
 		{
-			_say("Sending request for page: " . HtmlSpecialChars($arguments["RequestURI"]),1);
+			$this->env->cnf->_say("Sending request for page: " . HtmlSpecialChars($arguments["RequestURI"]),'TYPE_LION');
 			if(strlen($user))
-				_say("\nLogin:    ".$user."\nPassword: ".str_repeat("*",strlen($password)),2);
-			_say('',2);
+				$this->env->cnf->_say("\nLogin:    ".$user."\nPassword: ".str_repeat("*",strlen($password)),'TYPE_RAT');
+			$this->env->cnf->_say('', 'TYPE_RAT');
 			flush();
 			$error=$http->SendRequest($arguments);
-			_say('',2);
+			$this->env->cnf->_say('', 'TYPE_RAT');
 
 			if($error=="") 
 			{
-				_say("Request:\n\n".HtmlSpecialChars($http->request),2);
-				_say("Request headers:\n",2);
+				$this->env->cnf->_say("Request:\n\n".HtmlSpecialChars($http->request), 'TYPE_RAT');
+				$this->env->cnf->_say("Request headers:\n", 'TYPE_RAT');
 				for(Reset($http->request_headers),$header=0;$header<count($http->request_headers);Next($http->request_headers),$header++)
 				{
 					$header_name=Key($http->request_headers);
 					if(GetType($http->request_headers[$header_name])=="array")
 					{
 						for($header_value=0;$header_value<count($http->request_headers[$header_name]);$header_value++)
-							_say($header_name.": ".$http->request_headers[$header_name][$header_value],2);
+							$this->env->cnf->_say($header_name.": ".$http->request_headers[$header_name][$header_value], 'TYPE_RAT');
 					}
 					else
-						_say($header_name.": ".$http->request_headers[$header_name],2);
+						$this->env->cnf->_say($header_name.": ".$http->request_headers[$header_name], 'TYPE_RAT');
 				}
-				_say('',2);
+				$this->env->cnf->_say('', 'TYPE_RAT');
 				flush();
 				
 				$headers=array();
 				$error=$http->ReadReplyHeaders($headers);
-				_say('',2);
+				$this->env->cnf->_say('', 'TYPE_RAT');
 				if($error=="")
 				{
-					_say("Response status code:\n".$http->response_status,2);
+					$this->env->cnf->_say("Response status code:\n".$http->response_status, 'TYPE_RAT');
 					switch($http->response_status)
 					{
 						case "301":
 						case "302":
 						case "303":
 						case "307":
-							_say(" (redirect to ".$headers["location"].")\nSet the follow_redirect variable to handle redirect responses automatically.",2);
+							$this->env->cnf->_say(" (redirect to ".$headers["location"].")\nSet the follow_redirect variable to handle redirect responses automatically.", 'TYPE_RAT');
 							break;
 					}
-					_say('');
-					_say("Response headers:\n",2);
+					$this->env->cnf->_say('', 'TYPE_RAT');
+					$this->env->cnf->_say("Response headers:\n", 'TYPE_RAT');
 					for(Reset($headers),$header=0;$header<count($headers);Next($headers),$header++)
 					{
 						$header_name=Key($headers);
 						if(GetType($headers[$header_name])=="array")
 						{
 							for($header_value=0;$header_value<count($headers[$header_name]);$header_value++)
-								_say($header_name.": ".$headers[$header_name][$header_value],2);
+								$this->env->cnf->_say($header_name.": ".$headers[$header_name][$header_value], 'TYPE_RAT');
 						}
 						else
-							_say($header_name.": ".$headers[$header_name],2);
+							$this->env->cnf->_say($header_name.": ".$headers[$header_name], 'TYPE_RAT');
 					}
-					_say('',2);
+					$this->env->cnf->_say('', 'TYPE_RAT');
 					flush();
 					
 					//echo "Response body:\n\n";
@@ -117,7 +142,7 @@ class utils {
 						//return...
 					}*/
 
-					_say('',2);
+					$this->env->cnf->_say('', 'TYPE_RAT');
 					//flush();
 				}
 			}
@@ -127,7 +152,7 @@ class utils {
 		
 		if(strlen($error)) 
 		{
-			_say("Error: ".$error,1);
+			$this->env->cnf->_say("Error: ".$error, 'TYPE_LION');
 			return null;	
 		}
 

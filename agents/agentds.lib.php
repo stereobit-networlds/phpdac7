@@ -5,6 +5,8 @@
 	//spl_autoload_register('agentds::LibraryLoader');
 
 	define ("GLEVEL", 1); 
+	define ("KERNELVERBOSE", 2);//override daemon VERBOSE_LEVEL
+	
 	define('_DACSTREAMCVIEW_', 3); //must be 3 for clean replies
 	define('_DACSTREAMCREP1_', '');
 	define('_DACSTREAMCREP2_', '');
@@ -203,6 +205,12 @@ class agentds {
 		  $this->shutdown(true);
 		}	  
 	}
+	
+	//dmn Println
+	public function _echo($msg) 
+	{
+		$this->dmn->Println($msg);
+	}		
    
 	private function destroy() 
 	{
@@ -1650,8 +1658,9 @@ class agentds {
         return self::$pdo;
     }
 
+	
 	//client version
-	public function getProcessStack() 
+	/*public function getProcessStack() 
 	{
 		$s = file_get_contents($this->ldscheme . '/srvProcessStack');
 		return (array) json_decode($s);
@@ -1661,7 +1670,7 @@ class agentds {
 	{
 		$c = file_get_contents($this->ldscheme . '/srvProcessChain');
 		return (array) json_decode($c);
-	}		
+	}*/		
    
 	public function httpcl($url=null, $user=null,$password=null) 
 	{

@@ -3,17 +3,32 @@
 class processInst extends pstack {
 	
 	protected $processStepName, $processChain;
-	protected $stack, $event; 
+	protected $stack, $chain, $event; 
+	public static $pdo;		
 	
-	public function __construct($caller, $callerName=null, $stack=null) {
+	public function __construct(& $caller, $callerName=null, $stack=null) {
 				
-		parent::__construct($caller); //not a name or stack in this
+		self::$pdo = $caller::$pdo;		
+				
+		parent::__construct($caller->env, 'kernelv2', $stack); 
 		
 		//$this->debug = true;//override;	
 		
 		//$this->event = null;
-		$this->stack = (array) $stack; 		
+		$this->stack = (array) $stack; //get env chain
+		$this->chain = $this->getProcessChain();
 	}
+	
+	public function getProcessChain() 
+	{
+		if ($dac5 = $this->caller->ldscheme)
+		{
+			$c = file_get_contents($dac5 . '/srvProcessChain');
+			return (array) json_decode($c);
+		}
+		else
+			return (array) $this->caller->proc->getProcessChain(); //proc		
+	}	
 	
 	
 	public function isFinished($event=null) {
@@ -123,17 +138,17 @@ class processInst extends pstack {
 	//chain methods	
 	
 	protected function getNextInChain() {
- 		$chain = $this->getProcessChain();
+ 		//$chain = $this->getProcessChain();
 		$thisID = $this->getChainId()-1; 
 		//print_r($chain); echo $thisID;
-		return $chain[$thisID+1]; 
+		return $this->chain[$thisID+1]; 
 	}
 
 	protected function getPrevInChain() {
- 		$chain = $this->getProcessChain();
+ 		//$chain = $this->getProcessChain();
 		$thisID = $this->getChainId()-1;
 		
-		return $chain[$thisID-1];
+		return $this->chain[$thisID-1];
 	}		
 	
 	protected function isLastInChain() {
@@ -159,14 +174,14 @@ class processInst extends pstack {
 	
 
 	protected function getChainCount() {
-		return @count($this->getProcessChain());
+		return @count($this->chain);//$this->getProcessChain());
 	}	
 	
 	protected function getChainId() {
- 		$chain = $this->getProcessChain();
-		if (empty($chain)) return 0;
+ 		//$chain = $this->getProcessChain();
+		//if (empty($chain)) return 0;
 		
-		foreach ($chain as $id=>$chainName) {
+		foreach ($this->chain as $id=>$chainName) {
 			//echo PHP_EOL . $this->processStepName .':'. $chainName;
 			if ($this->processStepName == $chainName)
 				return ($id + 1);

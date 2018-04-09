@@ -6,7 +6,7 @@ class dmn {
 	private $env, $dmn;
 	public $type, $ip, $port;
 	
-	function __construct($env, $type, $ip, $port) {
+	function __construct(& $env, $type, $ip, $port) {
 		
 	  $this->env = $env;	
 		
@@ -239,29 +239,6 @@ class dmn {
 		return true;  
 	}	
 
-	private function exebatchfile(&$dmn,$file=null,$w=false) 
-	{
-	    if (!$file) return false;
-		
-		$batchfile = getcwd() . DIRECTORY_SEPARATOR . $file;
-		
-		if ((is_readable($batchfile)) && ($f = @file($batchfile))) {
-			
-			_say('Init batch file: ' . $batchfile,1); 
-			if (!empty($f)) {
-			  //print_r($f);
-		      foreach ($f as $command_line) {
-				if (trim($command_line)) {
-					 //echo "-" . $command_line;
-                     $dmn->dispatch(trim($command_line),null);
-                }
-		      }			  
-			}
-			return true;	
-		}
-		return false;
-	}
-
     public function show_connections($show=null) 
 	{
 		$out = null;		
@@ -282,13 +259,7 @@ class dmn {
     } 	
 	
 	public function listen() 
-	{
-		//dispatch batch
-		$this->exebatchfile($this->dmn, 'kernel.ash', true);
-	  
-		//continue shceduling after ash run
-		$this->env->retrieve_schedules();
-	  	  
+	{ 	  
 		//listen
 		$this->dmn->listen(1); 	
 		

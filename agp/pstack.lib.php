@@ -3,30 +3,29 @@ class pstack {
 	
 	protected $debug, $pMethod, $db;
 	protected $caller, $callerName, $processName; 
-	protected $pid, $clp;
+	protected $pid, $clp, $stack;
 	
 	protected static $pdo;
 	
-	public function __construct($caller, $callerName=null, $stack=null) {
+	public function __construct(& $caller, $callerName=null, $stack=null) {
 		
-		$this->debug = true;	
-		//$this->db = $caller::$pdo;	
+		$this->debug = true;		
 		
-		//this failed to init when agent is serialized (PDO cant serialized)
 		$this->db = null;//@new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
-		//static is ok
-		self::$pdo = $caller::$pdo;//@new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');//$caller::$pdo; 
+		self::$pdo = $caller::$pdo; //@new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');//$caller::$pdo; 
 		
 		$this->pMethod = 'balanced'; //my method defined here
 		
 		$this->caller = $caller; //obj
-		$this->callerName = 'kernelv2';//get_class($caller); !!!!
+		//!!!!! =proc()server or agentname; !!!!
+		$this->callerName = $callerName; //get_class($caller)
 		$this->processName = 'process-' . $this->callerName;		
 		$this->pid = null;//GetParam('pid');
 		$this->clp = null;//GetParam('clp');
 		//echo $this->pid,'-',$this->pMethod,'>';
 		
-		$this->st = $this->caller->getProcessStack();
+		//one var for all calls ?? ...
+		$this->stack = $stack;//$this->caller->getProcessStack();
 	}
 	
 	protected static function pdoSQL($key, $sql=null) {
@@ -39,28 +38,27 @@ class pstack {
 	}		
 	
 	protected function stackCalc($stack=null) {
-		$s = $stack ? $stack : $this->caller->getProcessStack();		
+		$s = $stack ? $stack : $this->stack;//$this->caller->getProcessStack();		
 			
 		return md5(serialize($s) .'|'. $this->pMethod);
 	}	
 	
 	protected function stackView() {
-		$stack =  $this->caller->getProcessStack(); 
-		if (empty($stack)) return;
+		//$stack =  $this->caller->getProcessStack(); 
+		//if (empty($stack)) return;
 		
 		$thisFile = $_SERVER['PHP_SELF']; 
 		$ret = $this->pMethod . $thisFile;
 		
-		foreach ($stack as $caller=>$chain)	
+		foreach ($this->stack as $caller=>$chain)	
 			$ret.= PHP_EOL . $caller .'->'. implode('->', $chain);
 		
 		return ($ret);
 	}	
 	
 	protected function stackRegister() {
-		//$db = GetGlobal('db');
-		$stack =  $this->caller->getProcessStack();
-		if (empty($stack)) return;
+		//$stack =  $this->caller->getProcessStack();
+		//if (empty($stack)) return;
 		
 		if ($sid = $this->processRegister()) {
 		
@@ -69,7 +67,7 @@ class pstack {
 			$notes = $this->pMethod . $thisFile;			
 			$cid=0;
 			
-			foreach ($stack as $caller=>$chain)	{
+			foreach ($this->stack as $caller=>$chain)	{
 				$cid+=1; //start at 1
 				$cobj = $caller;
 				$cprocess = implode(',', $chain);
@@ -97,12 +95,12 @@ class pstack {
 	//test
 	protected function findMethodFromStackId($sid=null) {
 		if (!$sid) return false;
-		$stack =  $this->caller->getProcessStack();
-		if (empty($stack)) return false;		
+		//$stack =  $this->caller->getProcessStack();
+		//if (empty($stack)) return false;		
 		
 		$methods = array('serialized','balanced','puzzled');
 		foreach ($method as $m) {
-			$testSid = md5(serialize($stack) .'|'. $m);
+			$testSid = md5(serialize($this->stack) .'|'. $m);
 			if ($testSid==$sid)
 				return $m;
 		}
@@ -110,11 +108,10 @@ class pstack {
 	}		
 	
 	protected function stackRun() {
-		//$db = GetGlobal('db');
-		$stack =  $this->caller->getProcessStack();
-		if (empty($stack)) return false;
+		//$stack =  $this->caller->getProcessStack();
+		//if (empty($stack)) return false;
 						
-		$sid = md5(serialize($stack) .'|'. $this->pMethod);
+		$sid = md5(serialize($this->stack) .'|'. $this->pMethod);
 		
 		if (($this->processisActive($sid)) && 
 			($this->stackIsRegistered($sid))) {
@@ -149,13 +146,13 @@ class pstack {
 	
 	//update running stack step
 	protected function stackRunSave($state, $stackid, $chainid) {
-		$stack =  $this->caller->getProcessStack();
-		if (empty($stack)) return false;		
+		//$stack =  $this->caller->getProcessStack();
+		//if (empty($stack)) return false;		
 
 		if ($this->isRunningProcess()) {
 					
 			if (!$rid = $this->pid) return false; //not an run id
-			$sid = md5(serialize($stack) .'|'. $this->pMethod);		
+			$sid = md5(serialize($this->stack) .'|'. $this->pMethod);		
 				
 			//has form / post ?
 			$fn = $this->callerName .'.'. $this->getProcessById($stackid, $chainid);
@@ -263,15 +260,15 @@ class pstack {
 	
 	//check all stack records
 	protected function isClosedStack() {		
-		$stack =  $this->caller->getProcessStack();
-		if (empty($stack)) return false;		
+		//$stack =  $this->caller->getProcessStack();
+		//if (empty($stack)) return false;		
 		
 		if (!$rid = $this->pid) return false; //not a run id
 		$sid = md5(serialize($stack) .'|'. $this->pMethod);
 		
 		if ($this->isRunningProcess())  {
 			$stackid = 1;
-			foreach ($stack as $caller=>$chain)	{
+			foreach ($this->stack as $caller=>$chain)	{
 
 				$sName = $this->getCallerNameInStack($caller);
 				foreach ($chain as $p=>$process) {
@@ -486,11 +483,11 @@ class pstack {
 	}	
 	
 	protected function processRegister() {
-		$stack =  $this->caller->getProcessStack();
-		if (empty($stack)) return false;
+		//$stack =  $this->caller->getProcessStack();
+		//if (empty($stack)) return false;
 		
 		$thisFile = $_SERVER['PHP_SELF'];	
-		$sid = md5(serialize($stack) .'|'. $this->pMethod);
+		$sid = md5(serialize($this->stack) .'|'. $this->pMethod);
 		
 		//check if process exist
 		$cSQL = "select sid from process where sid='$sid' LIMIT 1";
@@ -536,10 +533,10 @@ class pstack {
 		
 	
 	protected function getProcessById($stackid=1, $chainid=1) {
-		$stack = (array) $this->caller->getProcessStack();
+		//$stack = (array) $this->caller->getProcessStack();
 		$sid = 0;
 		$cid = 0;
-		foreach ($stack as $stackName=>$processChain) {
+		foreach ($this->stack as $stackName=>$processChain) {
 			if ($sid==$stackid-1) {
 				foreach ($processChain as $process) {
 					if ($cid==$chainid-1)
@@ -554,10 +551,10 @@ class pstack {
 	}
 	
 	protected function getNextProcessById($stackid=1, $chainid=1) {
-		$stack = (array) $this->caller->getProcessStack();
+		//$stack = (array) $this->caller->getProcessStack();
 		$sid = 0;
 		$cid = 0;
-		foreach ($stack as $stackName=>$processChain) {
+		foreach ($this->stack as $stackName=>$processChain) {
 			if ($sid==$stackid-1) {
 				if ($ret = $processChain[$chainid]) //=+1 without -
 					return ($ret);		
@@ -573,10 +570,10 @@ class pstack {
 	}
 
 	protected function getNextCallerById($stackid=1, $chainid=1) {
-		$stack = (array) $this->caller->getProcessStack();
+		//$stack = (array) $this->caller->getProcessStack();
 		$sid = 0;
 		$cid = 0;
-		foreach ($stack as $stackName=>$processChain) {
+		foreach ($this->stack as $stackName=>$processChain) {
 			if ($sid==$stackid-1) { //same caller
 				if ($processChain[$chainid]) //=+1 without -
 					return ($this->getCallerNameInStack($stackName));		
@@ -592,9 +589,9 @@ class pstack {
 	}	
 	
 	protected function getCallerById($stackid=1) {
-		$stack = (array) $this->caller->getProcessStack();
+		//$stack = (array) $this->caller->getProcessStack();
 		$sid = 0;
-		foreach ($stack as $stackName=>$processChain) {
+		foreach ($this->stack as $stackName=>$processChain) {
 			if ($sid==$stackid-1) {
 				return $this->getCallerNameInStack($stackName);
 			}
@@ -605,9 +602,9 @@ class pstack {
 	}	
 
 	protected function getProcessChain() {
-		$stack = (array) $this->caller->getProcessStack();
+		//$stack = (array) $this->caller->getProcessStack();
 
-		foreach ($stack as $stackName=>$processChain) {
+		foreach ($this->stack as $stackName=>$processChain) {
 			$sName = $this->getCallerNameInStack($stackName);
 			if ($sName == $this->callerName) 
 				return (array) $processChain;

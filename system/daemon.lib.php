@@ -214,7 +214,7 @@ class daemon {
                         exit;
                 } 
 				else {
-                //if (SERVER_TYPE != 'inetd') {
+					//if (SERVER_TYPE != 'inetd') {
 				        //if (!$socket) $socket = $this->msg_socket;
 						socket_getpeername ($this->cpool[$id]->resource, $peer_addr, $peer_port);
                         $this->verbose (2, "--------------- Connection from $id>$peer_addr:$peer_port closed ---------------");
@@ -227,9 +227,8 @@ class daemon {
 						
 						//$this->cpool[$id]->reset_client();	
 						$this->cpool[$id]->resource = null;
-					    $this->cpool[$id]->session['First_time'] = true;//->reset_client();	                    
-						
-
+					    $this->cpool[$id]->session['First_time'] = true;//->reset_client();	
+					//}
                 }
         }
 		//alias
