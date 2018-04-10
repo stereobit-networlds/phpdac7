@@ -3,7 +3,7 @@ if (!extension_loaded('shmop'))  dl('php_shmop.dll');
 
 class shm 
 {	
-	private $env, $ipcKey;
+	private $env, $ipcKey, $shm_id;
 	
 	public function __construct(& $env=null, $ikey=null) 
 	{	
@@ -12,120 +12,109 @@ class shm
 		//create ipc key 	
 		//$pathname = null;//realpath(__FILE__) !!!
 		//$this->ipcKey = $this->_ftok($pathname, 's'); //create ipc Key		
-		
 		$this->ipcKey = $iKey ? $iKey : 0xfff;
+		
+		$this->shm_id = null;
 	}
 	
 	public function _shopen($space) 
 	{
-		return shmop_open($this->ipcKey, "c", 0644, $space);
+		$this->shm_id = shmop_open($this->ipcKey, "c", 0644, $space);
+		
+		return ($this->shm_id);
 	}
 	
-	public function _shread($id, $offset, $length) 
+	public function _shread($offset, $length) 
 	{
-		return shmop_read($id, $offset, $length);
+		return shmop_read($this->shm_id, $offset, $length);
 	}
 
-	public function _shwrite($id, $data, $offset) 
+	public function _shwrite($data, $offset) 
 	{
-		return shmop_write($id, $data, $offset);
+		return shmop_write($this->shm_id, $data, $offset);
 	}
 
-	public function _shdelete($id) 
+	public function _shdelete() 
 	{
-		return shmop_delete($id);
+		return shmop_delete($this->shm_id);
 	}	
 	
-	public function _shclose($id) 
+	public function _shclose() 
 	{
-		return shmop_close($id);
+		return shmop_close($this->shm_id);
 	}	
 	
 	
  	//set flag to \0, must written before read  
     public function readSafe($dpc)
     {
-		$dpc = $this->dehttpDpc($dpc);
+		//$dpc = $this->env->utl->dehttpDpc($dpc);
 		
-	    if ($this->checkSpinLock($dpc)===true) {
-			//spinLock = \0
-			$this->env->cnf->_say("Locked segment (must written):" . $dpc , 'TYPE_CAT');
-			return false;
-		}	
-		$offset = $this->dpc_addr[$dpc];
-		$size = $this->dpc_length[$dpc];
-		$dataSize = $this->dpc_length[$dpc] - $this->dpc_free[$dpc];		
-        
-        $data = shmop_read($this->shm_id, $offset, $dataSize);
+		if ($this->env->mem->exist($dpc))	
+		{
+			/*if ($this->env->mem->checkSpinLock($dpc)===true) {
+				//spinLock = \0
+				$this->env->cnf->_say("Locked segment (must written):" . $dpc , 'TYPE_LION');
+				return false;
+			}*/	
+	
+			list ($offset, $size, $free, $rlength) = $this->env->mem->get($dpc); 	
+			$data = shmop_read($this->shm_id, $offset, $rlength);
 		
-        // release spinlocks
-        shmop_write($this->shm_id, "\0", $offset-1);
-		shmop_write($this->shm_id, "\0", $size+1);
-        return $data;
+			// release spinlocks
+			//shmop_write($this->shm_id, "\0", $offset-1);
+			//shmop_write($this->shm_id, "\0", $size+1);
+		
+			return $data;
+		}
+		return null;
     }
     
 	//set flag to \1, must read
-    public function writeSafe($dpc,$data)
+    public function writeSafe($dpc, $data)
     {
-		$dpc = $this->dehttpDpc($dpc);
-		
-	    if ($this->checkSpinLock($dpc)===false) 
+		$dataSize = strlen($data);
+		$newData = $data;
+
+	    /*if ($this->env->mem->checkSpinLock($dpc)===false) 
 		{   //spinLock = \1
-			$this->env->cnf->_say("Locked segment (not readed):" . $dpc, 'TYPE_CAT');
+			$this->env->cnf->_say("Locked segment (not readed):" . $dpc, 'TYPE_LION');
 			return false;
-		}	  
+		}*/	  
 		
-	    $dataSize = strlen($data);
-		
-		if ($this->dpc_addr[$dpc]) 
-		{  //update
-			$offset = $this->dpc_addr[$dpc];
-			$size = $this->dpc_length[$dpc];
-			$oldSize = $this->dpc_length[$dpc] - $this->dpc_free[$dpc];		
-						
-			if ($dataSize < $size)
+		if ($this->env->mem->exist($dpc))	
+		{   
+			//read existed
+			list ($offset, $size, $free, $rlength) = $this->env->mem->get($dpc); 		
+			$remaining = $size - $dataSize;
+
+			if ($offset = $this->env->mem->upd($dpc, $remaining, $data))	
 			{
-				$remaining = $size - $dataSize;
-				$this->env->cnf->_say("diff:" . $oldSize.':'.$dataSize, 'TYPE_CAT');
-				
-				$oldData = shmop_read($this->shm_id,$offset,$oldSize);
-				$hold = md5($oldData);	
-				$hnew = md5($newData);
-				$this->env->cnf->_say("md5:" . $hold . ':'. $hnew, 'TYPE_CAT');				
-				
-				$newData = $data . str_repeat(' ',$remaining);								
+				//shmop_write($this->shm_id, "\1", $offset-1);
+				shmop_write($this->shm_id, $newData, $offset);
+				//shmop_write($this->shm_id, "\1", strlen($newData)+1);	
 			}	
 			else	
 			{	
-				//throw new Exception('dataSize > block');
-				$this->env->cnf->_say("Error::::::::::::::: Update: DataSize > block :" . $dpc, 'TYPE_CAT');
+		        _dump("SHM-MEM-ERROR-UPDATE\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
+				$this->env->cnf->_say("Error::::::::::::::: Update: DataSize ($dataSize) > block ($size) :" . $dpc, 'TYPE_LION');
 			}			
         }
 		else 
 		{   
 	        //append / insert
-			$offset = $this->getShmOffset();
-			
-			//+1+1 = \lock flags
-			if ((($offset+1+1) + $dataSize + $this->extra_space) < 
-				($this->shm_max + $this->dataspace)) 
-			{
-                $this->dpc_addr[$dpc] = $offset + 1; //\0 new head			
-				$this->dpc_length[$dpc] = $dataSize + $this->extra_space;
-				$this->dpc_free[$dpc] = $this->extra_space;	
-				
-				$newData = $data . str_repeat(' ',$this->extra_space);
+			if ($offset = $this->env->mem->set($dpc, $datasize, $data))
+			{ 
+				//shmop_write($this->shm_id, "\1", $offset-1);
+				shmop_write($this->shm_id, $newData, $offset);
+				//shmop_write($this->shm_id, "\1", strlen($newData)+1);
 			}
 			else			
-			{
-				//throw new Exception('dataSize > block');
-				$this->env->cnf->_say("Error::::::::::::::: Insert: DataSize > dataspace :" . $dpc, 'TYPE_CAT');
+			{	
+				_dump("SHM-MEM-ERROR-INSERT\n$dpc\n$datasize\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
+				$this->env->cnf->_say("Error::::::::::::::: Insert: DataSize > dataspace :" . $dpc, 'TYPE_LION');
 			}	
 		}
-	    // set spinlocks	
-		shmop_write($this->shmId, "\1", $offset-1);
-		shmop_write($this->shm_id, $newData, $offset);
-		shmop_write($this->shmId, "\1", strlen($newData)+1);
 		
         return true;
     } 	
@@ -140,6 +129,17 @@ class shm
   
 		$key = sprintf("%u", (($st['ino'] & 0xffff) | (($st['dev'] & 0xff) << 16) | (($proj_id & 0xff) << 24)));
 		return $key;
+	}	
+	
+	//public function free()	
+	public function __destruct() 
+	{	
+        $del = @shmop_delete($this->shm_id);
+
+        if($del === false)
+            return false;	
+
+		return @shmop_close($this->shm_id);	
 	}	
 }
 ?>

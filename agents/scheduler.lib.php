@@ -205,7 +205,7 @@ class scheduler {
   //show the schedules running ........
   function showschedules() {
      $header= true;
-     echo "Schedules\n";
+     //echo "Schedules\n";
      foreach ($this->timeline as $t=>$d) {
 	   if ($header) {		
 			echo implode("\t",array_keys($d)) ."\n";	 	

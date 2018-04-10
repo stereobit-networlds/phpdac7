@@ -119,6 +119,12 @@ class kfs
 	      $mydir->close ();
         }
 		return ($mydpcext);   
-   }   	
+   }   
+
+	//public function free()	
+	public function __destruct() 
+	{	
+        unset($this->dpcpath);	
+	}   
 }	
 ?>	

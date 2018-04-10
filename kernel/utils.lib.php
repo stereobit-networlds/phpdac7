@@ -41,7 +41,7 @@ class utils {
 		$http->debug=0;//1
 		$http->html_debug=0;//1				
 		$http->user_agent="Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)";
-		$http->follow_redirect=0;
+		$http->follow_redirect=1; // enabled for 301,2
 		$http->prefer_curl=0;
 		
 		$realm="";       /* Authentication realm or domain      */
@@ -147,7 +147,7 @@ class utils {
 				}
 			}
 			$http->Close();
-			
+			unset($http);
 		}
 		
 		if(strlen($error)) 
@@ -397,5 +397,11 @@ echo "\n**************************************************";
  "\n****************************************************************************/\n";	
 		return ($ret);
 	}
+	
+	//public function free()	
+	public function __destruct() 
+	{	
+        //unset($this->dpcpath);	
+	} 	
 }
 ?>

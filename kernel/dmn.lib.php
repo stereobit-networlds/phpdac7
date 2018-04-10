@@ -127,7 +127,7 @@ class dmn {
                 break;				
 				
 		case 'GETDPCMEM'://server version
-		        $data = $this->env->getdpcmem($arguments[0]);
+		        $data = $this->env->mem->read($this->env->utl->dehttpDpc($arguments[0]));
 		        $dmn->Println($data);
                 return true;
                 break;	
@@ -136,7 +136,7 @@ class dmn {
 		        $dmn->setEcho(0);//echo off
 				//header from 1st command still appear...must set client silence off				
 				$dmn->setSilence(1);//silence off...???
-		        $data = $this->env->getdpcmemc($arguments[0]);
+		        $data = $this->env->getdpcmemc($this->env->utl->dehttpDpc($arguments[0]));
 		        $dmn->Println(trim($data));
                 return false;//and quit
                 break;					
@@ -150,7 +150,7 @@ class dmn {
                 break;							
 				
 		case 'PRINT':
-		        $this->prn($arguments[0],$arguments[1]);
+		        $this->env->prn($arguments[0],$arguments[1]);
                 return true;
                 break;	
 				
@@ -220,8 +220,8 @@ class dmn {
 		        break;														
 				
 		case 'HTTP':
-		        $data = $this->env->kernelutl::httpcl($arguments[0],$arguments[1],$arguments[2]);
-				$this->env->savedpcmem($arguments[0],$data);
+		        $data = $this->env->utl->httpcl($arguments[0],$arguments[1],$arguments[2]);
+				$this->env->mem->save($arguments[0],$data);
 				$dmn->Println($data);
 				return true;
 		        break;				
@@ -270,6 +270,12 @@ class dmn {
 	{	
 		$this->dmn->Println($str);
 		return true;
+	} 	
+	
+	//public function free()	
+	public function __destruct() 
+	{	
+        unset($this->dmn);	
 	} 	
 } 
 ?>

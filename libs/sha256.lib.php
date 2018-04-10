@@ -73,7 +73,7 @@ if (!class_exists('nanoSha2'))
         var     $platform;
 
         // Php 4 - 6 compatable constructor
-        function nanoSha2($toUpper = false) {
+        function __construct($toUpper = false) {
             // Determine if the caller wants upper case or not.
             $this->toUpper = is_bool($toUpper)
                            ? $toUpper

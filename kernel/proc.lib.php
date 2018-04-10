@@ -24,8 +24,8 @@ class proc
 		$this->process = null;	
 
 		//init in shmem as resource var
-		$this->env->mem->savedpcmem('srvProcessStack',json_encode(array()));
-		$this->env->mem->savedpcmem('srvProcessChain',json_encode(array()));				
+		$this->env->mem->save('srvProcessStack',json_encode(array()));
+		$this->env->mem->save('srvProcessChain',json_encode(array()));				
 	}
 	
 	//dmn Println
@@ -70,8 +70,8 @@ class proc
 				$c = $this->getProcessChain(); //print_r($c);
 			
 				//save in sh mem as resource var (not in resources)
-				$this->env->mem->savedpcmem('srvProcessStack',json_encode($s));
-				$this->env->mem->savedpcmem('srvProcessChain',json_encode($c));
+				$this->env->mem->save('srvProcessStack',json_encode($s));
+				$this->env->mem->save('srvProcessChain',json_encode($c));
 			}
 			else //just execute
 				$this->processStack($pcmd);
@@ -152,5 +152,11 @@ class proc
 	{
 		return $this->async ? false : true;
 	}
+	
+	//public function free()	
+	public function __destruct() 
+	{	
+        unset($this->async);	
+	} 	
 }	
 ?>	

@@ -35,22 +35,18 @@ class sasl_client_class
 
 	var $driver;
 	var $drivers=array(
-		"Digest"   => array("digest_sasl_client",   "tcp/digest_sasl_client.lib.php"   ),
-		"CRAM-MD5" => array("cram_md5_sasl_client", "tcp/cram_md5_sasl_client.lib.php" ),
-		"LOGIN"    => array("login_sasl_client",    "tcp/login_sasl_client.lib.php"    ),
-		"NTLM"     => array("ntlm_sasl_client",     "tcp/ntlm_sasl_client.lib.php"     ),
-		"PLAIN"    => array("plain_sasl_client",    "tcp/plain_sasl_client.lib.php"    ),
-		"Basic"    => array("basic_sasl_client",    "tcp/basic_sasl_client.lib.php"    )
+		"Digest"   => array("digest_sasl_client",   "/tcp/digest_sasl_client.lib.php"   ),
+		"CRAM-MD5" => array("cram_md5_sasl_client", "/tcp/cram_md5_sasl_client.lib.php" ),
+		"LOGIN"    => array("login_sasl_client",    "/tcp/login_sasl_client.lib.php"    ),
+		"NTLM"     => array("ntlm_sasl_client",     "/tcp/ntlm_sasl_client.lib.php"     ),
+		"PLAIN"    => array("plain_sasl_client",    "/tcp/plain_sasl_client.lib.php"    ),
+		"Basic"    => array("basic_sasl_client",    "/tcp/basic_sasl_client.lib.php"    )
 	);
 	var $credentials=array();
 	
     function __construct($env=null) { //<<<<<<<<<<<<<
 		
 		$this->env = $env;
-		//when caller isa an agent or the server
-		$this->ldscheme = isset($this->env->ldscheme) ?
-						  $this->env->ldscheme . '/' :
-						  null;
 	}
 	
 
@@ -100,8 +96,8 @@ class sasl_client_class
 			{  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		        //echo '>>>>>' . $this->env->ldscheme;
 				if(!class_exists($this->drivers[$mechanism][0]))
-					require_once($this->env->ldscheme . $this->drivers[$mechanism][1]);
-				    //require_once($this->drivers[$mechanism][1]);
+					//require_once($this->env->ldscheme . $this->drivers[$mechanism][1]);
+				    require_once($this->drivers[$mechanism][1]);
 				$this->driver=new $this->drivers[$mechanism][0];
 				if($this->driver->Initialize($this))
 				{
