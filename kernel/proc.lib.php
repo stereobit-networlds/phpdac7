@@ -60,7 +60,8 @@ class proc
 			$this->async = false; //reset
 			$pcmd = explode('/',$cmd);
 			
-			if ($pcmd[0]=='async') {
+			if ($pcmd[0]=='async') 
+			{
 				//must exist as class
 				$this->async = true;//array_shift($pcmd); 
 	
@@ -73,6 +74,10 @@ class proc
 				$this->env->mem->save('srvProcessStack',json_encode($s));
 				$this->env->mem->save('srvProcessChain',json_encode($c));
 			}
+			elseif ($pcmd[0]=='sync') 
+			{
+				//sync asyncs
+			}	
 			else //just execute
 				$this->processStack($pcmd);
 			

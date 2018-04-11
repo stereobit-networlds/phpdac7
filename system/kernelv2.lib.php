@@ -44,7 +44,7 @@ require_once("agents/scheduler.lib.php");
 
 class kernelv2 {
 	
-	private $timer;
+	private $timer, $saveSrvState;
 	private $process, $processStack, $startProcess;	
 		
     public $dmn, $daemon_ip, $daemon_port, $daemon_type;
@@ -56,6 +56,8 @@ class kernelv2 {
 	{  
 		$argc = $GLOBALS['argc'];
 		$argv = $GLOBALS['argv'];
+		
+		$this->saveSrvState = true; //save srvState at mem resources
 		
 		$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
 	  
@@ -368,7 +370,7 @@ class kernelv2 {
 		return $this;	   
     }
    
-    //return pseudo pointer for comaptibility with agentds class   
+    //return pseudo pointer for compatibility with agentds class   
     public function update_agent(&$o_agent,$agent) 
 	{
 		return true;
@@ -382,8 +384,8 @@ class kernelv2 {
 		$sh = $this->scheduler->showschedules();
 		//echo 'save::::::::::::::::::::;';
 		//print_r($sh);
-		$this->mem->save('srvSchedules', serialize($sh));
-		//DISABLED _dump(serialize($sh),'w','/dumpsh-'.$_SERVER['COMPUTERNAME'].'.log');
+		$this->mem->save('srvSchedules', json_encode($sh));
+		//DISABLED _dump(json_encode($sh),'w','/dumpsh-'.$_SERVER['COMPUTERNAME'].'.log');
 	  
 		return null;
     }	
@@ -392,18 +394,20 @@ class kernelv2 {
 	{	  
 		//load dump
 		
-		//shared mem not yet
+		//shared mem not yet !!
 		if ($jsonsh = $this->mem->read('srvSchedules')) 
 		{ 
 			$this->cnf->_say("Loading schedules from mem", 'TYPE_LION');
-			$sh = unserialize($jsonsh);
+			$sh = json_decode($jsonsh, true); //true = convert to array
 			//print_r($sh);
 			
-			//override (stdClass=json side-effect error, needs serialize)
 			if ($this->scheduler->overwriteschedules($sh)) 
-				$this->cnf->_say("Scheduled Ok!", 'TYPE_LION'); //!!!not ok counter reset 
-			else 
+				$this->cnf->_say("Scheduled Ok!", 'TYPE_LION'); 
+		        //!!!not ok lasttime/counter reset (review)	
+			else {
 				$this->cnf->_say("Scheduler Error", 'TYPE_LION');	
+				print_r($sh); 
+			}	
 			
 			return true;
 		}
@@ -425,6 +429,9 @@ class kernelv2 {
 	{
 		$batch = $set ? $set : '';//pdo
 		
+		//https://blogs.technet.microsoft.com/systemcenteressentials/2009/09/01/using-psexec-to-open-a-remote-command-window/
+		//psExec \\computer cmd		
+		
 		//start a client (auto)
 		//exec("start /D d:\github\phpdac7\bin agentds pdo");// -inetd");
 		
@@ -438,9 +445,6 @@ class kernelv2 {
 			
 		*/	
 		
-		//https://blogs.technet.microsoft.com/systemcenteressentials/2009/09/01/using-psexec-to-open-a-remote-command-window/
-		//psExec \\computer cmd
-		
 		//return ($ret);
 	}
 
@@ -453,20 +457,31 @@ class kernelv2 {
 		$this->cnf->_say($this->show_schedules(), 'TYPE_LION');
 		
 		$this->utl->grapffiti(); //grpahixs on
-
-		$this->mem->checkMem(false);	//mem check on (silent)
-		
-		//save table in sh mem as resource var	
-		//(TEST OFF >15kb shmem halt)	
-		$this->mem->save('srvState',$this->mem->getShmContents());
-		//$this->cnf->_say("Table saved", 'TYPE_LION');
-			
+				
 		$tb = $this->mem->calc(); //calc
 	    $this->cnf->_say("Total buffer : ". 
 						$this->utl->convert($tb) . 
 						', mem usage: ' . 
 						$this->utl->convert(memory_get_usage()), 
 						'TYPE_LION');
+						
+		$this->mem->checkMem(false); //mem check on (silent)
+		
+		$this->fs->hView(); //show hash table
+		//$this->mem->save('srvHashTable', !!
+		
+		//save table in sh mem as resource var
+		if ($this->saveSrvState===true) {
+			try //boo!!
+			{	//(TEST OFF >15kb shmem halt)	
+				$this->mem->save('srvState',$this->mem->getShmContents());
+				//$this->cnf->_say("Table saved", 'TYPE_LION');
+			} 
+			catch (Exception $e) {
+				_say('saveSrvState Error: '.  $e->getMessage(). PHP_EOL, 1);
+				//exit;
+			}
+		}						
 		
 		return true;
     } 
@@ -541,6 +556,37 @@ class kernelv2 {
 			$_data[] = $row;
 			
 		return $_data;	
+	}
+
+	/* NOTICE :
+	After a lot of hours working with DataLink on Oracle->MySQL and PDO we (me and Adriano Rodrigues, that solve it) discover that PDO (and oci too) need the attribute AUTOCOMMIT set to FALSE to work correctly with.
+	There's  3 ways to set autocommit to false: On constructor, setting the atribute after construct and before query data or initiating a Transaction (that turns off autocommit mode)	
+	// First way - On PDO Constructor
+	$options = array(PDO::ATTR_AUTOCOMMIT=>FALSE);
+	$pdo = new PDO($dsn,$user,$pass,$options);	
+	// Second Way - Before create statements
+	$pdo = new PDO($dsn,$user,$pass);
+	$pdo->setAttribute(PDO::ATTR_AUTOCOMMIT,FALSE);
+	// or
+	$pdo->beginTransaction();
+
+    // now we are ready to query DataLinks	
+	// To use DataLinks on oci just use OCI_DEFAULT on oci_execute() function;
+	
+	http://php.net/manual/en/pdo.query.php
+	*/
+	public function pdoExec($prep, $vals)
+	{
+		/*$entryData = array(
+			'category' => $_POST['category'],
+			'title'    => $_POST['title'],
+			'article'  => $_POST['article'],
+			 'when'     => time()
+		);
+
+		self::$pdo->prepare("INSERT INTO blogs (title, article, category, published) VALUES (?, ?, ?, ?)")
+				  ->execute($entryData['title'], $entryData['article'], $entryData['category'], $entryData['when']);	
+		*/		  
 	}	
 
 	//UTILS

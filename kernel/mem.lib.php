@@ -27,7 +27,91 @@ class mem
 	public function initialize() 
 	{
 		return $this->startmemdpc();
-	}		
+	}
+
+	//init
+	private function startmemdpc() 
+	{   
+		$this->env->cnf->_say("Start", 'TYPE_LION');  
+
+		$data = null;
+		$reloadedData = null;
+		$reloadedDataBytes = 0;	
+		$loadFromDir = null;//'build/cpdac7/';//null; // trail /
+	  
+		if ($this->shm_max = $this->loadstate($loadFromDir)) 
+		{   
+			//reload shm, calc bytes   
+			$calc_shm_max = $this->load_dpc_tree($data, true); 
+		
+			if ($calc_shm_max != $this->shm_max)
+			{	
+				$this->env->cnf->_say('Reloaded data size: '. $this->shm_max, 'TYPE_LION');
+				//die($calc_shm_max . '-' . $this->shm_max . PHP_EOL);
+				//no die, delete shm_id
+			}
+			$space = $this->shm_max + $this->dataspace;
+			$this->env->cnf->_say("Re-allocate shared memory segment. $space bytes",'TYPE_CAT');
+		
+			if ($sid = $this->env->shm->_shopen($space)) 
+			{
+				//re-load dump file
+				if (!$reloadedData = @file_get_contents($loadFromDir . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log'))
+						die('Dump file missing.' . PHP_EOL);
+			
+				//WRITE ALL DATA AT ONCE IN SHMEM		
+				//$bw = $this->writeSH($reloadedData, 0);
+				//Do not Check SpinLock \0 included
+				$bw = $this->env->shm->_shwrite($reloadedData, 0); //direct
+				
+				// Do not dump, do not unlink
+				//unlink(getcwd() . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+			
+				if ($bw != strlen($reloadedData)) {
+					$this->env->cnf->_say("Reloaded data:" . strlen($data) .'-'. $bw, 'TYPE_LION');
+					die("Couldn't write the entire length of data\n");
+				}	
+				
+				//do not save state
+				$this->checkMem(1);	 
+			}
+			else
+				die("Couldn't create shared memory segment. System Halted.\n");		
+		}	
+		else //new start
+		{
+			$this->shm_max = $this->load_dpc_tree($data); //\0 included
+	  
+			// Create shared memory block with system id if 0xff3
+			$space = $this->shm_max + $this->dataspace;
+			$this->env->cnf->_say("Allocate shared memory segment. $space bytes",'TYPE_CAT');
+			
+			if ($sid = $this->env->shm->_shopen($space)) 
+			{
+				//WRITE ALL DATA AT ONCE IN SHMEM
+				//$bw = $this->writeSH($data, 0);
+				// Do not Check SpinLock \0 included				
+				$bw = $this->env->shm->_shwrite($data, 0); //direct
+				
+				//init mem dump w not a+ (dump includes all 1st entries not updates)
+				_dump($data ,'w', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+		
+				if ($bw != $this->shm_max) 
+				{
+					$this->env->cnf->_say("Data:" . strlen($data) .'-'. $bw . '-' . $this->shm_max, 'TYPE_LION');
+					die("Couldn't write the entire length of data\n");
+				}  
+				//else	
+				$this->savestate();	
+			}
+			else
+				die("Couldn't create shared memory segment. System Halted.\n");
+		}
+		
+	    $this->env->cnf->_say("Total shmem reserved: $space bytes",'TYPE_LION');
+		return $sid; 	
+	}	
+	
 	
 	//mem table get
 	public function get($dpc) 
@@ -126,8 +210,8 @@ class mem
 		return $totalbytes;	
 	}	
 
-	//init and periodic check, scheduled task
-	public function checkMem($show=false)
+	//init and periodic check (scheduled task)
+	public function checkMem($show=false, $createHash=false)
 	{		
 		reset($this->dpc_length);
 		foreach ($this->dpc_length as $dpc=>$length) 
@@ -137,23 +221,45 @@ class mem
 			$offset = $this->dpc_addr[$dpc];
 			$free = $this->dpc_free[$dpc];
 			
+			if ($createHash===true) 
+			{
+				$read = $this->readSH($dpc);
+				$this->env->fs->hAdd($dpc, md5($tdata));
+			}	
+			
 			if ($free < intval(1024 * 5)) //1 kb
 			{
 				$warning = ' <<<<<<<<<<<<<<<<<< need extra space!'; 
-				$read = PHP_EOL . $this->readSH($dpc) . PHP_EOL;
+				//$read = PHP_EOL . $this->readSH($dpc) . PHP_EOL;
 			}	
 			
 			if (($show)||($warning))
-				$this->env->cnf->_say(
-					$dpc . " re-loaded, " . 
-					$offset . ':'. $length . ':'. $free . 
-					$warning . $read,
-					'TYPE_IRON');				
+				$this->env->cnf->_say($offset . "\t". $length . "\t" . $free .
+									  "\t" . $dpc . " re-loaded\t" . $warning,	'TYPE_IRON');	
+					
 		}
+		
 		$this->env->cnf->_say('shmax:' . $this->shm_max . 
-							", mem length:". $this->memlength . 
-							", mem offset: " . $this->getOffset(), 
+							"\t mem length:" . $this->memlength . 
+							"\t mem offset: " . $this->getOffset(), 
 							'TYPE_LION');	
+	}
+	
+	//re-create hash-table (not used, create per file at checkMem)
+	public function createHashTable()
+	{
+		reset($this->dpc_length);
+		foreach ($this->dpc_length as $dpc=>$length) 
+		{
+			$offset = $this->dpc_addr[$dpc];
+			$free = $this->dpc_free[$dpc];
+			
+			$md5data = md5($this->read($dpc));
+			$this->env->fs->hAdd($dpc, $md5data);
+		}
+
+		$this->env->cnf->_say("Re-create hash table.", 'TYPE_LION');	
+		return true;
 	}
 	
 	//alias kb, mb, gb converter
@@ -206,90 +312,6 @@ class mem
 	}		
 	
 	
-	// MEM HANDLERS
-	
-	//init
-	private function startmemdpc() 
-	{   
-		$this->env->cnf->_say("Start", 'TYPE_LION');  
-
-		$data = null;
-		$reloadedData = null;
-		$reloadedDataBytes = 0;	
-		$loadFromDir = null;//'build/cpdac7/';//null; // trail /
-	  
-		if ($this->shm_max = $this->loadstate($loadFromDir)) 
-		{   
-			//reload shm, calc bytes   
-			$calc_shm_max = $this->load_dpc_tree($data, true); 
-		
-			if ($calc_shm_max != $this->shm_max)
-			{	
-				$this->env->cnf->_say('Reloaded data size: '. $this->shm_max, 'TYPE_LION');
-				//die($calc_shm_max . '-' . $this->shm_max . PHP_EOL);
-				//no die, delete shm_id
-			}
-			$space = $this->shm_max + $this->dataspace;
-			$this->env->cnf->_say("Re-allocate shared memory segment. $space bytes",'TYPE_CAT');
-		
-			if ($sid = $this->env->shm->_shopen($space)) 
-			{
-				//re-load dump file
-				if (!$reloadedData = @file_get_contents($loadFromDir . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log'))
-						die('Dump file missing.' . PHP_EOL);
-			
-				//WRITE ALL DATA AT ONCE IN SHMEM		
-				//$bw = $this->writeSH($reloadedData, 0);
-				//Do not Check SpinLock \0 included
-				$bw = $this->env->shm->_shwrite($reloadedData, 0); //direct
-				
-				// Do not dump, do not unlink
-				//unlink(getcwd() . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
-			
-				if ($bw != strlen($reloadedData)) {
-					$this->env->cnf->_say("Reloaded data:" . strlen($data) .'-'. $bw, 'TYPE_LION');
-					die("Couldn't write the entire length of data\n");
-				}	
-				
-				//do not save state
-				$this->checkMem(1);	 
-			}
-			else
-				die("Couldn't create shared memory segment. System Halted.\n");		
-		}	
-		else //new start
-		{
-			$this->shm_max = $this->load_dpc_tree($data); //\0 included
-	  
-			// Create shared memory block with system id if 0xff3
-			$space = $this->shm_max + $this->dataspace;
-			$this->env->cnf->_say("Allocate shared memory segment. $space bytes",'TYPE_CAT');
-			
-			if ($sid = $this->env->shm->_shopen($space)) 
-			{
-				//WRITE ALL DATA AT ONCE IN SHMEM
-				//$bw = $this->writeSH($data, 0);
-				// Do not Check SpinLock \0 included				
-				$bw = $this->env->shm->_shwrite($data, 0); //direct
-				
-				//init mem dump w not a+ (dump includes all 1st entries not updates)
-				_dump($data ,'w', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
-		
-				if ($bw != $this->shm_max) 
-				{
-					$this->env->cnf->_say("Data:" . strlen($data) .'-'. $bw . '-' . $this->shm_max, 'TYPE_LION');
-					die("Couldn't write the entire length of data\n");
-				}  
-				//else	
-				$this->savestate();	
-			}
-			else
-				die("Couldn't create shared memory segment. System Halted.\n");
-		}
-		
-	    $this->env->cnf->_say("Total shmem reserved: $space bytes",'TYPE_LION');
-		return $sid; 	
-	}	
 	
 	//save shared mem resource id and mem alloc arrays
 	public function savestate() //make private
@@ -363,13 +385,16 @@ class mem
               if ($reload===false) //bypass, just compute bytes
 			  { 		
 					$this->set($dpcf, strlen($f), $f); //clean f 
-					//$offset+= $this->dpc_length[$dpcf];// + 1; //\0foot
 			  }
 			  //add header sign
 			  $data .= "\0";
+			  
 			  $data .= $f; //cleaned
-			  //add extra space for modifications (clean)
-			  //$data .= str_repeat(' ', $this->extra_space);
+			  
+			  //save md5 without spinklocks 
+			  //at reload recreate at init
+			  $this->env->fs->hAdd($dpcf, md5($f)); 
+			  
 			  //add foot sign
 			  $data .= "\0";
 			  
@@ -402,7 +427,7 @@ class mem
 	   return true;
 	}
 	
-	private function dataDiff($dpc=null, $data=null)
+	/*private function dataDiff($dpc=null, $data=null)
 	{
 		if (!$dpc) return false;
 
@@ -427,9 +452,9 @@ class mem
 			return true;
 		
 		return false;
-	}	
+	}*/	
 	
-	//fetch shared mem page (empty spaces)
+	//fetch shared mem page (with empty space)
 	private function loaddpcmem($dpc) 
 	{
 		if (isset($this->dpc_addr[$dpc])) 
@@ -451,7 +476,7 @@ class mem
 		else
 			$ret = "Invalid dpc!";
 	  
-		return ($stats ? $ret : trim($data));	      
+		return ($stats ? $ret : substr($data ,0 ,$rlength));	      
 	}
 	
 	//alias public
@@ -470,20 +495,24 @@ class mem
 			//rewrite  
 			list($offset, $length, $free, $rlength) = $this->get($dpc);	
 		     
-			if (isset($data)) //replace
+			$htexist = $this->env->fs->hmd5($dpc); 
+			$htnew = md5($data); 			 
+			if ((isset($data)) && (strcmp($htexist, $htnew)!==0)) //replace
 			{				
 				$remaining = $length - $dataLength;			  
 			  
 				if (($offset = $this->upd($dpc, $remaining, $data)) &&		
 					($this->writeSH($data, $offset)))
 				{	
-					$this->env->cnf->_say("$dpc updated",'TYPE_LION');
+					$this->env->fs->hEdt($dpc, $htnew);
+					
+					$this->env->cnf->_say("$htnew $dpc updated",'TYPE_LION');
 					_dump("SAVE\n\n\n\n" . $data);
 				}	
 				else
 				{
 					_dump("MEM-ERROR\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
-					die($dpc . " (savedpcmem update remain page space: $remaining) error, increase extra space!" . PHP_EOL); 
+					die($dpc . " (savedpcmem update page: $remaining) error, increase page space!" . PHP_EOL); 
 				}
 			
 			}//if data			 
@@ -493,13 +522,16 @@ class mem
 			if (!$data) return false;	
 			_say($data,3);
 		
+		    $htnew = md5($data);
 			if (($offset = $this->set($dpc, $dataLength, $data)) &&
 			    ($this->writeSH("\0". $data ."\0", $offset)))
 			{
+				$this->env->fs->hAdd($dpc, $htnew);
+				
 				//save dump-tree for any use (phar creation etc)
 				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
 					
-				$this->env->cnf->_say("$dpc saved",'TYPE_LION');
+				$this->env->cnf->_say("$htnew $dpc saved",'TYPE_LION');
 				_dump("LOAD\n\n\n\n" . $data);
 			}
 			else
@@ -527,7 +559,6 @@ class mem
 		if ($this->exist($dpc))
 		{
 			list($offset, $length, $free, $rlength) = $this->get($dpc);
-			$invdata = $this->readSH($dpc); //read mem data before
 
 			if ($offset >= $this->shmmax()) 
 			{
@@ -537,8 +568,10 @@ class mem
 							$data = $this->_variable($dpc, false);
 								//files comes as variables when no change=null val
 
-				//update if data diff (scheduled data returns always null)		
-				if ((isset($data)) && ($upd = $this->md5diff($data, $invdata)))
+				
+				$htexist = $this->env->fs->hmd5($dpc); //echo $htexist . PHP_EOL;
+				$htnew = md5($data); //echo $htnew . PHP_EOL;
+				if ((isset($data)) && (strcmp($htexist, $htnew)!==0))
 				{ 			
 					$dataLength = strlen($data); 
 					$remaining = $length - $dataLength;
@@ -546,23 +579,24 @@ class mem
 					if (($offset = $this->upd($dpc, $remaining, $data)) &&	
 						($this->writeSH($data, $offset)))
 					{
-						$this->env->cnf->_say("$dpc updated!",'TYPE_LION');
+						//get md5 before extra spaces added
+						$this->env->fs->hEdt($dpc, $htnew); //update md5
+						
+						$this->env->cnf->_say("$htnew $dpc updated!",'TYPE_LION');
 						_dump("UPDATE\n\n\n\n" . $data);
 					}
 					else
 					{
 						_dump("MEM-ERROR\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
-						die($dpc . " (savedpcmem update remain page space: $remaining) error, increase extra space!" . PHP_EOL); 
+						die($dpc . " (savedpcmem update page: $remaining) error, increase mempage space!" . PHP_EOL); 
 					}	
 					
 				}//if data and data diff
-				else
-					$data = $invdata;
+
 			}
-			//else continue 
-			//$data = $this->readSH($dpc); //read at top
-			$isupdate = $upd ? ' updated ' : null;
-			$this->env->cnf->_say("read $isupdate $dpc :" . strlen($data), 'TYPE_RAT');
+			//else continue and read
+			
+			$data = $this->readSH($dpc); 
 		}
 		else //NEW
 		{ 
@@ -576,14 +610,17 @@ class mem
 			_say($data,3);		
 		
 			$dataLength = strlen($data);		
-
+			$htnew = md5($data);
+			
 			if (($offset = $this->set($dpc, $dataLength, $data)) &&
 				($this->writeSH("\0". $data ."\0", $offset)))
 			{
+				$this->env->fs->hAdd($dpc, $htnew);
+				
 				//save dump-tree for any use (phar creation etc)
 				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
 				
-				$this->env->cnf->_say("$dpc saved!",'TYPE_LION');
+				$this->env->cnf->_say("$htnew $dpc saved!",'TYPE_LION');
 				_dump("INSERT\n\n\n\n" . $data);
 			}
 			else
@@ -668,9 +705,14 @@ class mem
 			//local storage reload ----------md5 !!! 
 			//if (strcmp(md5('$this->env->dpcpath . $dpc'), $rlength)!=0)	
 				
-			$sf = @filesize($this->env->dpcpath . $dpc);
+			$htexist = $this->env->fs->hmd5($dpc); 
+			$htnew = md5(@file_get_contents($this->env->dpcpath . $dpc)); 
+				
+			/*$sf = @filesize($this->env->dpcpath . $dpc);
 			$this->env->cnf->_say("Size:" . $rlength .':' . $sf, 'TYPE_RAT');
-			if ($rlength != $sf) {	
+			if ($rlength != $sf) {	*/
+			if (strcmp($htexist, $htnew)!==0)
+			{
 				$data = $this->env->fs->_readPHP($this->env->dpcpath . $dpc); 
 				_say($data,3); 
 			}	

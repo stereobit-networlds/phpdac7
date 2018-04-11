@@ -1,14 +1,81 @@
 <?php
 class kfs 
 {	
-	private $env, $dpcpath;
+	private $env, $dpcpath; 
+	private static $hTable;
 	
 	public function __construct(& $env=null, $path=null) 
 	{	
 		$this->env = $env;
-		$this->dpcpath = $path; //$env->dpcpath;	
+		$this->dpcpath = isset($path) ? $path : $env->dpcpath;	
+		
+		self::$hTable = array(); //hash table (can handle all data types)
 	}
 	
+	//prepare data with md5 before and store
+	public static function hAdd($name, $md5data) 
+	{
+		self::$hTable[$name] = $md5data;
+		return true;
+	}
+	
+	//alias, override a value
+	public static function hEdt($name, $md5data) 
+	{
+		self::$hTable[$name] = $md5data;
+		return true;
+	}	
+	
+	//remove (stay in)...
+	public static function hRem($name)
+	{
+		reset(self::$hTable);
+		//foreach (self::$hTable as $n=>$v)
+			//if (strcmp($n,$name)!==0) ..
+			
+		return true;		
+	}
+	
+	//read an element
+	public static function hmd5($name) 
+	{
+		return self::$hTable[$name];
+	}	
+
+	//export to save
+	public static function hExp() 
+	{
+		return json_encode(self::$hTable);
+	}	
+	
+	//import (replace) load
+	public static function hImp($arr) 
+	{
+		self::$hTbable = (array) json_decode($arr, true);
+		return true;
+	}
+
+	//compare two md5 strings, true when equal
+	public static function hCmp($md5d1, $md5d2) 
+	{
+		return (strcmp($md5d1,$md5d2)===0) ? true : false;
+	}	
+	
+	//view hash table (use scheduled tasks)
+	public static function hView() 
+	{
+		echo '[------------- hash -------------]' . "\tentry" . PHP_EOL; //header
+		reset(self::$hTable);
+		foreach (self::$hTable as $n=>$v)
+			echo '[' . $v . ']' . "\t" . $n . PHP_EOL;
+			
+		return $ret;
+	}		
+	
+	
+	
+	//todo: handle md5 array of contents for readed files
+	//eg. array[filename] = md5(contentsofthefiles)
 	public function _readPHP($filename=null) 
 	{
 		if (!$filename) return false;
