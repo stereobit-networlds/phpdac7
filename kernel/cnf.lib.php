@@ -1,5 +1,4 @@
 <?php
-//https://stackoverflow.com/questions/2209934/php-operator
 /*
 new Config(Config::TYPE_ALL);
 // cat dog rat lion bird
@@ -9,6 +8,7 @@ new Config(Config::TYPE_BIRD | Config::TYPE_DOG);
 //dog bird
 new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT);
 //rat lion bird
+//https://stackoverflow.com/questions/2209934/php-operator
 */
 class Config 
 {
@@ -18,7 +18,9 @@ class Config
     const TYPE_LION=4;//MESSAGES 
     const TYPE_RAT=8; //DATA
     const TYPE_BIRD=16; //VAR
-    const TYPE_ALL=31;
+    const TYPE_IRON=32; //..
+    const TYPE_ZION=64; //..	
+    const TYPE_ALL=127; //31;
 
     private $config;
 
@@ -27,21 +29,27 @@ class Config
         $this->config=$config;
 
         if($this->is(Config::TYPE_CAT)){
-            echo 'cat ';
+            //echo '[cat ]';
         }
         if($this->is(Config::TYPE_DOG)){
-            echo 'dog ';
+            //echo '[dog ]';
         }
         if($this->is(Config::TYPE_RAT)){
-            echo 'rat ';
+            //echo '[rat ]';
         }
         if($this->is(Config::TYPE_LION)){
-            echo 'lion ';
+            //echo '[lion]';
         }
         if($this->is(Config::TYPE_BIRD)){
-            echo 'bird ';
+            //echo '[bird]';
         }
-        echo "\n";
+        if($this->is(Config::TYPE_IRON)){
+            //echo '[iron]';
+        }		
+        if($this->is(Config::TYPE_ZION)){
+            //echo '[zion]';
+        }		
+        //echo PHP_EOL;
     }
 
     private function is($value)
@@ -55,29 +63,39 @@ class Config
 		
         if (($type=='TYPE_CAT') && ($this->is(Config::TYPE_CAT)))
 		{
-            echo 'cat ';
+            echo '[cat ]';
 			return true;
         }
         if (($type=='TYPE_DOG') && ($this->is(Config::TYPE_DOG)))
 		{
-            echo 'dog ';
+            echo '[dog ]';
 			return true;
         }
         if (($type=='TYPE_RAT') && ($this->is(Config::TYPE_RAT)))
 		{
-            echo 'rat ';
+            echo '[rat ]';
 			return true;
         }
         if (($type=='TYPE_LION') && ($this->is(Config::TYPE_LION)))
 		{
-            echo 'lion ';
+            echo '[lion]';
 			return true;
         }
         if (($type=='TYPE_BIRD') && ($this->is(Config::TYPE_BIRD)))
 		{
-            echo 'bird ';
+            echo '[bird]';
 			return true;
         }	
+        if (($type=='TYPE_IRON') && ($this->is(Config::TYPE_IRON)))
+		{
+            echo '[iron]';
+			return true;
+        }	
+        if (($type=='TYPE_ZION') && ($this->is(Config::TYPE_ZION)))
+		{
+            echo '[zion]';
+			return true;
+        }			
         //echo "\n";
 		return false;
     }	

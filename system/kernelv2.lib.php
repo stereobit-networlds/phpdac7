@@ -100,7 +100,8 @@ class kernelv2 {
 			self::initPrinter();
 			//init db
 			self::$pdo = null;	
-			self::initPDO();
+			if (self::initPDO())
+				$this->cnf->_say("PDO connection: ok!" , 'TYPE_IRON');
 
 			//init daemon
 			if ($this->dmn = new dmn($this, /*daemonize this*/
@@ -135,17 +136,17 @@ class kernelv2 {
    
 	//TIER DISPATCHER  
    
-	public function getdpcmemc($dpc) 
+	private function getdpcmemc($dpc) 
 	{
 		$data = null;		
-		//$dpc = $this->utl->dehttpDpc($dpc); 	  
+		//$dpc = $this->utl->dehttpDpc($dpc); //in dmn	  
 
 		if ($this->mem->exist($dpc))
 		{
 			//fetch dpc   
 			list($offset, $length, $free, $rlength) = $this->mem->get($dpc);
 
-			//dpc and streams that exists in data area only
+			//dpc and streams that exists in data (after shmax_id) area only
 			if ($offset >= $this->mem->shmmax()) 
 			{
 				//SQL
@@ -204,17 +205,11 @@ class kernelv2 {
 					$dataLength = strlen($data); 
 					$remaining = $length - $dataLength;
 					
-					if ($offset = $this->mem->upd($dpc, $remaining, $data))	
+					if (($offset = $this->mem->upd($dpc, $remaining, $data)) &&	
+						($this->mem->writeSH($data, $offset)))
 					{
-						//if ($x = $this->mem->checkSpinLock($dpc)===false)
-							//$this->cnf->_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 2:$dpc $x",'TYPE_LION'); 												
-						
-						if ($this->mem->writeSH($data, $offset))
-						{
-							$this->mem->savestate();
-							$this->cnf->_say("$dpc updated!",'TYPE_LION');
-							_dump("UPDATE\n\n\n\n" . $data);
-						}
+						$this->cnf->_say("$dpc updated!",'TYPE_LION');
+						_dump("UPDATE\n\n\n\n" . $data);
 					}
 					else
 					{
@@ -224,15 +219,10 @@ class kernelv2 {
 					
 				}//if data
 			}
-			//else read mem
-			$this->cnf->_say("reading $dpc ",'TYPE_DOG');
-		
-			//if ($x = $this->mem->checkSpinLock($dpc)===true)
-				//$this->cnf->_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock reader:$dpc $x",'TYPE_LION');
-		
+			//else.. read mem and continue
 			$data = $this->mem->readSH($dpc);
-			   
-			$this->cnf->_say("Data : " . strlen($data), 'TYPE_RAT');
+			    
+			$this->cnf->_say("reading $dpc :" . strlen($data), 'TYPE_RAT');
 		}
 		else //NEW
 		{ 
@@ -343,19 +333,14 @@ class kernelv2 {
 		
 			$dataLength = strlen($data);		
 
-			if ($offset = $this->mem->set($dpc, $dataLength, $data))	
-			{	  
-				//if ($x = $this->mem->checkSpinLock($dpc)===false)
-					//$this->cnf->_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 3:$dpc  $x", 'TYPE_LION'); 				
+			if (($offset = $this->mem->set($dpc, $dataLength, $data)) &&
+				($this->mem->writeSH("\0". $data ."\0", $offset)))
+			{
+				//save dump-tree for any use (phar creation etc)
+				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
 				
-				if ($this->mem->writeSH("\0". $data ."\0", $offset))
-				{
-					_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
-				
-					$this->mem->savestate();
-					$this->cnf->_say("$dpc saved!",'TYPE_LION');
-					_dump("INSERT\n\n\n\n" . $data);
-				}
+				$this->cnf->_say("$dpc saved!",'TYPE_LION');
+				_dump("INSERT\n\n\n\n" . $data);
 			}
 			else
 			{		
@@ -363,11 +348,18 @@ class kernelv2 {
 				die($dpc . " (getdpcmemc save offset:$offset) error, increase data space!" . PHP_EOL);
 			}	
 		
-			$this->cnf->_say("Data : " . $dataLength, 'TYPE_RAT');		
+			$this->cnf->_say("New $dpc : " . strlen($data), 'TYPE_RAT');		
 		}
 	  
 		return ($data);	      
-	}  
+	}
+
+	//alias
+	public function _main($dpc) 
+	{
+		//return $this->getdpcmemc();
+		return $this->mem->readC($dpc);
+	}
 	  
    
     //return pseudo pointer for comaptibility with agentds class
@@ -407,9 +399,11 @@ class kernelv2 {
 			$sh = unserialize($jsonsh);
 			//print_r($sh);
 			
-			//override (stdClass error, needs re-arrange)
+			//override (stdClass=json side-effect error, needs serialize)
 			if ($this->scheduler->overwriteschedules($sh)) 
-				_say("Ok!",1); else _say("Error",1);	
+				$this->cnf->_say("Scheduled Ok!", 'TYPE_LION'); //!!!not ok counter reset 
+			else 
+				$this->cnf->_say("Scheduler Error", 'TYPE_LION');	
 			
 			return true;
 		}
@@ -443,6 +437,10 @@ class kernelv2 {
 			C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -InputFormat none -File file.ps1
 			
 		*/	
+		
+		//https://blogs.technet.microsoft.com/systemcenteressentials/2009/09/01/using-psexec-to-open-a-remote-command-window/
+		//psExec \\computer cmd
+		
 		//return ($ret);
 	}
 
@@ -522,19 +520,28 @@ class kernelv2 {
 		{
 			//$dbh = new PDO('sqlite:memory:');	
 			self::$pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
-			_say("PDO connection: ok!" , 1);
-			//$this->cnf-> ..is static
+			return true;
 	    } 
 		catch (PDOException $e) 
 		{
             _say("Failed to get DB handle: " . $e->getMessage(), 1);
-        }	
+        }
+		return false;	
 	}
 
 	public static function pdoConn()
 	{
         return self::$pdo;
-    }		
+    }
+
+	public function pdoQuery($dpc)
+	{
+		$pdodpc = str_replace('-',' ',$dpc);
+		foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) 
+			$_data[] = $row;
+			
+		return $_data;	
+	}	
 
 	//UTILS
 	

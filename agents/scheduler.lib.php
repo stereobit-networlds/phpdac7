@@ -47,7 +47,7 @@ class scheduler {
 	 //$timein = time();// + rand(10,1000); 
 	 //due to speed up it is possible to have
 	 //multiple schedules entry in the same time, so add 1 sec
-	 if (array_key_exists($timein,$this->timeline))
+	 if (array_key_exists($timein, $this->timeline))
 	   $this->timeline[] = $schedules;  	
 	 else
 	   $this->timeline[] = $schedules; 
@@ -193,10 +193,11 @@ class scheduler {
 	  return false; 
   }
   
-  public function overwriteschedules(&$sh=null) {
+  public function overwriteschedules($sh=null) {
 	  if (!empty($sh)) {
 		  
 		$this->timeline = $sh;
+		//print_r($sh);
 		return true;
 	  }
 	  return false;	
@@ -227,7 +228,7 @@ class scheduler {
 		  echo implode("\t",$d) . "\n";	
 	 }  
 	 
-     return ($this->timeline);  
+     return (array) $this->timeline;  
   }
   
   function __destruct() {

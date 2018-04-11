@@ -45,82 +45,73 @@ class shm
 	}	
 	
 	
- 	//set flag to \0, must written before read  
-    public function readSafe($dpc)
-    {
-		//$dpc = $this->env->utl->dehttpDpc($dpc);
-		
-		if ($this->env->mem->exist($dpc))	
-		{
-			/*if ($this->env->mem->checkSpinLock($dpc)===true) {
-				//spinLock = \0
-				$this->env->cnf->_say("Locked segment (must written):" . $dpc , 'TYPE_LION');
-				return false;
-			}*/	
+	//Check SpinLock
+	private function spinlock($offset)
+	{ 
+       //$this->env->cnf->_say("spinlock: " . $offset, 'TYPE_LION');	
+	   if ($this->_shread($offset-1, 1) == "\1")
+		   return true;
+	   
+	   return false;
+	}	
 	
-			list ($offset, $size, $free, $rlength) = $this->env->mem->get($dpc); 	
-			$data = shmop_read($this->shm_id, $offset, $rlength);
+ 	//set flag to \0, must written before read 
+	//(length must be the mempage)
+	//rlenght is the length of actual data
+    public function readSafe($offset, $length, $rlenght=null)
+    {
+		if ($this->spinlock($offset)===false) {
+			//spinLock = \0
+			//$this->env->cnf->_say("Locked segment not readed: " . $offset, 'TYPE_LION');
+			//return false;
+		}	
 		
-			// release spinlocks
-			//shmop_write($this->shm_id, "\0", $offset-1);
-			//shmop_write($this->shm_id, "\0", $size+1);
+		//release spinlocks for write
+		//shmop_write($this->shm_id, "\0", $offset-1);
+		//shmop_write($this->shm_id, "\0", $length+1);
 		
-			return $data;
-		}
-		return null;
+		$ret = shmop_read($this->shm_id, $offset, $length);
+		//return ($ret);
+		return $rlength ? substr($ret,0, $rlength) : $ret; //no rtrim
     }
     
-	//set flag to \1, must read
-    public function writeSafe($dpc, $data)
+	//set flag to \1, must read (data must contain the free space)
+    public function writeSafe($data, $offset)
     {
-		$dataSize = strlen($data);
-		$newData = $data;
-
-	    /*if ($this->env->mem->checkSpinLock($dpc)===false) 
+	    if ($this->spinlock($offset)===true) 
 		{   //spinLock = \1
-			$this->env->cnf->_say("Locked segment (not readed):" . $dpc, 'TYPE_LION');
+			$this->env->cnf->_say("Locked segment (not written):" . $offset, 'TYPE_LION');
 			return false;
-		}*/	  
-		
-		if ($this->env->mem->exist($dpc))	
-		{   
-			//read existed
-			list ($offset, $size, $free, $rlength) = $this->env->mem->get($dpc); 		
-			$remaining = $size - $dataSize;
+		}	  
 
-			if ($offset = $this->env->mem->upd($dpc, $remaining, $data))	
-			{
-				//shmop_write($this->shm_id, "\1", $offset-1);
-				shmop_write($this->shm_id, $newData, $offset);
-				//shmop_write($this->shm_id, "\1", strlen($newData)+1);	
-			}	
-			else	
-			{	
-		        _dump("SHM-MEM-ERROR-UPDATE\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
-				$this->env->cnf->_say("Error::::::::::::::: Update: DataSize ($dataSize) > block ($size) :" . $dpc, 'TYPE_LION');
-			}			
-        }
-		else 
-		{   
-	        //append / insert
-			if ($offset = $this->env->mem->set($dpc, $datasize, $data))
-			{ 
-				//shmop_write($this->shm_id, "\1", $offset-1);
-				shmop_write($this->shm_id, $newData, $offset);
-				//shmop_write($this->shm_id, "\1", strlen($newData)+1);
-			}
-			else			
-			{	
-				_dump("SHM-MEM-ERROR-INSERT\n$dpc\n$datasize\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
-				$this->env->cnf->_say("Error::::::::::::::: Insert: DataSize > dataspace :" . $dpc, 'TYPE_LION');
-			}	
-		}
+        //set spinlocks		
+		//shmop_write($this->shm_id, "\1", $offset-1);
+		//shmop_write($this->shm_id, "\1", strlen($data)+1);
 		
-        return true;
-    } 	
+		return shmop_write($this->shm_id, $data, $offset);
+    } 
+
+	public function lockSafe($offset, $length)
+	{
+        //set spinlocks  \1	
+		shmop_write($this->shm_id, "\1", $offset-1);
+		shmop_write($this->shm_id, "\1", $length+1);	
+		return true;	
+	}
+	
+	public function unlockSafe($offset, $length)
+	{
+        //set spinlocks \0	
+		shmop_write($this->shm_id, "\0", $offset-1);
+		shmop_write($this->shm_id, "\0", $length+1);	
+		return true;	
+	}	
 	
 	public function _ftok($pathname, $proj_id) 
 	{
+		if (function_exists('ftok'))
+			return ftok($pathname, $proj_id);
+		
 		$st = @stat($pathname);
 		if (!$st) 
 		{

@@ -5,14 +5,16 @@ class mem
 	private $env;
 	private $shm_max, $memlength; 	
 	private $dpc_addr, $dpc_length, $dpc_free;	
-	private $dataspace, $extra_space;	
+	private $dataspace, $extra_space;
+	//public static $pdo;	
 	
 	public function __construct(& $env=null) 
 	{	
 		$this->env = $env;
+		//self::$pdo = $env::$pdo;
 		
 		$this->shm_max = 0;
-		$this->memlength = 0;
+		$this->memlength = 0; //!!!! 
 		
 		$this->dpc_attr = array();
 		$this->dpc_length = array();
@@ -27,6 +29,7 @@ class mem
 		return $this->startmemdpc();
 	}		
 	
+	//mem table get
 	public function get($dpc) 
 	{
 		if (!$dpc) return false;
@@ -39,6 +42,7 @@ class mem
 		return array($offset, $length, $free, $rlength);	
 	}
 
+	//mem table set
 	public function set($dpc, $length=false, &$data) 
 	{
 		if ((!$dpc) || (!$length)) {
@@ -65,7 +69,7 @@ class mem
 		return false;
 	}
 	
-	//check remaining space to fit in mem page
+	//mem table, check remaining space to fit in mem page
 	public function upd($dpc, $free, &$data) 
 	{
 		if ((!$dpc) || ($free<0)) return false;
@@ -76,6 +80,7 @@ class mem
 		return $this->dpc_addr[$dpc]; //offset
 	}	
 
+	//mem table exist
 	public function exist($dpc)
 	{
 		if (!$dpc) return false;
@@ -86,21 +91,25 @@ class mem
 		return false;	
 	}
 	
+	//extra space used per file e.g. file size + 10 kb
 	public function extra()
 	{
 		return $this->extra_space;	
 	}
 	
+	//space for sh mem to handle
 	public function space()
 	{
 		return $this->dataspace;	
 	}	
 
+	//max mem = libs loaded plus space
 	public function maxmem()
 	{
 		return $this->shm_max + $this->dataspace;
 	}
 
+	//libs end offset
 	public function shmmax()
 	{
 		return $this->shm_max;
@@ -117,7 +126,7 @@ class mem
 		return $totalbytes;	
 	}	
 
-	//scheduled task
+	//init and periodic check, scheduled task
 	public function checkMem($show=false)
 	{		
 		reset($this->dpc_length);
@@ -131,7 +140,7 @@ class mem
 			if ($free < intval(1024 * 5)) //1 kb
 			{
 				$warning = ' <<<<<<<<<<<<<<<<<< need extra space!'; 
-				$read = PHP_EOL . $this->read($dpc) . PHP_EOL;
+				$read = PHP_EOL . $this->readSH($dpc) . PHP_EOL;
 			}	
 			
 			if (($show)||($warning))
@@ -139,18 +148,26 @@ class mem
 					$dpc . " re-loaded, " . 
 					$offset . ':'. $length . ':'. $free . 
 					$warning . $read,
-					'TYPE_LION');				
+					'TYPE_IRON');				
 		}
 		$this->env->cnf->_say('shmax:' . $this->shm_max . 
-							"\nmem length:". $this->memlength . 
-							"\nmem offset: " . $this->getOffset(), 'TYPE_LION');	
+							", mem length:". $this->memlength . 
+							", mem offset: " . $this->getOffset(), 
+							'TYPE_LION');	
 	}
 	
+	//alias kb, mb, gb converter
 	private function cnv($bytes)
 	{
 		return $this->env->utl->convert($bytes);
 	}
 	
+	public function getShmContents()
+	{
+		return @file_get_contents('shm.id');
+	}	
+	
+	//get next offset to write
 	private function getOffset() {
 		$offset = 0; 
 		$zeros = 0;
@@ -163,8 +180,35 @@ class mem
 		}
 		$offset += $zeros; //segments x 2		   
 		return ($offset + 1); 
+	}
+
+	
+	//sh mem read
+	public function readSH($dpc) {
+		
+		//return $this->read($dpc); //no safe
+
+		list($offset, $length, $free, $rlength) = $this->get($dpc);
+		
+		return $this->env->shm->readSafe($offset, $length, $rlength); 
 	}	
 	
+	//sh mem write
+	public function writeSH($data=null, $offset=null) {
+		
+		//if ($this->env->shm->_shwrite($data, $offset)) //no safe
+		
+		if ($this->env->shm->writeSafe($data, $offset)) 	
+		{		
+			return $this->savestate();
+		}
+		return false;
+	}		
+	
+	
+	// MEM HANDLERS
+	
+	//init
 	private function startmemdpc() 
 	{   
 		$this->env->cnf->_say("Start", 'TYPE_LION');  
@@ -175,9 +219,8 @@ class mem
 		$loadFromDir = null;//'build/cpdac7/';//null; // trail /
 	  
 		if ($this->shm_max = $this->loadstate($loadFromDir)) 
-		{   //reload shm
-	
-			//only calc bytes   
+		{   
+			//reload shm, calc bytes   
 			$calc_shm_max = $this->load_dpc_tree($data, true); 
 		
 			if ($calc_shm_max != $this->shm_max)
@@ -195,14 +238,18 @@ class mem
 				if (!$reloadedData = @file_get_contents($loadFromDir . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log'))
 						die('Dump file missing.' . PHP_EOL);
 			
-				//WRITE ALL DATA AT ONCE IN SHMEM
-				//Do not Check SpinLock \0 included		
-				$bw = $this->writeSH($reloadedData, 0);
-				// Do not dump
+				//WRITE ALL DATA AT ONCE IN SHMEM		
+				//$bw = $this->writeSH($reloadedData, 0);
+				//Do not Check SpinLock \0 included
+				$bw = $this->env->shm->_shwrite($reloadedData, 0); //direct
+				
+				// Do not dump, do not unlink
 				//unlink(getcwd() . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
 			
-				if ($bw != strlen($reloadedData)) 
+				if ($bw != strlen($reloadedData)) {
+					$this->env->cnf->_say("Reloaded data:" . strlen($data) .'-'. $bw, 'TYPE_LION');
 					die("Couldn't write the entire length of data\n");
+				}	
 				
 				//do not save state
 				$this->checkMem(1);	 
@@ -213,26 +260,28 @@ class mem
 		else //new start
 		{
 			$this->shm_max = $this->load_dpc_tree($data); //\0 included
-			//echo ">>>>>>>>>>>>>>>", $this->shm_max;
 	  
-			///////////////allocate dpc tree
 			// Create shared memory block with system id if 0xff3
 			$space = $this->shm_max + $this->dataspace;
 			$this->env->cnf->_say("Allocate shared memory segment. $space bytes",'TYPE_CAT');
 			
 			if ($sid = $this->env->shm->_shopen($space)) 
 			{
-				// Do not Check SpinLock \0 included		
-				$bw = $this->writeSH($data, 0);
+				//WRITE ALL DATA AT ONCE IN SHMEM
+				//$bw = $this->writeSH($data, 0);
+				// Do not Check SpinLock \0 included				
+				$bw = $this->env->shm->_shwrite($data, 0); //direct
+				
 				//init mem dump w not a+ (dump includes all 1st entries not updates)
 				_dump($data ,'w', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
 		
 				if ($bw != $this->shm_max) 
 				{
+					$this->env->cnf->_say("Data:" . strlen($data) .'-'. $bw . '-' . $this->shm_max, 'TYPE_LION');
 					die("Couldn't write the entire length of data\n");
 				}  
-				else	
-					$this->savestate();	
+				//else	
+				$this->savestate();	
 			}
 			else
 				die("Couldn't create shared memory segment. System Halted.\n");
@@ -240,11 +289,6 @@ class mem
 		
 	    $this->env->cnf->_say("Total shmem reserved: $space bytes",'TYPE_LION');
 		return $sid; 	
-	}
-
-	public function getShmContents()
-	{
-		return @file_get_contents('shm.id');
 	}	
 	
 	//save shared mem resource id and mem alloc arrays
@@ -292,7 +336,7 @@ class mem
 	   return false;
 	}
 	
-	//return &data
+	//libs init (shmem offset) return &data
     private function load_dpc_tree(&$data, $reload=false) {
 	   $libs = null;
 	   $exts = null;
@@ -314,7 +358,7 @@ class mem
 		{
 	      if (($dpcf!='') && ($dpcf[0]!=';')) 
 		  {
-		    if ($f = $this->env->fs->_readPHP($dpcf)) //@file_get_contents($dpcf)) 
+			if ($f = $this->env->fs->_readPHP($dpcf)) 
 			{
               if ($reload===false) //bypass, just compute bytes
 			  { 		
@@ -340,7 +384,7 @@ class mem
 		  }
 	    }
 	    $totalbytes = strlen($data);
-	    $this->env->cnf->_say("\nTotal Bytes : ".$totalbytes, 'TYPE_LION');
+	    $this->env->cnf->_say("Total Bytes : ".$totalbytes, 'TYPE_IRON');
 	
         return $totalbytes; 
 	  }
@@ -348,11 +392,11 @@ class mem
 	    die("Dpc tree error. System Halted." . PHP_EOL); 		
 	} 	
    
-	//Check SpinLock
+	//Check spinlock 
 	private function checkSpinLock($dpc)
 	{   
-       $offset = $this->dpc_addr[$dpc] - 1;
-	   if ($this->env->shm->_shread($offset-1, 1) !== "\0")
+       $spo = $this->dpc_addr[$dpc] - 1;
+	   if ($this->env->shm->_shread($spo, 1) !== "\0")
 		   return false;
 	   
 	   return true;
@@ -362,7 +406,7 @@ class mem
 	{
 		if (!$dpc) return false;
 
-		$storedData = md5($this->read($dpc));		
+		$storedData = md5($this->readSH($dpc));		
  		$newData = md5($data);		
 	
 		$this->env->cnf->_say("md5:" . $storedData . ':'. $newData, 'TYPE_LION');
@@ -371,79 +415,19 @@ class mem
 		
 		return false;
 	}
-
-	//save calls,urls etc into shared mem
-	private function savedpcmem($dpc, &$data) 
+	
+	//check md5 checksum for incoming data and inventory data
+	private function md5diff($newData=null, $invData=null)
 	{
-	   $dataLength = strlen($data); 
-	   
-	   if (isset($this->dpc_addr[$dpc])) 
-	   {
-			//rewrite  
-			list($offset, $length, $free, $rlength) = $this->get($dpc);	
-		     
-			if (isset($data)) //replace
-			{				
-			  $remaining = $length - $dataLength;			  
-			  
-			  if ($offset = $this->upd($dpc, $remaining, $data))		
-			  {
-					/*				    
-					if ($this->checkSpinLock($dpc)===false)
-						$this->env->cnf->_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 0:$dpc",'TYPE_DOG');		
-					*/
-					if ($this->writeSH($data, $offset))
-					{	
-						$this->savestate();
-						$this->env->cnf->_say("$dpc updated",'TYPE_LION');
-						_dump("SAVE\n\n\n\n" . $data);
-					}	
-			  }
-			  else
-			  {
-				  _dump("MEM-ERROR\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
-				  die($dpc . " (savedpcmem update remain page space: $remaining) error, increase extra space!" . PHP_EOL); 
-			  }
-			
-			}//if data			 
-	   }
-	   else { //write first time (append)
-	   
-			if (!$data) return false;	
-			_say($data,3);
-		
-			if ($offset = $this->set($dpc, $dataLength, $data))	
-			{
-				/*
-				if ($this->checkSpinLock($dpc)===false)
-					$this->env->cnf->_say(">>>>>>>>>>>>>>>>>>>>>>>>>>>spinlock 1:$dpc",'TYPE_DOG'); 
-				*/	
-				if ($this->writeSH("\0". $data ."\0", $offset))
-				{
-					_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
-					
-					$this->savestate();
-					$this->env->cnf->_say("$dpc saved",'TYPE_LION');
-					_dump("LOAD\n\n\n\n" . $data);
-				}
-			}
-			else
-			{		
-				_dump("MEM-ERROR\n$dpc\noffset: $offset\nlength: ".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
-				die($dpc . " (savedpcmem save offset:$offset) error, increase data space!" . PHP_EOL);		
-			}	
-			     
-	   }
-	   $this->env->cnf->_say("Data : " . $dataLength, 'TYPE_RAT');	   
-	   
-	   return ($data);
-	} 	
+		$a = md5($newData);		
+ 		$b = md5($invData);		
 	
-	public function save($dpc=null, &$data) {
+		$this->env->cnf->_say("md5:----" . $a . ':'. $b . '----', 'TYPE_LION');
+		if (strcmp($a, $b)!==0)
+			return true;
 		
-		return $this->savedpcmem($dpc, $data);
+		return false;
 	}	
-	
 	
 	//fetch shared mem page (empty spaces)
 	private function loaddpcmem($dpc) 
@@ -474,126 +458,310 @@ class mem
 	public function read($dpc=null) {
 		
 		return $this->getdpcmem($dpc);
-	}
+	}	
+
+	//save calls,urls etc into shared mem (server side)
+	private function savedpcmem($dpc, &$data) 
+	{
+	   $dataLength = strlen($data); 
+	   
+	   if (isset($this->dpc_addr[$dpc])) 
+	   {
+			//rewrite  
+			list($offset, $length, $free, $rlength) = $this->get($dpc);	
+		     
+			if (isset($data)) //replace
+			{				
+				$remaining = $length - $dataLength;			  
+			  
+				if (($offset = $this->upd($dpc, $remaining, $data)) &&		
+					($this->writeSH($data, $offset)))
+				{	
+					$this->env->cnf->_say("$dpc updated",'TYPE_LION');
+					_dump("SAVE\n\n\n\n" . $data);
+				}	
+				else
+				{
+					_dump("MEM-ERROR\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
+					die($dpc . " (savedpcmem update remain page space: $remaining) error, increase extra space!" . PHP_EOL); 
+				}
+			
+			}//if data			 
+	   }
+	   else { //write first time (append)
+	   
+			if (!$data) return false;	
+			_say($data,3);
+		
+			if (($offset = $this->set($dpc, $dataLength, $data)) &&
+			    ($this->writeSH("\0". $data ."\0", $offset)))
+			{
+				//save dump-tree for any use (phar creation etc)
+				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+					
+				$this->env->cnf->_say("$dpc saved",'TYPE_LION');
+				_dump("LOAD\n\n\n\n" . $data);
+			}
+			else
+			{		
+				_dump("MEM-ERROR\n$dpc\noffset: $offset\nlength: ".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
+				die($dpc . " (savedpcmem save offset:$offset) error, increase data space!" . PHP_EOL);		
+			}	     
+	   }
+	   
+	   $this->env->cnf->_say("Data : " . $dataLength, 'TYPE_RAT');	   
+	   return ($data);
+	} 	
 	
-	//main client dipatcher (prototype)
+	//server side
+	public function save($dpc=null, &$data) {
+		
+		return $this->savedpcmem($dpc, $data);
+	}	
+	
+	//save calls,urls etc into shared mem (client side)
 	private function getdpcmemc($dpc)
-	{	 	  
+	{	 	
+		$data = null;
+		
 		if ($this->exist($dpc))
 		{
 			list($offset, $length, $free, $rlength) = $this->get($dpc);
-			
+			$invdata = $this->readSH($dpc); //read mem data before
+
 			if ($offset >= $this->shmmax()) 
 			{
-				if (substr($dpc,0,7)==='select-') //PDO
-				{
-					if (!$this->env->scheduler->findschedule($dpc)) 
-					{
-						//update data
-					}
-					else
-						$data = null; //bypass and read	
-				}
-				elseif (substr($dpc,0,4)==='www.') //WWW 
-				{
-					if (!$this->env->scheduler->findschedule($dpc)) 
-					{
-						//update data
-					}
-					else
-						$data = null; //bypass and read
-				}
-				elseif (@is_readable($this->env->dpcpath . $dpc)) //FILE
-				{
-					if ($filediff) {
-						//update data
-					}	
-					else
-						$data = null; //bypass and read
-				}
-				else //VAR
-				{
-					$data = null ;//bypass and read
-				}
+				if (!$data = $this->_sqlselect($dpc, false))
+					if (!$data = $this->_wwwquery($dpc, false))
+						if (!$data = $this->_localfile($dpc, false, $rlength)) //rlenght = md5($invdata)
+							$data = $this->_variable($dpc, false);
+								//files comes as variables when no change=null val
 
-				if (isset($data)) 
-				{ 
-					if ($dataLength < $length) 
+				//update if data diff (scheduled data returns always null)		
+				if ((isset($data)) && ($upd = $this->md5diff($data, $invdata)))
+				{ 			
+					$dataLength = strlen($data); 
+					$remaining = $length - $dataLength;
+					
+					if (($offset = $this->upd($dpc, $remaining, $data)) &&	
+						($this->writeSH($data, $offset)))
 					{
-						//update data
-					}	
+						$this->env->cnf->_say("$dpc updated!",'TYPE_LION');
+						_dump("UPDATE\n\n\n\n" . $data);
+					}
 					else
 					{
-						_dump("MEM-ERROR\n$dpc\nremain page space: $remaining\nlength: ".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
-						die($dpc . " (getdpcmem update) error, increase extra space!" . PHP_EOL); 
+						_dump("MEM-ERROR\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
+						die($dpc . " (savedpcmem update remain page space: $remaining) error, increase extra space!" . PHP_EOL); 
 					}	
-				}
+					
+				}//if data and data diff
+				else
+					$data = $invdata;
 			}
-			//read mem
+			//else continue 
+			//$data = $this->readSH($dpc); //read at top
+			$isupdate = $upd ? ' updated ' : null;
+			$this->env->cnf->_say("read $isupdate $dpc :" . strlen($data), 'TYPE_RAT');
 		}
 		else //NEW
 		{ 
-			if (substr($dpc,0,7)==='select-') //PDO
-			{
-				if (!$this->env->scheduler->findschedule($dpc)) 
-				{
-				}
-			}
-			elseif (substr($dpc,0,4)==='www.') //WWW 
-			{
-				$data = (!$this->env->scheduler->findschedule($dpc)) ?
-						$this->env->utl->httpcl($dpc) : null; //bypass
-			}
-			elseif (is_readable($this->env->dpcpath . $dpc)) //FILE
-			{
-			}
-			else //new VAR
-			{
-				//new process
-			}
+			if (!$data = $this->_sqlselect($dpc, true))
+				if (!$data = $this->_wwwquery($dpc, true))
+					if (!$data = $this->_localfile($dpc, true, false))
+						if (!$data = $this->_variable($dpc, true))
+							return false;
 
-			if (!$data) return false;
-			
-			//write mem
-			if ($mempage < $memmax)	
+			//if (!$data) return false;	
+			_say($data,3);		
+		
+			$dataLength = strlen($data);		
+
+			if (($offset = $this->set($dpc, $dataLength, $data)) &&
+				($this->writeSH("\0". $data ."\0", $offset)))
 			{
+				//save dump-tree for any use (phar creation etc)
+				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+				
+				$this->env->cnf->_say("$dpc saved!",'TYPE_LION');
+				_dump("INSERT\n\n\n\n" . $data);
 			}
 			else
-			{	
+			{		
 				_dump("MEM-ERROR\n$dpc\noffset: $offset\nlength: ".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');		
-				die($dpc . " (getdpcmemc save offset:$offset) error, increase data space!" . PHP_EOL);			
+				die($dpc . " (getdpcmemc save offset:$offset) error, increase data space!" . PHP_EOL);
 			}	
+		
+			$this->env->cnf->_say("New $dpc : " . strlen($data), 'TYPE_RAT');	
 		}
 	  
 		return ($data);		
 	}
 	
-	//alias public
-	public function readC()
+	//client side (client side)
+	public function readC($dpc)
 	{
 		return $this->getdpcmemc($dpc);
-	}
-	
-	public function readSH($dpc) {
-		
-		return $this->read($dpc);
-		//return $this->env->shm->_shread($dpc);
-		//return $this->env->shm->readSafe($dpc); 
-	}	
-	
-	public function writeSH($data=null, $offset=null) {
-		
-		if ($this->env->shm->_shwrite($data, $offset))	
-		//if ($this->env->shm->writeSafe($dpc, $data)) //no /0	
-		{		
-			return true;//$this->savestate();
-		}
-		return false;
 	}		
 
+	//sql handler (client side)
+	private function _sqlselect($dpc, $new=false)
+	{
+		if (substr($dpc,0,7)!=='select-') return null;
+		   
+		if ($new)
+		{		
+			$data = json_encode($_data);
+			_say($data,3); //show new data				
+		}	
+		else
+		{		
+			if ((!$this->env->scheduler->findschedule($dpc)) /*&&
+				is_resource(self::$pdo)*/)
+			{
+			/*
+				$pdodpc = str_replace('-',' ',$dpc);
+				foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) 
+					$_data[] = $row;
+			*/
+				$_data = $this->env->pdoQuery($dpc);			
+				$data = json_encode($_data);
+			}
+			else
+				$data = null; //bypass
+		}
+
+		return $data;	
+	}
+
+	//www handler (client side)
+	private function _wwwquery($dpc, $new=false)
+	{
+		if (substr($dpc,0,4)!=='www.') return null;
+		   
+		$data = (!$this->env->scheduler->findschedule($dpc)) 
+				?
+				$this->env->utl->httpcl($dpc) : 
+				null; //bypass
+						
+		if ((!$data) && (!$new))
+		{
+			$this->env->cnf->_say('Scheduled data stream:' . $dpc, 'TYPE_LION');
+			_say($data,3);
+		}				
+		
+		return $data;		
+	}
+
+	//file handler (client side)
+	private function _localfile($dpc, $new=false, $rlength=false)
+	{
+		if (!is_readable($this->env->dpcpath . $dpc)) return null; 
+	
+		if ($new) 
+		{
+			//local storage
+			$data = $this->env->fs->_readPHP($this->env->dpcpath . $dpc); 			
+		}
+		else
+		{
+			//local storage reload ----------md5 !!! 
+			//if (strcmp(md5('$this->env->dpcpath . $dpc'), $rlength)!=0)	
+				
+			$sf = @filesize($this->env->dpcpath . $dpc);
+			$this->env->cnf->_say("Size:" . $rlength .':' . $sf, 'TYPE_RAT');
+			if ($rlength != $sf) {	
+				$data = $this->env->fs->_readPHP($this->env->dpcpath . $dpc); 
+				_say($data,3); 
+			}	
+			else
+				$data = null; //bypass and read			
+		}
+		
+		return $data;		
+	}	
+	
+	//var handler - process handler (client side)
+	private function _variable($dpc, $new=false)
+	{
+		$data = null;
+		//if () //VARIABLE
+		//{   
+			if ($new) //INSERT
+			{
+				//create var
+				//$this->env->cnf->_say($this->env->dpcpath . $dpc . ' not found!', 'TYPE_LION');	
+				
+				//MUST BE POOLED
+				if ($async = $this->env->proc->set($dpc) > 0) 
+				{
+					$this->env->cnf->_say('reading variable (async): ' . $dpc, 'TYPE_LION');
+					//..open client at async class
+					exec("start /D d:\github\phpdac7\bin agentds process");
+					//..data write
+					//re-save chain (remove)
+				}
+				else {	
+					$this->env->cnf->_say('reading variable (sync): ' . $dpc, 'TYPE_LION');
+					
+					//proceed at once
+					if ($dataNOWRITE = $this->env->proc->go()) {
+						//print_r($this->proc->getProcessStack());
+						//echo implode(',', $this->env->proc->getProcessChain()) . ' finished!' . PHP_EOL; 
+						$this->env->cnf->_say(implode(',', $this->env->proc->getProcessChain()) . ' finished', 'TYPE_LION');
+					}
+					/*
+					//test imo
+					$immX = Immutable::create()
+							->set('test', 'a string goes here')
+							->set('another', 100)
+							->arr([1,2,3,4,5,6])
+							->arr(['a' => 1, 'b' => 2])
+							->build();
+					echo (string) $immX;
+					
+					$immY = Immutable::create()
+							->set('anObject', $immX)
+							->build();
+					echo (string) $immY;
+					echo $immY->get('test'); // a string goes here
+					var_dump($immY->has('test')); // bool(true)
+					var_dump($immY->has('non-existent')); // bool(false)
+					echo $immY->getOrElse('test', 'some default text'); // a string goes here
+					echo $immY->getOrElse('non-existent', 'some default text'); // some default text
+					
+					$immZ = Immutable::with($immY)
+							->set('a story', 'This is where someone should write a story')
+							->setIntKey(300, 'My int indexed value')
+							->arr(['arr: int indexed', 'arr' => 'arr: assoc key becomes immutable key'])
+							->build();
+					echo (string) $immZ;
+					*/		
+				}
+				
+			
+				//open client to proceess(s) 
+				//-pool check and reply based on client response..
+				/*
+				$dataTEST = (new proc($this))
+							->set($dpc)
+							->go();
+				echo $dataTest . PHP_EOL;			
+				*/				
+			}
+			else
+			{
+				$this->env->cnf->_say('reading variable: '. $dpc, 'TYPE_BIRD');	
+				$data = null ;//bypass and read
+			}
+		//}		
+		
+		return $data;		
+	}	
+	
     private function close() 
     {
-		//@unlink("shm.id"); //NO DEL
+		//@unlink("shm.id"); //NO DEL NEED FILE
 		//$this->env->cnf->_say("Deleting state..!",'TYPE_LION'); 
 	  
 		return true;	

@@ -136,7 +136,11 @@ class dmn {
 		        $dmn->setEcho(0);//echo off
 				//header from 1st command still appear...must set client silence off				
 				$dmn->setSilence(1);//silence off...???
-		        $data = $this->env->getdpcmemc($this->env->utl->dehttpDpc($arguments[0]));
+				//OLD METHOD
+		        $data = $this->env->_main($this->env->utl->dehttpDpc($arguments[0]));
+				//NEW METHOD
+				//$data = $this->env->mem->readC($this->env->utl->dehttpDpc($arguments[0]));
+				
 		        $dmn->Println(trim($data));
                 return false;//and quit
                 break;					
