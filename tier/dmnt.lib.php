@@ -72,7 +72,7 @@ class dmnt {
 		$this->dmn->CommandAction ("system", array($this,"command_handler"));
 		$this->dmn->CommandAction ("batch", array($this,"command_handler"));
 	  
-		$this->dmn->CommandAction ("***", array($this,"tier_handler"));//handle everyting else...	  
+		$this->dmn->CommandAction ("***", array($this,"agent_handler"));//handle everyting else...	  
 	  									  
 	}							  
 	
@@ -263,7 +263,7 @@ class dmnt {
 		        break;	
 
 		case 'HTTP':
-		        $h = $this->env->httpcl($arguments[0],$arguments[1],$arguments[2]);
+		        $h = $this->env->utl->httpcl($arguments[0],$arguments[1],$arguments[2]);
 				$dmn->Println($h);
 				return true;
 		        break;					
@@ -293,7 +293,7 @@ class dmnt {
 	}  
    
 	//agent command dispatcher (all *** commands)
-	public function tier_handler($command, $arguments, $dmn) 
+	public function agent_handler($command, $arguments, $dmn) 
 	{	
 		//create command line from daemon			
 		$shell_command = $command . " " . implode(' ',$arguments);			
@@ -366,4 +366,4 @@ class dmnt {
 		return true;
 	} 		
 }
-?>	
+?>

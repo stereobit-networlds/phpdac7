@@ -8,16 +8,13 @@
 	define('_DACSTREAMCREP1_', '');
 	define('_DACSTREAMCREP2_', '');
 	define('_DACSTREAMCREP3_', '');
-	define('_DACSTREAMCREP0_', '');
-
-	require_once("tier/dmnt.lib.php");	
-	require_once("tier/memt.lib.php");
+	define('_DACSTREAMCREP0_', '');	
+		
 
 	function _say($str, $level=0, $crln=true) 
 	{
-	    global $glevel;
 	    $cr = $crln ? PHP_EOL : null;
-		if ($level<=$glevel)
+		if ($level <= GLEVEL)
 			echo ucfirst($str) . $cr;
 		
 		_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+');
@@ -39,7 +36,8 @@
 class tierds {
 
 	private $mem, $argbatch; 
-	public $dmn, $env, $agent, $active_agent, $active_o_agent; 
+	public $env, $dmn, $cnf, $utl;
+	public $agent, $active_agent, $active_o_agent; 
 	public $daemon_ip, $daemon_port, $daemon_type;	
   
 	public $resources, $timer, $scheduler;
@@ -57,7 +55,7 @@ class tierds {
 		
 		self::$pdo = null;
 		$this->verboseLevel = GLEVEL;	  
-		$this->agent = 'SH';//default		
+		$this->agent = 'SH';//default	
 
 		//argv1 is daemon type -param or batchfile .ash
 		$this->argbatch = (substr($argv[1],0,1)!='-') ? $argv[1].'.ash' : '';
@@ -90,7 +88,7 @@ class tierds {
 		self::$ldschemeS = "phpdac5://". ($argv[5] ? $argv[5] : '127.0.0.1') .":". ($argv[6] ? $argv[6] : '19123');	
 				
 		//REGISTER PHPAGN (client side,interconnections) protocol.			
-		require_once($this->ldscheme . "/agents/agnstreamc.lib.php"); 
+		require_once($this->ldscheme . "/kernel/sagnc.lib.php"); 
 		$phpdac_c = stream_wrapper_register("phpagn5","c_agnstream");
 		if (!$phpdac_c) 
 		{
@@ -101,7 +99,7 @@ class tierds {
 			_say("Client agent protocol registered!"); 	
 
 		//REGISTER PHPRES (client side,resources) protocol.		
-		require_once($this->ldscheme . "/agents/resstream.lib.php"); 
+		require_once($this->ldscheme . "/kernel/sresc.lib.php"); 
 		$phpdac_c = stream_wrapper_register("phpres5","c_resstream");
 		if (!$phpdac_c) 
 		{
@@ -112,6 +110,14 @@ class tierds {
 			_say("Client resource protocol registered!"); 
 				 				 
 
+		//INITIALIZE ENVIRONMENT
+		
+		require_once($this->ldscheme . "/kernel/cnf.lib.php");
+		$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
+		require_once($this->ldscheme . "/kernel/utils.lib.php");
+		$this->utl = new utils($this); //utils	
+		
+		require_once($this->ldscheme . "/tier/memt.lib.php");
 		$this->mem = new memt($this);
 		if ($this->mem->initialize())			
 		{		  
@@ -155,25 +161,24 @@ class tierds {
 			//print_r($this->get_agent('scheduler'));
 	  
 			//initialize task from already loaded agents (BEWARE TO LOAD THE DEFAULT AGENTS)
-			$this->get_agent('scheduler')->schedule('env.show_connections','every','20'); 
+			if ($s = $this->get_agent('scheduler'))
+				$s->schedule('env.show_connections','every','20'); 
   
 			//initialize GTk connector (for calling proc from this ($env) class ...purposes)
 			$this->gtk = ($argv[4]==='-gtk') ? true : false;
-	  
 			if ($this->gtk) 
 			{
-				require_once($this->ldscheme . "/agents/gtklib.lib.php");  		
+				require_once($this->ldscheme . "/tier/gtklib.lib.php");  		
 				_say("GTK connector loaded!");	  
 				$this->gtkds_conn = new gtkds_connector();
 		
 				//////////////////////////////////// gtk win
-				require_once($this->ldscheme . "/agents/gtkds.lib.php");
+				require_once($this->ldscheme . "/tier/gtkds.lib.php");
 				//new gtkds($this,0);//connector init is off ..bellow loaded!		
 			}
-	  
-			//require_once($this->ldscheme . "/system/daemon.lib.php");
-			//$this->startdaemon();  
+	    
 			//init daemon
+			require_once($this->ldscheme . "/tier/dmnt.lib.php");
 			if ($this->dmn = new dmnt($this, /*daemonize this*/
 								 $this->daemon_type,
 								 $this->daemon_ip,
@@ -198,6 +203,11 @@ class tierds {
 	public function _echo($msg) 
 	{
 		$this->dmn->Println($msg);
+	}
+	
+	public function show_connections($show=null,$dacserver=null)
+	{
+		return $this->dmn->show_connections($show,$dacserver);
 	}
 	
 	//reead file of agents to initialize
@@ -448,7 +458,7 @@ class tierds {
 			{
 				if ($s_agent = $mem->read(0,$length)) 
 				{
-					_say("getAgent ok:" . $length,1);
+					_say("getAgent [$agent] ok:" . $length,1);
 					
 					if (!$serialized) 
 					{
@@ -463,10 +473,10 @@ class tierds {
 					
 					return ($s_agent);
 				}
-				_say("getAgent read error:" . $length,1);		  
+				_say("getAgent [$agent] read error:" . $length,1);		  
 				return false;
 			}
-			_say("getAgent free error :" . $length,1);		  
+			_say("getAgent [$agent] free error :" . $length,1);		  
 			return false;
 		}
 		
@@ -819,138 +829,7 @@ class tierds {
             return;			   
 		
 	    shmop_delete($this->shm_id);
-	}
-	
-	public function httpcl($url=null, $user=null,$password=null) 
-	{
-		if (!$url) return null;
-		
-		//require_once($this->ldscheme . "tcp/sasl.lib.php");
-		//require_once($this->ldscheme . "tcp/httpclient.lib.php");		
-		//include at agents.ini
-		
-		$http=new httpclient;
-		$http->timeout=0;
-		$http->data_timeout=0;
-		$http->debug=0;//1
-		$http->html_debug=0;//1				
-		$http->user_agent="Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)";
-		$http->follow_redirect=0;
-		$http->prefer_curl=0;
-		//$user="info@e-basis.gr";
-		//$password="basis2012!@";
-		$realm="";       /* Authentication realm or domain      */
-		$workstation=""; /* Workstation for NTLM authentication */
-		$authentication=(strlen($user) ? UrlEncode($user).":".UrlEncode($password)."@" : "");
-				
-		$url="http://".$authentication.$url;//"www.php.net/";
-				
-		$error=$http->GetRequestArguments($url,$arguments);
-
-		if(strlen($realm))
-			$arguments["AuthRealm"]=$realm;
-
-		if(strlen($workstation))
-			$arguments["AuthWorkstation"]=$workstation;
-
-		$http->authentication_mechanism=""; // force a given authentication mechanism;
-		$arguments["Headers"]["Pragma"]="nocache";
-				
-		_say("Opening connection to: " . HtmlSpecialChars($arguments["HostName"]),1);
-		flush();
-		$error=$http->Open($arguments);
-				
-		if ($error=="") {
-			_say("Sending request for page: " . HtmlSpecialChars($arguments["RequestURI"]),1);
-			if(strlen($user))
-				_say("\nLogin:    ".$user."\nPassword: ".str_repeat("*",strlen($password)),2);
-			_say('',2);
-			flush();
-			$error=$http->SendRequest($arguments);
-			_say('',2);
-
-			if($error=="") {
-				_say("Request:\n\n".HtmlSpecialChars($http->request),2);
-				_say("Request headers:\n",2);
-				for(Reset($http->request_headers),$header=0;$header<count($http->request_headers);Next($http->request_headers),$header++)
-				{
-					$header_name=Key($http->request_headers);
-					if(GetType($http->request_headers[$header_name])=="array")
-					{
-						for($header_value=0;$header_value<count($http->request_headers[$header_name]);$header_value++)
-							_say($header_name.": ".$http->request_headers[$header_name][$header_value],2);
-					}
-					else
-						_say($header_name.": ".$http->request_headers[$header_name],2);
-				}
-				_say('',2);
-				flush();
-				
-				$headers=array();
-				$error=$http->ReadReplyHeaders($headers);
-				_say('',2);
-				if($error=="")
-				{
-					_say("Response status code:\n".$http->response_status,2);
-					switch($http->response_status)
-					{
-						case "301":
-						case "302":
-						case "303":
-						case "307":
-							_say(" (redirect to ".$headers["location"].")\nSet the follow_redirect variable to handle redirect responses automatically.",2);
-							break;
-					}
-					_say('');
-					_say("Response headers:\n",2);
-					for(Reset($headers),$header=0;$header<count($headers);Next($headers),$header++)
-					{
-						$header_name=Key($headers);
-						if(GetType($headers[$header_name])=="array")
-						{
-							for($header_value=0;$header_value<count($headers[$header_name]);$header_value++)
-								_say($header_name.": ".$headers[$header_name][$header_value],2);
-						}
-						else
-							_say($header_name.": ".$headers[$header_name],2);
-					}
-					_say('',2);
-					flush();
-					
-					//echo "Response body:\n\n";
-					/*You can read the whole reply body at once or
-					block by block to not exceed PHP memory limits.
-					*/
-					
-					$error = $http->ReadWholeReplyBody($body);
-					//if(strlen($error) == 0)
-						//echo HtmlSpecialChars($body);
-					
-					/*for(;;)
-					{
-						$error=$http->ReadReplyBody($body,1000);
-						if($error!="" || strlen($body)==0)
-							break;
-						//echo $body;//HtmlSpecialChars($body);
-						//return...
-					}*/
-
-					_say('',2);
-					//flush();
-				}
-			}
-			$http->Close();
-			
-		}
-		
-		if(strlen($error)) {
-			_say("Error: ".$error,1);
-			return null;	
-		}
-
-		return ($body);		
 	}	
 	
 }
-
 ?>

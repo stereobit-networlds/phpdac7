@@ -29,12 +29,15 @@ class pstack {
 	}
 	
 	protected static function pdoSQL($key, $sql=null) {
-		if (!$sql) return false;
+		if (!$sql) return ;// false;
 		
-		foreach (self::$pdo->query($sql, PDO::FETCH_ASSOC) as $res) 
-			if ($ret = $res[$key]) return ($ret);	
-	
-        return false;	
+		//if (is_resource(self::$pdo)) 
+		if (self::$pdo)		
+		{
+			foreach (self::$pdo->query($sql, PDO::FETCH_ASSOC) as $res) 
+				if ($ret = $res[$key]) return ($ret);	
+		}		
+        //return false;	
 	}		
 	
 	protected function stackCalc($stack=null) {

@@ -119,7 +119,9 @@ class scheduler {
 	   //echo $agent,"...\n";
 	   //in case of 'env' execute from env'
 	   if (($agent=='env') && (method_exists($this->env,$cmd))) {
-
+		   
+			$this->env->cnf->_say("$agent.". $cmd, 'TYPE_LION');
+			
 			$ret = $this->env->$cmd($p1,$p2,$p3); 
 			$this->env->dmn->Println ($ret);
 
@@ -131,10 +133,12 @@ class scheduler {
 			return ($entry['freq']==0) ? 0 : $entry;//once or new array element 			   
 	   }
 	   else {
-			$o_agent = $this->env->get_agent($agent);	 
+			$o_agent = $this->env->get_agent($agent);	
 			//print_r($o_agent);
 			if ((is_object($o_agent)) && (method_exists($o_agent,$cmd))) {   
-
+			
+				$this->env->cnf->_say("$agent.". $cmd, 'TYPE_LION');
+				
 				if (method_exists($o_agent,$cmd)) 
 					$ret = $o_agent->$cmd($p1,$p2,$p3);
 				else
@@ -152,8 +156,10 @@ class scheduler {
 			else {
 				//dmn dispatch, batch files, commands, etc
 				$cmd = str_replace("\\"," ",$entry['agent']);
+				$this->env->cnf->_say($entry['agent'] .".". $cmd, 'TYPE_LION');				
+				
 				$this->env->dmn->dispatch(str_replace("\\"," ",$entry['agent']),null); 
-
+								
 				$entry['lasttime'] = $now;
 				$entry['counter'] = $entry['counter']+1;
 		  

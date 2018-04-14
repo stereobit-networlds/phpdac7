@@ -5,6 +5,7 @@ define ("GLEVEL", 1); 		//main messaging level
 define ("KERNELVERBOSE", 1);//override daemon VERBOSE_LEVEL
 	
 require_once("system/timer.lib.php");
+require_once("kernel/resstream.lib.php");
 require_once("kernel/cnf.lib.php");
 require_once("kernel/mem.lib.php");
 require_once("kernel/shm.lib.php");
@@ -23,7 +24,7 @@ require_once("agents/scheduler.lib.php");
 	function _say($str, $level=0, $crln=true) 
 	{
 	    $cr = $crln ? PHP_EOL : null;
-		if ($level<=GLEVEL)
+		if ($level <= GLEVEL)
 			echo ucfirst($str) . $cr;
 		
 		_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+','/dumpsrv-'.$_SERVER['COMPUTERNAME'].'.log');
@@ -74,8 +75,7 @@ class kernelv2 {
 	  	  
 		$this->cnf->_say("Daemon repository at $this->daemon_ip:$this->daemon_port", 'TYPE_LION');
 	  
-		//REGISTER PHPRES (client side,resources) 		
-		require_once("agents/resstream.lib.php"); 
+		//REGISTER PHPRES (client side,resources) 		 
 		$phpdac_c = stream_wrapper_register("phpres5","c_resstream");
 		if (!$phpdac_c) $this->cnf->_say("Client resource protocol failed to registered!" , 'TYPE_LION');
 					else $this->cnf->_say("Client resource protocol registered!", 'TYPE_RAT'); 	  
@@ -551,11 +551,20 @@ class kernelv2 {
 
 	public function pdoQuery($dpc)
 	{
-		$pdodpc = str_replace('-',' ',$dpc);
-		foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) 
-			$_data[] = $row;
+		if (!is_resource(self::$pdo))
+			self::initPDO(); //re-connect
+		
+		//else
+		//if (is_resource(self::$pdo)) 
+		if (self::$pdo)	
+		{	
+			$pdodpc = str_replace('-',' ',$dpc);
+			foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) 
+				$_data[] = $row;
 			
-		return $_data;	
+			return $_data;	
+		}
+		//return ;
 	}
 
 	/* NOTICE :

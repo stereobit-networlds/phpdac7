@@ -443,7 +443,7 @@ class mem
 				$this->dpc_length = (array) unserialize($entries[2]);
 				$this->dpc_free = (array) unserialize($entries[3]);
 				$this->dpc_gc = (array) unserialize($entries[4]);
-				$this->memlength = $entries[4];
+				$this->memlength = $entries[5];
 
 				$this->env->cnf->_say("shm_max:" . $entries[0], 'TYPE_LION');
 				return ($entries[0]);
@@ -873,7 +873,8 @@ class mem
 							->arr(['arr: int indexed', 'arr' => 'arr: assoc key becomes immutable key'])
 							->build();
 					echo (string) $immZ;
-					*/		
+					*/
+					//return 1;	
 				}
 				
 			

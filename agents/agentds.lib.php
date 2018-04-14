@@ -54,7 +54,7 @@ class agentds {
 	var $echoLevel, $ldscheme, $argbatch;
 	
 	public static $ldschemeS;  	
-	public static $pdo;
+	public static $pdo, $cnf;
 
 	function __construct() { 
 		global $dh, $dp;
@@ -63,7 +63,7 @@ class agentds {
 		//print_r($argv);
 		
 		self::$pdo = null;
-	  
+
 		$this->shm_id = null;
 		$this->shm_max = 1024 * 100 * 100;
 		$this->ipcKey = null;
@@ -110,9 +110,8 @@ class agentds {
 		$this->ldscheme = "phpdac5://{$this->phpdac_ip}:{$this->phpdac_port}";
 		self::$ldschemeS = "phpdac5://". ($argv[5] ? $argv[5] : '127.0.0.1') .":". ($argv[6] ? $argv[6] : '19123');	
 				
-		//REGISTER PHPAGN (client side,interconnections) protocol.
-		//require_once("agents/agnstreamc.lib.php");			
-		require_once($this->ldscheme . "/agents/agnstreamc.lib.php"); 
+		//REGISTER PHPAGN (client side,interconnections) protocol.			
+		require_once($this->ldscheme . "/kernel/sagnc.lib.php"); 
 		$phpdac_c = stream_wrapper_register("phpagn5","c_agnstream");
 		if (!$phpdac_c) 
 		{
@@ -122,9 +121,8 @@ class agentds {
 		else 
 			_say("Client agent protocol registered!"); 	
 
-		//REGISTER PHPRES (client side,resources) protocol.
-		//require_once("agents/resstream.lib.php");			
-		require_once($this->ldscheme . "/agents/resstream.lib.php"); 
+		//REGISTER PHPRES (client side,resources) protocol.		
+		require_once($this->ldscheme . "/kernel/sresc.lib.php"); 
 		$phpdac_c = stream_wrapper_register("phpres5","c_resstream");
 		if (!$phpdac_c) 
 		{
@@ -135,6 +133,10 @@ class agentds {
 			_say("Client resource protocol registered!"); 
 				 				 
 		//INITIALIZE ENVIRONMENT
+		
+		require_once($this->ldscheme . "/kernel/cnf.lib.php");
+		$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);
+		
 		$pathname = null;//$argv[0]	!!
 		$this->ipcKey = $this->_ftok($pathname, 's'); //create ipc Key
 		//start mem	  
@@ -187,12 +189,12 @@ class agentds {
 	  
 			if ($this->gtk) 
 			{
-				require_once($this->ldscheme . "/agents/gtklib.lib.php");  		
+				require_once($this->ldscheme . "/tier/gtklib.lib.php");  		
 				_say("GTK connector loaded!");	  
 				$this->gtkds_conn = new gtkds_connector();
 		
 				//////////////////////////////////// gtk win
-				require_once($this->ldscheme . "/agents/gtkds.lib.php");
+				require_once($this->ldscheme . "/tier/gtkds.lib.php");
 				//new gtkds($this,0);//connector init is off ..bellow loaded!		
 			}
 	  
