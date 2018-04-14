@@ -1,7 +1,4 @@
 <?php
-if (!extension_loaded('shmop')) dl('php_shmop.dll');		
-if (!extension_loaded('sync')) 	dl('php_sync.dll');	
-
 class memt 
 {	
 	private $env;
@@ -16,6 +13,8 @@ class memt
 	public function __construct(& $env=null) 
 	{	
 		$this->env = $env;
+		if (!extension_loaded('shmop')) dl('php_shmop.dll');		
+		if (!extension_loaded('sync')) 	dl('php_sync.dll');			
 		
 		$this->shm_id = null;
 		$this->shm_max = 1024 * 100 * 100;
@@ -47,7 +46,7 @@ class memt
 		
 		$iKey = $this->ipcKey ? $this->ipcKey : 0xff9;	
 		
-		_say("Start",1);
+		_say("Start mem manager " . $this->agn_mem_type, 1);
 		if ($this->agn_mem_type==2) 
 			return true;
 		
@@ -57,7 +56,7 @@ class memt
 		// Create shared memory block with system id if 0xff3
 		$space = $this->shm_max + $this->dataspace;					
 		
-		_say("Allocate shared memory segment... $space bytes",2);
+		_say("Allocate memory segment... $space bytes",2);
 		$this->shm_id = shmop_open($iKey, "c", 0644, $space);
 		
 		if ($this->shm_id) 
@@ -93,7 +92,7 @@ class memt
 			$this->shm_id = shmop_open(0xfff, "c", 0644, $this->shm_max);
 			if(!$this->shm_id) 
 			{ 
-				_say("Couldn't create shared memory segment.",1);
+				_say("Couldn't create memory segment.",1);
 				_say("System Halted.",1);
 				die();
 			}
@@ -109,7 +108,7 @@ class memt
 	  
 			if(!$this->agn_shm_id) 
 			{ 
-				_say("Couldn't create shared memory segment.",1);
+				_say("Couldn't create memory segment.",1);
 				_say("System Halted.",1);
 				die();
 			}  
@@ -169,11 +168,11 @@ class memt
 				$this->agn_addr[$agent] = &$mem;
 				$this->agn_length[$agent] = $a_size;
 				$this->agn_free[$agent] = $this->extra_space - $a_size;
-				_say("addmemagn: $agent start". ':'.$a_size,1);
+				_say("addmemagn: [$agent] start". ':'.$a_size,1);
 				return true;
 			}
 			
-			_say("addmemagn: $agent failed". ':'.$a_size,1);
+			_say("addmemagn: [$agent] failed". ':'.$a_size,1);
 			return false;
 			/*
 			$a_index = $this->getAgnOffset();
@@ -204,7 +203,7 @@ class memt
 			//extend agent info table
 			$this->agn_addr[$agent] = $a_index;			
 			$this->agn_length[$agent] = $a_size;	
-			_say("New $agent ". $a_index.':'.$a_size,1);
+			_say("New [$agent] ". $a_index.':'.$a_size,1);
 			//var_dump($this->agn_addr);			
 			
 			$shm_max = $a_index + $a_size;
@@ -212,13 +211,13 @@ class memt
 			  
 			//extend and add the new agent at sh mem
 			if ($this->agn_shm_id) { 
-				_say("Close shared memory segment",2);	  
+				_say("Close memory segment",2);	  
 				$this->closememagn();	 
-				_say("Re-allocate shared memory segment",2);
+				_say("Re-allocate memory segment",2);
 				$this->openmemagn($this->shared_buffer); 	  
 			}
 			else {
-				_say("Allocate shared memory segment",2);
+				_say("Allocate memory segment",2);
 				$this->openmemagn($this->shared_buffer); 	  	  
 			}			
 		}	
@@ -229,7 +228,7 @@ class memt
 			//extend agent info table
 			$this->agn_addr[$agent] = $a_index;			
 			$this->agn_length[$agent] = $a_size;	
-			_say("New $agent ". $a_index.':'.$a_size,1);
+			_say("New [$agent] ". $a_index.':'.$a_size,1);
 			//var_dump($this->agn_addr);			
 			
 			$shm_max = $a_index + $a_size;
@@ -277,14 +276,14 @@ class memt
 					//$this->agn_addr[$agent] = &$mem;
 					$this->agn_length[$agent] = $dataLength;
 					$this->agn_free[$agent] = $this->extra_space - $datalength;
-					_say("updatememagn: $agent modified". ':'.$dataLength,1);
+					_say("updatememagn: [$agent] modified". ':'.$dataLength,1);
 					return true;
 				}
 			
-				_say("updatememagn: $agent failed to modified". ':'.$dataLength,1);
+				_say("updatememagn: [$agent] failed to modified". ':'.$dataLength,1);
 				return false;
 			}			
-			_say("updatememagn: $agent length error". ':'.$dataLength,1);
+			_say("updatememagn: [$agent] length error". ':'.$dataLength,1);
 			return false;
 		}			
 		else //1,0
@@ -344,10 +343,10 @@ class memt
 			if ($mem->write(str_repeat(' ',$this->extra_space),0)) 
 			{
 				$this->agn_free[$agent] = -1;
-				_say("Remove ". $agent.'>'.':'.$length,1);		  
+				_say("Remove [$agent] " . $length,1);		  
 				return true;
 			}
-			_say("Remove ". $agent.'>'.':'.$length,1);		  
+			_say("Remove [$agent] ". $length,1);		  
 			return false;
 	  
 		}	
@@ -364,7 +363,7 @@ class memt
 		
 			if (!shmop_write($this->agn_shm_id,$deleted_agent,$a_index)) 
 			{
-				_say("[$agent] Couldn't mark shared memory block for writing.");
+				_say("[$agent] Couldn't mark memory block for writing.");
 				return false;
 			} 
 			$this->cleanmemagn();	
@@ -452,6 +451,13 @@ class memt
 		}	
 	}	
 	
+    public function clean() 
+    {
+		$this->cleanmemagn(); //final	
+		
+		return true;	
+    }	
+	
 	private function cleanmemagn() 
 	{
 		if ($this->agn_mem_type==2) 
@@ -503,6 +509,11 @@ class memt
 	    }
 	}	
 	
+	public function close()
+	{
+		return $this->closememagn();
+	}	
+	
 	private function closememagn() 
 	{
 		if ($this->agn_mem_type==2) 
@@ -514,7 +525,7 @@ class memt
 			if (!$this->agn_shm_id) return -1;
 	  
 			if(!shmop_delete($this->agn_shm_id)) {
-				_say("Couldn't mark shared memory block for deletion.");
+				_say("Couldn't mark memory block for deletion.");
 			}	  
 	  
 			shmop_close($this->agn_shm_id);	
@@ -530,6 +541,13 @@ class memt
 		//echo "Ok!\n";   
 	}
 
+	
+    public function stop() 
+    {
+		$this->stopmemagn(); //final	
+		return true;	
+    }
+	
     //if ($this->agn_mem_type==2) 
     private function stopmemagn() 
     { 
@@ -538,7 +556,7 @@ class memt
 	
       if (!shmop_delete($this->shm_id)) 
 	  {
-        _say("Couldn't mark shared memory block for deletion",1);
+        _say("Couldn't mark memory block for deletion",1);
 		return false;
       }	  
 	  shmop_close($this->shm_id);	
@@ -584,15 +602,7 @@ class memt
 		$offset += $zeros; //segments x 2		   
 		return ($offset); //+1 into calling function
 	}	
-	
-	
-
-    private function close() 
-    {
-		$this->stopmemagn(); //final	
 		
-		return true;	
-    }	
 	
 	private function _ftok($pathname, $proj_id) 
 	{
@@ -609,7 +619,7 @@ class memt
 	//public function free()	
 	public function __destruct() 
 	{		
-	    $this->close();
+	    $this->stop();
 
 		return true;	
 	}		

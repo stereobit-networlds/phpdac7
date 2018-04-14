@@ -5,7 +5,7 @@ define ("GLEVEL", 1); 		//main messaging level
 define ("KERNELVERBOSE", 1);//override daemon VERBOSE_LEVEL
 	
 require_once("system/timer.lib.php");
-require_once("kernel/resstream.lib.php");
+require_once("kernel/sresc.lib.php");
 require_once("kernel/cnf.lib.php");
 require_once("kernel/mem.lib.php");
 require_once("kernel/shm.lib.php");
@@ -486,6 +486,15 @@ class kernelv2 {
 		return true;
     } 
 			
+	//call from mem when variable asked async
+	public function openClient($batch=false, $var=false)
+	{
+		$cwd = getcwd();
+		//exec("start /D d:\github\phpdac7\bin agentds $batch"); //process
+		exec("start /D $cwd\\tier tier $batch"); 
+		
+		return true;
+	}
 	
 	//PRINTER
 	
@@ -670,7 +679,7 @@ class kernelv2 {
 		unset($this->shm); //destruct
 		unset($this->fs); //destruct
 		unset($this->utl); //destruct
-		unset($this->ccnf); //destruct
+		unset($this->cnf); //destruct
 		
 		//unset(self::$pdo); //err, self destruct
 	}	

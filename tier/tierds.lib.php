@@ -35,14 +35,14 @@
    
 class tierds {
 
-	private $mem, $argbatch; 
+	private $mem; 
 	public $env, $dmn, $cnf, $utl;
 	public $agent, $active_agent, $active_o_agent; 
 	public $daemon_ip, $daemon_port, $daemon_type;	
   
 	public $resources, $timer, $scheduler;
 	public $gtk, $gtkds_conn, $window, $agentbox;  
-	public $ldscheme, $echoLevel, $verboseLevel;//, $promptString;
+	public $ldscheme, $verboseLevel, $argbatch;
 	
 	public static $ldschemeS;  	
 	public static $pdo;
@@ -63,7 +63,7 @@ class tierds {
 		$this->daemon_type = (substr($argv[1],0,1)=='-') ? substr($argv[1],1) : ''; 
 		$this->daemon_ip = $argv[2] ? $argv[2] : '127.0.0.1';//$ip;//'192.168.4.203';
 		$this->daemon_port = $argv[3] ? $argv[3] : '19125';//$port;//19123;
-		_say("Phpagn5 client at $this->daemon_ip:$this->daemon_port");	  
+		//!!!_say("Phpagn5 client at $this->daemon_ip:$this->daemon_port");	  
 	  
 		//dac server	
 		$this->phpdac_ip = $argv[5] ? $argv[5] : '127.0.0.1';//$dacip;
@@ -74,15 +74,14 @@ class tierds {
 		$dh = $this->phpdac_ip;  //global inside dacstreamc7 for gc
 		$dp = $this->phpdac_port;//global inside dacstreamc7 for gc
 		require_once("system/dacstreamc7.lib.php");			
-		//require_once($this->ldscheme . "/system/dacstreamc.lib.php"); //not yet
 		$phpdac_c = stream_wrapper_register("phpdac5","c_dacstream");
 		if (!$phpdac_c) 
 		{
 			_say("Client dac protocol failed to registered!");
 			die();
 		}	  
-		else 
-			_say("Client dac protocol registered!");
+		//else 
+			//_say("Client dac protocol registered!");
 	  
 		$this->ldscheme = "phpdac5://{$this->phpdac_ip}:{$this->phpdac_port}";
 		self::$ldschemeS = "phpdac5://". ($argv[5] ? $argv[5] : '127.0.0.1') .":". ($argv[6] ? $argv[6] : '19123');	
@@ -93,10 +92,10 @@ class tierds {
 		if (!$phpdac_c) 
 		{
 			_say("Client agent protocol failed to registered!");
-			die();
+			//die();
 		}	  
-		else 
-			_say("Client agent protocol registered!"); 	
+		//else 
+			//_say("Client agent protocol registered!"); 	
 
 		//REGISTER PHPRES (client side,resources) protocol.		
 		require_once($this->ldscheme . "/kernel/sresc.lib.php"); 
@@ -106,21 +105,25 @@ class tierds {
 			_say("Client resource protocol failed to registered!");
 			die();
 		}	  
-		else 
-			_say("Client resource protocol registered!"); 
+		//else 
+			//_say("Client resource protocol registered!"); 
 				 				 
 
 		//INITIALIZE ENVIRONMENT
 		
 		require_once($this->ldscheme . "/kernel/cnf.lib.php");
 		$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
+		$this->cnf->_say('Load conf', 'TYPE_LION');
 		require_once($this->ldscheme . "/kernel/utils.lib.php");
 		$this->utl = new utils($this); //utils	
+		$this->cnf->_say('Load utils', 'TYPE_LION');
 		
 		require_once($this->ldscheme . "/tier/memt.lib.php");
 		$this->mem = new memt($this);
 		if ($this->mem->initialize())			
-		{		  
+		{	
+			$this->mem->open();
+
 			//clear log
 			@unlink('dumpagn-'.$_SERVER['COMPUTERNAME'].'.log');
 		  
@@ -132,15 +135,12 @@ class tierds {
 			$this->env['host'] = $_SERVER['REMOTE_ADDR'];  
 			//var_dump($this->env);	
 			//var_dump($_SERVER);
-
-			/*$this->promptString = 'phpagn5>';	
-			$this->echoLevel = 1;     	*/  
 	  
 			//INITIALIZE AGENTS
 			$this->active_agent = null;
 			$this->active_o_agent = null;	
 	  
-			$this->init_agents($this->phpdac_ip,$this->phpdac_port);
+			$this->init_agents();
 	  
 			/* LOADED AS AGENTS...removed from agents.exe as libs include
 			$this->timer = new timer;	
@@ -154,7 +154,10 @@ class tierds {
 			//init printer	 
 			$this->initPrinter();
 		    //init db
-		    $this->initPDO();	//serialize err 1250 (see inside process)		
+			self::$pdo = null;	//serialize err 1250 (see inside process)		
+			if (self::initPDO())
+				$this->cnf->_say("PDO connection: ok!" , 'TYPE_IRON');
+
 						  
 			//(starting at scheduler construction)
 			//register_tick_function(array($this->get_agent('scheduler'),"checkschedules"),true);	  
@@ -168,12 +171,12 @@ class tierds {
 			$this->gtk = ($argv[4]==='-gtk') ? true : false;
 			if ($this->gtk) 
 			{
-				require_once($this->ldscheme . "/tier/gtklib.lib.php");  		
-				_say("GTK connector loaded!");	  
+				require($this->ldscheme . "/tier/gtklib.lib.php");  			  
+				$this->cnf->_say("GTK connector loaded!", 'TYPE_LION');
 				$this->gtkds_conn = new gtkds_connector();
 		
 				//////////////////////////////////// gtk win
-				require_once($this->ldscheme . "/tier/gtkds.lib.php");
+				require($this->ldscheme . "/tier/gtkds.lib.php");
 				//new gtkds($this,0);//connector init is off ..bellow loaded!		
 			}
 	    
@@ -186,8 +189,9 @@ class tierds {
 			{
 				//$this->dmn->RegisterAction(array(&$this,'timer'));
 	   
-				//dispatch batch
-				$this->exebatchfile($this->argbatch, true);
+				//dispatch batch (in dmnt)
+				//$this->exebatchfile($this->argbatch, true);
+				
 				//listen
 				$this->dmn->listen(1); 				
 			}	
@@ -211,37 +215,30 @@ class tierds {
 	}
 	
 	//reead file of agents to initialize
-	private function init_agents($ip,$port) 
-	{   
-	   $this->mem->open();    
+	private function init_agents() 
+	{    
+	   $f = $this->ldscheme . "/tier/tierds.ini";			
+	   $this->cnf->_say('Init agents file: ' . $f, 'TYPE_LION');
 	   
-       _say('Init agents file: ' . getcwd() . "/tierds.ini",1); 
-       if (!is_file(getcwd() ."/tierds.ini")) 
-		   return -1;   
-		  
-       $code = @file_get_contents(getcwd() . "/tierds.ini");
-	   
-	   if ($file = explode("\n",$code)) 
+	   $code = @file_get_contents($f);
+	   if (isset($code))
 	   {
+		    $file = explode("\n",$code);
+		   
 			//clean code by nulls and commends
 			foreach ($file as $num=>$line) {
-			  $trimedline = trim($line);
-		      if (($trimedline) &&       //empty line			  
-			      ($trimedline[0]!="#")) //comment  
-			  {        
-				 $lines[] = $trimedline;
-			  }
+				$trimedline = trim($line);
+				if (($trimedline) && ($trimedline[0]!="#")) //comment          
+					$lines[] = $trimedline;
 			}
+			
 			//print_r($lines);
-			//one line may have more than one cmds sep by ;
-			$toktext = implode("",$lines);
-			//tokenize
-			$token = explode(";",$toktext);		
-
-	        //then...read tokens  			
+			$toktext = implode("",$lines); //one line may have more than one cmds sep by ;
+			$token = explode(";",$toktext);	//tokenize	  			
 	        foreach ($token as $tid=>$tcmd) 
 			{  
-			   $part = explode(' ',$tcmd);
+			   $part = explode(' ', $tcmd);
+			   
 			   switch ($part[0]) {	
 			   
 			     case 'system':	//run system cmds
@@ -269,9 +266,6 @@ class tierds {
 				 default      : //create agents  
 			  		            if ($part[0]) 
 								{
-								  //$includer = "phpdac5://$ip:$port/" . str_replace(".","/",trim($part[0])) . "." . 'dpc' . ".php";
-								  //$this->load_agent($includer,$part[0]);
-								  
 								  $name = explode(".",trim($part[0]));
 								  $this->create_agent($name[1],$name[0]);//$part[1]);-RESIDENT disbaled
 								} 
@@ -279,9 +273,10 @@ class tierds {
 			   }
 			   $i+=1;
 	        }	 
+			return true;
 	   }
 	   
-	   return true;
+	   return false;
 	}  
    
 	public function create_agent($agent,$domain=null,$include_ip=null,$as_name=null,$type='dpc',$includeonly=false) 
@@ -298,13 +293,13 @@ class tierds {
 		}	  
 	  
 		if (isset($include_ip))
-			require("phpdac5://$include_ip:$this->phpdac_port" . "/$dpc/$agent" . '.'.$type.'.php');    
+			require("phpdac5://$include_ip:". $this->phpdac_port . "/$dpc/$agent" .'.'. $type.'.php');    
 		else 
-			require($this->ldscheme . "/$dpc/$agent" . '.'.$type.'.php');    
+			require($this->ldscheme . "/$dpc/$agent" . '.'. $type.'.php');    
 	  
 		if (($type=='lib') && ($includeonly)) 
 		{
-			_say('include library: '.$agent);
+			$this->cnf->_say('include library: '.$agent, 'TYPE_LION');
 			return true;
 		}	  
 	  
@@ -323,11 +318,11 @@ class tierds {
 					if (isset($as_name)) 
 					{
 						$this->mem->add($as_name,$s_agent);
-						_say("Create agent:$agent as $as_name");//,0,false);//\n";			
+						$this->cnf->_say("Create agent [$agent] as $as_name", 'TYPE_LION');
 					}
 					else {
 						$this->mem->add($agent,$s_agent);
-						_say("Create agent:$agent");//,0,false);//,"\n";
+						$this->cnf->_say("Create agent [$agent]", 'TYPE_LION');
 					}  
  
 					//var_dump($this->agn_addr);
@@ -337,13 +332,13 @@ class tierds {
 					return true;
 				}
 				else {
-					_say('loading agent ..'.$agent."..failed!");
+					$this->cnf->_say("loading agent [$agent] failed!", 'TYPE_LION');
 					//return false;		  
 				}
 			}
 			catch (Exception $e) {
 				//serialize err !!
-				_say("Agent ($agent) failed to initialize");
+				$this->cnf->_say("Agent [$agent] failed to initialize", 'TYPE_LION');
 			} 
 		}
 		//echo 'failed agent ..',$agent,"\n";
@@ -362,18 +357,18 @@ class tierds {
 		  $o_agent->destroy();
 		
 	      unset($this->mem->agn_attr[$agent]);//RESIDENT ATTRIBUTE
-	      _say("[$agent] Destroyed");
+	      $this->cnf->_say("[$agent] Destroyed", 'TYPE_LION');
 		  
 		  return true;
 	    }	
 	    else 
 		{
-	      _say("[$agent] NOT destroyed!");			
+	      $this->cnf->_say("[$agent] NOT destroyed!", 'TYPE_LION');			
 		  return false;
 	    }	
 	  }
 	  else
-	    _say("Invalid object or activated!");
+	    $this->cnf->_say("Invalid object or agent is active!", 'TYPE_LION');
 	}
    
 	//update the object data in shared mem
@@ -393,13 +388,13 @@ class tierds {
 				{
 					$this->mem->agn_length[$agent] = strlen($s_agent);
 					$this->mem->agn_free[$agent] = $this->mem->extra_space - strlen($s_agent);
-					_say("update Agent ok:" . $length,1);	
+					$this->cnf->_say("update agent [$agent] ok:" . $length, 'TYPE_LION');	
 					return true;		
 				}
-				_say("update write failed:" . $length,1);	
+				$this->cnf->_say("update write [$agent] failed:" . $length, 'TYPE_LION');	
 				return false;						
 			}	
-			_say("update Agent failed:" . $length,1);
+			$this->cnf->_say("update agent [$agent] failed:" . $length, 'TYPE_LION');
 			return false;
 		}
 		//var_dump($this->agn_addr);
@@ -431,13 +426,13 @@ class tierds {
 				if ($removed) 
 				{		  
 					$this->mem->add($agent,$s_agent);
-					_say('Update agent:'.$agent,1);			
+					$this->cnf->_say("Update agent [$agent]", 'TYPE_LION');			
 				}
 				else
-					_say('Update agent:'.$agent."..failed!",1);
+					$this->cnf->_say("Update agent [$agent] failed!", 'TYPE_LION');
 			}
 			else
-				_say('Update agent:'.$agent."..not neccesery!",2);	 
+				$this->cnf->_say("Update agent [$agent] not neccesery!", 'TYPE_LION');	 
 	  }
 	  
 	  //var_dump($this->agn_addr);
@@ -458,7 +453,7 @@ class tierds {
 			{
 				if ($s_agent = $mem->read(0,$length)) 
 				{
-					_say("getAgent [$agent] ok:" . $length,1);
+					$this->cnf->_say("getAgent [$agent] ok:" . $length, 'TYPE_LION');
 					
 					if (!$serialized) 
 					{
@@ -473,10 +468,10 @@ class tierds {
 					
 					return ($s_agent);
 				}
-				_say("getAgent [$agent] read error:" . $length,1);		  
+				$this->cnf->_say("getAgent [$agent] read error:" . $length, 'TYPE_LION');		  
 				return false;
 			}
-			_say("getAgent [$agent] free error :" . $length,1);		  
+			$this->cnf->_say("getAgent [$agent] free error " . $length, 'TYPE_LION');		  
 			return false;
 		}
 		
@@ -552,7 +547,7 @@ class tierds {
 			$this->active_o_agent = $o_agent;
 			//var_dump(get_class_methods($this->active_o_agent));
 			$this->active_agent = $agent;
-			$daemon->changePrompt($agent.'>');
+			$daemon->changePrompt($agent . '>');
 		
 			$ret = implode(".",get_class_methods($this->active_o_agent)) . "\n";
 	    }
@@ -616,10 +611,10 @@ class tierds {
 			//MUST BE INCLUDED TO UNSERIALZE OBJECTS
 			if (!isset($include)) 
 			{
-				$include = (isset($this->phpdac_ip)) ?
+				$inc = (isset($this->phpdac_ip)) ?
 							$this->phpdac_ip : $from;
 			}   
-			require("phpdac5://$include:19123/" . "agents/$agent.dpc.php");
+			require("phpdac5://$inc:{$this->phpdac_port}/" . "agents/$agent.dpc.php");
 	  	  
 			$o_agent = unserialize($s_agent);	  
       
@@ -687,6 +682,8 @@ class tierds {
    
 	private function free_agents() 
 	{
+		$this->mem->close();
+		
 		if ($this->gtk) 
 		{
 			$this->gtkds_conn->set_async_code("
@@ -696,7 +693,6 @@ class tierds {
 				");		      
 		} 
 		
-		$this->mem->closememagn();
 		return true;
    }
    
@@ -712,11 +708,12 @@ class tierds {
 			printer_start_doc($pr, $doctitle);	  
 			printer_write($pr,$message."\n\r");  	 
 			//printer_end_doc($pr, $doctitle); //double print 0 bytes when enabled !!!!
-			_say($message,1);
+			
+			$this->cnf->_say($message, 'TYPE_LION');
 			return true;
 		}
-	  
-		_say("printing error!",1);  
+	   
+		$this->cnf->_say("Priniting error!", 'TYPE_LION');
 		return false;
 	}
 
@@ -731,10 +728,11 @@ class tierds {
 			{
 				printer_set_option($printout, PRINTER_MODE, 'RAW'); 
 				$this->get_agent('resources')->set_resource($printer,$printout);
-				_say("printer:" . $printer . " connected.",1);
+				
+				$this->cnf->_say("printer:" . $printer . " connected.", 'TYPE_LION');
 			}
-			else
-				_say("printer:" . $printer . " error: Could not connect!",1);  
+			else  
+				$this->cnf->_say("printer:" . $printer . " error: Could not connect!", 'TYPE_LION');
 		}
 	}
 
@@ -743,46 +741,36 @@ class tierds {
 		try 
 		{
 		  self::$pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
-		  _say("PDO connection: ok!" ,1);
+		  return true;
 	    } 
 		catch (PDOException $e) 
 		{
             _say("Failed to get DB handle: " . $e->getMessage(),1);
-        }	
+        }
+		return false;	
 	}	
 	
 	public function pdoConn()
 	{
         return self::$pdo;
     }	 
-	
-	private function exebatchfile($file=null,$w=false) 
+
+	public function pdoQuery($dpc)
 	{
-	    if ((!$file) || ($file=='.ash')) //empty ashbatch 
-			$file = 'init.ash';
+		//from srv
+		if ($ret = file_get_contents($this->ldscheme . "/$dpc"))
+			return $ret;
 		
-		$batchfile = getcwd() . DIRECTORY_SEPARATOR . $file; 
-		
-		if ((is_readable($batchfile)) && ($f = @file($batchfile))) 
-		{
-			if ($w)
-			  _say('Init batch file: ' . $batchfile);			
+		//else
+		if (self::$pdo)	
+		{	
+			$pdodpc = str_replace('-',' ',$dpc);
+			foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) 
+				$_data[] = $row;
 			
-			if (!empty($f)) 
-			{
-				foreach ($f as $command_line) 
-				{
-					if (trim($command_line)) 
-					{
-						//echo "-" . $command_line;
-						$this->dmn->dispatch(trim($command_line),null);
-					}
-				}		  
-			}
-			return true;	
-		}
-		return false;
-	}			
+			return $_data;	
+		}			
+	}	
    
 	private function destroy() 
 	{
@@ -792,22 +780,10 @@ class tierds {
 
     public function shutdown($now=false) 
 	{
-		if ($now) die(); 
-   	
-		_say("Shutdown....",1);
-	  
-		//unregister_tick_function($this->get_agent('scheduler'),'checkschedules');
-
-		//is agents now
-		//unset($this->timer);
-		//unset($this->scheduler);		
-	  	  
-		_say("Shutdown...",1);
+		_say("Shutdown " . $now, 1);
+		//if ($now) die(); 	
 	  	
 		$this->free_agents();
-		
-		unset($this->dmn); //destruct
-		unset($this->mem); //destruct
 	  
 		//close printer	 
 		if (extension_loaded('printer')) {	
@@ -824,11 +800,13 @@ class tierds {
 
 	public function __destruct() 
 	{
-        //if(!$this->dpc_agn_id)
-		if(!$this->shm_id)	
-            return;			   
-		
-	    shmop_delete($this->shm_id);
+		if ($this->shutdown())
+		{
+			unset($this->cnf); //destruct
+			unset($this->utl); //destruct
+			unset($this->dmn); //destruct
+			unset($this->mem); //destruct
+		}
 	}	
 	
 }

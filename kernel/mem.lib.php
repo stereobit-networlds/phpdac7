@@ -834,7 +834,7 @@ class mem
 				{
 					$this->env->cnf->_say('reading variable (async): ' . $dpc, 'TYPE_LION');
 					//..open client at async class
-					exec("start /D d:\github\phpdac7\bin agentds process");
+					$this->env->openClient('process', $dpc);
 					//..data write
 					//re-save chain (remove)
 				}

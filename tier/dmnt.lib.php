@@ -73,7 +73,9 @@ class dmnt {
 		$this->dmn->CommandAction ("batch", array($this,"command_handler"));
 	  
 		$this->dmn->CommandAction ("***", array($this,"agent_handler"));//handle everyting else...	  
-	  									  
+	  									
+		//1st action exebatch .ash
+		$this->exebatchfile($this->env->argbatch, true);
 	}							  
 	
 	public function command_handler ($command, $arguments, $dmn) 
@@ -286,7 +288,7 @@ class dmnt {
 				break;
 
 		case 'BATCH': 
-				$this->exebatchfile($dmn,$arguments[0]);
+				$this->exebatchfile($arguments[0]);
 				return true;
 				break;
         }		
@@ -364,6 +366,42 @@ class dmnt {
 	{	
 		$this->dmn->Println($str);
 		return true;
-	} 		
+	} 
+
+	private function exebatchfile($file=null, $say=false) 
+	{
+	    if ((!$file) || ($file=='.ash')) $file = 'init.ash';
+		$this->env->cnf->_say('Init batch file: ' . $file, 'TYPE_LION');	
+		
+		/*$batchfile = getcwd() . DIRECTORY_SEPARATOR . $file; 
+		if ((is_readable($batchfile)) && ($f = @file($batchfile))) 
+			$fdata = file_get_contents($batchfile);
+		*/
+		//remote file
+		$batchfile = $this->env->ldscheme . "/tier/" . $file;			
+		$fdata = file_get_contents($batchfile);
+		
+		if (isset($fdata))
+		{
+			//if ($say)
+				//$this->env->cnf->_say('Init batch file: ' . $batchfile, 'TYPE_LION');			
+		  
+		    $f = explode(PHP_EOL, $fdata);
+			
+			if (!empty($f)) 
+			{
+				foreach ($f as $command_line) 
+				{
+					if (($cmd = trim($command_line)) && ($cmd[0]!='#')) 
+					{
+						//echo "-" . $command_line;
+						$this->dmn->dispatch($cmd,null);
+					}
+				}		  
+			}
+			return true;	
+		}
+		return false;
+	}		
 }
 ?>

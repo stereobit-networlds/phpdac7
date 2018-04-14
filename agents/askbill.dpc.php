@@ -226,6 +226,7 @@ class askbill {
 		   case 'quit'   :			 
 							//exit(); break;
 							break(2);
+		   case 'exit'   :  break;					
 
 		   case 'mis'    : $ret = $this->exportCrystalReportToPDF($command[1],$command[2]); break;		   
 		   case 'explore': $ret = $this->iexplorer($command[1]); break;
