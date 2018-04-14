@@ -270,6 +270,14 @@ class dmn {
 		return true;	
 	}
 	
+	public function dispatch($command_line,$id) 
+	{ 	  
+		//dispatch
+		$this->dmn->dispatch($command_line,$id); 	
+		
+		return true;	
+	}	
+	
 	public function Println($str=null) 
 	{	
 		$this->dmn->Println($str);

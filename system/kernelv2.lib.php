@@ -8,6 +8,7 @@ require_once("system/timer.lib.php");
 require_once("kernel/cnf.lib.php");
 require_once("kernel/mem.lib.php");
 require_once("kernel/shm.lib.php");
+//require_once("kernel/buf.lib.php");
 require_once("kernel/kfs.lib.php");
 require_once("kernel/dmn.lib.php");
 require_once("kernel/utils.lib.php");
@@ -79,8 +80,8 @@ class kernelv2 {
 		if (!$phpdac_c) $this->cnf->_say("Client resource protocol failed to registered!" , 'TYPE_LION');
 					else $this->cnf->_say("Client resource protocol registered!", 'TYPE_RAT'); 	  
 	  
-		//start sh mem	
-		$this->shm = new shm($this);	
+		//start buf / shmem	
+		$this->shm = new shm($this); //buf
 		$this->mem = new mem($this);
 		if ($this->mem->initialize())
 		{	
@@ -118,7 +119,7 @@ class kernelv2 {
 				$this->scheduler->schedule('env.internalClient','every','50');	  		  
 		
 				//dispatch batch, before listen
-				$this->exebatchfile($this->dmn, 'kernel.ash', true);
+				$this->exebatchfile('kernel.ash', true);
 	  
 				//continue shceduling after ash run, before listen
 				$this->retrieve_schedules();
@@ -129,7 +130,7 @@ class kernelv2 {
 		}
 		else 
 		{
-			$this->cnf->_say('Shared memory critical error!', 'TYPE_LION');
+			$this->cnf->_say('Memory critical error!', 'TYPE_LION');
 			$this->shutdown(true);
 		}	  
 	}
@@ -466,9 +467,8 @@ class kernelv2 {
 						'TYPE_LION');
 						
 		$this->mem->checkMem(false); //mem check on (silent)
-		
-		$this->fs->hView(); //show hash table
-		//$this->mem->save('srvHashTable', !!
+		$this->mem->showGC(); //show gc
+		//$this->fs->hView(); //show hash table		
 		
 		//save table in sh mem as resource var
 		if ($this->saveSrvState===true) {
@@ -592,7 +592,7 @@ class kernelv2 {
 	//UTILS
 	
 	//batch commands
-	private function exebatchfile(&$dmn,$file=null,$w=false) 
+	private function exebatchfile($file=null,$w=false) 
 	{
 	    if (!$file) return false;
 		
@@ -606,7 +606,7 @@ class kernelv2 {
 				foreach ($f as $command_line) {
 					if (trim($command_line)) {
 						//echo "-" . $command_line;
-						$dmn->dispatch(trim($command_line),null);
+						$this->dmn->dispatch(trim($command_line),null);
 					}
 				}			  
 			}

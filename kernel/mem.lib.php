@@ -4,8 +4,8 @@ class mem
 {	
 	private $env;
 	private $shm_max, $memlength; 	
-	private $dpc_addr, $dpc_length, $dpc_free;	
-	private $dataspace, $extra_space;
+	private $dpc_addr, $dpc_length, $dpc_free, $dpc_gc;	
+	private $dataspace, $extra_space, $gc;
 	//public static $pdo;	
 	
 	public function __construct(& $env=null) 
@@ -22,6 +22,8 @@ class mem
 		
 		$this->extra_space = 1024 * 10; //kb //1000;// per file (shmid res inc+)
 		$this->dataspace = 1024000 * 9; //mb //90000; //sum of shmem without preinsert		
+		
+		$this->gc = true;
 	}
 	
 	public function initialize() 
@@ -51,7 +53,7 @@ class mem
 				//no die, delete shm_id
 			}
 			$space = $this->shm_max + $this->dataspace;
-			$this->env->cnf->_say("Re-allocate shared memory segment. $space bytes",'TYPE_CAT');
+			$this->env->cnf->_say("Re-allocate memory segment. $space bytes",'TYPE_CAT');
 		
 			if ($sid = $this->env->shm->_shopen($space)) 
 			{
@@ -76,7 +78,7 @@ class mem
 				$this->checkMem(1);	 
 			}
 			else
-				die("Couldn't create shared memory segment. System Halted.\n");		
+				die("Couldn't create memory segment. System Halted.\n");		
 		}	
 		else //new start
 		{
@@ -84,7 +86,7 @@ class mem
 	  
 			// Create shared memory block with system id if 0xff3
 			$space = $this->shm_max + $this->dataspace;
-			$this->env->cnf->_say("Allocate shared memory segment. $space bytes",'TYPE_CAT');
+			$this->env->cnf->_say("Allocate smemory segment. $space bytes",'TYPE_CAT');
 			
 			if ($sid = $this->env->shm->_shopen($space)) 
 			{
@@ -105,10 +107,10 @@ class mem
 				$this->savestate();	
 			}
 			else
-				die("Couldn't create shared memory segment. System Halted.\n");
+				die("Couldn't create memory segment. System Halted.\n");
 		}
 		
-	    $this->env->cnf->_say("Total shmem reserved: $space bytes",'TYPE_LION');
+	    $this->env->cnf->_say("Total mem reserved: $space bytes",'TYPE_LION');
 		return $sid; 	
 	}	
 	
@@ -129,26 +131,47 @@ class mem
 	//mem table set
 	public function set($dpc, $length=false, &$data) 
 	{
-		if ((!$dpc) || (!$length)) {
+		if ((!$dpc) || (!$length)) 
+		{
 			_dump("MEMSET\n\n$dpc length:$length\n\n", 'a+', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
 			return false;
 		}	
 		
-		$offset = $this->getOffset();
-		$mempage = $offset + $length + $this->extra_space + 2; //1+1 = spinlocks
-		$maxmem = $this->shm_max + $this->dataspace;
+		//get an offset
+		list ($offset, $lGC, $fGC) = $this->getOffset($length);
+		//$offset = $this->getOffset();
 		
-		if ($mempage < $maxmem)	
-		{
-			$this->memlength = $mempage; 
+		//if retreived offset,length,freespace from gc
+		/*if ($lGC > 0) 
+		{   
+			//gc mem input in between
+			$this->env->cnf->_say("GC  <<<<<<<<<<<<<<<< $dpc",'TYPE_LION');
 			
 			$this->dpc_addr[$dpc] = $offset;		
-			$this->dpc_length[$dpc] = $length + $this->extra_space;
-			$this->dpc_free[$dpc] = $this->extra_space;
+			$this->dpc_length[$dpc] = $lGC;
+			$this->dpc_free[$dpc] = $fGC;
 	
-	        $data .= str_repeat(' ', $this->extra_space); //clean free space
+			$data .= str_repeat(' ', $fGC); //clean free space
 			return $offset;
 		}
+		else
+		{ */  
+			//standart incremental input
+			$mempage = $offset + $length + $this->extra_space + 2; //1+1 = spinlocks
+			$maxmem = $this->shm_max + $this->dataspace;	
+			//check for mem limit
+			if ($mempage < $maxmem)	
+			{
+				$this->memlength = $mempage; //update global var 
+			
+				$this->dpc_addr[$dpc] = $offset;		
+				$this->dpc_length[$dpc] = $length + $this->extra_space;
+				$this->dpc_free[$dpc] = $this->extra_space;
+	
+				$data .= str_repeat(' ', $this->extra_space); //clean free space
+				return $offset;
+			}
+		//}	
 		_dump("MEMSET\n$dpc\nlength:$length\nmaxmem:$maxmem\nmempage:$mempage\noffset:$offset\n", 'a+', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
 		return false;
 	}
@@ -156,8 +179,16 @@ class mem
 	//mem table, check remaining space to fit in mem page
 	public function upd($dpc, $free, &$data) 
 	{
-		if ((!$dpc) || ($free<0)) return false;
+		if (!$dpc) return false;
 		
+		if ($free<=0) //bankswitch /gc
+		{	
+			if (!$this->gc) return false;
+			
+			$this->env->cnf->_say("Bank switch <<<<<<<<<<<<<< $dpc",'TYPE_LION');
+			return $this->bankSwitch($dpc, $data);
+		}	
+		//else
 		$this->dpc_free[$dpc] = $free;
 		$data .= str_repeat(' ', $free); //clean free space
 		
@@ -227,7 +258,7 @@ class mem
 				$this->env->fs->hAdd($dpc, md5($tdata));
 			}	
 			
-			if ($free < intval(1024 * 5)) //1 kb
+			if ($free < intval(1024 * 5)) //1 kb --- BANKSWITCH
 			{
 				$warning = ' <<<<<<<<<<<<<<<<<< need extra space!'; 
 				//$read = PHP_EOL . $this->readSH($dpc) . PHP_EOL;
@@ -239,9 +270,10 @@ class mem
 					
 		}
 		
+		list($memOffset) = $this->getOffset();
 		$this->env->cnf->_say('shmax:' . $this->shm_max . 
 							"\t mem length:" . $this->memlength . 
-							"\t mem offset: " . $this->getOffset(), 
+							"\t mem offset: " . $memOffset, 
 							'TYPE_LION');	
 	}
 	
@@ -274,9 +306,18 @@ class mem
 	}	
 	
 	//get next offset to write
-	private function getOffset() {
+	private function getOffset($length=null) {
 		$offset = 0; 
 		$zeros = 0;
+		
+		/*if (($this->gc===true) && (isset($length)))
+		{
+			//select from gc
+			//$gc_o = $this->selectFromGC($length);
+			list($oGC, $lGC, $fGC) = $this->selectFromGC($length);
+			
+			return array($oGC + 1, $lGC, $fGC); 
+		}*/	
 		
 		reset($this->dpc_length);
 		foreach ($this->dpc_length as $_dpc=>$_size)
@@ -285,9 +326,61 @@ class mem
 			$zeros +=2; //spinlocks
 		}
 		$offset += $zeros; //segments x 2		   
-		return ($offset + 1); 
+		
+		//return ($offset + 1);
+		return array($offset + 1, 0, 0); 
+	}
+	
+	//unset dpc, set a new
+	private function bankSwitch($dpc, $data)
+	{
+		//save at gc
+		$this->dpc_gc[] = array($this->dpc_addr[$dpc],
+								$this->dpc_length[$dpc],
+								$this->dpc_free[$dpc]);
+									
+		//unset current dpc (create a mem hole)								
+		unset($this->dpc_addr[$dpc]);
+		unset($this->dpc_length[$dpc]);
+		unset($this->dpc_free[$dpc]);
+		
+		return $this->set($dpc, strlen($data), $data);
 	}
 
+	//select an offset from an existng gc element
+	private function selectFromGC($length)	
+	{
+		if (!empty($this->dpc_gc))
+		{
+			//$gc = array_shift($this->dpc_gc); //first
+			//return $gc[0]; //offset of an old dpc
+			
+			//check size
+			foreach ($this->dpc_gc as $i=>$gc) {
+				if ($gc[1] > $length) //+2, dont count spinklocks
+				{
+					$remove = $i;
+					$offsetGC  = $gc[0]; 
+					$lengthGC  = $gc[1]; 
+					$freeGC    = $gc[1] - $length; //overwrite remaining
+				}	
+			} 
+			unset ($this->dpc_gc[$remove]); //clean gc element
+			
+			return array($offsetGC, $lengthGC, $freeGC);
+		}
+		return false;	
+	}
+	
+	//scheduled
+	public function showGC()
+	{
+		if (empty($this->dpc_gc)) return;
+		
+		echo '----------- GC -----------' . PHP_EOL;
+		foreach ($this->dpc_gc as $entry)
+			echo implode("\t", $entry) . PHP_EOL;
+	}
 	
 	//sh mem read
 	public function readSH($dpc) {
@@ -313,13 +406,14 @@ class mem
 	
 	
 	
-	//save shared mem resource id and mem alloc arrays
+	//save mem resource id and mem alloc arrays
 	public function savestate() //make private
 	{   
 		$this->env->cnf->_say("Save state", 'TYPE_RAT');
 		$data = $this->shm_max ."@^@". serialize($this->dpc_addr) . 
 		                       "@^@". serialize($this->dpc_length). 
 							   "@^@". serialize($this->dpc_free) .
+							   "@^@". serialize($this->dpc_gc) .
 							   "@^@" . $this->memlength;
 						
 		//save table in sh mem as resource var..
@@ -329,7 +423,7 @@ class mem
 		return file_put_contents('shm.id', $data ,LOCK_EX);
 	}
    
-	//load shared mem resource id and mem alloc arrays
+	//load mem resource id and mem alloc arrays
 	private function loadstate($altdir=null) 
 	{
 	   if ($data = @file_get_contents($altdir . 'shm.id'))
@@ -348,6 +442,7 @@ class mem
 				$this->dpc_addr = (array) unserialize($entries[1]);
 				$this->dpc_length = (array) unserialize($entries[2]);
 				$this->dpc_free = (array) unserialize($entries[3]);
+				$this->dpc_gc = (array) unserialize($entries[4]);
 				$this->memlength = $entries[4];
 
 				$this->env->cnf->_say("shm_max:" . $entries[0], 'TYPE_LION');
@@ -454,7 +549,7 @@ class mem
 		return false;
 	}*/	
 	
-	//fetch shared mem page (with empty space)
+	//fetch mem page (with empty space)
 	private function loaddpcmem($dpc) 
 	{
 		if (isset($this->dpc_addr[$dpc])) 
@@ -485,7 +580,7 @@ class mem
 		return $this->getdpcmem($dpc);
 	}	
 
-	//save calls,urls etc into shared mem (server side)
+	//save calls,urls etc into mem (server side)
 	private function savedpcmem($dpc, &$data) 
 	{
 	   $dataLength = strlen($data); 
@@ -551,7 +646,7 @@ class mem
 		return $this->savedpcmem($dpc, $data);
 	}	
 	
-	//save calls,urls etc into shared mem (client side)
+	//save calls,urls etc into mem (client side)
 	private function getdpcmemc($dpc)
 	{	 	
 		$data = null;
