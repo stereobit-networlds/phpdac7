@@ -77,6 +77,7 @@ class proc
 			elseif ($pcmd[0]=='sync') 
 			{
 				//sync asyncs
+				echo "PROC.lib sync asyncs <<<<<<<<<<<<<<<<" . PHP_EOL;
 			}	
 			else //just execute
 				$this->processStack($pcmd);

@@ -3,6 +3,7 @@
 
 	define ("GLEVEL", 1); 
 	define ("KERNELVERBOSE", 2);//override daemon VERBOSE_LEVEL
+	define ("_DS_", DIRECTORY_SEPARATOR);	
 	
 	define('_DACSTREAMCVIEW_', 3); //must be 3 for clean replies
 	define('_DACSTREAMCREP1_', '');
@@ -53,7 +54,6 @@ class tierds {
 		$argv = $GLOBALS['argv'];
 		//print_r($argv);
 		
-		self::$pdo = null;
 		$this->verboseLevel = GLEVEL;	  
 		$this->agent = 'SH';//default	
 
@@ -73,8 +73,8 @@ class tierds {
 		//REGISTER PHPDAC 7
 		$dh = $this->phpdac_ip;  //global inside dacstreamc7 for gc
 		$dp = $this->phpdac_port;//global inside dacstreamc7 for gc
-		require_once("system/dacstreamc7.lib.php");			
-		$phpdac_c = stream_wrapper_register("phpdac5","c_dacstream");
+		//require("tier/dacstreamc7.lib.php");			
+		$phpdac_c = stream_wrapper_register("phpdac5","tier_dacstream");
 		if (!$phpdac_c) 
 		{
 			_say("Client dac protocol failed to registered!");
@@ -87,7 +87,7 @@ class tierds {
 		self::$ldschemeS = "phpdac5://". ($argv[5] ? $argv[5] : '127.0.0.1') .":". ($argv[6] ? $argv[6] : '19123');	
 				
 		//REGISTER PHPAGN (client side,interconnections) protocol.			
-		require_once($this->ldscheme . "/kernel/sagnc.lib.php"); 
+		require($this->ldscheme . "/kernel/sagnc.lib.php"); 
 		$phpdac_c = stream_wrapper_register("phpagn5","c_agnstream");
 		if (!$phpdac_c) 
 		{
@@ -135,21 +135,6 @@ class tierds {
 			$this->env['host'] = $_SERVER['REMOTE_ADDR'];  
 			//var_dump($this->env);	
 			//var_dump($_SERVER);
-	  
-			//INITIALIZE AGENTS
-			$this->active_agent = null;
-			$this->active_o_agent = null;	
-	  
-			$this->init_agents();
-	  
-			/* LOADED AS AGENTS...removed from agents.exe as libs include
-			$this->timer = new timer;	
-			//register_tick_function(array(&$time,"showtime"),true);	
-			$this->scheduler = new scheduler(&$this);		  			
-	        
-			//init resources (loaded as lib agent)
-			$this->resources = new resources($this);	  
-			*/		  
 			
 			//init printer	 
 			$this->initPrinter();
@@ -157,11 +142,11 @@ class tierds {
 			self::$pdo = null;	//serialize err 1250 (see inside process)		
 			if (self::initPDO())
 				$this->cnf->_say("PDO connection: ok!" , 'TYPE_IRON');
-
-						  
-			//(starting at scheduler construction)
-			//register_tick_function(array($this->get_agent('scheduler'),"checkschedules"),true);	  
-			//print_r($this->get_agent('scheduler'));
+				  
+			//INITIALIZE AGENTS
+			$this->active_agent = null;
+			$this->active_o_agent = null;	
+			$this->init_agents();
 	  
 			//initialize task from already loaded agents (BEWARE TO LOAD THE DEFAULT AGENTS)
 			if ($s = $this->get_agent('scheduler'))

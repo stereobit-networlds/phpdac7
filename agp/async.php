@@ -7,7 +7,7 @@ class async extends processInst {
 		parent::__construct($caller, $callerName, $stack);
 		$this->processStepName = __CLASS__;
 		
-		echo 'process async:',$this->caller->status;
+		echo "process async ($callerName): ". $this->caller->status;
 	}
  
 	//override
@@ -29,7 +29,9 @@ class async extends processInst {
 		}	
 		
 		if ($this->runCode(0, $event)) {
-			
+			$cwd = getcwd();
+			//exec("start /D $cwd tierp.bat process"); 
+			echo "ASYNC start /D $cwd tierp.bat process<<<<<<<<<<<<<<";
 			$this->stackRunStep(1);
 			return true;
 		};

@@ -371,7 +371,7 @@ class dmnt {
 	private function exebatchfile($file=null, $say=false) 
 	{
 	    if ((!$file) || ($file=='.ash')) $file = 'init.ash';
-		$this->env->cnf->_say('Init batch file: ' . $file, 'TYPE_LION');	
+		//$this->env->cnf->_say('Init batch file: ' . $file, 'TYPE_LION');
 		
 		/*$batchfile = getcwd() . DIRECTORY_SEPARATOR . $file; 
 		if ((is_readable($batchfile)) && ($f = @file($batchfile))) 
@@ -379,8 +379,9 @@ class dmnt {
 		*/
 		//remote file
 		$batchfile = $this->env->ldscheme . "/tier/" . $file;			
-		$fdata = file_get_contents($batchfile);
+		$this->env->cnf->_say('Init batch file: ' . $batchfile, 'TYPE_LION');	
 		
+		$fdata = @file_get_contents($batchfile);
 		if (isset($fdata))
 		{
 			//if ($say)

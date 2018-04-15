@@ -40,98 +40,35 @@
  *
  */
 
-$usage ="[inphar.dpc.php] Generate .phar files from shared memory dump file." . PHP_EOL . 
-        "Usage: param1=selected file, number in list or 0 to proceed all files, " . PHP_EOL . 
-		"       param2=phar name (with extension), default value 'testapp.phar',". PHP_EOL .
-		"       param3=destination folder, on null value '/' is selected.". PHP_EOL . 
-        "Example: php -d phar.readonly=0 inphar.dpc.php 12 testapp1" . PHP_EOL .
-		"         php -d phar.readonly=0 inphar.dpc.php 0 vendor/anameselected/" . PHP_EOL;
+$usage ="[makephar.dpc.php] Generate tier.phar." . PHP_EOL . 
+        "Usage: param1=phar name (with extension), default value 'tier.phar" . PHP_EOL . 
+		"       param2=destination folder, on null value '/' is selected.',". PHP_EOL . 
+        "Example: php -d phar.readonly=0 makephar.dpc.php," . PHP_EOL .
+		"         php -d phar.readonly=0 makephar.dpc.php tier.phar vendor/anameselected/" . PHP_EOL;
 		
 //ini_set('phar.readonly','0'); //use php -d phar.readonly=0 scriptname 
 $pharReadOnly = ini_get('phar.readonly'); 	
 echo 'Phar Readonly:' . $pharReadOnly . PHP_EOL;	
-$selected = isset($argv[1]) ? $argv[1] : 0;
-$pharName = isset($argv[2]) ? $argv[2] : null;//'testapp.phar';
-$selectdir = isset($argv[3]) ? $argv[3] : ''; //getcwd'/' //'/vendor/stereobit/';
-$outputdir = /*getcwd() .*/ $selectdir;
-$inpath = 'build/' . str_replace('.phar', '', $pharName);
+$pharName = isset($argv[1]) ? $argv[1] : 'tier.phar';
+$selectdir = isset($argv[2]) ? $argv[2] : getcwd() . '/build/'; //'/vendor/stereobit/';
+$outputdir = $selectdir ;
 
-if ($selected=='-?') die($usage);
+if ($pharName == '-?') die($usage);
 
-if ($shmTable = @file_get_contents($inpath . str_replace('.phar', '', $pharName) . '/shm.id')) {
+if (is_readable('tier.dpc.php')) {	
 	
 	if ($pharReadOnly == 0) {
-		echo '-------------' . $outputdir . $pharName . '-------------'.PHP_EOL;
-		$phar = new Phar($outputdir . $pharName, 0, $pharName); 
-					
-		//pre-req files
-		if ($selected == 0) {
-			/*
-			$pharPCNTL = content_handler(file_get_contents('system/pcntlphar.lib.php'),true);
-			$phar->addFromString("system/pcntlphar.lib.php", $pharPCNTL);
-			echo 'Prereq 1: system/pcntlphar.lib.php' . '->' . strlen($pharPCNTL) .  PHP_EOL;
-			
-			$dacPCNTL = content_handler(file_get_contents('system/dacstreamc.lib.php'),true);
-			$phar->addFromString("system/dacstreamc.lib.php", $dacPCNTL);
-			echo 'Prereq 2: system/dacstreamc.lib.php' . '->' . strlen($dacPCNTL) .  PHP_EOL;			
-			*/
-		}
+		echo '-------------' . $outputdir .$pharName . '-------------'.PHP_EOL;
+		$phar = new Phar($outputdir .$pharName, 0, $pharName); 
+		$phar->addFromString('/tierds.lib.php', file_get_contents('tierds.lib.php'));
+		$phar->addFromString('/tier.dpc.php', file_get_contents('tier.dpc.php'));
+		$phar->setStub($phar->createDefaultStub("/tier.dpc.php"));
 	}
 	else
-		echo '-------------' . $inpath . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log' . '-------------'.PHP_EOL;	
-	
-	$parts = explode("@^@",$shmTable);
-	$addr = (array) unserialize($parts[1]);
-	$length = (array) unserialize($parts[2]); 
-	$free = (array) unserialize($parts[3]); 
-	
-	$buildMEM = $inpath . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log';
-	$mem = file_get_contents($buildMEM);
-	//echo $mem;
-	
-	$_file = null;	
-	$i=0;
-	foreach ($addr as $name=>$start) {
-		$i+=1;
-		$ln = $length[$name];
-		$fr = $free[$name];
-		$_name = str_replace(array('*','\\',),
-							 array('','/'), $name);
-		$_file = substr($mem, $start, $ln-$fr); 
-		//$_hfile = content_handler($_file, true);
-		
-		if ($selected==$i) { //specified file
-
-			if ($pharReadOnly == 0)
-				$phar->addFromString($_name, $_file);
-			
-			echo $_file;
-			echo 'EOF'. $pharReadOnly . PHP_EOL;
-			echo $i . '-' . $_name . ' :' . $start .'->'. $ln . '-' . $fr .'->'. ($ln-$fr) . PHP_EOL;
-		}		
-		elseif ($selected==0) { //all
-		
-			if ($pharReadOnly == 0)
-			    $phar->addFromString($_name, $_file);
-			
-			echo $i . '-' . $_name . ' :' . $start .'->'. $ln . '-' . $fr .'->'. ($ln-$fr) . PHP_EOL;
-		}
-		else {
-			//do nothing
-		}	
-		
-		unset($_file);
-		//unset($_hfile);
-	}
-	
-	echo $i . ' files in shmem.' . PHP_EOL;
-	
-	if ($pharReadOnly == 0)
-		$phar->setStub($phar->createDefaultStub("dpclass.dpc.php"));
-		
+		echo 'Set phar.readonly=0'.PHP_EOL;		
 }
 else
-	die('Shared memory data table missing!'.PHP_EOL);
+	die('tier file missing!'.PHP_EOL);
 
 
 

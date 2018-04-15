@@ -1,7 +1,4 @@
 <?php
-require_once("tier/tierds.lib.php"); 
-new tierds();
-
 class tier_dacstream {
 
    var $position;
@@ -148,4 +145,5 @@ class tier_dacstream {
 		return ($g);// . $d); //error when trail text
 	}	
 }
+
 ?>

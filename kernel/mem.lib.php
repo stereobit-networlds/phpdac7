@@ -834,7 +834,7 @@ class mem
 				{
 					$this->env->cnf->_say('reading variable (async): ' . $dpc, 'TYPE_LION');
 					//..open client at async class
-					$this->env->openClient('process', $dpc);
+					$this->env->openProcess('process', $dpc);
 					//..data write
 					//re-save chain (remove)
 				}
