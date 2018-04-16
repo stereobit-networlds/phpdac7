@@ -3,21 +3,52 @@
 class processInst extends pstack {
 	
 	protected $processStepName, $processChain;
-	protected $stack, $chain, $event; 
+	protected $stack, $chain, $event, $caller, $env; 
 	public static $pdo;		
 	
 	public function __construct(& $caller, $callerName=null, $stack=null) {
 				
-		self::$pdo = $caller::$pdo;		
+		self::$pdo = $caller::$pdo;	
+		$this->caller = $caller;
+		$this->env = $caller->env;	
 				
-		parent::__construct($caller->env, 'kernelv2', $stack); 
+		parent::__construct($caller->env, 'kernel', $stack); 
 		
-		//$this->debug = true;//override;	
+		$this->debug = false;//true;//override;	
 		
 		//$this->event = null;
 		$this->stack = (array) $stack; //get env chain
 		$this->chain = $this->getProcessChain();
-	}
+	}	
+	
+	//loader (any new object inside processes use vendor/dir)	
+	//usage $this->loader('vendor/messages/') //vendor dir	
+	//https://stackoverflow.com/questions/37842573/php-spl-autoload-register-pass-second-parameter	
+    protected function loader($vendor=null) {
+	
+	    //echo 'Trying to load ', $className, ' via ', __METHOD__, "()\n"; 
+
+		spl_autoload_register(function($className) use ($vendor) 
+		{
+			if ($phpdac = $this->caller->ldscheme)
+				require ($phpdac . '/'. $vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php');
+			else
+				require($vendor . $className . '.php');
+			
+			//echo "File {$vendor}{$className} loaded!";
+		}); 
+    }
+
+	protected function _include($inc)
+	{
+		$phpdac = isset($this->caller->ldscheme) ? 
+						$this->caller->ldscheme .'/' : null;	
+						
+		return ($phpdac . $inc);
+	}	
+
+
+    	
 	
 	public function getProcessChain() 
 	{

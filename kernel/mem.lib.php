@@ -847,37 +847,9 @@ class mem
 						//echo implode(',', $this->env->proc->getProcessChain()) . ' finished!' . PHP_EOL; 
 						$this->env->cnf->_say(implode(',', $this->env->proc->getProcessChain()) . ' finished', 'TYPE_LION');
 					}
-					/*
-					//test imo
-					$immX = Immutable::create()
-							->set('test', 'a string goes here')
-							->set('another', 100)
-							->arr([1,2,3,4,5,6])
-							->arr(['a' => 1, 'b' => 2])
-							->build();
-					echo (string) $immX;
-					
-					$immY = Immutable::create()
-							->set('anObject', $immX)
-							->build();
-					echo (string) $immY;
-					echo $immY->get('test'); // a string goes here
-					var_dump($immY->has('test')); // bool(true)
-					var_dump($immY->has('non-existent')); // bool(false)
-					echo $immY->getOrElse('test', 'some default text'); // a string goes here
-					echo $immY->getOrElse('non-existent', 'some default text'); // some default text
-					
-					$immZ = Immutable::with($immY)
-							->set('a story', 'This is where someone should write a story')
-							->setIntKey(300, 'My int indexed value')
-							->arr(['arr: int indexed', 'arr' => 'arr: assoc key becomes immutable key'])
-							->build();
-					echo (string) $immZ;
-					*/
 					//return 1;	
 				}
 				
-			
 				//open client to proceess(s) 
 				//-pool check and reply based on client response..
 				/*

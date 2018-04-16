@@ -269,7 +269,7 @@ class daemon {
                             $this->close($i);
                         }	*/	
 						for ($i=0;$i<MAX_CONNECTIONS;$i++) {
-		                  if ($this->cpool[$i]->resource == '') {
+		                  if (!is_resource($this->cpool[$i]->resource)) {
 			                break;
 			              }   
 			              else {
@@ -384,7 +384,7 @@ class daemon {
             }
           }*/
 		  for ($i=0;$i<MAX_CONNECTIONS;$i++) {
-		    if ($this->cpool[$i]->resource == '') {
+		    if (!is_resource($this->cpool[$i]->resource)) {
 			  break;
 			}
 			else {
@@ -434,7 +434,7 @@ class daemon {
 			
                if ($id==null) $id = $this->active;
 			   
-		       if (SERVER_TYPE != 'inetd') {				   
+		       if ((SERVER_TYPE != 'inetd') && ($id!=null)) {				   
 		         $this->cpool[$id]->session['PromptString'] = $newprompt;
 			   }	 
 			   else
@@ -612,7 +612,33 @@ class daemon {
 		    return 1;
 		  }
 		}
-
+		
+		function null_sort2($ar1,$ar2) {
+		
+		  if ((isset($ar1->session['host'])) AND (isset($ar2->session['host']))) {
+		    return 0;
+		  }
+		  elseif ((isset($ar1->session['host'])) AND (!isset($ar2->session['host']))) {
+		    return -1;
+		  }
+		  else {
+		    return 1;
+		  }
+		}	
+        /*
+		function getNext()
+		{
+			reset($this->cpool);
+			$ret = array_filter($this->cpool, 
+								function($v, $k) 
+								{ 
+									return $v->connected == null; 
+								}, ARRAY_FILTER_USE_BOTH );
+			$keys = array_keys($ret);						
+			return array_pop($keys);					
+		}		
+		*/
+		
         function listen($timeout=null) {		
 declare(ticks=10) {		
                 if (SERVER_TYPE == 'inetd') {
@@ -639,30 +665,39 @@ declare(ticks=10) {
 				          /*while (Gtk::events_pending()) {
                            Gtk::main_iteration();//(false);
                           }*/
-						}//else gtk error by the server (start))
+						}
+						//else gtk error by the server (start))
+						
+						
 				        //echo '0'; 
                         $current = array ();
                         array_push($current, $this->socket);
                         // fetch all clients that are awaiting connections
-                        for ($i = 0; $i < count($this->cpool); $i ++) {
-                          if (isset ($this->cpool[$i]->resource))
-                            array_push($current, $this->cpool[$i]->resource);
-							$this->active = $i;
+                        for ($i = 0; $i < count($this->cpool); $i ++) 
+						{
+							if (is_resource($this->cpool[$i]->resource))
+							{
+								array_push($current, $this->cpool[$i]->resource);
+								$this->active = $i;
+							}	
                         } 	
+						
 				        /*unset($current);
 						$current[0] = $this->socket;						
 						for ($i=0;$i<MAX_CONNECTIONS;$i++) {
-						  if ($this->cpool[$i]->resource!=null) {
+						  if (is_resource($this->cpool[$i]->resource)) {
 						    $current[$i+1] = $this->cpool[$i]->resource;
 							$this->active = $i;
 						  } 
-						}	*/										
+						}	*/	
+						
 						//echo '1'; 
                         // block and wait for data or new connection
                         $ready =  socket_select($current, $this->null, $this->null, $timeout);//null);
                         if ($ready === false) {
                           $this->shutdown();
                         }	
+						
 						//echo '2';
 						// check for new connection
                         /*if (in_array($this->socket, $current)) {
@@ -679,19 +714,28 @@ declare(ticks=10) {
                             continue;
                           }
                         }*/
-						if (in_array($this->socket,$current)) {
-                          for ($i=0;$i<MAX_CONNECTIONS;$i++) {
-				            if ($this->cpool[$i]->resource == null) {
+						
+						if (in_array($this->socket,$current)) 
+						{
+                          for ($i=0;$i<MAX_CONNECTIONS;$i++) 
+						  {
+				            if (!is_resource($this->cpool[$i]->resource)) 	
+							{
 					          $this->sock_message_socket_create($i);
+							  $this->cpool[$i]->connected = 1;
+							  //echo $i; //0!!
 							  break;
 							}
 							if ($i == MAX_CONNECTIONS -1) {
 							  break;
 							}
-						  }	   
+						  }
+						  //echo $this->getNext() . '>>>>>>>>>>>>>>>>>>' . $i . PHP_EOL;		
 						}
 						//sort nulls at end
-						usort($this->cpool,array($this,'null_sort'));				
+						usort($this->cpool, array($this,'null_sort'));
+						
+						
 						//echo '3';
                         // check all clients for incoming data
                         /*for ($i = 0; $i < count($this->clientFD); $i ++) {
@@ -708,7 +752,9 @@ declare(ticks=10) {
                             }//no empty cmd
 						  }//is in array
 						}//for all clients*/
-						for ($i=0;$i<MAX_CONNECTIONS;$i++) {
+						
+						for ($i=0;$i<MAX_CONNECTIONS;$i++) 
+						{
 						  //all valid connections procceded, stop here
 						  //if ($this->cpool[$i]->resource==null) {
 						  if (!is_resource($this->cpool[$i]->resource)) {
@@ -722,7 +768,7 @@ declare(ticks=10) {
                             }
 							if ((!SILENCE) || (!$this->cpool[$i]->session['Silent'])) {
 							  if (SHOW_PROMPT) {
-                                if ($this->cpool[$i]->resource)//?????
+                                if (is_resource($this->cpool[$i]->resource))
 								  $this->showPrompt($i);
 							  }	  
                             }						  
@@ -742,27 +788,30 @@ declare(ticks=10) {
 		
 		
         function show_connections() {
-		
+		  $ses = array();
+		  
 		  //echo "<pre>";
 		  //print_r($this->cpool);
 		  //echo "</pre>";
-		  if (is_array($this->cpool)) {
-            foreach ($this->cpool as $i=>$conn) {
-		      if (is_array($conn->session)) {	
-			    //$sessions[] = $conn->session;
-				if ($i==0)
-					echo implode("\t",array_keys($conn->session)) . "\n";
-			    echo implode("\t",$conn->session) . "\n";
-			  }	
+		  if (is_array($this->cpool)) {  
+			foreach ($this->cpool as $i=>$conn) 
+			{
+				if ((is_array($conn->session)) && 
+					(isset($conn->session['host']))) 
+				{	
+					$ses[] = (array) $conn->session;
+					if ($i==0)
+						echo implode("\t",array_keys($conn->session)) . "\n";
+					
+					echo implode("\t",$conn->session) . "\n";
+				}	
 		    }	
-		    
             //echo "<pre>";
-		    //print_r($sessions);
+		    //print_r($ses);
 		    //echo "</pre>";
-			
 		  }		  	  
 		  
-		  return ($sessions);
+		  //return ($sessions);
         }		
 //END OF CLASS
 }
@@ -795,5 +844,4 @@ class connect_pool {
   }
   
 }
-
 ?>

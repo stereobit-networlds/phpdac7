@@ -2,12 +2,21 @@
 
 class async extends processInst {
 	
+	protected $env, $_stack;
+	
 	public function __construct(& $caller, $callerName, $stack=null) {
 
 		parent::__construct($caller, $callerName, $stack);
 		$this->processStepName = __CLASS__;
 		
-		echo "process async ($callerName): ". $this->caller->status;
+		$this->env = $caller->env;
+		$this->_stack = $stack['kernel'];
+		$pid = $this->getChainId(); //next
+		
+		echo "process async ({$this->_stack[$pid]}): ". $this->caller->status . PHP_EOL;
+		
+		//$this->loader('vendor/process/async/');
+		//new $this->_stack[$pid]();
 	}
  
 	//override
@@ -29,9 +38,9 @@ class async extends processInst {
 		}	
 		
 		if ($this->runCode(0, $event)) {
-			$cwd = getcwd();
+			//$cwd = getcwd();
 			//exec("start /D $cwd tierp.bat process"); 
-			echo "ASYNC start /D $cwd tierp.bat process<<<<<<<<<<<<<<";
+			//echo "ASYNC start /D $cwd tierp.bat process<<<<<<<<<<<<<<";
 			$this->stackRunStep(1);
 			return true;
 		};
