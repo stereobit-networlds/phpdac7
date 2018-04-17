@@ -4,15 +4,10 @@ new tierds();
 
 class tier_dacstream {
 
-   var $position;
-   var $data;
-   
-   var $DPCEOF;
-   var $size;
-   
-   var $path, $dpcmem;
+	public $position, $data, $size;
+	public $DPCEOF, $path, $dpcmem;
 
-   public function stream_open($_url,$mode,$options,&$opened_path) {
+	public function stream_open($_url,$mode,$options,&$opened_path) {
    
 		$url = parse_url($_url);   
 		$timeout = 5;//30;
@@ -48,18 +43,18 @@ class tier_dacstream {
 		$this->position = 0;
 		
 		return true;   
-   }
+	}
    
-   public function stream_read($count) {
+	public function stream_read($count) {
    
         $ret = substr($this->data,$this->position,$count);
 		$this->position += strlen($ret);
 		
         return ($this->gc($ret,_DACSTREAMCVIEW_));
 		//return $ret;
-   }
+	}
    
-   public function stream_write($data) {
+	public function stream_write($data) {
    
        /* $left = substr($this->data, 0, $this->position);
 		$right = substr($this->data, $this->position + strlen($data));
@@ -69,21 +64,21 @@ class tier_dacstream {
 		$this->position += strlen($data); */
 		
 		return (strlen($data));
-   }
+	}
    
-   public function stream_tell() {
+	public function stream_tell() {
    
-     return ($this->position);
-   }
+		return ($this->position);
+	}
    
-   public function stream_eof() {
-     //return ($this->DPCEOF);
-	 return $this->position >= strlen($this->data);
-   }
+	public function stream_eof() {
+		//return ($this->DPCEOF);
+		return $this->position >= strlen($this->data);
+	}
    
-   public function stream_seek($offset,$whence) {
+	public function stream_seek($offset,$whence) {
    
-     switch($whence){
+		switch($whence){
      	case SEEK_SET: 
      		if (($offset < strlen($this->data)) && ($offset >=0)) {
      		    $this->position = $offset;
@@ -110,13 +105,13 @@ class tier_dacstream {
      		break;	
      	default:
      		return false;
-     } // switch
-   }
+		} // switch
+	}
    
-   public function stream_stat() {
+	public function stream_stat() {
    
-     return (array('size'=>strlen($this->data)));
-   }
+		return (array('size'=>strlen($this->data)));
+	}
    
     //https://api.drupal.org/api/drupal/includes%21stream_wrappers.inc/function/DrupalLocalStreamWrapper%3A%3Aurl_stat/7.x
 	//Parameters

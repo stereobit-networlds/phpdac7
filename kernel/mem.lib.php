@@ -657,7 +657,7 @@ class mem
 
 			if ($offset >= $this->shmmax()) 
 			{
-				if (!$data = $this->_sqlselect($dpc, false))
+				if (!$data = $this->_sqlquery($dpc, false))
 					if (!$data = $this->_wwwquery($dpc, false))
 						if (!$data = $this->_localfile($dpc, false, $rlength)) //rlenght = md5($invdata)
 							$data = $this->_variable($dpc, false);
@@ -695,7 +695,7 @@ class mem
 		}
 		else //NEW
 		{ 
-			if (!$data = $this->_sqlselect($dpc, true))
+			if (!$data = $this->_sqlquery($dpc, true))
 				if (!$data = $this->_wwwquery($dpc, true))
 					if (!$data = $this->_localfile($dpc, true, false))
 						if (!$data = $this->_variable($dpc, true))
@@ -737,7 +737,7 @@ class mem
 	}		
 
 	//sql handler (client side)
-	private function _sqlselect($dpc, $new=false)
+	private function _sqlquery($dpc, $new=false)
 	{
 		if (substr($dpc,0,7)!=='select-') return null;
 		   

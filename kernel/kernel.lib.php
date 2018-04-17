@@ -523,6 +523,7 @@ class kernel {
         return self::$pdo;
     }
 
+	//real db connect (server)
 	public function pdoQuery($dpc)
 	{
 		if (!is_resource(self::$pdo))

@@ -740,22 +740,34 @@ class tierds {
         return self::$pdo;
     }	 
 
-	public function pdoQuery($dpc)
+	//server db connect (client) or clientside db	
+	public function pdoQuery($dpc, $clientside=false)
 	{
-		//from srv
-		if ($ret = file_get_contents($this->ldscheme . "/$dpc"))
-			return $ret;
-		
-		//else
-		if (self::$pdo)	
+		if (($clientside==true) && (self::$pdo))	
 		{	
-			$pdodpc = str_replace('-',' ',$dpc);
-			foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) 
+			foreach(self::$pdo->query($dpc, PDO::FETCH_ASSOC) as $row) 
 				$_data[] = $row;
 			
 			return $_data;	
-		}			
+			
+		}
+		//else from srv	
+		$sql = str_replace(' ', '-', $dpc);	
+		return file_get_contents($this->ldscheme . "/$sql");
+		//MUST return array of fileds or one field (string) 	
 	}	
+	
+	//insert, update, delete to srv
+	public function pdoExec($dpc, $clientside=false)
+	{
+		if (($clientside==true) && (self::$pdo))	
+		{
+			//...
+		}
+		
+		return file_get_contents($this->ldscheme . "/$dpc");
+		//MUST return true false		
+	}		
    
 	private function destroy() 
 	{

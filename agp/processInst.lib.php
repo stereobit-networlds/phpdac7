@@ -21,6 +21,15 @@ class processInst extends pstack {
 		$this->chain = $this->getProcessChain();
 	}	
 	
+	//include -remote- file (return string to require/require_once)
+	protected function _include($inc) {
+		
+		$phpdac = isset($this->caller->ldscheme) ? 
+						$this->caller->ldscheme .'/' : null;	
+						
+		return ($phpdac . $inc);
+	}	
+	
 	//loader (any new object inside processes use vendor/dir)	
 	//usage $this->loader('vendor/messages/') //vendor dir	
 	//https://stackoverflow.com/questions/37842573/php-spl-autoload-register-pass-second-parameter	
@@ -30,26 +39,17 @@ class processInst extends pstack {
 
 		spl_autoload_register(function($className) use ($vendor) 
 		{
-			if ($phpdac = $this->caller->ldscheme)
-				require ($phpdac . '/'. $vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php');
+			/*if ($phpdac = $this->caller->ldscheme)
+				require($phpdac . '/'. $vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php');
 			else
 				require($vendor . $className . '.php');
-			
+			*/
+			require_once($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
 			//echo "File {$vendor}{$className} loaded!";
 		}); 
-    }
-
-	protected function _include($inc)
-	{
-		$phpdac = isset($this->caller->ldscheme) ? 
-						$this->caller->ldscheme .'/' : null;	
-						
-		return ($phpdac . $inc);
-	}	
+    }	
 
 
-    	
-	
 	public function getProcessChain() 
 	{
 		if ($dac5 = $this->caller->ldscheme)
@@ -359,9 +359,13 @@ class processInst extends pstack {
 			$_code = base64_decode($res['codedata']);
 		//echo $_code;
 		*/
-		$c = self::pdoSQL('codedata', "select codedata from crmforms where class='process' AND code='$formName'");		
-		$_code = base64_decode($c);
 		
+		//real db
+		//$c = self::pdoSQL('codedata', "select codedata from crmforms where class='process' AND code='$formName'");
+		//srv db
+		$c = $this->env->pdoQuery("select codedata from crmforms where class='process' AND code='$formName'");
+		
+		$_code = base64_decode($c);	
 		$code = $_code ?
 				str_replace(array('<@','@>'),
 				array('<?php','?>'),$_code) :		
