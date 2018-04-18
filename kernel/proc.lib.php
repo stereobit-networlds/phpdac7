@@ -22,42 +22,41 @@ class proc
 		
 		$this->sync = false;
 		$this->async = false;
-		$this->process = null;	
-
-		//init in shmem as resource var
-		$this->env->mem->save('srvProcessStack',json_encode(array()));
-		$this->env->mem->save('srvProcessChain',json_encode(array()));				
+		$this->process = null;					
 	}
+	
+	public function isSyncProc()
+	{
+		return ($this->sync==true) ? true : false;
+	}
+	
+	public function isaSyncProc()
+	{
+		return ($this->async==true) ? true : false;
+	}		
 	
 	//dmn Println
 	public function _echo($msg) 
 	{
 		$this->env->_echo($msg);
 	}
-	/*
-	public static function initPDO() 
-	{
-		return $env::$pdo;
-	}*/	
 	
-	//use as fluent interface
-	/*
-		$var = (new proc($this))
-                ->set($cmd)
-                ->go('Smith');
-	*/	
-    /*public function __toString()
-    {
-        $data = 'test';
-
-        return $data;
-    }*/	
+	//env interface
+	public function pdoQuery($dpc)
+	{
+		return ($this->env->pdoQuery($dpc));
+	}
+	
+	//env interface
+	public function pdoExec($prep, $vals)
+	{
+		return ($this->env->pdoExec($prep, $vals));
+	}		
 	
 	//MUST BE POOLED (async/asyncloop)
 	public function set($cmd=null) 
 	{
 		//if (!$cmd) return false; //fluent
-		
 		if (isset($cmd)) {
 			$this->async = false; //reset
 			$this->sync = false; //reset
@@ -70,35 +69,37 @@ class proc
 	
 				$this->processStack($pcmd);
 			
-				$s = $this->getProcessStack(); //print_r($s);
-				$c = $this->getProcessChain(); //print_r($c);
-			
 				//save in sh mem as resource var (not in resources)
-				$this->env->mem->save('srvProcessStack',json_encode($s));
-				$this->env->mem->save('srvProcessChain',json_encode($c));
+				$this->env->save('srvProcessStack',
+									json_encode($this->getProcessStack()));
+				$this->env->save('srvProcessChain',
+									json_encode($this->getProcessChain()));
 				
 				echo "\x07"; //beep
+				$this->env->cnf->_say('new proc (async): ' . $dpc, 'TYPE_LION');
 				
-				return 1;
+				//open new win/thread
+				$this->env->openProcess('process', $dpc);
+				
+				//return 1;
 			}
 			elseif (($pcmd[0]=='sync') || ($pcmd[0]=='syncloop')) 
 			{
 				//sync asyncs ...!!
-				echo "PROC.lib sync asyncs <<<<<<<<<<<<<<<<" . PHP_EOL;
+				$this->env->cnf->_say('new proc (sync): ' . $dpc, 'TYPE_LION');
 				
 				$this->sync = true;
 				$this->processStack($pcmd);
 				
-				return -1;
+				//return -1;
 			}	
 			else //srv execute
 				$this->processStack($pcmd);
 			
-			return 0; 
+			//return 0; 
 		}
 		
-		return false; //nofluent
-		//return $this; //fluent
+		return $this; //fluent
 	}
 	
 	public function go() 
@@ -114,13 +115,7 @@ class proc
 		}
 		//unset($this->process);	
 		
-		return false; //nofluent
-		//return $this; //fluent
-	}
-	
-	public function saveAsyncPipeInMem()
-	{
-		
+		return $this; //fluent
 	}
 	
 	private function processStack($processes) 
@@ -169,16 +164,6 @@ class proc
 			}, ARRAY_FILTER_USE_BOTH);		
 		*/	
 	}
-
-	public function isSyncVar()
-	{
-		return ($this->sync==true) ? true : false;
-	}
-	
-	public function isaSyncVar()
-	{
-		return ($this->async==true) ? true : false;
-	}	
 	
 	//public function free()	
 	public function __destruct() 

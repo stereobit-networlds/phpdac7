@@ -1,24 +1,21 @@
 <?php
 
-class processInst extends pstack {
+class processInst /*extends pstack*/ {
 	
 	protected $processStepName, $processChain;
-	protected $stack, $chain, $event, $caller, $env; 
-	public static $pdo;		
+	protected $stack, $chain, $event, $caller, $env; 		
 	
 	public function __construct(& $caller, $callerName=null, $stack=null) {
 				
-		self::$pdo = $caller::$pdo;	
 		$this->caller = $caller;
 		$this->env = $caller->env;	
 				
-		parent::__construct($caller->env, 'kernel', $stack); 
+		//parent::__construct($caller->env, 'kernel', $stack); 
+		//$this->debug = true;//override;	
 		
-		$this->debug = false;//true;//override;	
-		
-		//$this->event = null;
+		$this->event = $caller->event;
 		$this->stack = (array) $stack; //get env chain
-		$this->chain = $this->getProcessChain();
+		$this->chain = $caller->getProcessChain();
 	}	
 	
 	//include -remote- file (return string to require/require_once)
@@ -40,31 +37,18 @@ class processInst extends pstack {
 		{
 			try {
 				//include($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
-				require_once($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
+				@include_once($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
 				//echo "File {$vendor}{$className} loaded!";
 			}
 			catch (Throwable $t) {
-				//echo $content=null;
-				echo $t . PHP_EOL;
+				//echo $t . PHP_EOL;
+				echo $className  . ' NOT found!' . PHP_EOL;
 			}
 		}); 
-    }	
-
-
-	public function getProcessChain() 
-	{
-		if ($dac5 = $this->caller->ldscheme)
-		{
-			$c = file_get_contents($dac5 . '/srvProcessChain');
-			return (array) json_decode($c);
-		}
-		else
-			return (array) $this->caller->proc->getProcessChain(); //proc		
-	}	
-	
+    }		
 	
 	public function isFinished($event=null) {
-		if (!$this->isProcessUser()) 
+		if (!$this->caller->isProcessUser()) 
 			return false;
 		
 		$this->event = $event;
@@ -130,21 +114,21 @@ class processInst extends pstack {
 		$stackId = $this->getStackId();
 
 		//process
-		$pid = $this->isRunningProcess();	
-		$isClosed = $this->isClosedProcess();
+		$pid = $this->caller->isRunningProcess();	
+		$isClosed = $this->caller->isClosedProcess();
 		
-		$fn = $this->callerName .'.'. $this->processStepName;
-		$pForm = $this->hasForm($fn) ? $fn : null;		
-		$pData = $this->stackPost(true,$stackId,$chainId);
+		$fn = $this->caller->callerName .'.'. $this->processStepName;
+		$pForm = $this->caller->hasForm($fn) ? $fn : null;		
+		$pData = $this->caller->stackPost(true, $stackId, $chainId);
 		
-		$sid = md5(serialize($this->stack) .'|'. $this->pMethod);
-		$pRunStatus = $this->processStatus(1, $pid, $sid, $stackId, $chainId);
+		$sid = md5(serialize($this->stack) .'|'. $this->caller->pMethod);
+		$pRunStatus = $this->caller->processStatus(1, $pid, $sid, $stackId, $chainId);
 
 		$c = array( 'name'=>$this->processStepName,
-					'process'=>$this->processName,
-					'caller'=>$this->callerName,
+					'process'=>$this->caller->processName,
+					'caller'=>$this->caller->callerName,
 					'event'=>$this->event,	
-					'method'=>$this->pMethod,
+					'method'=>$this->caller->pMethod,
 					'form'=>$pForm,
 					'data'=>$pData,
 			        'status'=>$pRunStatus,
@@ -170,14 +154,14 @@ class processInst extends pstack {
 	//chain methods	
 	
 	protected function getNextInChain() {
- 		//$chain = $this->getProcessChain();
+
 		$thisID = $this->getChainId()-1; 
 		//print_r($chain); echo $thisID;
 		return $this->chain[$thisID+1]; 
 	}
 
 	protected function getPrevInChain() {
- 		//$chain = $this->getProcessChain();
+
 		$thisID = $this->getChainId()-1;
 		
 		return $this->chain[$thisID-1];
@@ -206,12 +190,13 @@ class processInst extends pstack {
 	
 
 	protected function getChainCount() {
-		return @count($this->chain);//$this->getProcessChain());
+		
+		return @count($this->chain);
 	}	
 	
 	protected function getChainId() {
- 		//$chain = $this->getProcessChain();
-		//if (empty($chain)) return 0;
+
+		if (empty($this->chain)) return 0;
 		
 		foreach ($this->chain as $id=>$chainName) {
 			//echo PHP_EOL . $this->processStepName .':'. $chainName;
@@ -228,7 +213,7 @@ class processInst extends pstack {
 		$i=0;
 		foreach ($this->stack as $stackName=>$processChain) {
 			if ($i==$thisID+1) {
-				$sName = $this->getCallerNameInStack($stackName);
+				$sName = $this->caller->getCallerNameInStack($stackName);
 				return $sName .'.'. array_shift($processChain);
 			}	
 			$i+=1;	
@@ -282,7 +267,7 @@ class processInst extends pstack {
 		
 		foreach ($kStack as $id=>$stackName) {
 			
-			$sName = $this->getCallerNameInStack($stackName);
+			$sName = $this->caller->getCallerNameInStack($stackName);
 			//echo $stackName , '>' , $sName;
 			if ($sName == $this->callerName)
 				return ($id + 1);
@@ -294,13 +279,13 @@ class processInst extends pstack {
 	//update running stack step
 	protected function stackRunStep($state=null) {	
 	
-		if ($this->isRunningProcess())  {
+		if ($this->caller->isRunningProcess())  {
 			
 			$cid = $this->getChainId();
 			$sid = $this->getStackId();
 			$pstate = $state ? 1 : 0;	
 		
-			$final = $this->stackRunSave($pstate, $sid, $cid);
+			$final = $this->caller->stackRunSave($pstate, $sid, $cid);
 			if (!$final)		
 				$this->setFormStack();
 			
@@ -313,14 +298,14 @@ class processInst extends pstack {
 	//return post data else rid
 	protected function stackPostStep($data=false) {
 
-		if ($this->isRunningProcess())  {		
+		if ($this->caller->isRunningProcess())  {		
 
 			$cid = $this->getChainId();
 			$sid = $this->getStackId();
 			//echo $cid . ':' . $sid;
 			
 			//check if process has post
-			$ret = $this->stackPost($data, $sid, $cid);
+			$ret = $this->caller->stackPost($data, $sid, $cid);
 			return ($ret);
 		}
 		return false; 				
@@ -328,10 +313,10 @@ class processInst extends pstack {
 	
 	//override
 	protected function setFormStack($form=null) {
-		$f = $form ? $form : $this->callerName .'.'. $this->processStepName;
+		$f = $form ? $form : $this->callerName .'.'. $this->caller->processStepName;
 
 		if (!$this->stackPostStep()) 	
-			return parent::setFormStack($f);	
+			return $this->caller->setFormStack($f);	
 
 		return false;
 	}	
@@ -339,7 +324,8 @@ class processInst extends pstack {
 	//misc	
 	
 	protected function debug($event=null) {
-		if ($this->debug) {
+		
+		if ($this->caller->debug) {
 			echo ($ps = $this->prevStep($event)) ? PHP_EOL . 'Prev step:' . $ps : null;
 			echo PHP_EOL . 'Step:' . $this->step($event);
 			echo ($ns = $this->nextStep($event)) ? PHP_EOL . 'Next step:' . $ns : null ;
@@ -352,19 +338,11 @@ class processInst extends pstack {
 	
 	//test
 	protected function runCode($status=0, $event=null) {
-		$formName = $this->callerName .'.'. $this->processStepName;// . ($event ? '.'.$event : null);
+		$formName = $this->callerName .'.'. $this->caller->processStepName;// . ($event ? '.'.$event : null);
 		
 		//crm forms
-		/*$sSQL = "select codedata from crmforms where class='process' AND code='$formName'";		
-		foreach ($this->db->query($sSQL, PDO::FETCH_ASSOC) as $res)
-			$_code = base64_decode($res['codedata']);
-		//echo $_code;
-		*/
-		
-		//real db
-		//$c = self::pdoSQL('codedata', "select codedata from crmforms where class='process' AND code='$formName'");
-		//srv db
-		$c = $this->env->pdoQuery("select codedata from crmforms where class='process' AND code='$formName'");
+		$sSQL = "select codedata from crmforms where class='process' AND code='$formName'";		
+		$c = $this->env->pdoQuery($sSQL);
 		
 		$_code = base64_decode($c);	
 		$code = $_code ?

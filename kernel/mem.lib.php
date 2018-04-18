@@ -468,58 +468,53 @@ class mem
 	  
 	   if ($tree) 
 	   {
-	    //print_r($tree);
-	    //echo ".....\n";
-	    //$offset = 0;
-	    foreach($tree as $dpc_id=>$dpcf) 
-		{
-	      if (($dpcf!='') && ($dpcf[0]!=';')) 
-		  {
-			if ($f = $this->env->fs->_readPHP($dpcf)) 
+			foreach($tree as $dpc_id=>$dpcf) 
 			{
-              if ($reload===false) //bypass, just compute bytes
-			  { 		
-					$this->set($dpcf, strlen($f), $f); //clean f 
-			  }
-			  //add header sign
-			  $data .= "\0";
+				if (($dpcf!='') && ($dpcf[0]!=';')) 
+				{
+					if ($f = $this->env->fs->_readPHP($dpcf)) 
+					{
+						if ($reload===false) //bypass, just compute bytes
+						{ 		
+							$this->set($dpcf, strlen($f), $f); //clean f 
+						}
+						//add header sign
+						$data .= "\0";
 			  
-			  $data .= $f; //cleaned
+						$data .= $f; //cleaned
 			  
-			  //save md5 without spinklocks 
-			  //at reload recreate at init
-			  $this->env->fs->hAdd($dpcf, md5($f)); 
+						//save md5 without spinklocks 
+						//at reload recreate at init
+						$this->env->fs->hAdd($dpcf, md5($f)); 
 			  
-			  //add foot sign
-			  $data .= "\0";
+						//add foot sign
+						$data .= "\0";
 			  
-			  if ($reload===false)
-				$this->env->cnf->_say($dpcf . " loaded", 'TYPE_LION');
-			  //else //show index at load
-				//$this->env->cnf->_say($dpcf . " re-loaded", 'TYPE_LION');  
-		    }
-		    else 
-	          $this->env->cnf->_say($dpcf . " Error", 'TYPE_LION');
+						if ($reload===false)
+							$this->env->cnf->_say($dpcf . " loaded", 'TYPE_LION');  
+					}
+					else 
+						$this->env->cnf->_say($dpcf . " Error", 'TYPE_LION');
 	 
-		  }
-	    }
-	    $totalbytes = strlen($data);
-	    $this->env->cnf->_say("Total Bytes : ".$totalbytes, 'TYPE_IRON');
+				}
+			}
+			$totalbytes = strlen($data);
+			$this->env->cnf->_say("Total Bytes : ".$totalbytes, 'TYPE_IRON');
 	
-        return $totalbytes; 
-	  }
-	  else
-	    die("Dpc tree error. System Halted." . PHP_EOL); 		
+			return $totalbytes; 
+		}
+		else
+			die("Dpc tree error. System Halted." . PHP_EOL); 		
 	} 	
    
 	//Check spinlock 
 	private function checkSpinLock($dpc)
 	{   
-       $spo = $this->dpc_addr[$dpc] - 1;
-	   if ($this->env->shm->_shread($spo, 1) !== "\0")
-		   return false;
+		$spo = $this->dpc_addr[$dpc] - 1;
+		if ($this->env->shm->_shread($spo, 1) !== "\0")
+			return false;
 	   
-	   return true;
+		return true;
 	}
 	
 	/*private function dataDiff($dpc=null, $data=null)
@@ -748,14 +743,8 @@ class mem
 		}	
 		else
 		{		
-			if ((!$this->env->scheduler->findschedule($dpc)) /*&&
-				is_resource(self::$pdo)*/)
+			if (!$this->env->scheduler->findschedule($dpc))
 			{
-			/*
-				$pdodpc = str_replace('-',' ',$dpc);
-				foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) 
-					$_data[] = $row;
-			*/
 				$_data = $this->env->pdoQuery($dpc);			
 				$data = json_encode($_data);
 			}
@@ -825,49 +814,19 @@ class mem
 		//if () //VARIABLE
 		//{   
 			if ($new) //INSERT
-			{
-				//create var
-				//$this->env->cnf->_say($this->env->dpcpath . $dpc . ' not found!', 'TYPE_LION');	
+			{	
+				$this->env->cnf->_say('new variable: '. $dpc, 'TYPE_BIRD');	
 				
-				//MUST BE POOLED (async/asyncloop)
-				$var = $this->env->proc->set($dpc);
-				
-				if ($var > 0) //async
-				{
-					$this->env->cnf->_say('new variable (async): ' . $dpc, 'TYPE_LION');
-					//..open client at async class
-					$this->env->openProcess('process', $dpc);
-					//..data write
-					//re-save chain (remove)
-				}
-				elseif ($var < 0) //sync
-				{
-					$this->env->cnf->_say('new variable (sync): ' . $dpc, 'TYPE_LION');
-					//proceed at once ...may async inside piping
-					if ($dataNOWRITE = $this->env->proc->go()) 
-						$this->env->cnf->_say(implode(',', $this->env->proc->getProcessChain()) . ' finished', 'TYPE_LION');
-				}
-				else //unmamed sync variable
-				{	
-					$this->env->cnf->_say('new variable (unnamed):' . $dpc, 'TYPE_LION');
-					
-					//proceed at once
-					if ($dataNOWRITE = $this->env->proc->go()) 
-						$this->env->cnf->_say(implode(',', $this->env->proc->getProcessChain()) . ' finished', 'TYPE_LION');
-				}
-				
-				//open client to proceess(s) 
-				//-pool check and reply based on client response..
-				/*
-				$dataTEST = (new proc($this))
-							->set($dpc)
-							->go();
-				echo $dataTest . PHP_EOL;			
-				*/				
+				//$var = $this->env->proc->set($dpc);
+				//$dataNOWRITE = $this->env->proc->go();
+				$dataNOWRITE = (new proc($this->env))
+								->set($dpc)
+								->go();
+				//echo $dataNOWRITE . PHP_EOL;						
 			}
 			else
 			{
-				$this->env->cnf->_say('reading variable: '. $dpc, 'TYPE_BIRD');	
+				$this->env->cnf->_say('read variable: '. $dpc, 'TYPE_BIRD');	
 				$data = null ;//bypass and read
 			}
 		//}		

@@ -92,8 +92,8 @@ class kernel {
 			//init timer
 			$this->timer = new timer($this);
 			
-			//init proc
-			$this->proc = new proc($this); //nofluent
+			//init proc (new at mem)
+			//$this->proc = new proc($this);
 	  
 			//init resources
 			$this->resources = new resources($this);
@@ -135,179 +135,7 @@ class kernel {
 			$this->shutdown(true);
 		}	  
 	}
-   	
-	
    
-	//TIER DISPATCHER  
-   /*
-	private function getdpcmemc($dpc) 
-	{
-		$data = null;		
-		//$dpc = $this->utl->dehttpDpc($dpc); //in dmn	  
-
-		if ($this->mem->exist($dpc))
-		{
-			//fetch dpc   
-			list($offset, $length, $free, $rlength) = $this->mem->get($dpc);
-
-			//dpc and streams that exists in data (after shmax_id) area only
-			if ($offset >= $this->mem->shmmax()) 
-			{
-				//SQL
-				if (substr($dpc,0,7)==='select-') 
-				{
-					if ((!$this->scheduler->findschedule($dpc)))		
-					{
-						$pdodpc = str_replace('-',' ',$dpc);
-						foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) 
-							$_data[] = $row;
-
-						$data = json_encode($_data);
-						_say($data,3); //show new data
-					}
-					else 
-					{
-						$data = null; //bypass and read
-						$this->cnf->_say('Scheduled PDO stream:' . $dpc, 'TYPE_LION');
-						_say($data,3);
-					}
-				}
-				elseif (substr($dpc,0,4)==='www.') //WWW
-				{
-					if (!$this->scheduler->findschedule($dpc)) 
-					{
-						$data = $this->utl->httpcl($dpc);
-						_say($data,3); //show new data
-					}
-					else 
-					{
-						$data = null; //bypass and read
-						$this->cnf->_say('Scheduled data stream:' . $dpc, 'TYPE_LION');
-						_say($data,3);
-					}	
-				}
-				elseif (@is_readable($this->dpcpath . $dpc)) //FILE 
-				{
-					//local storage reload  
-					$sf = @filesize($this->dpcpath . $dpc);
-					$this->cnf->_say("Size:" . $rlength .':' . $sf, 'TYPE_RAT');
-					if ($rlength != $sf) {
-						$data = $this->fs->_readPHP($this->dpcpath . $dpc); 
-						_say($data,3); 
-					}	
-					else
-						$data = null; //bypass and read
-				}
-				else  { //variable
-					$this->cnf->_say('reading variable: '. $dpc, 'TYPE_BIRD');	
-					$data = null ;//bypass and read
-				}
-
-				if (isset($data)) //update 
-				{ 			
-					$dataLength = strlen($data); 
-					$remaining = $length - $dataLength;
-					
-					if (($offset = $this->mem->upd($dpc, $remaining, $data)) &&	
-						($this->mem->writeSH($data, $offset)))
-					{
-						$this->cnf->_say("$dpc updated!",'TYPE_LION');
-						_dump("UPDATE\n\n\n\n" . $data);
-					}
-					else
-					{
-						_dump("MEM-ERROR\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
-						die($dpc . " (savedpcmem update remain page space: $remaining) error, increase extra space!" . PHP_EOL); 
-					}	
-					
-				}//if data
-			}
-			//else.. read mem and continue
-			$data = $this->mem->readSH($dpc);
-			    
-			$this->cnf->_say("reading $dpc :" . strlen($data), 'TYPE_RAT');
-		}
-		else //NEW
-		{ 
-			if (substr($dpc,0,7)==='select-') //PDO
-			{   
-				if ((!$this->scheduler->findschedule($dpc)) )
-				{
-					$pdodpc = str_replace('-',' ',$dpc);
-					foreach(self::$pdo->query($pdodpc, PDO::FETCH_ASSOC) as $row) 
-						$_data[] = $row;
-
-					$data = json_encode($_data);
-				}
-				else
-					$data = null; //bypass		
-			} 	
-			elseif (substr($dpc,0,4)==='www.') //WWW 
-			{
-				$data = (!$this->scheduler->findschedule($dpc)) ?
-						$this->utl->httpcl($dpc) : null; //bypass			
-			}	
-			elseif (is_readable($this->dpcpath . $dpc)) //FILE
-			{
-
-				//local storage
-				$data = $this->fs->_readPHP($this->dpcpath . $dpc); //dump inside
-			}
-			else 
-			{   //VAR
-				//create var
-				$this->cnf->_say($this->dpcpath . $dpc . ' not found!', 'TYPE_LION');	
-				
-				//MUST BE POOLED
-				if ($async = $this->proc->set($dpc) > 0) 
-				{
-					$this->cnf->_say('set async variable for processing:' . $dpc, 'TYPE_LION');
-					//..open client at async class
-					exec("start /D d:\github\phpdac7\bin agentds process");
-					//..data write
-					//re-save chain (remove)
-				}
-				else {	
-					$this->cnf->_say('set sync variable for processing:' . $dpc, 'TYPE_LION');
-					
-					//proceed at once
-					if ($dataNOWRITE = $this->proc->go()) {
-						//print_r($this->proc->getProcessStack());
-						//echo implode(',', $this->proc->getProcessChain()) . ' finished!' . PHP_EOL; 
-						$this->cnf->_say(implode(',', $this->proc->getProcessChain()) . ' finished', 'TYPE_LION');
-					}	
-				}
-				
-			
-				//open client to proceess(s) 
-				//-pool check and reply based on client response..
-			}	
-		
-			if (!$data) return false;	
-			_say($data,3);		
-		
-			$dataLength = strlen($data);		
-
-			if (($offset = $this->mem->set($dpc, $dataLength, $data)) &&
-				($this->mem->writeSH("\0". $data ."\0", $offset)))
-			{
-				//save dump-tree for any use (phar creation etc)
-				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
-				
-				$this->cnf->_say("$dpc saved!",'TYPE_LION');
-				_dump("INSERT\n\n\n\n" . $data);
-			}
-			else
-			{		
-				_dump("MEM-ERROR\n$dpc\noffset: $offset\nlength: ".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');		
-				die($dpc . " (getdpcmemc save offset:$offset) error, increase data space!" . PHP_EOL);
-			}	
-		
-			$this->cnf->_say("New $dpc : " . strlen($data), 'TYPE_RAT');		
-		}
-	  
-		return ($data);	      
-	}*/
 
 	//alias
 	public function _main($dpc) 
@@ -331,13 +159,19 @@ class kernel {
 	
 
 	//RUNTIME
+	
+	//mem save interface
+	public function save($var, $value=null)
+	{
+		return $this->mem->save($var, $value);
+	}	
 
     public function show_schedules() 
 	{
 		$sh = $this->scheduler->showschedules();
 		//echo 'save::::::::::::::::::::;';
 		//print_r($sh);
-		$this->mem->save('srvSchedules', json_encode($sh));
+		$this->save('srvSchedules', json_encode($sh));
 		//DISABLED _dump(json_encode($sh),'w','/dumpsh-'.$_SERVER['COMPUTERNAME'].'.log');
 	  
 		return null;
@@ -370,7 +204,7 @@ class kernel {
 			$sh = unserialize($jsonsh); 
 				
 			//save in sh mem as resource var (not in resources)
-			$this->mem->save('srvSchedules', serialize($sh));//json_encode($sh));				
+			$this->save('srvSchedules', serialize($sh));//json_encode($sh));				
 			return true;
 		}*/
 		 
@@ -449,7 +283,7 @@ class kernel {
 		if ($this->saveSrvState===true) {
 			try //boo!!
 			{	//(TEST OFF >15kb shmem halt)	
-				$this->mem->save('srvState',$this->mem->getShmContents());
+				$this->save('srvState',$this->mem->getShmContents());
 				//$this->cnf->_say("Table saved", 'TYPE_LION');
 			} 
 			catch (Exception $e) {
@@ -642,8 +476,8 @@ class kernel {
 		unset($this->scheduler); //destruct
 		unset($this->dmn); //destruct
 		unset($this->resources); //destruct
-		unset($this->proc); //destruct
 		unset($this->timer); //destruct
+		//unset($this->proc); //destruct
 		unset($this->mem); //destruct
 		unset($this->shm); //destruct
 		unset($this->fs); //destruct

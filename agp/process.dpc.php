@@ -4,37 +4,21 @@ define("PROCESS_DPC",true);
 
 $__DPC['PROCESS_DPC'] = 'process';
 
-class process extends pstack /*implements Serializable*/ {
+class process extends pstack {
 
-	var $env, $envStack, $envChain;
-	public static $pdo;	
+	var $env, $envStack, $envChain;	
 
 	public function __construct(& $env, $chain=null, $cmd=null) {	
 
-	    self::$pdo = $env::$pdo;//initPDO();
-	
-	    //DISABLED
-		//parent::__construct($this, 'kernel', $this->envStack); 
-		
 		$this->env = $env;
 		$this->envStack = $this->getProcessStack();
-		$this->envChain = $this->getProcessChain();		
+		$this->envChain = $this->getProcessChain();
+		
+		parent::__construct($env, 'kernel', $this->envStack); 
+		$this->debug = true;	//override
+		
+		$this->pMethod = $this->envChain[0]; //override
 	}	
-	
-	//serialize funcs as agent
-	/*
-	public function serialize()
-	{
-		return serialize(array($this->caller, $this->chain, $this->cmd));
-	}
-
-	public function unserialize($serialized)
-	{
-		list($this->caller, $this->chain, $this->cmd) = unserialize($serialized);
-		//$this->caller::initPDO();
-		//self::$pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
-	}*/	
-	
 	
 	public function getProcessStack() 
 	{
@@ -58,7 +42,6 @@ class process extends pstack /*implements Serializable*/ {
 			return (array) $this->env->getProcessChain(); //proc		
 	}	
 	
-
 	public function isFinished($event=null) {
 		if (empty($this->envChain)) return false;
 
@@ -70,7 +53,7 @@ class process extends pstack /*implements Serializable*/ {
 			print_r($this->envStack);
 		}*/
 
-		switch ($this->envChain[0]) {
+		switch ($this->pMethod) {
 			
 			/*case 'puzzled'    :	
 				//when running pid is the process run id
@@ -125,18 +108,26 @@ class process extends pstack /*implements Serializable*/ {
 			case 'syncloop'   :	
 								$restStack = $this->envChain; //init copy
 								foreach ($this->envChain as $i=>$processInst) 
-								{
+								{   
 									if (!$this->runInstance($processInst, $event, null))
 									{	//continue async a+switch cmd
 										//$this->env->env->mem->save...
-										if (!empty($restStack)) //must be saved or rewind by 1 ??
-											return $this->runInstance('a'.$this->envChain[0], $event, null);//$restStack	
+										if (!empty($restStack)) 
+										{   
+											//recursion, make async proc for the rest
+											$asc = 'a'. $this->pMethod;
+											$innerAsyncDpc = $asc .'/' . implode('/',$restStack) . '/';
+											//$dataNOWRITE =
+											return (new proc($this->env->env))
+														->set($innerAsyncDpc)
+														->go();
+										}	
 										else
 											return false;
 									}	
 									//else export executed cmd	
 									$dummy = array_shift($restStack); //must me saved in srv mem!!			
-									print_r($restStack);
+									//print_r($restStack);
 								}
 								break;
 			case 'balanced'   :				
@@ -159,30 +150,33 @@ class process extends pstack /*implements Serializable*/ {
 		
 		$myStack = isset($stack) ? array('kernel'=>$stack) : $this->envStack;
 		
+		if (!class_exists($inst)) //already loaded class name
+		{
 		if ($dac5 = $this->env->ldscheme) { 
 			//agent
-			require_once ($dac5 .'/'. $file);
-			if (class_exists($inst)) {
-				//this interface
+			include_once ($dac5 .'/'. $file);
+		}	
+        elseif (file_exists($file)) {
+		    //kernel
+			include_once $file;	
+	    }
+		}
+		
+		if (class_exists($inst)) {
+			try { 
+				//if it is async and class exists, try...
 				$c = new $inst($this, $this->callerName, $myStack);
 				if ($c->isFinished($event)) 
 					return true;			
 			}
-		} 
-        elseif (file_exists($file)) {
-		    //kernel
-			require_once $file;	
-			if (class_exists($inst)) {	
-                //this->env interface			
-				$c = new $inst($this->env, $this->callerName, $myStack);
-				if ($c->isFinished($event)) 
-					return true;
-			}	
+			catch (Throwable $t) {
+				$this->env->env->cnf->_say($inst . ' found, try async!', 'TYPE_LION');
+				//echo $t . PHP_EOL;
+				return false;
+			}
 		}
-		//else
-		//$this->env->_echo($file . ' not found!'); 	
-		echo $file . ' not found!' . PHP_EOL;
-
+		
+		$this->env->env->cnf->_say($inst . ' not found!', 'TYPE_LION');
 		return false;	
 	}
 	
@@ -193,18 +187,15 @@ class process extends pstack /*implements Serializable*/ {
 		
 		if ($dac5 = $this->env->ldscheme) { 
 			//agent
-			require_once ($dac5 .'/'. $file);
-			if (class_exists($inst)) {
-					return true;			
-			}
-		} 
+			include_once ($dac5 .'/'. $file);
+		}
         elseif (file_exists($file)) {
 		    //kernel
-			require_once $file;	
-			if (class_exists($inst)) {	
-					return true;
-			}	
+			include_once $file;	
 		}
+		
+		if (class_exists($inst))
+			return true;			
 
 		return false;	
 	}	
