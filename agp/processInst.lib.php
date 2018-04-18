@@ -36,16 +36,17 @@ class processInst extends pstack {
     protected function loader($vendor=null) {
 	
 	    //echo 'Trying to load ', $className, ' via ', __METHOD__, "()\n"; 
-
 		spl_autoload_register(function($className) use ($vendor) 
 		{
-			/*if ($phpdac = $this->caller->ldscheme)
-				require($phpdac . '/'. $vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php');
-			else
-				require($vendor . $className . '.php');
-			*/
-			require_once($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
-			//echo "File {$vendor}{$className} loaded!";
+			try {
+				//include($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
+				require_once($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
+				//echo "File {$vendor}{$className} loaded!";
+			}
+			catch (Throwable $t) {
+				//echo $content=null;
+				echo $t . PHP_EOL;
+			}
 		}); 
     }	
 

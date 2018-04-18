@@ -829,25 +829,31 @@ class mem
 				//create var
 				//$this->env->cnf->_say($this->env->dpcpath . $dpc . ' not found!', 'TYPE_LION');	
 				
-				//MUST BE POOLED
-				if ($async = $this->env->proc->set($dpc) > 0) 
+				//MUST BE POOLED (async/asyncloop)
+				$var = $this->env->proc->set($dpc);
+				
+				if ($var > 0) //async
 				{
-					$this->env->cnf->_say('reading variable (async): ' . $dpc, 'TYPE_LION');
+					$this->env->cnf->_say('new variable (async): ' . $dpc, 'TYPE_LION');
 					//..open client at async class
 					$this->env->openProcess('process', $dpc);
 					//..data write
 					//re-save chain (remove)
 				}
-				else {	
-					$this->env->cnf->_say('reading variable (sync): ' . $dpc, 'TYPE_LION');
+				elseif ($var < 0) //sync
+				{
+					$this->env->cnf->_say('new variable (sync): ' . $dpc, 'TYPE_LION');
+					//proceed at once ...may async inside piping
+					if ($dataNOWRITE = $this->env->proc->go()) 
+						$this->env->cnf->_say(implode(',', $this->env->proc->getProcessChain()) . ' finished', 'TYPE_LION');
+				}
+				else //unmamed sync variable
+				{	
+					$this->env->cnf->_say('new variable (unnamed):' . $dpc, 'TYPE_LION');
 					
 					//proceed at once
-					if ($dataNOWRITE = $this->env->proc->go()) {
-						//print_r($this->proc->getProcessStack());
-						//echo implode(',', $this->env->proc->getProcessChain()) . ' finished!' . PHP_EOL; 
+					if ($dataNOWRITE = $this->env->proc->go()) 
 						$this->env->cnf->_say(implode(',', $this->env->proc->getProcessChain()) . ' finished', 'TYPE_LION');
-					}
-					//return 1;	
 				}
 				
 				//open client to proceess(s) 

@@ -6,7 +6,7 @@ require_once("agp/process.dpc.php");
 
 class proc 
 {	
-	public $env, $envname, $async;
+	public $env, $envname, $async, $sync;
 	private $process, $processStack, $startProcess;	
 	public static $pdo;	
 	
@@ -20,6 +20,7 @@ class proc
 		$this->processStack = array();
 		$this->startProcess = array();	
 		
+		$this->sync = false;
 		$this->async = false;
 		$this->process = null;	
 
@@ -52,17 +53,19 @@ class proc
         return $data;
     }*/	
 	
+	//MUST BE POOLED (async/asyncloop)
 	public function set($cmd=null) 
 	{
 		//if (!$cmd) return false; //fluent
 		
 		if (isset($cmd)) {
 			$this->async = false; //reset
+			$this->sync = false; //reset
 			$pcmd = explode('/',$cmd);
 			
-			if ($pcmd[0]=='async') 
+			if (($pcmd[0]=='async') || ($pcmd[0]=='asyncloop')) 
 			{
-				//must exist as class
+				//async/asyncloop must exist as class, no shift
 				$this->async = true;//array_shift($pcmd); 
 	
 				$this->processStack($pcmd);
@@ -73,20 +76,28 @@ class proc
 				//save in sh mem as resource var (not in resources)
 				$this->env->mem->save('srvProcessStack',json_encode($s));
 				$this->env->mem->save('srvProcessChain',json_encode($c));
+				
+				echo "\x07"; //beep
+				
+				return 1;
 			}
-			elseif ($pcmd[0]=='sync') 
+			elseif (($pcmd[0]=='sync') || ($pcmd[0]=='syncloop')) 
 			{
-				//sync asyncs
+				//sync asyncs ...!!
 				echo "PROC.lib sync asyncs <<<<<<<<<<<<<<<<" . PHP_EOL;
+				
+				$this->sync = true;
+				$this->processStack($pcmd);
+				
+				return -1;
 			}	
-			else //just execute
+			else //srv execute
 				$this->processStack($pcmd);
 			
-			return $this->async ? 1 : -1; //nofluent
+			return 0; 
 		}
 		
 		return false; //nofluent
-		
 		//return $this; //fluent
 	}
 	
@@ -105,6 +116,11 @@ class proc
 		
 		return false; //nofluent
 		//return $this; //fluent
+	}
+	
+	public function saveAsyncPipeInMem()
+	{
+		
 	}
 	
 	private function processStack($processes) 
@@ -156,8 +172,13 @@ class proc
 
 	public function isSyncVar()
 	{
-		return $this->async ? false : true;
+		return ($this->sync==true) ? true : false;
 	}
+	
+	public function isaSyncVar()
+	{
+		return ($this->async==true) ? true : false;
+	}	
 	
 	//public function free()	
 	public function __destruct() 

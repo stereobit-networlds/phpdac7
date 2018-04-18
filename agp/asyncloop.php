@@ -1,6 +1,6 @@
 <?php
 
-class async extends processInst {
+class asyncloop extends processInst {
 	
 	protected $env, $_stack;
 	
@@ -13,83 +13,55 @@ class async extends processInst {
 		$this->_stack = $stack['kernel'];
 		
 		$pid = $this->getChainId(); //next
-		echo "process async ({$this->_stack[$pid]}): ". $this->caller->status . PHP_EOL;
-		
-		//$this->loader('vendor/process/async/');
-		//new $this->_stack[$pid]();
+		echo "process asyncloop ({$this->_stack[$pid]}): ". $this->caller->status . PHP_EOL;
 		
 		$this->loader('vendor/process/async/');
-		$this->runAsync();
+		if ($etl = $this->runAsync()) {
+			
+			//ETL input
+			echo "> GzCompressMessageWriterDecorator - MessageWriter:\n";
+			$str='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus congue lectus, nec interdum erat ornare nec. Nunc tincidunt lobortis augue at vehicula.';
+			
+			//ETL output loop
+			for($i=1;$i<=10;$i++) {
+				$etl->writeText('['.$i.']' . $str);//$str);
+			}
+		}
 	}
 	
 	
-	//method #2 (make code and eval)	
+	//ETL make (decoration pattern)	
 	protected function runAsync() {
 		array_shift($this->_stack); //exclude self 'async' call
-		reset($this->_stack);
-		
-		//ETL input
-		echo "GzCompressMessageWriterDecorator - MessageWriter:\n";
-		$str='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus congue lectus, nec interdum erat ornare nec. Nunc tincidunt lobortis augue at vehicula.';
-		$etl = null; //new obj
-		
-		//ETL run
-		//$x = false;
+		reset($this->_stack);		
 		foreach ($this->_stack as $i=>$pInst) {
-			//if check (no autoloader)
-			//if ($x = $this->getInstance($processInst, 'vendor/process/async/')) {
-				$cc[] = "new $pInst(";
-			//}	
+			$cc[] = "new $pInst(";
 		}
 		if (!empty($cc)) { //all loaded
+			$zcmd = null; //init cmd
 			reset($cc);
-
-			$zcmd = null;
 			array_walk($cc, function($v, $k) use (&$zcmd) 
 			{  
 				$zcmd.= ($n = next($this->_stack)) ? $v : $v . str_repeat(')',count($this->_stack)) . ';';
 				return $v;
 			});
 			echo $zcmd . '!!!';
+			
 			try {
-				//eval('$content = (100 - );');
 				eval('$etl = ' . $zcmd);
 			} 
 			catch (Throwable $t) {
-				//echo $content=null;
 				echo $t . PHP_EOL;
+				return false;
 			}	
 		}
-		else
+		else {
 			echo 'Invalid command!' . PHP_EOL;
+			return false;
+		}	
 		
-		//ETL output
-		echo "Output:\n";
-		$etl->writeText($str) . PHP_EOL;
+		return ($etl);
 	}
-	
-	//method #2 (just require/fetch)
-	/*protected function getInstance($inst=null, $vendor='agp/') {
-		if (!$inst) die('No instance to run!');		
-		$file = $vendor . str_replace(array('_', "\0"), array('/', ''), $inst).'.php';
-		
-		if ($dac5 = $this->env->ldscheme) { 
-			//agent
-			require_once ($dac5 .'/'. $file);
-			if (class_exists($inst)) {
-					return true;			
-			}
-		} 
-        elseif (file_exists($file)) { //sync(never here)
-		    //kernel
-			require_once $file;	
-			if (class_exists($inst)) {	
-					return true;
-			}	
-		}
-
-		return false;	
-	}*/	
  
 	//override
 	public function nextStep($event=null) {
