@@ -1,18 +1,15 @@
 <?php
 
-class processInst /*extends pstack*/ {
+class processInst {
 	
 	protected $processStepName, $processChain;
 	protected $stack, $chain, $event, $caller, $env; 		
 	
 	public function __construct(& $caller, $callerName=null, $stack=null) {
 				
-		$this->caller = $caller;
-		$this->env = $caller->env;	
+		$this->caller = $caller; //process class
+		$this->env = $caller->env; //process env (proc for srv tier for client)	
 				
-		//parent::__construct($caller->env, 'kernel', $stack); 
-		//$this->debug = true;//override;	
-		
 		$this->event = $caller->event;
 		$this->stack = (array) $stack; //get env chain
 		$this->chain = $caller->getProcessChain();
@@ -20,9 +17,9 @@ class processInst /*extends pstack*/ {
 	
 	//include -remote- file (return string to require/require_once)
 	protected function _include($inc) {
-		
-		$phpdac = isset($this->caller->ldscheme) ? 
-						$this->caller->ldscheme .'/' : null;	
+		//echo $this->env->ldscheme . '<<<<<<<<<<<<<' . $inc . PHP_EOL;
+		$phpdac = isset($this->env->ldscheme) ? 
+						$this->env->ldscheme .'/' : null;	
 						
 		return ($phpdac . $inc);
 	}	
@@ -45,9 +42,44 @@ class processInst /*extends pstack*/ {
 				echo $className  . ' NOT found!' . PHP_EOL;
 			}
 		}); 
-    }		
+    }	
+
+	//ETL make (decoration pattern)	
+	protected function runETL($_stack) {
+		if (empty($_stack)) return false;
+		//$_stack = $this->stack['kernel'];
+		//array_shift($_stack); //exclude 1st elm, 'async' call ()		
+		//print_r($_stack);
+		
+		reset($_stack);		
+		foreach ($_stack as $i=>$pInst) {
+			$cc[] = "new $pInst(";
+		}
+		$zcmd = implode('', $cc) . str_repeat(')', count($_stack)) . ';';
+		echo 'Build ETL command: ' . $zcmd . PHP_EOL;
+			
+		try {
+			eval("\$etl = " . $zcmd);
+		} 
+		catch (Throwable $t) {
+			echo $t . PHP_EOL;
+			return false;
+		}		
+		
+		return ($etl);
+	}	
 	
-	public function isFinished($event=null) {
+	protected function go() {
+		
+		return true;
+	}	
+	
+	
+	//////////////////////////////////////////////
+	// interopt methods with process stack
+	//////////////////////////////////////////////
+	
+	public function isFinished($event=null, $data=null) {
 		if (!$this->caller->isProcessUser()) 
 			return false;
 		
@@ -120,6 +152,7 @@ class processInst /*extends pstack*/ {
 		$fn = $this->caller->callerName .'.'. $this->processStepName;
 		$pForm = $this->caller->hasForm($fn) ? $fn : null;		
 		$pData = $this->caller->stackPost(true, $stackId, $chainId);
+		//$pData = $this->caller->setPost(false, $stackId, $chainId);
 		
 		$sid = md5(serialize($this->stack) .'|'. $this->caller->pMethod);
 		$pRunStatus = $this->caller->processStatus(1, $pid, $sid, $stackId, $chainId);

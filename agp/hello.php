@@ -16,22 +16,13 @@ class hello extends processInst {
 		//echo 'stack:' . implode('-', $this->_stack) .  PHP_EOL;
 		
 		//$this->loader('vendor/immutable/');
+		require_once($this->_include('vendor/immutable/immutable.php'));
 	}
 	
-	protected function go() {
-		
-		$pid = $this->getChainId()-1;
-		echo '>>>' . $this->_stack[$pid] . '<<<<';
-		
-		
-		//test imo
-		//1st type of include
-		/*$phpdac = isset($this->env->ldscheme) ? 
-						$this->env->ldscheme .'/' : null;
-		require_once($phpdac . 'vendor/immutable/immutable.php');
-		*/
-		
-		require_once($this->_include('vendor/immutable/immutable.php'));
+	//override
+	protected function go($data=null) {
+		//$pid = $this->getChainId()-1;
+		//echo '>>>' . $this->_stack[$pid] . '<<<<';
 		
 		$immX = ImmutableC::create()
 							->set('test', 'a string goes here')
@@ -57,7 +48,7 @@ class hello extends processInst {
 							->arr(['arr: int indexed', 'arr' => 'arr: assoc key becomes immutable key'])
 							->build();
 		echo (string) $immZ;
-							
+		return ($immZ);					
 	}
  
 	//override
@@ -71,7 +62,7 @@ class hello extends processInst {
 	}	
 	
 	//override
-	public function isFinished($event=null) {
+	public function isFinished($event=null, $data=null) {
 		
 		if (!parent::isFinished($event)) {
 			//$this->stackRunStep();
@@ -79,11 +70,10 @@ class hello extends processInst {
 		}	
 		
 		if ($this->runCode(0, $event)) {
-			
-			$this->go();
-			
+					
 			$this->stackRunStep(1);
-			return true;
+			//return true;
+			return ($this->go($data));
 		};
 		
 		//$this->stackRunStep();		

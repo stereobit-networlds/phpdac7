@@ -51,7 +51,13 @@ class proc
 	public function pdoExec($prep, $vals)
 	{
 		return ($this->env->pdoExec($prep, $vals));
-	}		
+	}	
+
+	//cnf say
+	public function _say($msg, $type='TYPE_LION') 
+	{
+		$this->env->cnf->_say($msg, $type);
+	}	
 	
 	//MUST BE POOLED (async/asyncloop)
 	public function set($cmd=null) 
@@ -102,20 +108,19 @@ class proc
 		return $this; //fluent
 	}
 	
-	public function go() 
+	public function go($event=null, $inputdata=null) 
 	{
-		$this->process = new process($this);//, $c, null);
-		if ($this->process->isFinished(null)) {
+		$this->process = new process($this, null, $inputdata);
+		if ($data = $this->process->isFinished($event)) {
 			//echo implode('|', $c) . ' finished!' . PHP_EOL;
 			//$this->env->cnf->_say(implode('|', $this->getProcessChain()) . ' finished', 'TYPE_LION');			
 			
-			//unset chain,stack ?
-			//unset($this->process); //nofluent
-			return true; //nofluent
+			unset($this->process); 
+			return $data; //true; 
 		}
-		//unset($this->process);	
-		
-		return $this; //fluent
+		unset($this->process);	
+		//return $this; //fluent
+		return null;//false;
 	}
 	
 	private function processStack($processes) 

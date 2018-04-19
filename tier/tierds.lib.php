@@ -194,6 +194,18 @@ class tierds {
 		$this->dmn->Println($msg);
 	}
 	
+	//cnf say
+	public function _say($msg, $type='TYPE_LION') 
+	{
+		$this->cnf->_say($msg, $type);
+	}	
+
+	//include -remote- file (return string to require/require_once)
+	public function _include($inc) {	
+						
+		return ($this->ldscheme .'/' . $inc);
+	}		
+	
 	public function show_connections($show=null,$dacserver=null)
 	{
 		return $this->dmn->show_connections($show,$dacserver);

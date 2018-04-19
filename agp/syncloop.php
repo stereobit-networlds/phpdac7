@@ -2,18 +2,25 @@
 
 class syncloop extends processInst {
 	
-	protected $env, $_stack;
+	protected $caller, $env, $_stack;
 	
 	public function __construct(& $caller, $callerName, $stack=null) {
 
 		parent::__construct($caller, $callerName, $stack);
 		$this->processStepName = __CLASS__;
 		
+		$this->caller = $caller;
 		$this->env = $caller->env;
 		$this->_stack = $stack['kernel'];
 		
 		$pid = $this->getChainId(); //next
 		echo "process syncloop ({$this->_stack[$pid]}): ". $this->caller->status . PHP_EOL;
+	}
+	
+	//override
+	protected function go() {
+		
+		return true;
 	}
  
 	//override
@@ -27,7 +34,7 @@ class syncloop extends processInst {
 	}	
 	
 	//override
-	public function isFinished($event=null) {
+	public function isFinished($event=null, $data=null) {
 		
 		if (!parent::isFinished($event)) {
 			//$this->stackRunStep();
@@ -35,11 +42,10 @@ class syncloop extends processInst {
 		}	
 		
 		if ($this->runCode(0, $event)) {
-			//$cwd = getcwd();
-			//exec("start /D $cwd tierp.bat process"); 
-			//echo "ASYNC start /D $cwd tierp.bat process<<<<<<<<<<<<<<";
+			
 			$this->stackRunStep(1);
-			return true;
+			//return true;
+			return ($this->go($data));
 		};
 		
 		//$this->stackRunStep();		

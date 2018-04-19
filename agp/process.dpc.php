@@ -6,13 +6,14 @@ $__DPC['PROCESS_DPC'] = 'process';
 
 class process extends pstack {
 
-	var $env, $envStack, $envChain;	
+	public $env, $envStack, $envChain, $envData;	
 
-	public function __construct(& $env, $chain=null, $cmd=null) {	
+	public function __construct(& $env, $chain=null, $data=null) {	
 
 		$this->env = $env;
 		$this->envStack = $this->getProcessStack();
 		$this->envChain = $this->getProcessChain();
+		$this->envData = $data;
 		
 		parent::__construct($env, 'kernel', $this->envStack); 
 		$this->debug = true;	//override
@@ -44,6 +45,7 @@ class process extends pstack {
 	
 	public function isFinished($event=null) {
 		if (empty($this->envChain)) return false;
+		$chainData = $this->envData;
 
 		/*if ($this->debug) {
 			echo PHP_EOL . 'getEvent:' . $event;
@@ -100,8 +102,9 @@ class process extends pstack {
 				
 			case 'async'      : //only the async handler (rest in async)
 			case 'asyncloop'  : //only the async handler (rest in asyncloop)
-								if (!$this->runInstance($this->envChain[0], $event, null)) 
-									return false;
+								if (!$this->runInstance($this->envChain[0], $event, null, $chainData)) 
+									//return false;  //async data cant be returned
+									$chainData = false;
 								break;				
 				
 			case 'sync'       : 
@@ -109,25 +112,29 @@ class process extends pstack {
 								$restStack = $this->envChain; //init copy
 								foreach ($this->envChain as $i=>$processInst) 
 								{   
-									if (!$this->runInstance($processInst, $event, null))
-									{	//continue async a+switch cmd
-										//$this->env->env->mem->save...
+									if (!$data = $this->runInstance($processInst, $event, null, $chainData))
+									{	
+										//continue async a+switch cmd
 										if (!empty($restStack)) 
 										{   
 											//recursion, make async proc for the rest
 											$asc = 'a'. $this->pMethod;
 											$innerAsyncDpc = $asc .'/' . implode('/',$restStack) . '/';
-											//$dataNOWRITE =
+											//async data cant be returned
+											//go() return null, or !!! leave prev data to return
 											return (new proc($this->env->env))
-														->set($innerAsyncDpc)
-														->go();
+															->set($innerAsyncDpc)
+															->go($event, $chainData);
 										}	
-										else
-											return false;
-									}	
-									//else export executed cmd	
-									$dummy = array_shift($restStack); //must me saved in srv mem!!			
-									//print_r($restStack);
+										//else
+										//$chainData = false;	//return false;
+									}
+									else {		
+										//else export executed cmd	
+										$dummy = array_shift($restStack); 			
+										//print_r($restStack);
+										$chainData = $data; //data to pass
+									}
 								}
 								break;
 			case 'balanced'   :				
@@ -135,16 +142,18 @@ class process extends pstack {
 								//if ($rid = $this->isRunningProcess()) 
 								//echo 'Running:' . $rid;
 								foreach ($this->envChain as $i=>$processInst) {
-									if (!$this->runInstance($processInst, $event, null)) 
-										return false;
+									if (!$data = $this->runInstance($processInst, $event, null, $chainData)) 
+										$chainData = false;
+									//else
+									$chainData = $data;
 								}
 								//}
 		}
 		
-		return true;
+		return ($chainData);//true;
 	}
 	
-	protected function runInstance($inst=null, $event=null, $stack=null) {
+	protected function runInstance($inst=null, $event=null, $stack=null, $data=null) {
 		if (!$inst) die('No instance to run!');		
 		$file = 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';
 		
@@ -152,31 +161,31 @@ class process extends pstack {
 		
 		if (!class_exists($inst)) //already loaded class name
 		{
-		if ($dac5 = $this->env->ldscheme) { 
-			//agent
-			include_once ($dac5 .'/'. $file);
-		}	
-        elseif (file_exists($file)) {
-		    //kernel
-			include_once $file;	
-	    }
+			if ($dac5 = $this->env->ldscheme) { 
+				//agent
+				include_once ($dac5 .'/'. $file);
+			}	
+			elseif (file_exists($file)) {
+				//kernel
+				include_once $file;	
+			}
 		}
 		
-		if (class_exists($inst)) {
+		if (class_exists($inst)) { //loaded class check
 			try { 
 				//if it is async and class exists, try...
 				$c = new $inst($this, $this->callerName, $myStack);
-				if ($c->isFinished($event)) 
-					return true;			
+				if ($data = $c->isFinished($event, $data)) 
+					return $data;			
 			}
 			catch (Throwable $t) {
-				$this->env->env->cnf->_say($inst . ' found, try async!', 'TYPE_LION');
-				//echo $t . PHP_EOL;
+				$this->env->_say($inst . ' found, try async!', 'TYPE_LION');
+				echo $t . PHP_EOL;
 				return false;
 			}
 		}
 		
-		$this->env->env->cnf->_say($inst . ' not found!', 'TYPE_LION');
+		$this->env->_say($inst . ' not found!', 'TYPE_LION');
 		return false;	
 	}
 	

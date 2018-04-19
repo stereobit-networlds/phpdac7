@@ -2,65 +2,41 @@
 
 class asyncloop extends processInst {
 	
-	protected $env, $_stack;
+	protected $caller, $env, $_stack;
 	
 	public function __construct(& $caller, $callerName, $stack=null) {
 
 		parent::__construct($caller, $callerName, $stack);
 		$this->processStepName = __CLASS__;
 		
+		$this->caller = $caller;
 		$this->env = $caller->env;
 		$this->_stack = $stack['kernel'];
+		array_shift($this->_stack); //exclude self 'async' call
 		
 		$pid = $this->getChainId(); //next
 		echo "process asyncloop ({$this->_stack[$pid]}): ". $this->caller->status . PHP_EOL;
 		
+		include_once($this->_include("tier/imot.lib.php"));
 		$this->loader('vendor/process/async/');
-		if ($etl = $this->runAsync()) {
-			
+	}
+	
+	//override
+	protected function go($data=null) {
+		
+		//array_shift($this->_stack); //exclude self 'async' call	
+		$etl = $this->runETL($this->_stack);
+		if (is_object($etl)) {	
 			//ETL input
-			echo "> GzCompressMessageWriterDecorator - MessageWriter:\n";
+			echo "> AsynLoop - MessageWriter:\n";
 			$str='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus congue lectus, nec interdum erat ornare nec. Nunc tincidunt lobortis augue at vehicula.';
 			
 			//ETL output loop
 			for($i=1;$i<=10;$i++) {
 				$etl->writeText('['.$i.']' . $str);//$str);
 			}
-		}
-	}
-	
-	
-	//ETL make (decoration pattern)	
-	protected function runAsync() {
-		array_shift($this->_stack); //exclude self 'async' call
-		reset($this->_stack);		
-		foreach ($this->_stack as $i=>$pInst) {
-			$cc[] = "new $pInst(";
-		}
-		if (!empty($cc)) { //all loaded
-			$zcmd = null; //init cmd
-			reset($cc);
-			array_walk($cc, function($v, $k) use (&$zcmd) 
-			{  
-				$zcmd.= ($n = next($this->_stack)) ? $v : $v . str_repeat(')',count($this->_stack)) . ';';
-				return $v;
-			});
-			echo $zcmd . '!!!';
-			
-			try {
-				eval('$etl = ' . $zcmd);
-			} 
-			catch (Throwable $t) {
-				echo $t . PHP_EOL;
-				return false;
-			}	
-		}
-		else {
-			echo 'Invalid command!' . PHP_EOL;
-			return false;
-		}	
-		
-		return ($etl);
+		}		
+		return $str; //true //????
 	}
  
 	//override
@@ -74,7 +50,7 @@ class asyncloop extends processInst {
 	}	
 	
 	//override
-	public function isFinished($event=null) {
+	public function isFinished($event=null, $data=null) {
 		
 		if (!parent::isFinished($event)) {
 			//$this->stackRunStep();
@@ -82,11 +58,10 @@ class asyncloop extends processInst {
 		}	
 		
 		if ($this->runCode(0, $event)) {
-			//$cwd = getcwd();
-			//exec("start /D $cwd tierp.bat process"); 
-			//echo "ASYNC start /D $cwd tierp.bat process<<<<<<<<<<<<<<";
+			
 			$this->stackRunStep(1);
-			return true;
+			//return true;
+			return ($this->go($data));
 		};
 		
 		//$this->stackRunStep();		

@@ -819,9 +819,10 @@ class mem
 				
 				//$var = $this->env->proc->set($dpc);
 				//$dataNOWRITE = $this->env->proc->go();
-				$dataNOWRITE = (new proc($this->env))
+				$param = null;
+				$data = (new proc($this->env))
 								->set($dpc)
-								->go();
+								->go($param);
 				//echo $dataNOWRITE . PHP_EOL;						
 			}
 			else

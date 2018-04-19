@@ -2,94 +2,49 @@
 
 class async extends processInst {
 	
-	protected $env, $_stack;
+	protected $caller, $env, $_stack;
 	
 	public function __construct(& $caller, $callerName, $stack=null) {
 
 		parent::__construct($caller, $callerName, $stack);
 		$this->processStepName = __CLASS__;
 		
+		$this->caller = $caller;
 		$this->env = $caller->env;
 		$this->_stack = $stack['kernel'];
+		array_shift($this->_stack); //exclude self 'async' call
 		
 		$pid = $this->getChainId(); //next
-		echo "process async ({$this->_stack[$pid]}): ". $this->caller->status . PHP_EOL;
+		//$prevChainData = $caller->setPost(null, null, $pid);
+		echo "process async ({$this->_stack[$pid]}): ". $this->caller->status . PHP_EOL;	
 		
-		//$this->loader('vendor/process/async/');
-		//new $this->_stack[$pid]();
-		
-		$this->loader('vendor/process/async/');
-		$this->runAsync();
+		include_once($this->_include("tier/imot.lib.php"));		
+		$this->loader('vendor/process/async/');	
 	}
 	
-	
-	//method #2 (make code and eval)	
-	protected function runAsync() {
-		array_shift($this->_stack); //exclude self 'async' call
-		reset($this->_stack);
+	//override
+	protected function go($data=null) {
 		
-		//ETL input
-		echo "GzCompressMessageWriterDecorator - MessageWriter:\n";
+		$immX = ImmutableC::create()
+							->set('test', 'a string goes here:' . $data)
+							->set('another', 100)
+							->arr([1,2,3,4,5,6])
+							->arr(['a' => 1, 'b' => 2])
+							->build();
+		echo 'async:' . $immX . PHP_EOL;		
+		
+		echo "Async - MessageWriter:\n";
 		$str='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus congue lectus, nec interdum erat ornare nec. Nunc tincidunt lobortis augue at vehicula.';
-		$etl = null; //new obj
 		
-		//ETL run
-		//$x = false;
-		foreach ($this->_stack as $i=>$pInst) {
-			//if check (no autoloader)
-			//if ($x = $this->getInstance($processInst, 'vendor/process/async/')) {
-				$cc[] = "new $pInst(";
-			//}	
-		}
-		if (!empty($cc)) { //all loaded
-			reset($cc);
-
-			$zcmd = null;
-			array_walk($cc, function($v, $k) use (&$zcmd) 
-			{  
-				$zcmd.= ($n = next($this->_stack)) ? $v : $v . str_repeat(')',count($this->_stack)) . ';';
-				return $v;
-			});
-			echo $zcmd . '!!!';
-			try {
-				//eval('$content = (100 - );');
-				eval('$etl = ' . $zcmd);
-			} 
-			catch (Throwable $t) {
-				//echo $content=null;
-				echo $t . PHP_EOL;
-			}	
-		}
-		else
-			echo 'Invalid command!' . PHP_EOL;
-		
-		//ETL output
-		echo "Output:\n";
-		$etl->writeText($str) . PHP_EOL;
-	}
-	
-	//method #2 (just require/fetch)
-	/*protected function getInstance($inst=null, $vendor='agp/') {
-		if (!$inst) die('No instance to run!');		
-		$file = $vendor . str_replace(array('_', "\0"), array('/', ''), $inst).'.php';
-		
-		if ($dac5 = $this->env->ldscheme) { 
-			//agent
-			require_once ($dac5 .'/'. $file);
-			if (class_exists($inst)) {
-					return true;			
-			}
-		} 
-        elseif (file_exists($file)) { //sync(never here)
-		    //kernel
-			require_once $file;	
-			if (class_exists($inst)) {	
-					return true;
-			}	
-		}
-
-		return false;	
-	}*/	
+		//array_shift($this->_stack); //exclude self 'async' call
+		if ($etl = $this->runETL($this->_stack))
+		{
+			//ETL output
+			echo "Output:\n";
+			$etl->writeText($str, $immX) . PHP_EOL;
+		}		
+		return $immX;
+	}	
  
 	//override
 	public function nextStep($event=null) {
@@ -102,7 +57,7 @@ class async extends processInst {
 	}	
 	
 	//override
-	public function isFinished($event=null) {
+	public function isFinished($event=null, $data=null) {
 		
 		if (!parent::isFinished($event)) {
 			//$this->stackRunStep();
@@ -110,11 +65,10 @@ class async extends processInst {
 		}	
 		
 		if ($this->runCode(0, $event)) {
-			//$cwd = getcwd();
-			//exec("start /D $cwd tierp.bat process"); 
-			//echo "ASYNC start /D $cwd tierp.bat process<<<<<<<<<<<<<<";
+			
 			$this->stackRunStep(1);
-			return true;
+			//return true;
+			return ($this->go($data));
 		};
 		
 		//$this->stackRunStep();		

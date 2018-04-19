@@ -4,6 +4,8 @@ class pstack {
 	public $debug, $pMethod, $processName, $callerName;
 	protected $caller, $pid, $clp, $stack, $env;
 	
+	//public $pdata;
+	
 	public function __construct(& $caller, $callerName=null, $stack=null) {
 		
 		$this->debug = true;		
@@ -20,6 +22,7 @@ class pstack {
 		//echo $this->pid,'-',$this->pMethod,'>';
 
 		$this->stack = $stack;
+		//$this->pdata = array();
 	}	
 	
 	protected function stackCalc($stack=null) {
@@ -216,7 +219,21 @@ class pstack {
 		$cSQL = "select $df from pstackpoint where rid='{$this->pid}' and sstep=$stackid and pstep=$chainid and pobj='$obj' LIMIT 1";
 		
 		return $this->env->pdoQuery($cSQL);
-	}			
+	}
+
+	/*public function setPost($data=false, $stackid, $chainid, $caller=null) {
+		$obj = $caller ? $caller : $this->callerName;	
+		
+		if ($data) {
+			$this->pdata[$chainid] = $data;
+			//echo $caller .' '. $stackid .'<<<<<<<<<<'.$data.'|'.$chainid . PHP_EOL;
+			return true;
+		}	
+		//else
+		$data = $this->pdata[$chainid];	
+		//echo $caller .' '. $stackid .'<<<<<<<<<<'.$data.'|'.$chainid . PHP_EOL;	
+		return $data;	
+	}*/	
 	
 	//check all stack records
 	protected function isClosedStack() {		

@@ -16,18 +16,19 @@ class howru extends processInst {
 		echo 'process 2:' . $this->caller->status . PHP_EOL;
 		//echo 'stack:' . implode('-', $this->_stack['kernel']) . PHP_EOL;
 		
-		//spl_autoload_register(array($this, 'loader')); //1st loader
 		//$this->loader('vendor/message/');
+		//$this->caller->setPost("test123", null, $this->getChainId());
 	}
 	
-	protected function go() {
-		
-		$pid = $this->getChainId()-1;
-		echo '>>>' . $this->_stack[$pid] . '<<<<';
+	//override
+	protected function go($data=null) {
+		//$pid = $this->getChainId()-1;
+		//echo '>>>' . $this->_stack[$pid] . '<<<<';
 		
 		$str='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus congue lectus, nec interdum erat ornare nec. Nunc tincidunt lobortis augue at vehicula.';
+		//$this->caller->setPost($str, null, $this->getChainId());
  
-		echo "MessageWriter:\n";
+		//echo "MessageWriter:\n";
 		/*$writer1 = new MessageWriter();
 		$writer1->writeText($str);
 		echo "\n";
@@ -42,7 +43,9 @@ class howru extends processInst {
 		echo "Base64MessageWriterDecorator - GzCompressMessageWriterDecorator - MessageWriter:\n";	
 		$writer2 = new Base64MessageWriterDecorator(new GzCompressMessageWriterDecorator(new MessageWriter()));
 		$writer2->writeText($str);
-		echo "\n";*/		
+		echo "\n";*/
+
+		return $str;	
 	}
  
 	//override
@@ -56,7 +59,7 @@ class howru extends processInst {
 	}	
 	
 	//override
-	public function isFinished($event=null) {
+	public function isFinished($event=null, $data=null) {
 		
 		if (!parent::isFinished($event)) {
 			//$this->stackRunStep();
@@ -65,10 +68,9 @@ class howru extends processInst {
 		
 		if ($this->runCode(0, $event)) {
 			
-			$this->go();
-			
 			$this->stackRunStep(1);
-			return true;
+			//return true;
+			return ($this->go($data));	
 		};
 		
 		//$this->stackRunStep();		
