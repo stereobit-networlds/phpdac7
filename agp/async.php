@@ -2,7 +2,8 @@
 
 class async extends processInst {
 	
-	protected $caller, $env, $_stack;
+	protected $caller, $env, $nextCmd;
+	public $_stack;
 	
 	public function __construct(& $caller, $callerName, $stack=null) {
 
@@ -12,38 +13,26 @@ class async extends processInst {
 		$this->caller = $caller;
 		$this->env = $caller->env;
 		$this->_stack = $stack['kernel'];
-		array_shift($this->_stack); //exclude self 'async' call
 		
 		$pid = $this->getChainId(); //next
-		//$prevChainData = $caller->setPost(null, null, $pid);
-		echo "process async ({$this->_stack[$pid]}): ". $this->caller->status . PHP_EOL;	
+		$this->nextCmd = $this->_stack[$pid];
+		echo "process async ({$this->nextCmd}): ". $this->caller->status . PHP_EOL;	
 		
 		include_once($this->_include("tier/imot.lib.php"));		
-		$this->loader('vendor/process/async/');	
+		$this->loader("vendor/process/async/{$this->nextCmd}/"); //next cmd namespace		
 	}
 	
 	//override
 	protected function go($data=null) {
-		
-		$immX = ImmutableC::create()
-							->set('test', 'a string goes here:' . $data)
-							->set('another', 100)
-							->arr([1,2,3,4,5,6])
-							->arr(['a' => 1, 'b' => 2])
-							->build();
-		echo 'async:' . $immX . PHP_EOL;		
-		
-		echo "Async - MessageWriter:\n";
-		$str='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus congue lectus, nec interdum erat ornare nec. Nunc tincidunt lobortis augue at vehicula.';
-		
-		//array_shift($this->_stack); //exclude self 'async' call
-		if ($etl = $this->runETL($this->_stack))
-		{
-			//ETL output
-			echo "Output:\n";
-			$etl->writeText($str, $immX) . PHP_EOL;
-		}		
-		return $immX;
+		if (!$this->env->ldscheme) 
+		{	
+			//is srv call, dont exec
+			echo "--------- tier go()!!" . PHP_EOL;
+			return false;
+		}	
+		$async = array_shift($this->_stack); //exclude self 'async' call
+		$class = array_shift($this->_stack);
+		return new $class($this);
 	}	
  
 	//override

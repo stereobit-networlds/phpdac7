@@ -111,10 +111,8 @@ class proc
 	public function go($event=null, $inputdata=null) 
 	{
 		$this->process = new process($this, null, $inputdata);
-		if ($data = $this->process->isFinished($event)) {
-			//echo implode('|', $c) . ' finished!' . PHP_EOL;
-			//$this->env->cnf->_say(implode('|', $this->getProcessChain()) . ' finished', 'TYPE_LION');			
-			
+		if ($data = $this->process->isFinished($event)) 
+		{
 			unset($this->process); 
 			return $data; //true; 
 		}

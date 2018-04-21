@@ -98,17 +98,18 @@ class process extends pstack {
 					//when true reset
 					SetSessionParam('pCallerName', null); 
 				}
-				break;*/
+				break;*/			
 				
-			case 'async'      : //only the async handler (rest in async)
-			case 'asyncloop'  : //only the async handler (rest in asyncloop)
+			case 'async'      : //exec srv async class and call tier
+			case 'asyncloop'  : //only the async handler (rest exec in tier)
 								if (!$this->runInstance($this->envChain[0], $event, null, $chainData)) 
 									//return false;  //async data cant be returned
 									$chainData = false;
 								break;				
 				
-			case 'sync'       : 
-			case 'syncloop'   :	
+			case 'sync'       : //srv exec
+			case 'syncloop'   :	//sync serial process until unknown class found, 
+								//then transform call to tier call !!
 								$restStack = $this->envChain; //init copy
 								foreach ($this->envChain as $i=>$processInst) 
 								{   
@@ -126,7 +127,7 @@ class process extends pstack {
 															->set($innerAsyncDpc)
 															->go($event, $chainData);
 										}	
-										//else
+										//else / return chain data (synced)!!
 										//$chainData = false;	//return false;
 									}
 									else {		
@@ -138,8 +139,7 @@ class process extends pstack {
 								}
 								break;
 			case 'balanced'   :				
-			default           :
-								//if ($rid = $this->isRunningProcess()) 
+			default           : //if ($rid = $this->isRunningProcess()) 
 								//echo 'Running:' . $rid;
 								foreach ($this->envChain as $i=>$processInst) {
 									if (!$data = $this->runInstance($processInst, $event, null, $chainData)) 

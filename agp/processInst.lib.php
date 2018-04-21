@@ -45,7 +45,7 @@ class processInst {
     }	
 
 	//ETL make (decoration pattern)	
-	protected function runETL($_stack) {
+	public function runETL($_stack) {
 		if (empty($_stack)) return false;
 		//$_stack = $this->stack['kernel'];
 		//array_shift($_stack); //exclude 1st elm, 'async' call ()		
