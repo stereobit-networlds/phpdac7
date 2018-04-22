@@ -16,7 +16,7 @@ class hello extends processInst {
 		//echo 'stack:' . implode('-', $this->_stack) .  PHP_EOL;
 		
 		//$this->loader('vendor/immutable/');
-		require_once($this->_include('vendor/immutable/immutable.php'));
+		//require_once($this->_include('vendor/immutable/immutable.php'));
 	}
 	
 	//override

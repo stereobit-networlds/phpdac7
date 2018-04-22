@@ -11,14 +11,17 @@ class process extends pstack {
 	public function __construct(& $env, $chain=null, $data=null) {	
 
 		$this->env = $env;
+		$this->envData = $data;		
 		$this->envStack = $this->getProcessStack();
-		$this->envChain = $this->getProcessChain();
-		$this->envData = $data;
+		//print_r($this->envStack);		
+		//$this->envChain = $this->getProcessChain();	
+		$this->envChain = $this->getNextProcessChain(); //srv read chain
+		//print_r($this->envChain); 	
 		
-		parent::__construct($env, 'kernel', $this->envStack); 
-		$this->debug = true;	//override
+		parent::__construct($env, 'kernel', $this->envStack);//array('kernel'=>$this->envStack));//$this->envStack); 
+		$this->debug = false;	//override
 		
-		$this->pMethod = $this->envChain[0]; //override
+		//$this->pMethod = $this->envChain[0]; //override
 	}	
 	
 	public function getProcessStack() 
@@ -43,9 +46,39 @@ class process extends pstack {
 			return (array) $this->env->getProcessChain(); //proc		
 	}	
 	
-	public function isFinished($event=null) {
-		if (empty($this->envChain)) return false;
-		$chainData = $this->envData;
+	public function getNextProcessChain() 
+	{
+		if ($dac5 = $this->env->ldscheme)
+		{
+			//$c = file_get_contents($dac5 . '/srvProcessChain');
+			//return (array) json_decode($c);
+			
+			/*if (!empty($this->envChain)) //readed 1st
+				$next = array_shift($this->envStack);
+			else
+			{*/	
+				//read srv var
+				$s = file_get_contents($dac5 . '/srvProcessStack');
+				$stack = json_decode($s);
+				//print_r($stack); echo '::next::';
+				$next = array_shift($stack);
+			//}	
+			return (array) $next;
+		}
+		else
+		{
+			//proc
+			return (array) $this->env->getNextProcessChain(); 
+			
+		}	
+	}	
+	
+	public function isFinished($event=null, $data=null) {
+		//print_r($this->envChain); echo '::isFinished::';
+		if (empty($this->envChain)) return;
+		
+		$this->pMethod = $this->envChain[0];	
+		$chainData = isset($data) ? $data : $this->envData;		
 
 		/*if ($this->debug) {
 			echo PHP_EOL . 'getEvent:' . $event;
@@ -55,69 +88,28 @@ class process extends pstack {
 			print_r($this->envStack);
 		}*/
 
-		switch ($this->pMethod) {
-			
-			/*case 'puzzled'    :	
-				//when running pid is the process run id
-			    $us = ($this->isRunningProcess()) ?	$this->clp : $this->pid;
-				
-				//run specific process class
-				$usClass = str_replace('-','_', $us);
-				$inChain = in_array($usClass, $this->envChain);		
-				if ((class_exists($usClass)) && ($inChain)) {
-					if (!$this->runInstance($usClass, $event)) 
-						return false;	
-				}	
-				break;			
-			
-			case 'serialized' : 
-			    if ($rid = $this->isRunningProcess()) {
-					//echo 'Running:' . $rid;
-					//get next state call
-					list($stateClass,$stateCaller,$stateUser, $stateStatus) = $this->getProcessStep();
-					echo 'class:' . $stateCaller .'/'.$stateClass .'/'.$this->callerName.'<br/>'; 
-					if (($stateClass) && ($stateCaller == $this->callerName)) { 
-						if (!$this->runInstance($stateClass, $event)) 
-							return false;
-					}
-					//else
-					break;
-				}	
-				else { //static run
-					//check execution state by saving the caller class name
-					//echo $this->callerName,':',GetSessionParam('pCallerName');
-					if (($sCaller = GetSessionParam('pCallerName')) && ($this->callerName != $sCaller))
-						return false;
-				
-					foreach ($this->envChain as $i=>$processInst) {
-						if (!$this->runInstance($processInst, $event)) { 
-							SetSessionParam('pCallerName', $this->callerName);
-							return false;
-						}	
-					}
-					//when true reset
-					SetSessionParam('pCallerName', null); 
-				}
-				break;*/			
+		switch ($this->pMethod) {			
 				
 			case 'async'      : //exec srv async class and call tier
-			case 'asyncloop'  : //only the async handler (rest exec in tier)
-								if (!$this->runInstance($this->envChain[0], $event, null, $chainData)) 
+			/*case 'asyncloop'  :*/ //only the async handler (rest exec in tier)
+								//if (!$this->runInstance($this->envChain[0], $event, null, $chainData)) 
 									//return false;  //async data cant be returned
-									$chainData = false;
+									//$chainData = false;
+								$this->runInstance($this->envChain[0], $event, $this->envChain, $chainData);	
+								$chainData = 'async'; //test true
 								break;				
 				
 			case 'sync'       : //srv exec
-			case 'syncloop'   :	//sync serial process until unknown class found, 
+			/*case 'syncloop'   :*/	//sync serial process until unknown class found, 
 								//then transform call to tier call !!
 								$restStack = $this->envChain; //init copy
 								foreach ($this->envChain as $i=>$processInst) 
 								{   
-									if (!$data = $this->runInstance($processInst, $event, null, $chainData))
+									if (!$data = $this->runInstance($processInst, $event, $this->envChain, $chainData))
 									{	
 										//continue async a+switch cmd
 										if (!empty($restStack)) 
-										{   
+										{   //print_r($restStack); echo '::restStack::';
 											//recursion, make async proc for the rest
 											$asc = 'a'. $this->pMethod;
 											$innerAsyncDpc = $asc .'/' . implode('/',$restStack) . '/';
@@ -128,7 +120,7 @@ class process extends pstack {
 															->go($event, $chainData);
 										}	
 										//else / return chain data (synced)!!
-										//$chainData = false;	//return false;
+										$chainData = 'async'; //test true //return false;
 									}
 									else {		
 										//else export executed cmd	
@@ -142,7 +134,7 @@ class process extends pstack {
 			default           : //if ($rid = $this->isRunningProcess()) 
 								//echo 'Running:' . $rid;
 								foreach ($this->envChain as $i=>$processInst) {
-									if (!$data = $this->runInstance($processInst, $event, null, $chainData)) 
+									if (!$data = $this->runInstance($processInst, $event, $this->envChain, $chainData)) 
 										$chainData = false;
 									//else
 									$chainData = $data;
@@ -150,14 +142,24 @@ class process extends pstack {
 								//}
 		}
 		
+		//recussion
+		/*if ($this->envChain = $this->getNextProcessChain())
+		{	
+			if ($dac5 = $this->env->ldscheme) {
+				;//else error re-loading async without new
+			}
+			else	
+				$chainData = $this->isFinished($event, $chainData);
+		}*/	
+		//else
 		return ($chainData);//true;
 	}
 	
-	protected function runInstance($inst=null, $event=null, $stack=null, $data=null) {
+	protected function runInstance($inst=null, $event=null, $chain=null, $data=null) {
 		if (!$inst) die('No instance to run!');		
 		$file = 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';
 		
-		$myStack = isset($stack) ? array('kernel'=>$stack) : $this->envStack;
+		$myChain = isset($chain) ? $chain : $this->envChain;
 		
 		if (!class_exists($inst)) //already loaded class name
 		{
@@ -174,16 +176,18 @@ class process extends pstack {
 		if (class_exists($inst)) { //loaded class check
 			try { 
 				//if it is async and class exists, try...
-				$c = new $inst($this, $this->callerName, $myStack);
+				$c = new $inst($this, $this->callerName, $myChain);
 				if ($data = $c->isFinished($event, $data)) 
 					return $data;			
 			}
 			catch (Throwable $t) {
-				$this->env->_say($inst . ' found, try async!', 'TYPE_LION');
-				echo $t . PHP_EOL;
+				$this->env->_say($inst . ' class found with errors!', 'TYPE_LION');
+				echo $t . PHP_EOL; //<<<<<<<<< err
 				return false;
 			}
 		}
+		//else
+			//$this->env->_say($inst . ' class not exist!', 'TYPE_LION');
 		
 		$this->env->_say($inst . ' not found!', 'TYPE_LION');
 		return false;	

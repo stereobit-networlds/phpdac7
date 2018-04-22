@@ -3,7 +3,7 @@ class xmlnode implements xmlnodeInterface
 {
 	public function xmltnode($node)
 	{
-		echo $node->get('test') . PHP_EOL; // a string goes here
+		/*echo $node->get('test') . PHP_EOL; // a string goes here
 		var_dump($node->has('test')) . PHP_EOL; // bool(true)
 		var_dump($node->has('non-existent')) . PHP_EOL; // bool(false)
 		echo $node->getOrElse('test', 'some default text') . PHP_EOL; // a string goes here
@@ -13,8 +13,8 @@ class xmlnode implements xmlnodeInterface
 							->set('anObject', $node)
 							->build();
 							
-		// for the test - just print it to the screen
-		return $imm;//$node;
+		return $imm;*/
+		return $node;
 	}
 }
 ?>

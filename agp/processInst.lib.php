@@ -5,14 +5,14 @@ class processInst {
 	protected $processStepName, $processChain;
 	protected $stack, $chain, $event, $caller, $env; 		
 	
-	public function __construct(& $caller, $callerName=null, $stack=null) {
+	public function __construct(& $caller, $callerName=null, $chain=null) {
 				
 		$this->caller = $caller; //process class
 		$this->env = $caller->env; //process env (proc for srv tier for client)	
 				
 		$this->event = $caller->event;
-		$this->stack = (array) $stack; //get env chain
-		$this->chain = $caller->getProcessChain();
+		$this->stack = $caller->getProcessStack();//(array) $stack; //get env chain
+		$this->chain = (array) $chain;; //$caller->getProcessChain();
 	}	
 	
 	//include -remote- file (return string to require/require_once)
@@ -56,7 +56,7 @@ class processInst {
 			$cc[] = "new $pInst(";
 		}
 		$zcmd = implode('', $cc) . str_repeat(')', count($_stack)) . ';';
-		echo 'Build ETL command: ' . $zcmd . PHP_EOL;
+		echo 'Run ETL command: ' . $zcmd;// . PHP_EOL;
 			
 		try {
 			eval("\$etl = " . $zcmd);
@@ -259,7 +259,7 @@ class processInst {
 		$i=0;
 		foreach ($this->stack as $stackName=>$processChain) {
 			if ($i==$thisID-1) {
-				$sName = $this->getCallerNameInStack($stackName);
+				$sName = $this->caller->getCallerNameInStack($stackName);
 				return $sName .'.'. array_pop($processChain);
 			}	
 			$i+=1;		

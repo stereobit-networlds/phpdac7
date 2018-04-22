@@ -1,4 +1,38 @@
 <?php
+error_reporting(E_ALL & ~E_NOTICE);
+
+define ("GLEVEL", 1); 
+define ("KERNELVERBOSE", 2);//override daemon VERBOSE_LEVEL
+define ("_DS_", DIRECTORY_SEPARATOR);	
+	
+define('_DACSTREAMCVIEW_', 3); //must be 3 to clean replies
+define('_DACSTREAMCREP1_', '');
+define('_DACSTREAMCREP2_', '');
+define('_DACSTREAMCREP3_', '');
+define('_DACSTREAMCREP0_', '');
+
+	function _say($str, $level=0, $crln=true) 
+	{
+	    $cr = $crln ? PHP_EOL : null;
+		if ($level <= GLEVEL)
+			echo ucfirst($str) . $cr;
+		
+		_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+');
+	}
+   
+	function _dump($data=null,$mode=null,$filename=null) 
+	{
+	   $m = $mode ? $mode : 'w';
+	   $f = $filename ? $filename : '/dumpagn-'.$_SERVER['COMPUTERNAME'].'.log';
+
+        if ($fp = @fopen (getcwd() . $f , $m)) {
+            fwrite ($fp, $data);
+            fclose ($fp);
+            return true;
+        }
+        return false;
+	} 
+	
 require_once("tier/tierds.lib.php"); 
 new tierds();
 
@@ -28,7 +62,7 @@ class tier_dacstream {
 		//exclude '/' from the begining of str
         $this->dpcmem = (substr($this->path,0,1)=='/') ? substr($this->path,1) : $this->path;
 		//client version of getdpcmem
-		$request = "getdpcmemc " . $this->dpcmem . "\r\n";
+		$request = "getdpcmemc " . $this->dpcmem . PHP_EOL;//"\r\n";
         fputs($socket, $request); 
         $ret = ''; 
         while (!feof($socket)) { 
@@ -50,8 +84,8 @@ class tier_dacstream {
         $ret = substr($this->data,$this->position,$count);
 		$this->position += strlen($ret);
 		
-        return ($this->gc($ret,_DACSTREAMCVIEW_));
 		//return $ret;
+		return ($this->gc($ret,_DACSTREAMCVIEW_));
 	}
    
 	public function stream_write($data) {
@@ -138,7 +172,7 @@ class tier_dacstream {
 			case 3  : $g = str_replace($this->dpcmem, _DACSTREAMCREP3_, $g);
 			case 2  : $g = str_replace("phpdac5> getdpcmemc ", $b, $g);
 			case 1  : $g = str_replace("PHPDAC5 Kernel v2, $dh:$dp\n", _DACSTREAMCREP1_, $g);		
-			default : //do nothing	
+			default : /*$g = str_replace("\n", '', $g);*///do nothing	
 		}		
 		return ($g);// . $d); //error when trail text
 	}	

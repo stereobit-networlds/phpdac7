@@ -136,11 +136,17 @@ class kernel {
 		}	  
 	}
    
-
+    private function _gc($ret)
+	{
+		//echo PHP_EOL . $ret .PHP_EOL . PHP_EOL;
+		return ($ret);
+	}
+   
 	//alias
 	public function _main($dpc) 
 	{
 		//return $this->getdpcmemc();
+		//return $this->_gc($this->mem->readC($dpc));
 		return $this->mem->readC($dpc);
 	}
 	  

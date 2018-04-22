@@ -5,34 +5,35 @@ class async extends processInst {
 	protected $caller, $env, $nextCmd;
 	public $_stack;
 	
-	public function __construct(& $caller, $callerName, $stack=null) {
+	public function __construct(& $caller, $callerName, $chain=null) {
 
-		parent::__construct($caller, $callerName, $stack);
+		parent::__construct($caller, $callerName, $chain);
 		$this->processStepName = __CLASS__;
 		
 		$this->caller = $caller;
 		$this->env = $caller->env;
-		$this->_stack = $stack['kernel'];
+		//print_r($chain); echo '::async::';
+		$this->_stack = $chain; //['kernel'];
 		
 		$pid = $this->getChainId(); //next
 		$this->nextCmd = $this->_stack[$pid];
-		echo "process async ({$this->nextCmd}): ". $this->caller->status . PHP_EOL;	
-		
-		include_once($this->_include("tier/imot.lib.php"));		
+		echo "process async ({$this->nextCmd}): ". $this->caller->status;// . PHP_EOL;	
+				
 		$this->loader("vendor/process/async/{$this->nextCmd}/"); //next cmd namespace		
 	}
 	
 	//override
 	protected function go($data=null) {
-		if (!$this->env->ldscheme) 
+		//is tier call, exec
+		if ($this->env->ldscheme) 
 		{	
-			//is srv call, dont exec
-			echo "--------- tier go()!!" . PHP_EOL;
-			return false;
+			$async = array_shift($this->_stack); //exclude self 'async' call
+			$class = array_shift($this->_stack);
+			return new $class($this);
 		}	
-		$async = array_shift($this->_stack); //exclude self 'async' call
-		$class = array_shift($this->_stack);
-		return new $class($this);
+		//server part
+		echo "--------- tier go()!!" . PHP_EOL;
+		return false;		
 	}	
  
 	//override

@@ -1,39 +1,4 @@
-<?php
-	error_reporting(E_ALL & ~E_NOTICE);
-
-	define ("GLEVEL", 1); 
-	define ("KERNELVERBOSE", 2);//override daemon VERBOSE_LEVEL
-	define ("_DS_", DIRECTORY_SEPARATOR);	
-	
-	define('_DACSTREAMCVIEW_', 3); //must be 3 for clean replies
-	define('_DACSTREAMCREP1_', '');
-	define('_DACSTREAMCREP2_', '');
-	define('_DACSTREAMCREP3_', '');
-	define('_DACSTREAMCREP0_', '');	
-		
-
-	function _say($str, $level=0, $crln=true) 
-	{
-	    $cr = $crln ? PHP_EOL : null;
-		if ($level <= GLEVEL)
-			echo ucfirst($str) . $cr;
-		
-		_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+');
-	}
-   
-	function _dump($data=null,$mode=null,$filename=null) 
-	{
-	   $m = $mode ? $mode : 'w';
-	   $f = $filename ? $filename : '/dumpagn-'.$_SERVER['COMPUTERNAME'].'.log';
-
-        if ($fp = @fopen (getcwd() . $f , $m)) {
-            fwrite ($fp, $data);
-            fclose ($fp);
-            return true;
-        }
-        return false;
-	}   
-   
+<?php   
 class tierds {
 
 	private $mem; 
@@ -117,6 +82,9 @@ class tierds {
 		require_once($this->ldscheme . "/kernel/utils.lib.php");
 		$this->utl = new utils($this); //utils	
 		$this->cnf->_say('Load utils', 'TYPE_LION');
+		
+		//kernel other
+		require_once($this->ldscheme . "/kernel/imo.lib.php");
 		
 		require_once($this->ldscheme . "/tier/memt.lib.php");
 		$this->mem = new memt($this);
@@ -220,7 +188,7 @@ class tierds {
 	   $code = @file_get_contents($f);
 	   if (isset($code))
 	   {
-		    $file = explode("\n",$code);
+		    $file = explode(PHP_EOL,$code);
 		   
 			//clean code by nulls and commends
 			foreach ($file as $num=>$line) {
@@ -233,7 +201,7 @@ class tierds {
 			$toktext = implode("",$lines); //one line may have more than one cmds sep by ;
 			$token = explode(";",$toktext);	//tokenize	  			
 	        foreach ($token as $tid=>$tcmd) 
-			{  
+			{  //echo $tcmd .PHP_EOL;
 			   $part = explode(' ', $tcmd);
 			   
 			   switch ($part[0]) {	
