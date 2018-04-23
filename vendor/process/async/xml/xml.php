@@ -2,7 +2,11 @@
 
 class xml {
 	
+	public $complete;
+	
 	public function __construct(& $env) {
+		$this->complete = false;
+		//echo '---------------------------' . PHP_EOL;
 		//print_r($env->_stack); echo '::xml::';
 		//initialize async service conf
 		$confclass = array_shift($env->_stack); //exclude 'conf' call	
@@ -69,10 +73,9 @@ class xml {
 				fclose ($fp); 
 				
 				echo "Finished!" . PHP_EOL;		
-				return true;	
+				$this->complete = true;
 			}	
-		}	
-		return false;	
+		}		
 	}
 }
 ?>

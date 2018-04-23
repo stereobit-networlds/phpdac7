@@ -2,8 +2,11 @@
 
 class img {
 	
+	public $complete;
+	
 	public function __construct(& $env) {
-
+		$this->complete = false;
+		
 		//initialize async service conf
 		$confclass = array_shift($env->_stack); //exclude 'conf' call	
 		if (!$conf = new $confclass()) die('Invalid conf parameters!' . PHP_EOL);
@@ -65,10 +68,9 @@ class img {
 				$xml->close();
 				fclose ($fp); 
 				echo "Finished!" . PHP_EOL;		
-				return true;	
+				$this->complete = true;	
 			}	
-		}	
-		return false;	
+		}		
 	}
 }
 ?>

@@ -123,7 +123,7 @@ class mem
 		$offset = $this->dpc_addr[$dpc];
 	    $length = $this->dpc_length[$dpc]; 
 		$free = $this->dpc_free[$dpc];
-		$rlength = intval($length - $free); //real length
+		$rlength = intval($length - $free) + 1; //real length
 
 		return array($offset, $length, $free, $rlength);	
 	}
@@ -162,9 +162,9 @@ class mem
 			//check for mem limit
 			if ($mempage < $maxmem)	
 			{
-				$this->memlength = $mempage; //update global var 
+				$this->memlength = $mempage; //update global var !!!
 			
-				$this->dpc_addr[$dpc] = $offset;		
+				$this->dpc_addr[$dpc] = $offset + 1;		
 				$this->dpc_length[$dpc] = $length + $this->extra_space;
 				$this->dpc_free[$dpc] = $this->extra_space;
 	
@@ -322,13 +322,13 @@ class mem
 		reset($this->dpc_length);
 		foreach ($this->dpc_length as $_dpc=>$_size)
 		{
-			$offset += $_size;
-			$zeros +=2; //spinlocks
+			$offset += $_size + 2;
+			//$zeros +=2; //spinlocks
 		}
-		$offset += $zeros; //segments x 2		   
+		//$offset += $zeros; //segments x 2		   
 		
-		//return ($offset + 1);
-		return array($offset + 1, 0, 0); 
+		//return ($offset + 1); 
+		return array($offset, 0, 0); //+1 !!!
 	}
 	
 	//unset dpc, set a new
@@ -510,39 +510,14 @@ class mem
 	//Check spinlock 
 	private function checkSpinLock($dpc)
 	{   
-		$spo = $this->dpc_addr[$dpc] - 1;
-		if ($this->env->shm->_shread($spo, 1) !== "\0")
+		//initial spinlock read
+		$off = ($this->dpc_addr[$dpc] > 1) ? $this->dpc_addr[$dpc]-1 : 0;
+		
+		if ($this->env->shm->_shread($off, 1) !== "\0")
 			return false;
 	   
 		return true;
 	}
-	
-	/*private function dataDiff($dpc=null, $data=null)
-	{
-		if (!$dpc) return false;
-
-		$storedData = md5($this->readSH($dpc));		
- 		$newData = md5($data);		
-	
-		$this->env->cnf->_say("md5:" . $storedData . ':'. $newData, 'TYPE_LION');
-		if ($storedData != $newData)
-			return true;
-		
-		return false;
-	}
-	
-	//check md5 checksum for incoming data and inventory data
-	private function md5diff($newData=null, $invData=null)
-	{
-		$a = md5($newData);		
- 		$b = md5($invData);		
-	
-		$this->env->cnf->_say("md5:----" . $a . ':'. $b . '----', 'TYPE_LION');
-		if (strcmp($a, $b)!==0)
-			return true;
-		
-		return false;
-	}*/	
 	
 	//fetch mem page (with empty space)
 	private function loaddpcmem($dpc) 
@@ -572,7 +547,8 @@ class mem
 	//alias public
 	public function read($dpc=null) {
 		
-		return $this->getdpcmem($dpc);
+		//return $this->getdpcmem($dpc);//, true);
+		return $this->readSH($dpc); //safe
 	}	
 
 	//save calls,urls etc into mem (server side)
@@ -652,11 +628,13 @@ class mem
 
 			if ($offset >= $this->shmmax()) 
 			{
-				if (!$data = $this->_sqlquery($dpc, false))
-					if (!$data = $this->_wwwquery($dpc, false))
-						if (!$data = $this->_localfile($dpc, false, $rlength)) //rlenght = md5($invdata)
-							$data = $this->_variable($dpc, false);
-								//files comes as variables when no change=null val
+				if (!$data = $this->_setvar($dpc, false))
+					if (!$data = $this->_sqlexec($dpc, false))
+						if (!$data = $this->_sqlquery($dpc, false))
+							if (!$data = $this->_wwwquery($dpc, false))
+								if (!$data = $this->_localfile($dpc, false, $rlength)) //rlenght = md5($invdata)
+									$data = $this->_variable($dpc, false);
+									//files comes as variables when no change=null val
 
 				
 				$htexist = $this->env->fs->hmd5($dpc); //echo $htexist . PHP_EOL;
@@ -690,11 +668,13 @@ class mem
 		}
 		else //NEW
 		{ 
-			if (!$data = $this->_sqlquery($dpc, true))
-				if (!$data = $this->_wwwquery($dpc, true))
-					if (!$data = $this->_localfile($dpc, true, false))
-						if (!$data = $this->_variable($dpc, true))
-							return false;
+			if (!$data = $this->_setvar($dpc, true))
+				if (!$data = $this->_sqlexec($dpc, true))
+					if (!$data = $this->_sqlquery($dpc, true))
+						if (!$data = $this->_wwwquery($dpc, true))
+							if (!$data = $this->_localfile($dpc, true, false))
+								if (!$data = $this->_variable($dpc, true))
+									return false;
 
 			//if (!$data) return false;	
 			_say($data,3);		
@@ -731,13 +711,14 @@ class mem
 		return $this->getdpcmemc($dpc);
 	}		
 
-	//sql handler (client side)
+	//sql query handler (client side)
 	private function _sqlquery($dpc, $new=false)
 	{
 		if (substr($dpc,0,7)!=='select-') return null;
 		   
 		if ($new)
-		{		
+		{	
+			$_data = $this->env->pdoQuery($dpc);
 			$data = json_encode($_data);
 			_say($data,3); //show new data				
 		}	
@@ -754,6 +735,20 @@ class mem
 
 		return $data;	
 	}
+	
+	//sql exec handler (client side)
+	private function _sqlexec($dpc, $new=false)
+	{
+		if ((substr($dpc,0,7)!=='insert-') ||
+			(substr($dpc,0,7)!=='update-') ||
+			(substr($dpc,0,7)!=='delete-')) return null;
+		   	
+		$_data = $this->env->pdoExec($dpc);
+		$data = json_encode($_data);
+		_say($data,3); //show new data	
+
+		return $data;	
+	}	
 
 	//www handler (client side)
 	private function _wwwquery($dpc, $new=false)
@@ -786,15 +781,8 @@ class mem
 		}
 		else
 		{
-			//local storage reload ----------md5 !!! 
-			//if (strcmp(md5('$this->env->dpcpath . $dpc'), $rlength)!=0)	
-				
 			$htexist = $this->env->fs->hmd5($dpc); 
 			$htnew = md5(@file_get_contents($this->env->dpcpath . $dpc)); 
-				
-			/*$sf = @filesize($this->env->dpcpath . $dpc);
-			$this->env->cnf->_say("Size:" . $rlength .':' . $sf, 'TYPE_RAT');
-			if ($rlength != $sf) {	*/
 			if (strcmp($htexist, $htnew)!==0)
 			{
 				$data = $this->env->fs->_readPHP($this->env->dpcpath . $dpc); 
@@ -807,6 +795,19 @@ class mem
 		return $data;		
 	}	
 	
+	//set-update handler (client side to server)
+	private function _setvar($dpc, $new=false)
+	{
+		if (substr($dpc,0,7)!=='setvar-') return null;
+		   	
+		//echo '>>>>>>>>>>>>>>>SETVAR' . PHP_EOL;
+		$data = $this->env->setvar($dpc);
+		/*$data = (new proc($this->env))
+							->redset($dpc);
+							//->go($param);*/
+		return true;//$data;	
+	}	
+	
 	//var handler - process handler (client side)
 	private function _variable($dpc, $new=false)
 	{
@@ -817,13 +818,10 @@ class mem
 			{	
 				$this->env->cnf->_say('new variable: '. $dpc, 'TYPE_BIRD');	
 				
-				//$var = $this->env->proc->set($dpc);
-				//$dataNOWRITE = $this->env->proc->go();
 				$param = null;
 				$data = (new proc($this->env))
 								->set($dpc)
-								->go($param);
-				//echo $dataNOWRITE . PHP_EOL;						
+								->go($param);						
 			}
 			else
 			{

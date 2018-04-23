@@ -127,7 +127,7 @@ class dmn {
                 break;				
 				
 		case 'GETDPCMEM'://server version
-		        $data = $this->env->mem->read($this->env->utl->dehttpDpc($arguments[0]));
+		        $data = $this->env->read($this->env->utl->dehttpDpc($arguments[0]));
 		        $dmn->Println($data);
                 return true;
                 break;	
@@ -137,7 +137,7 @@ class dmn {
 				//header from 1st command still appear...must set client silence off				
 				$dmn->setSilence(1);//silence off...???
 				//OLD METHOD
-		        $data = $this->env->_main($this->env->utl->dehttpDpc($arguments[0]));
+		        $data = $this->env->readC($this->env->utl->dehttpDpc($arguments[0]));
 				//NEW METHOD
 				//$data = $this->env->mem->readC($this->env->utl->dehttpDpc($arguments[0]));
 				
@@ -225,7 +225,7 @@ class dmn {
 				
 		case 'HTTP':
 		        $data = $this->env->utl->httpcl($arguments[0],$arguments[1],$arguments[2]);
-				$this->env->mem->save($arguments[0],$data);
+				$this->env->save($arguments[0],$data);
 				$dmn->Println($data);
 				return true;
 		        break;				

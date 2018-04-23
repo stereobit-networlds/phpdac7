@@ -1,4 +1,5 @@
 <?php
+//declare(strict_types=1); //!!!
 /* Usage:
 //Simple usage.
 $immX = Immutable::create()
@@ -49,15 +50,15 @@ echo (string) $immAA;
 //The same goes for resources like file handles where you will need to extract value as text before storing it.
 //https://www.simonholywell.com/post/2017/04/php-and-immutability-part-three/
 */
-require_once("imod.lib.php");
+//require_once("imod.lib.php"); //at end
 
-class Immutable {
+class ImmutableC {
     private $data = [];
     private function __construct() {}
     public static function create(): self {
         return new self;
     }
-    public static function with(ImmutableData $old): self {
+    public static function with(ImmutableDataC $old): self {
         $new = static::create();
         $new->data = $old->getAsArray();
         return $new;
@@ -92,11 +93,61 @@ class Immutable {
         }
         return $this;
     }
-    public function build(): ImmutableData {
-        return ImmutableData::create($this->data);
+    public function build(): ImmutableDataC {
+        return ImmutableDataC::create($this->data);
     }
     public function getAsArray(): array {
         return $this->data;
+    }
+}
+
+final class ImmutableDataC {
+    private $data = [];
+    private function __construct() {}
+    public static function create(array $args): ImmutableDataC {
+        $immutable = new self;
+        $immutable->data = static::sanitiseInput($args);
+        return $immutable;
+    }
+    public function has($key) {
+        return array_key_exists($key, $this->data);
+    }
+    public function get($key) {
+        return $this->data[$key];
+    }
+    public function getOrElse($key, $default) {
+        if($this->has($key)) {
+            return $this->get($key);
+        }
+        return $default;
+    }
+    public function getAsArray(): array {
+        return $this->data;
+    }
+    protected static function sanitiseInput(array $arr): array {
+        return array_map(function($x) {
+            if (is_scalar($x)) return $x;
+            else if (is_object($x)) return static::sanitiseObject($x);
+            else if (is_array($x)) return static::sanitiseInput($x);
+            else throw new \InvalidArgumentException(gettype($x) . ' cannot be stored in an Immutable.');
+        }, $arr);
+    }
+    protected static function sanitiseObject(ImmutableDataC $object): ImmutableDataC {
+        return clone $object;
+    }
+
+    // return a parsable text representation of the class
+    public function __toString(): string {
+        return var_export($this->getAsArray(), true);
+    }
+    // called when a var_export'd class is parsed
+    public function __set_state(array $args): ImmutableDataC {
+        return static::create($args);
+    }
+    public function __unset($a): void {}
+    public function __set($a, $b): void {}
+    private function __clone() {
+        $this->data = static::sanitiseInput($this->data);
     }
 }
 ?>

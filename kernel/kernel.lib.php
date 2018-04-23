@@ -135,22 +135,7 @@ class kernel {
 			$this->shutdown(true);
 		}	  
 	}
-   
-    private function _gc($ret)
-	{
-		//echo PHP_EOL . $ret .PHP_EOL . PHP_EOL;
-		return ($ret);
-	}
-   
-	//alias
-	public function _main($dpc) 
-	{
-		//return $this->getdpcmemc();
-		//return $this->_gc($this->mem->readC($dpc));
-		return $this->mem->readC($dpc);
-	}
 	  
-   
     //return pseudo pointer for comaptibility with agentds class
     public function get_agent($agent,$serialized=null) 
 	{
@@ -166,10 +151,64 @@ class kernel {
 
 	//RUNTIME
 	
+    private function _gc($ret)
+	{
+		//echo PHP_EOL . $ret .PHP_EOL . PHP_EOL;
+		return ($ret);
+	}
+   
+	//alias - remote read
+	public function readC($dpc) 
+	{
+		//return $this->_gc($this->mem->readC($dpc));
+		return $this->mem->readC($dpc);
+	}
+	
+	//alias - local read
+	public function read($dpc) 
+	{
+		return $this->mem->read($dpc);
+	}		
+	
 	//mem save interface
 	public function save($var, $value=null)
 	{
+		//echo "SERVER SAVE:" . $value . "---->" . PHP_EOL;
 		return $this->mem->save($var, $value);
+	}	
+	
+	public function setvar($var=null)	
+	{
+		if (!$var) return false;
+		$this->cnf->_say("Set var: " . $var, 'TYPE_LION');
+		
+		$set = false;
+		$pv = explode('-', $var);
+		//0=setvar, 1=async, 2=variable(srvProcessStack), 3=value(json encoded)
+		switch ($pv[1])
+		{
+			case 'async' : 	//a tier responds
+							$cmd = isset($pv[2]) ? $pv[2] : null;
+							if ($cmd)
+							{
+								switch ($pv[2])
+								{
+									case 'srvProcessStack' : 
+									$reduce = isset($pv[3]) ? json_decode($pv[3], true) : null;
+									$set = (new proc($this))
+												->reduce($reduce)
+												->go();
+									break;
+									
+									default :	
+								}	
+							}
+							break;
+			case 'sync'  :
+			default      :	
+		}
+		
+		return $set;
 	}	
 
     public function show_schedules() 
@@ -239,7 +278,7 @@ class kernel {
 		//!!exec("createprocess.exe /w=2000 /term /f=CREATE_NEW_CONSOLE tier.bat pdo"); //!!!
 		
 		return true;
-	}	
+	}
 	
 	public function internalClient($set=false) 
 	{
@@ -410,7 +449,9 @@ class kernel {
 
 		self::$pdo->prepare("INSERT INTO blogs (title, article, category, published) VALUES (?, ?, ?, ?)")
 				  ->execute($entryData['title'], $entryData['article'], $entryData['category'], $entryData['when']);	
-		*/		  
+		*/	
+
+		$this->cnf->_say("SQL Exec:". $dpc, 'TYPE_LION');		
 	}	
 
 	//UTILS

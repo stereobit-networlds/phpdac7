@@ -54,6 +54,8 @@ class proc
 	}	
 	
 	//MUST BE POOLED (async) ...
+	
+	//add / init
 	public function set($cmd=null) //from whom client !!! 
 	{
 		if (!$cmd) return false;
@@ -62,31 +64,59 @@ class proc
 		if ($stack = $this->setProcessStack($cmd)) 
 		{		
 			$this->env->cnf->_say('set new proc: ' . $cmd, 'TYPE_LION');
-			return $this; //fluent
+			//return $this; //fluent
 		}
-		return false;//$this; //fluent
+		return $this; //fluent
 	}
+	
+	//reduce saved stack (other proc call)
+	public function reduce($reduce=null)  
+	{
+		if (!$reduce) return false;
+		//print_r($reduce);
+				
+		//fetch from sh mem (another proc call)
+		$this->processStack = $this->readProcessStack();
+		foreach ($this->processStack as $chain)
+		{
+			//print_r($chain);
+			$df = array_diff($chain, $reduce);
+			//print_r($df);	
+			if (!empty($df))
+				$newStack[] = $chain;
+		}	
+		
+		//save stack
+		$this->saveProcessStack(json_encode($newStack));
+		//print_r($this->processStack); //has no meanining (new proc)
+		
+		return $this; //fluent
+	}	
 	
 	public function go($event=null, $inputdata=null) 
 	{
+		$this->processStack = $this->readProcessStack();
 		if (empty($this->processStack)) return false;
-		$data = $inputdata;
+		//print_r($this->processStack);
 		
+		$data = $inputdata;
 		foreach ($this->processStack as $p=>$chain)
 		{	
 		    //print_r($chain);
 			$this->process = new process($this, null, $data);
 			if ($data = $this->process->isFinished($event)) 
-			{ 
-				echo '>>>>>>>>>>>>>>>>>>>>>>>>>>PROCESSDATA:'. $data . PHP_EOL;
+			{   //async escape
+				echo '>PROCESSDATA:'. $data . PHP_EOL;
 				if ($data=='async') 
 				//if ($chain[0]=='async') 
 				{
 					echo "\x07"; //beep
 					$achain = implode('/',$chain) .'/';
-					echo '>>>>>>>>>>>>>>>>>>>>>>>>>>OPENPROCESS:'. $achain . PHP_EOL;
+					echo '>OPENPROCESS:'. $achain . PHP_EOL;
 					$this->env->openProcess('process', $chain);
 					//tier must return closed chain (server update stack)
+					//setvar option
+					return false; //one by one async chain
 		  		}			
 				unset($this->process); 
 				//return null;//$data; //true; //////////////test
@@ -117,22 +147,23 @@ class proc
 		foreach ($pcmd as $p)
 			$this->processStack[] = array_filter($p);
 
-		$this->startProcess = array_filter($pcmd[0]); //1st
+		$this->startProcess = array_filter($pcmd[0]); //1st !!
 	
-		//print_r(self::$startProcess);	
-		//return true;	
-		
 		//save stack
-		$this->env->save('srvProcessStack',	json_encode($this->processStack));
+		$this->saveProcessStack(json_encode($this->processStack));
+		//print_r($this->getProcessStack());
 		
 		return (array) $this->processStack;
 	}
 	
 	public function getProcessStack() 
 	{
-		return (array) $this->processStack;
+		//mem alternative !!!
+		return $this->readProcessStack();
+		//return (array) $this->processStack;
 	}
 
+	//!!!
 	public function getProcessChain() 
 	{	
 		//return $this->startProcess[$this->envname];
@@ -141,16 +172,28 @@ class proc
 	
 	public function getNextProcessChain() 
 	{	
-		$next = array_shift($this->processStack);
+		//mem alternative !!!
+		$next = array_shift($this->getProcessStack());	
+		//$next = array_shift($this->processStack);
+		
 		//print_r($next);
 		//print_r($this->processStack);
 		
-		//save	!!!DONT
-		//echo '>>>>>>>>>>>>>>>>>>>>>>>>>>>SAVE' . PHP_EOL;
-		//$this->env->save('srvProcessStack', json_encode($this->processStack));	
-		
 		return (array) $next;
 	}
+	
+	private function saveProcessStack($stack=null)
+	{		
+		//save stack
+		$this->env->save('srvProcessStack', $stack);		
+		return true;
+	}
+	
+	private function readProcessStack()
+	{		
+		//read mem stack
+		return json_decode($this->env->read('srvProcessStack'), true);		
+	}	
 	
 	//public function free()	
 	public function __destruct() 

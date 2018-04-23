@@ -2,7 +2,10 @@
 
 class csv {
 	
+	public $complete;
+	
 	public function __construct(& $env) {
+		$this->complete = false;
 
 		//initialize async service conf
 		$confclass = array_shift($env->_stack); //exclude 'conf' call	
@@ -45,10 +48,9 @@ class csv {
 				$xml->close();
 				fclose ($fp); 
 				echo "Finished!" . PHP_EOL;		
-				return true;	
+				$this->complete = true;	
 			}	
 		}	
-		return false;	
 	}
 }
 ?>

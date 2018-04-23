@@ -12,10 +12,10 @@ class process extends pstack {
 
 		$this->env = $env;
 		$this->envData = $data;		
-		$this->envStack = $this->getProcessStack();
-		//print_r($this->envStack);		
+		$this->envStack = $this->getProcessStack();	
 		//$this->envChain = $this->getProcessChain();	
 		$this->envChain = $this->getNextProcessChain(); //srv read chain
+		//print_r($this->envStack);	
 		//print_r($this->envChain); 	
 		
 		parent::__construct($env, 'kernel', $this->envStack);//array('kernel'=>$this->envStack));//$this->envStack); 
@@ -29,18 +29,19 @@ class process extends pstack {
 		if ($dac5 = $this->env->ldscheme)
 		{
 			$s = file_get_contents($dac5 . '/srvProcessStack');
-			return (array) json_decode($s);
+			return (array) json_decode($s, true);
 		}
 		else
 			return (array) $this->env->getProcessStack(); //proc
 	}
 	
+	//!!!!
 	public function getProcessChain() 
 	{
 		if ($dac5 = $this->env->ldscheme)
 		{
 			$c = file_get_contents($dac5 . '/srvProcessChain');
-			return (array) json_decode($c);
+			return (array) json_decode($c, true);
 		}
 		else
 			return (array) $this->env->getProcessChain(); //proc		
@@ -51,18 +52,18 @@ class process extends pstack {
 		if ($dac5 = $this->env->ldscheme)
 		{
 			//$c = file_get_contents($dac5 . '/srvProcessChain');
-			//return (array) json_decode($c);
+			//return (array) json_decode($c, true);
 			
-			/*if (!empty($this->envChain)) //readed 1st
+			if (!empty($this->envChain)) //readed 1st
 				$next = array_shift($this->envStack);
 			else
-			{*/	
+			{	
 				//read srv var
 				$s = file_get_contents($dac5 . '/srvProcessStack');
-				$stack = json_decode($s);
+				$this->envStack = json_decode($s, true);
 				//print_r($stack); echo '::next::';
-				$next = array_shift($stack);
-			//}	
+				$next = array_shift($this->envStack);
+			}	
 			return (array) $next;
 		}
 		else
@@ -91,16 +92,27 @@ class process extends pstack {
 		switch ($this->pMethod) {			
 				
 			case 'async'      : //exec srv async class and call tier
-			/*case 'asyncloop'  :*/ //only the async handler (rest exec in tier)
+								//only the async handler (rest exec in tier)
 								//if (!$this->runInstance($this->envChain[0], $event, null, $chainData)) 
 									//return false;  //async data cant be returned
 									//$chainData = false;
-								$this->runInstance($this->envChain[0], $event, $this->envChain, $chainData);	
+								$async = $this->runInstance($this->envChain[0], $event, $this->envChain, $chainData);	
 								$chainData = 'async'; //test true
+								//echo '>>>>>>>>>>>>>'. $async->complete . PHP_EOL;
+								//return next (or this chain to reduce) async stack chain (save by srv)
+								if ($async->complete==true)
+								{   
+									//async callback
+									$callback = json_encode($this->envChain); //current
+									//$callback = json_encode($this->getNextProcessChain());//next
+									if ($cl = file_get_contents($this->env->ldscheme .'/setvar-' . $chainData . '-srvProcessStack-' . $callback))
+										echo 'Server informed!';// . $cl;
+									//die('Exit'); //..and close async terminal
+								}
 								break;				
 				
 			case 'sync'       : //srv exec
-			/*case 'syncloop'   :*/	//sync serial process until unknown class found, 
+								//sync serial process until unknown class found, 
 								//then transform call to tier call !!
 								$restStack = $this->envChain; //init copy
 								foreach ($this->envChain as $i=>$processInst) 
@@ -142,21 +154,21 @@ class process extends pstack {
 								//}
 		}
 		
-		//recussion
-		/*if ($this->envChain = $this->getNextProcessChain())
-		{	
-			if ($dac5 = $this->env->ldscheme) {
-				;//else error re-loading async without new
-			}
-			else	
-				$chainData = $this->isFinished($event, $chainData);
-		}*/	
-		//else
+		//return next async stack chain
+		/*if (($dac5 = $this->env->ldscheme) && ($async->complete))
+		{   
+			//async callback
+			$callback = json_encode($this->envChain); //current
+			//$callback = json_encode($this->getNextProcessChain());//next
+			file_get_contents($dac5 .'/setvar-' . $chainData . '-srvProcessStack-' . $callback);
+			//die('Exit'); //..and close terminal
+		}*/
+		//else return server 'sync' data
 		return ($chainData);//true;
 	}
 	
 	protected function runInstance($inst=null, $event=null, $chain=null, $data=null) {
-		if (!$inst) die('No instance to run!');		
+		if (!$inst) {echo 'No instance to run!' . PHP_EOL; return false;}		
 		$file = 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';
 		
 		$myChain = isset($chain) ? $chain : $this->envChain;

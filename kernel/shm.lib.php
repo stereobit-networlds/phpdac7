@@ -26,6 +26,7 @@ class shm
 	
 	public function _shread($offset, $length) 
 	{
+		//echo $offset,'>>>>>>>>>>>>>>>>>>>>>>OFFSET'.PHP_EOL;
 		return shmop_read($this->shm_id, $offset, $length);
 	}
 
@@ -48,8 +49,11 @@ class shm
 	//Check SpinLock
 	private function spinlock($offset)
 	{ 
-       //$this->env->cnf->_say("spinlock: " . $offset, 'TYPE_LION');	
-	   if ($this->_shread($offset-1, 1) == "\1")
+	   //initial spinklock read
+	   $off = ($offset > 1) ? $offset-1 : 0; 
+       //$this->env->cnf->_say("spinlock: " . $off, 'TYPE_LION');	
+	   
+	   if ($this->_shread($off, 1) == "\1")
 		   return true;
 	   
 	   return false;
@@ -58,7 +62,7 @@ class shm
  	//set flag to \0, must written before read 
 	//(length must be the mempage)
 	//rlenght is the length of actual data
-    public function readSafe($offset, $length, $rlenght=null)
+    public function readSafe($offset, $length, $rlength=null)
     {
 		if ($this->spinlock($offset)===false) {
 			//spinLock = \0
@@ -69,10 +73,12 @@ class shm
 		//release spinlocks for write
 		//shmop_write($this->shm_id, "\0", $offset-1);
 		//shmop_write($this->shm_id, "\0", $length+1);
+				
+		$ln = isset($rlength) ? $rlength : $length;
+		//echo '>'.$rlength . '>>>>>>>>>>>>>>' . $length . '>' . $ln;		
+		//echo $data . '+++++++.'.PHP_EOL;		
 		
-		$ret = shmop_read($this->shm_id, $offset, $length);
-		//return ($ret);
-		return $rlength ? substr($ret,0, $rlength) : $ret; //no rtrim
+		return shmop_read($this->shm_id, $offset, $ln);
     }
     
 	//set flag to \1, must read (data must contain the free space)
