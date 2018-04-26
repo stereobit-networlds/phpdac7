@@ -24,17 +24,17 @@ class async extends processInst {
 	
 	//override
 	protected function go($data=null) {
-		//is tier call, exec
-		if ($this->env->ldscheme) 
+		
+		if ($this->env->ldscheme) //is tier call, exec
 		{	
-			$this->loader("vendor/process/async/{$this->nextCmd}/"); //next cmd namespace		
+			$this->loader("vendor/enterprise/async/{$this->nextCmd}/"); //next cmd namespace		
 	
 			$async = array_shift($this->_stack); //exclude self 'async' call
-			$class = array_shift($this->_stack);
+			$class = array_shift($this->_stack); //get class
 			
-			return new $class($this);
-			//$run = new $class($this);
-			//return is_object($run) ? $run : false;
+			//return new $class($this);
+			$run = new $class($this);
+			return is_object($run) ? $run : false;
 		}	
 		//server part
 		echo "--------- tier go()!!" . PHP_EOL;

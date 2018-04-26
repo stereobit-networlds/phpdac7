@@ -5,16 +5,14 @@ class mem
 	private $env;
 	private $shm_max, $memlength; 	
 	private $dpc_addr, $dpc_length, $dpc_free, $dpc_gc;	
-	private $dataspace, $extra_space, $gc;
-	//public static $pdo;	
+	private $dataspace, $extra_space, $gc;	
 	
 	public function __construct(& $env=null) 
 	{	
 		$this->env = $env;
-		//self::$pdo = $env::$pdo;
 		
 		$this->shm_max = 0;
-		$this->memlength = 0; //!!!! 
+		$this->memlength = 0; //mem dump 
 		
 		$this->dpc_attr = array();
 		$this->dpc_length = array();
@@ -239,6 +237,12 @@ class mem
 			$totalbytes+= $length + $this->dpc_free[$dpc];
 			
 		return $totalbytes;	
+	}
+
+	//export all mem at once (save file)
+	public function dumpMem()
+	{
+		return $this->env->shm->_shread(0, $this->memlength);
 	}	
 
 	//init and periodic check (scheduled task)
@@ -255,7 +259,8 @@ class mem
 			if ($createHash===true) 
 			{
 				$read = $this->readSH($dpc);
-				$this->env->fs->hAdd($dpc, md5($tdata));
+				$this->env->fs->hAdd($dpc, md5($read));
+				//echo $read . PHP_EOL;
 			}	
 			
 			if ($free < intval(1024 * 5)) //1 kb --- BANKSWITCH
@@ -572,6 +577,10 @@ class mem
 				{	
 					$this->env->fs->hEdt($dpc, $htnew);
 					
+					//MAKE PERIODICAL DUMPS OF ENTIRE MEM (DUMPMEM)
+					//!!!!update dump-tree for any use (phar creation etc)
+					//_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+										
 					$this->env->cnf->_say("$htnew $dpc updated",'TYPE_LION');
 					_dump("SAVE\n\n\n\n" . $data);
 				}	

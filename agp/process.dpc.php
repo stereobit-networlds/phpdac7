@@ -7,7 +7,7 @@ $__DPC['PROCESS_DPC'] = 'process';
 class process extends pstack {
 
 	public $env, $envStack, $envChain, $envData;	
-
+	
 	public function __construct(& $env, $chain=null, $data=null) {	
 
 		$this->env = $env;
@@ -92,20 +92,21 @@ class process extends pstack {
 				
 			case 'async'      : //exec srv async class and call tier
 								//only the async handler (rest exec in tier)
-								$async = $this->runInstance($this->envChain[0], $event, $this->envChain, $chainData);	
+								$async = $this->runInstance($this->envChain[0], $event, $this->envChain, $chainData);				
 								$chainData = 'async'; //test true
 								
-								echo '>>>>>>>>>>>>>'. $async->complete . PHP_EOL;
+								//echo '>>>>>>>>>>>>>'. $async->complete . PHP_EOL;
 								//return next (or this chain to reduce) async stack chain (save by srv)
-								if ($async->complete==true)
+								if (($dac5 = $this->env->ldscheme) && // is tier
+									($async->complete==true))
 								{   
-									//async callback
+									//async callback 
 									$callback = json_encode($this->envChain); //current
 									//$callback = json_encode($this->getNextProcessChain());//next
-									if ($cl = file_get_contents($this->env->ldscheme .'/setvar-' . $chainData . '-srvProcessStack-' . $callback))
+									if ($cl = file_get_contents($dac5 .'/setvar-' . $chainData . '-srvProcessStack-' . $callback))
 										echo 'Sync data!' . PHP_EOL;// . $cl;
 									//die('Exit'); //..and close async terminal !!!!!
-								}
+								}	
 								break;				
 				
 			case 'sync'       : //srv exec
@@ -145,7 +146,9 @@ class process extends pstack {
 			case 'balanced'   :				
 			default           : //if ($rid = $this->isRunningProcess()) 
 								//echo 'Running:' . $rid;
-								foreach ($this->envChain as $i=>$processInst) {
+								foreach ($this->envChain as $i=>$processInst) 
+								{   
+									//echo 'zzzzzzzzzzzzzz:' . $processInst . PHP_EOL;
 									if (!$data = $this->runInstance($processInst, $event, $this->envChain, $chainData)) 
 										$chainData = false;
 									//else
@@ -192,8 +195,7 @@ class process extends pstack {
 		//else
 			//echo $inst . ' class not exist!' . PHP_EOL;
 		
-		echo $inst . ' not found!' . PHP_EOL; 
-		//when async/hello .. not found loop forever !!!!
+		echo $inst . ' not found! ' . "($file)" . PHP_EOL; 
 		return false;	
 	}
 	

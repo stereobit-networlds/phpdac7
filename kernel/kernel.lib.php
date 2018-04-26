@@ -17,9 +17,8 @@ require_once("kernel/utils.lib.php");
 require_once("kernel/var.lib.php");
 require_once("kernel/proc.lib.php");
 require_once("kernel/imo.lib.php");
-
+require_once("kernel/sch.lib.php");
 require_once("agents/resources.lib.php");
-require_once("agents/scheduler.lib.php");
 
 
 	function _say($str, $level=0, $crln=true) 
@@ -51,7 +50,7 @@ class kernel {
 	private $process, $processStack, $startProcess;	
 		
     public $dmn, $daemon_ip, $daemon_port, $daemon_type;
-	public $cnf, $fs, $utl, $dpcpath, $scheduler, $resources;
+	public $cnf, $fs, $utl, $sch, $dpcpath, $resources;
 
 	public static $pdo;	
    
@@ -80,7 +79,7 @@ class kernel {
 		$phpdac_c = stream_wrapper_register("phpres5","c_resstream");
 		if (!$phpdac_c) $this->cnf->_say("Client resource protocol failed to registered!" , 'TYPE_LION');
 					else $this->cnf->_say("Client resource protocol registered!", 'TYPE_RAT'); 	  
-	  
+	     
 		//start buf / shmem	
 		$this->shm = new shm($this); //buf
 		$this->mem = new mem($this);
@@ -92,9 +91,6 @@ class kernel {
 			//init timer
 			$this->timer = new timer($this);
 			
-			//init proc (new at mem)
-			//$this->proc = new proc($this);
-	  
 			//init resources
 			$this->resources = new resources($this);
 			$this->resources->set_resource('variable','myservervalue');	  
@@ -106,6 +102,22 @@ class kernel {
 			self::$pdo = null;	
 			if (self::initPDO())
 				$this->cnf->_say("PDO connection: ok!" , 'TYPE_IRON');
+			
+			//init scheduler
+			$this->sch = new scheduler($this);
+			if ($this->sch->loadmem==false) // not loaded from shmem
+			{   
+				$this->sch->schedule('env.scheduleprint','every','20');	  
+				$this->sch->schedule('env.internalClient','every','50');	  		  
+				//$this->sch->schedule('env.show_connections','every','20');		  	  		  
+				
+				$this->cnf->_say("New Scheduler", 'TYPE_LION');
+			}
+			else
+			{
+				$this->cnf->_say("Loading schedules from mem", 'TYPE_LION');
+				//print_r(json_decode($this->read('srvSchedules'), true));
+			}	
 
 			//init daemon
 			if ($this->dmn = new dmn($this, /*daemonize this*/
@@ -113,17 +125,8 @@ class kernel {
 								 $this->daemon_ip,
 								 $this->daemon_port))
 			{
-				//init scheduler
-				$this->scheduler = new scheduler($this);
-				//$this->scheduler->schedule('env.show_connections','every','20');		  	  		  
-				$this->scheduler->schedule('env.scheduleprint','every','20');	  
-				$this->scheduler->schedule('env.internalClient','every','50');	  		  
-		
 				//dispatch batch, before listen
 				$this->exebatchfile('kernel.ash', true);
-	  
-				//continue shceduling after ash run, before listen
-				$this->retrieve_schedules();
 
 				//listen, now	
 				$this->dmn->listen();
@@ -167,13 +170,14 @@ class kernel {
 	//alias - local read
 	public function read($dpc) 
 	{
+		//echo "SERVER READ ($dpc):" . $this->mem->read($dpc) . "---->" . PHP_EOL;
 		return $this->mem->read($dpc);
 	}		
 	
 	//mem save interface
 	public function save($var, $value=null)
 	{
-		//echo "SERVER SAVE:" . $value . "---->" . PHP_EOL;
+		//echo "SERVER SAVE ($var):" . $value . "---->" . PHP_EOL;
 		return $this->mem->save($var, $value);
 	}	
 	
@@ -213,48 +217,8 @@ class kernel {
 
     public function show_schedules() 
 	{
-		$sh = $this->scheduler->showschedules();
-		//echo 'save::::::::::::::::::::;';
-		//print_r($sh);
-		$this->save('srvSchedules', json_encode($sh));
-		//DISABLED _dump(json_encode($sh),'w','/dumpsh-'.$_SERVER['COMPUTERNAME'].'.log');
-	  
-		return null;
-    }	
-	
-    public function retrieve_schedules() 
-	{	  
-		//load dump
-		
-		//shared mem not yet !!
-		if ($jsonsh = $this->mem->read('srvSchedules')) 
-		{ 
-			$this->cnf->_say("Loading schedules from mem", 'TYPE_LION');
-			$sh = json_decode($jsonsh, true); //true = convert to array
-			//print_r($sh);
-			
-			if ($this->scheduler->overwriteschedules($sh)) 
-				$this->cnf->_say("Scheduled Ok!", 'TYPE_LION'); 
-		        //!!!not ok lasttime/counter reset (review)	
-			else {
-				$this->cnf->_say("Scheduler Error", 'TYPE_LION');	
-				print_r($sh); 
-			}	
-			
-			return true;
-		}
-		/*DISABLED elseif ($jsonsh = @file_get_contents(getcwd() . '/dumpsh-'.$_SERVER['COMPUTERNAME'].'.log'))
-		{	
-			$this->cnf->_say("Loading schedules from dump file", 'TYPE_LION');
-			$sh = unserialize($jsonsh); 
-				
-			//save in sh mem as resource var (not in resources)
-			$this->save('srvSchedules', serialize($sh));//json_encode($sh));				
-			return true;
-		}*/
-		 
-	  
-		return false;
+		$sh = $this->sch->showschedules();
+		return 'env.show_schedules';//null;
     }	
 	
 	//call from mem when variable asked async
@@ -300,7 +264,11 @@ class kernel {
 			
 		*/	
 		
-		//return ($ret);
+		//DUMP MEM FOR UPDATE/SAVE PURPOSES
+		$this->cnf->_say('--------------- MEM DUMP ---------------', 'TYPE_LION');
+		_dump($this->mem->dumpMem() ,'w', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+		
+		//return ($ret);		
 	}
 
     public function scheduleprint() 
@@ -335,7 +303,7 @@ class kernel {
 				_say('saveSrvState Error: '.  $e->getMessage(). PHP_EOL, 1);
 				//exit;
 			}
-		}						
+		}								
 		
 		return true;
     } 
@@ -519,7 +487,8 @@ class kernel {
 	public function __destruct() 
 	{	
 		//$this->mem->free(); !!!
-		unset($this->scheduler); //destruct
+		//unregister_tick_function(array($this->scheduler,"checkschedules"),true);
+		unset($this->sch); //destruct
 		unset($this->dmn); //destruct
 		unset($this->resources); //destruct
 		unset($this->timer); //destruct
