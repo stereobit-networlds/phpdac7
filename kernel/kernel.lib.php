@@ -499,11 +499,11 @@ class kernel {
 
 	//SHUTDOWN
 
-	private function shutdown($now=false) 
+	public function shutdown($now=false) 
 	{
 		if ($now) die(); 
    	
-		$this->cnf->_say("Shutdown....", 'TYPE_LION');
+		$this->cnf->_say("Shutdown!", 'TYPE_LION');
 	  
 		//close printer
 		if (extension_loaded('printer')) {
@@ -512,14 +512,13 @@ class kernel {
 				get_resource_type($printout)=='printer')
 				printer_close($printout);	  
 		}
-		//close mem	
-		//return ($this->closememdpc()); //dustruct
+
+		die("");
     }	
    
 	public function __destruct() 
-	{		
+	{	
 		//$this->mem->free(); !!!
-		
 		unset($this->scheduler); //destruct
 		unset($this->dmn); //destruct
 		unset($this->resources); //destruct
@@ -532,6 +531,7 @@ class kernel {
 		unset($this->cnf); //destruct
 		
 		//unset(self::$pdo); //err, self destruct
+		echo ". " . PHP_EOL;
 	}	
 }
 ?>

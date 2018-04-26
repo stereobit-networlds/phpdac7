@@ -884,6 +884,7 @@ parse_ini_string_m:
 	}
 	
 	//fetch stream content
+	//self::$prpathS = paramload('SHELL','prpath'); !!
 	static public function streamfile_contents($f=null, $falt=null) {
 		if (!$f) return null;
 		global $dac, $st;

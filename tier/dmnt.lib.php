@@ -5,7 +5,7 @@ class dmnt {
 	private $daemon_type, $daempn_ip, $daemon_port, $promptString;
 	public $type, $ip, $port;
 	
-	public function __construct(& $env, $type, $ip, $port) 
+	public function __construct(& $env, $type, $ip, $port, $prompt=false) 
 	{	
 		$this->env = $env;
 		
@@ -17,10 +17,10 @@ class dmnt {
 		
 		require($this->env->ldscheme . "/system/daemon.lib.php");
 		
-		$this->dmn = new daemon($type, true, $this);	  
+		$this->dmn = new daemon($type, true);//$prompt);	  
 		$this->dmn->setAddress ($ip);//'127.0.0.1');
 		$this->dmn->setPort ($port);
-		$this->dmn->Header = "PHPDAC5 Agent v2, at ". $this->env->env['name'] . ' ' . $this->daemon_ip .':'. $this->daemon_port;
+		$this->dmn->Header = "PHPDAC5 Agent v2, ". $this->env->env['name'] . ' ' . $this->daemon_ip .':'. $this->daemon_port;
 
 		$this->dmn->start($this->promptString); 
 
@@ -371,8 +371,7 @@ class dmnt {
 	private function exebatchfile($file=null, $say=false) 
 	{
 	    if ((!$file) || ($file=='.ash')) $file = 'init.ash';
-		//$this->env->cnf->_say('Init batch file: ' . $file, 'TYPE_LION');
-		
+
 		/*$batchfile = getcwd() . DIRECTORY_SEPARATOR . $file; 
 		if ((is_readable($batchfile)) && ($f = @file($batchfile))) 
 			$fdata = file_get_contents($batchfile);

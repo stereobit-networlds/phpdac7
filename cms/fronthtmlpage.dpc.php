@@ -25,7 +25,7 @@ class fronthtmlpage {
 	var $template, $cptemplate;
 	var $preprocess;
 	
-	static $staticpath, $staticprPath, $cmsTemplates;
+	static $staticpath, $staticprpath, $cmsTemplates;
 	 
 	public function __construct($file=null, $theme=null) { 
         $UserSecID = GetGlobal('UserSecID');			
@@ -89,7 +89,7 @@ class fronthtmlpage {
         $this->htmlext = $htmlfile_extension ? $htmlfile_extension : '.htm'; 		
 		
 		self::$staticpath = paramload('SHELL','urlpath');
-		self::$staticprPath = paramload('SHELL','prpath');
+		self::$staticprpath = paramload('SHELL','prpath');
 		
 		$this->template = remote_paramload('FRONTHTMLPAGE','template',$this->prpath);
 		$this->cptemplate = remote_paramload('FRONTHTMLPAGE','cptemplate',$this->prpath);		
@@ -152,7 +152,8 @@ class fronthtmlpage {
 	  
 		if ($this->htmlfile) {
 			//$htmdata = file_get_contents($this->htmlfile);
-			$htmdata = GetGlobal('controller')::streamfile_contents($this->htmlfile);
+			//$htmdata = GetGlobal('controller')::streamfile_contents($this->htmlfile);
+			$htmdata = self::streamfile_contents($this->htmlfile); //ver 5
 			
 			$this->process_javascript($htmdata, $pageout);		
 			$ret = $this->process_commands($pageout);
@@ -875,7 +876,8 @@ EOF;
 				
 			//echo 'INCLUDE_PART:'.$pathname;
 			//if ($contents = trim(@file_get_contents($pathname))) {	
-			if ($contents = trim(GetGlobal('controller')::streamfile_contents($pathname))) {	
+			//if ($contents = trim(GetGlobal('controller')::streamfile_contents($pathname))) {	
+			if ($contents = trim(self::streamfile_contents($pathname))) { //ver 5	
 			
 				self::stackTemplate($pathname);
 				
@@ -929,7 +931,8 @@ EOF;
 				
 			//echo 'INCLUDE_PART:'.$pathname;
 			//if ($contents = trim(@file_get_contents($pathname))) {	
-			if ($contents = trim(GetGlobal('controller')::streamfile_contents($pathname))) {
+			//if ($contents = trim(GetGlobal('controller')::streamfile_contents($pathname))) {
+			if ($contents = trim(self::streamfile_contents($pathname))) {//ver 5
 
 			    self::stackTemplate($pathname);
 			
@@ -1255,24 +1258,21 @@ function cc(name,value,days) {
 	}
 	
 	//fetch stream content
-	/*static public function streamfile_contents($f=null, $falt=null) {
+	static public function streamfile_contents($f=null, $falt=null) {
 		if (!$f) return null;
-		global $phpdac_c, $dac, $env;
-		//echo $phpdac_c .'.'. $dac . '>'.$f;
+		global $dac, $st;
 		
-		if (($phpdac_c) && ($dac)) { 
-			//__log('fetch remote:'.$_SERVER['PHP_SELF']);
-			$fp = str_replace(self::$staticprPath,'/cp/',$f);
-			if ($pharApp = $env['app'])
-				return file_get_contents("phar://$pharApp/www7" . $fp);
-			else	
-				return file_get_contents('phpdac5://127.0.0.1:19123/www7' . $fp);
+		if ($dac) { 
+			$fp = str_replace(self::$staticprpath, '/cp/', $f);
+			phpdac7\__log('fetch remote:' . $fp);
+			
+			return file_get_contents("$st/www7" . $fp);	
 		}
 		
 		//else filesystem default
 		$fout = $falt ? $falt : $f;
 		return @file_get_contents($fout);
-	}*/	
+	}	
 
 	function __destruct() {
 		if (isset($_GET['modify'])) {

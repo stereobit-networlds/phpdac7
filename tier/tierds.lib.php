@@ -188,20 +188,22 @@ class tierds {
 	   $code = @file_get_contents($f);
 	   if (isset($code))
 	   {
-		    $file = explode(PHP_EOL,$code);
+		    $file = explode(PHP_EOL, $code);
 		   
 			//clean code by nulls and commends
-			foreach ($file as $num=>$line) {
-				$trimedline = trim($line);
-				if (($trimedline) && ($trimedline[0]!="#")) //comment          
-					$lines[] = $trimedline;
+			foreach ($file as $num=>$line) 
+			{
+				if ($trimedline = trim(str_replace(array("\r", "\n", ';'), '', $line)))
+					if ($trimedline[0]!="#") //comment          
+						$lines[] = $trimedline;
 			}
 			
 			//print_r($lines);
-			$toktext = implode("",$lines); //one line may have more than one cmds sep by ;
-			$token = explode(";",$toktext);	//tokenize	  			
-	        foreach ($token as $tid=>$tcmd) 
-			{  //echo $tcmd .PHP_EOL;
+			//$toktext = implode("",$lines); //one line may have more than one cmds sep by ;
+			//$token = explode(";",$toktext);	//tokenize	  			
+	        foreach ($lines as $tid=>$tcmd) 
+			{  
+			   //echo $tcmd .PHP_EOL;
 			   $part = explode(' ', $tcmd);
 			   
 			   switch ($part[0]) {	
@@ -210,7 +212,7 @@ class tierds {
 				                $name = explode(".",trim($part[0]));
 				                break;				  
 								
-			     case 'schedule'://run scheduled cmds
+			     case 'schedule': //run scheduled cmds
 				                $this->get_agent('scheduler')->schedule($part[1],$part[2],$part[3]); 
 				                break;
 								
@@ -237,6 +239,7 @@ class tierds {
 				                
 			   }
 			   $i+=1;
+			   //echo $i .'-----['. $tcmd .']-----' . PHP_EOL;
 	        }	 
 			return true;
 	   }
@@ -757,10 +760,12 @@ class tierds {
 
     public function shutdown($now=false) 
 	{
-		_say("Shutdown " . $now, 1);
-		//if ($now) die(); 	
-	  	
+		//_say("Shutdown " . $now, 1);
+		$this->cnf->_say('Shutdown ' . $now, 'TYPE_LION');	 
+		
 		$this->free_agents();
+		
+	  	//if ($now) die();		
 	  
 		//close printer	 
 		if (extension_loaded('printer')) {	
@@ -777,13 +782,12 @@ class tierds {
 
 	public function __destruct() 
 	{
-		if ($this->shutdown())
-		{
-			unset($this->cnf); //destruct
-			unset($this->utl); //destruct
-			unset($this->dmn); //destruct
-			unset($this->mem); //destruct
-		}
+		unset($this->cnf); //destruct
+		unset($this->utl); //destruct
+		unset($this->dmn); //destruct
+		unset($this->mem); //destruct
+		//$this->cnf->_say('.', 'TYPE_LION');
+		echo '.' . PHP_EOL;
 	}	
 	
 }

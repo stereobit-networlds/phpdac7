@@ -2178,7 +2178,7 @@ class IPPlistener extends ServerIPP {
             //if ($log)
 		      //self::write2disk('network.log',":start:");			
 			
-		    $srv = new AgentIPP($this->authentication,
+		    $srv = new AgentIPP(/*$this->authentication, ****/
 			                    self::get_printer_name(),
 			                    $this->username,//??? when called what is the name ??
 			                    $callback_function,//must be inside pragent class
@@ -2220,7 +2220,7 @@ class IPPlistener extends ServerIPP {
 	    
 		if (class_exists('AgentIPP', true)) {
 		    $auth = 'dummyref';
-		    $srv = new AgentIPP($auth,self::get_printer_name());
+		    $srv = new AgentIPP(self::get_printer_name());
 			$ret = $srv->flush_log_files();
 			
 		}	

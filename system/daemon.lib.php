@@ -29,7 +29,7 @@ define ("VERBOSE", true);
 define ("VERBOSE_LEVEL", 2);//5
 define ("DAEMON_BUFFER", 1024);
 define ("MAX_CONNECTIONS", 4);//4
-define ("SILENCE",1);//0
+define ("SILENCE", true); 
 
 /* can be set to 'standalone' for listening on specified port. When run
  * as an inetd service, this class reads from stdin and outputs to
@@ -38,8 +38,7 @@ define ("SILENCE",1);//0
  */
 
 //define ("SERVER_TYPE", 'standalone'); //and oh, this can be _anything_
-                                                                                                  //if you wanted this to do sockets...
-
+//if you wanted this to do sockets...
 //define ("SHOW_PROMPT", true); //should a prompt be displayed? 
 
 class daemon {
@@ -58,8 +57,9 @@ class daemon {
         var $PromptString = 'phpdac5> ';
 		
 		//added by me
-		var $Echo = 1;//0;
+		var $Echo = 0;
 		var $silent = 0;//client silent..server silence defined ..		
+		
         protected $clientFD;	
 		protected $cliendInfo;
 		protected $clients;	
@@ -68,9 +68,9 @@ class daemon {
 		protected $idle_timeout;
 		
 		var $cpool;
-		var $env;
+		var $env; //this is not used
 		
-        function __construct($type='standalone',$prompt=true) {
+        function __construct($type='standalone',$prompt=false) {
 		
                 define ("SERVER_TYPE", $type);//added by me!
                 define ("SHOW_PROMPT", $prompt); //should a prompt be displayed? 
@@ -85,13 +85,13 @@ class daemon {
         }
 
         function verbose ($level, $msg) {
-				$kv = KERNELVERBOSE;
-			    $vl = $kv ? $kv : VERBOSE_LEVEL;
+			$kv = KERNELVERBOSE;
+		    $vl = $kv ? $kv : VERBOSE_LEVEL;
 					  
-                if (VERBOSE && $level <= $vl && SERVER_TYPE != 'inetd') {
-                        echo str_repeat ("*", $level) . " $msg " . str_repeat ("*", $level)
-                        . PHP_EOL;
-                }
+            if (VERBOSE && $level <= $vl && SERVER_TYPE != 'inetd') {
+                  echo str_repeat ("*", $level) . " $msg " . 
+						str_repeat ("*", $level) . PHP_EOL;
+            }
         }
 
         function setAddress ($ipaddr) {
@@ -103,17 +103,16 @@ class daemon {
         }
 				
 		function setEcho($echo,$id=null) {
-		        if (!$id) $id = $this->active; 
-				
-		        //if ($this->clientInfo[$id])
-			      //$this->clientInfo[$id]['Echo'] = $echo;			
-				$this->cpool[$id]->session['Echo'] = $echo;  
+			if (!$id) $id = $this->active; 
+							
+			$this->cpool[$id]->session['Echo'] = $echo;  
         }		
-		//hide messages and header (client usage)
-		function setSilence($silence,$id=null) {
-		        if (!$id) $id = $this->active; 
+		
+		//hide messages and header (client usage) !!! sends exit
+		function setSilence($silence, $id=null) {
+		    if (!$id) $id = $this->active; 
 				
-			    $this->cpool[$id]->session['Silent'] = $silence;			
+			$this->cpool[$id]->session['Silent'] = $silence;			
         }		
 
         function start ($PromptString=null) {	
@@ -185,13 +184,16 @@ class daemon {
 														 "Silent"=>$this->silent);
 					  //at connection....									 
 					  $this->active = $i;
-					  if ((!SILENCE) || (!$this->cpool[$i]->session['Silent'])) {
-                        $this->ShowHeader($i);
-					    if (SHOW_PROMPT) {
-                          $this->showPrompt($i);
-                        }
+					  if (!SILENCE || 
+							(!$this->cpool[$i]->session['Silent'])) 
+					  {
+							$this->ShowHeader($i);
+						
+							if (SHOW_PROMPT) {
+								$this->showPrompt($i);
+							}
 					  }
-  					  //return $i; 
+					  //return $i; 
 					//}
 				  //}	                    
 
@@ -199,19 +201,19 @@ class daemon {
 		
 
         function sock_reset ($id) {
-
+				
                 $this->close ($id);
                 $this->sock_message_socket_create($id);
         }
 
         function close ($id) {
-		        //echo 'silence:',SILENCE,'<>',$this->cpool[$id]->session['Silent'],'<';
 				
-     			if ((!SILENCE) || (!$this->cpool[$id]->session['Silent']))//if no silence
-                  $this->Println ('goodbye!',$id);		
+     			if (!SILENCE || 
+					(!$this->cpool[$id]->session['Silent']))
+                  $this->Println ('Exit',$id);		
 		
 		        if (SERVER_TYPE == 'inetd') {
-                        exit;
+                        exit;						
                 } 
 				else {
 					//if (SERVER_TYPE != 'inetd') {
@@ -223,7 +225,6 @@ class daemon {
 						socket_close($this->cpool[$id]->resource);
 
                         //$this->clientFD[$id] = null;
-                        //unset ($this->clientInfo[$id]);
                         //$this->clients--;
 						
 						//$this->cpool[$id]->reset_client();	
@@ -241,11 +242,12 @@ class daemon {
         function resetConnection ($id) {
 		
 		        //if (!$id) $id = $this->active;
-			    if ((!SILENCE) || (!$this->cpool[$id]->session['Silent']))//if no silence
-                  $this->Println ('goodbye!',$id);
+			    if (!SILENCE || 
+					(!$this->cpool[$id]->session['Silent']))
+                  $this->Println('Exit', $id);
 				
                 if (SERVER_TYPE == 'inetd') {
-                        exit;
+                        exit; 
                 } else {
                         $this->cpool[$id]->session['First_time'] = true;				
                         $this->sock_reset ($id);
@@ -320,7 +322,7 @@ class daemon {
 						  $this->active = $id;
 						  
                           $data .= $buf;
-						  if ((!SILENCE) || (!$this->cpool[$id]->session['Silent'])) 
+						  if (!SILENCE || (!$this->cpool[$id]->session['Silent'])) 
 						    if ($this->cpool[$id]->session['Echo']) 
 						      $this->_Print ($buf,$id);
 						  
@@ -368,7 +370,7 @@ class daemon {
         function Println ($string,$id=null) {
                 if ($id==null) $id = $this->active;
 				
-                $this->_Print ($string . "\n",$id);
+                $this->_Print ($string . PHP_EOL, $id);
         }		
 		
         function BroadPrint($data, $exclude = array ()) {
@@ -395,50 +397,51 @@ class daemon {
 		
         function ShowHeader ($id) {
 		
-		        if (SERVER_TYPE != 'inetd') {
+			if (SERVER_TYPE != 'inetd') {
 
-                  if ($this->cpool[$id]->session['First_time']==true) {
-				        //if (!$socket) $socket = $this->msg_socket;
-                        socket_getpeername ($this->cpool[$id]->resource, $peer_addr, $peer_port);
-                        $this->verbose (2, "--------------- Connection from $id>$peer_addr:$peer_port opened ---------------");
-                        $this->Println ($this->Header,$id);
-                  }
-                  $this->cpool[$id]->session['First_time'] = false;
-				}
-				elseif ((!SILENCE) || (!$this->cpool[$id]->session['Silent']))//if no silence
-				  $this->Println ($this->Header,$id);
+				if ($this->cpool[$id]->session['First_time']==true) {
+					//if (!$socket) $socket = $this->msg_socket;
+                    socket_getpeername ($this->cpool[$id]->resource, $peer_addr, $peer_port);
+                    $this->verbose (2, "--------------- Connection from $id>$peer_addr:$peer_port opened ---------------");
+					
+					//!!!!! when come from webpage
+					//if (!SILENCE || (!$this->cpool[$id]->session['Silent']))
+						//$this->Println ($this->Header,$id);
+                }
+                $this->cpool[$id]->session['First_time'] = false;
+			}
+			elseif (!SILENCE || (!$this->cpool[$id]->session['Silent']))
+				$this->Println ($this->Header,$id);
         }			
 
         function showError ($Severity, $ErrorString,$id=null) {
-				//if (!$socket) $socket = $this->msg_socket;
+			//if (!$socket) $socket = $this->msg_socket;
 				
-		        if (!$id) $id = $this->active;
+		    if (!$id) $id = $this->active;
 				
-				if ((!SILENCE) || (!$this->cpool[$id]->session['Silent']))//if no silence
-                  $this->Println ($Severity . ':' . $ErrorString,$id);
+			if (!SILENCE || (!$this->cpool[$id]->session['Silent']))
+				$this->Println ($Severity . ':' . $ErrorString,$id);
         }
 		
         function showPrompt ($id) {
 
- 	            //if (!$id) $id = $this->active;
-		        if (SERVER_TYPE != 'inetd') {				
-				  if ($this->cpool[$id]->session['Echo']) {
-                    $this->_Print ($this->cpool[$id]->session['PromptString'],$id);
-				  }
-			    }
-				elseif ((!SILENCE) || (!$this->cpool[$id]->session['Silent']))//if no silence
-				   $this->_Print ($this->PromptString,$id);	  
+			//if (!$id) $id = $this->active;
+			if (SERVER_TYPE != 'inetd') {				
+				if ($this->cpool[$id]->session['Echo']) 
+					$this->_Print ($this->cpool[$id]->session['PromptString'], $id);
+			}
+			elseif (!SILENCE || (!$this->cpool[$id]->session['Silent']))
+			   $this->_Print ($this->PromptString,$id);	  
         }
 		
-		function changePrompt($newprompt='phpdac5>',$id=null) {
+		function changePrompt($newprompt=null, $id=null) {
 			
-               if ($id==null) $id = $this->active;
+			if ($id==null) $id = $this->active;
 			   
-		       if ((SERVER_TYPE != 'inetd') && ($id!=null)) {				   
-		         $this->cpool[$id]->session['PromptString'] = $newprompt;
-			   }	 
-			   else
-			   	 $this->PromptString = $newprompt;
+		    if ((SERVER_TYPE != 'inetd') && ($id!=null)) 				   
+				$this->cpool[$id]->session['PromptString'] = $newprompt; 
+			else
+				$this->PromptString = $newprompt;
 		}		
 		
 		
@@ -766,7 +769,7 @@ declare(ticks=10) {
                             if (!empty ($command_line)) {
                                $this->dispatch($command_line,$i);
                             }
-							if ((!SILENCE) || (!$this->cpool[$i]->session['Silent'])) {
+							if (!SILENCE || (!$this->cpool[$i]->session['Silent'])) {
 							  if (SHOW_PROMPT) {
                                 if (is_resource($this->cpool[$i]->resource))
 								  $this->showPrompt($i);

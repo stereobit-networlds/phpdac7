@@ -18,10 +18,10 @@ class process extends pstack {
 		//print_r($this->envStack);	
 		//print_r($this->envChain); 	
 		
-		parent::__construct($env, 'kernel', $this->envStack);//array('kernel'=>$this->envStack));//$this->envStack); 
+		parent::__construct($env, 'kernel', $this->envStack);
 		$this->debug = false;	//override
 		
-		//$this->pMethod = $this->envChain[0]; //override
+		//$this->pMethod = $this->envChain[0]; //override > in isFinish
 	}	
 	
 	public function getProcessStack() 
@@ -60,9 +60,8 @@ class process extends pstack {
 			{	
 				//read srv var
 				$s = file_get_contents($dac5 . '/srvProcessStack');
-				$this->envStack = json_decode($s, true);
-				//print_r($stack); echo '::next::';
-				$next = array_shift($this->envStack);
+				if (!empty($this->envStack = json_decode($s, true)))
+					$next = array_shift($this->envStack);
 			}	
 			return (array) $next;
 		}
@@ -93,12 +92,10 @@ class process extends pstack {
 				
 			case 'async'      : //exec srv async class and call tier
 								//only the async handler (rest exec in tier)
-								//if (!$this->runInstance($this->envChain[0], $event, null, $chainData)) 
-									//return false;  //async data cant be returned
-									//$chainData = false;
 								$async = $this->runInstance($this->envChain[0], $event, $this->envChain, $chainData);	
 								$chainData = 'async'; //test true
-								//echo '>>>>>>>>>>>>>'. $async->complete . PHP_EOL;
+								
+								echo '>>>>>>>>>>>>>'. $async->complete . PHP_EOL;
 								//return next (or this chain to reduce) async stack chain (save by srv)
 								if ($async->complete==true)
 								{   
@@ -106,8 +103,8 @@ class process extends pstack {
 									$callback = json_encode($this->envChain); //current
 									//$callback = json_encode($this->getNextProcessChain());//next
 									if ($cl = file_get_contents($this->env->ldscheme .'/setvar-' . $chainData . '-srvProcessStack-' . $callback))
-										echo 'Server informed!';// . $cl;
-									//die('Exit'); //..and close async terminal
+										echo 'Sync data!' . PHP_EOL;// . $cl;
+									//die('Exit'); //..and close async terminal !!!!!
 								}
 								break;				
 				
@@ -127,6 +124,9 @@ class process extends pstack {
 											$innerAsyncDpc = $asc .'/' . implode('/',$restStack) . '/';
 											//async data cant be returned
 											//go() return null, or !!! leave prev data to return
+											
+											//$run = new proc($this->env->env);
+											//return is_object($run) ? $run->set($innerAsyncDpc)->go($event, $chainData) : false;
 											return (new proc($this->env->env))
 															->set($innerAsyncDpc)
 															->go($event, $chainData);
@@ -154,16 +154,7 @@ class process extends pstack {
 								//}
 		}
 		
-		//return next async stack chain
-		/*if (($dac5 = $this->env->ldscheme) && ($async->complete))
-		{   
-			//async callback
-			$callback = json_encode($this->envChain); //current
-			//$callback = json_encode($this->getNextProcessChain());//next
-			file_get_contents($dac5 .'/setvar-' . $chainData . '-srvProcessStack-' . $callback);
-			//die('Exit'); //..and close terminal
-		}*/
-		//else return server 'sync' data
+		//else return 'sync' data
 		return ($chainData);//true;
 	}
 	
@@ -193,15 +184,16 @@ class process extends pstack {
 					return $data;			
 			}
 			catch (Throwable $t) {
-				$this->env->_say($inst . ' class found with errors!', 'TYPE_LION');
+				echo $inst . ' class found with errors!'. PHP_EOL;
 				echo $t . PHP_EOL; //<<<<<<<<< err
 				return false;
 			}
 		}
 		//else
-			//$this->env->_say($inst . ' class not exist!', 'TYPE_LION');
+			//echo $inst . ' class not exist!' . PHP_EOL;
 		
-		$this->env->_say($inst . ' not found!', 'TYPE_LION');
+		echo $inst . ' not found!' . PHP_EOL; 
+		//when async/hello .. not found loop forever !!!!
 		return false;	
 	}
 	

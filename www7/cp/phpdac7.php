@@ -37,7 +37,7 @@ $env = array(
 'prjpath' => '/',
 'dachost' => '127.0.0.1',
 'dacport' => '19123',
-'app' => '/xampp-phpdac7/vendor/stereobit/cpdac7.phar',
+'app' => '',/*'/xampp-phpdac7/vendor/stereobit/cpdac7.phar',*/
 'cppath' =>'home/sterobi/public_html/basis/cp',
 'key' => 'd41d8cd98f00b204e9800998ecf8427e', 
 );
@@ -56,9 +56,9 @@ $st = $dac ? $stream : $env['dpcpath'];
 		
 define('_DPCPATH_', $env['dpcpath']);
 
-define('_DACSTREAMCVIEW_', 3); //1,2,3 verbose level
-define('_DACSTREAMCREP1_', "<!-- $st/");
-//define('_DACSTREAMCREP2_', 'B'); //when at least 2 rem to show uri
+define('_DACSTREAMCVIEW_', 3); //verbose level
+define('_DACSTREAMCREP1_', "<!-- ");
+define('_DACSTREAMCREP2_', "$st/");
 define('_DACSTREAMCREP3_', ' -->');
 define('_DACSTREAMCREP0_', 'D'); //trail txt err		
 		
@@ -151,8 +151,8 @@ class c7_dacstream {
         $ret = substr($this->data,$this->position,$count);
 		$this->position += strlen($ret);
 		
-        return ($this->gc($ret,_DACSTREAMCVIEW_));
-		//return $ret;
+        //return ($this->gc($ret,_DACSTREAMCVIEW_)); 
+		return $ret;
    }
    
    public function stream_write($data) {

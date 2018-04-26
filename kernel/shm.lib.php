@@ -131,6 +131,7 @@ class shm
 	//public function free()	
 	public function __destruct() 
 	{	
+		//echo 'shmem ';
         $del = @shmop_delete($this->shm_id);
 
         if($del === false)

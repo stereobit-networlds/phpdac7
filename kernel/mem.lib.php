@@ -843,7 +843,8 @@ class mem
 	
 	//public function free()	
 	public function __destruct() 
-	{		
+	{	
+		//echo 'mem ';
 	    $this->close();
 
 		return true;	

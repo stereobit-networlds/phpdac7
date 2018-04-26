@@ -84,8 +84,8 @@ class tier_dacstream {
         $ret = substr($this->data,$this->position,$count);
 		$this->position += strlen($ret);
 		
-		//return $ret;
-		return ($this->gc($ret,_DACSTREAMCVIEW_));
+		return $ret;
+		//return ($this->gc($ret,_DACSTREAMCVIEW_)); //DISABLED
 	}
    
 	public function stream_write($data) {

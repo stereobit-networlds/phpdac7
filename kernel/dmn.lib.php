@@ -6,12 +6,12 @@ class dmn {
 	private $env, $dmn;
 	public $type, $ip, $port;
 	
-	public function __construct(& $env, $type, $ip, $port) {
+	public function __construct(& $env, $type, $ip, $port, $prompt=false) {
 		
 	  $this->env = $env;	
 		
-      $this->dmn = new daemon($type, true);//'standalone',false);
-      $this->dmn->setAddress ($ip);//'127.0.0.1');
+      $this->dmn = new daemon($type, true);//$prompt);
+      $this->dmn->setAddress ($ip);
       $this->dmn->setPort ($port);
       $this->dmn->Header = "PHPDAC5 Kernel v2, " . $ip . ':' . $port;
 
@@ -133,14 +133,10 @@ class dmn {
                 break;	
 				
 		case 'GETDPCMEMC'://client version
-		        $dmn->setEcho(0);//echo off
-				//header from 1st command still appear...must set client silence off				
-				$dmn->setSilence(1);//silence off...???
-				//OLD METHOD
+		        $dmn->setEcho(0);
+				$dmn->setSilence(1); //when disabled server sends responds 'exit etc' at any call
 		        $data = $this->env->readC($this->env->utl->dehttpDpc($arguments[0]));
-				//NEW METHOD
-				//$data = $this->env->mem->readC($this->env->utl->dehttpDpc($arguments[0]));
-				
+
 		        $dmn->Println(trim($data));
                 return false;//and quit
                 break;					

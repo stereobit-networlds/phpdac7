@@ -29,12 +29,16 @@ class processInst {
 	//https://stackoverflow.com/questions/37842573/php-spl-autoload-register-pass-second-parameter	
     protected function loader($vendor=null) {
 	
+		//echo 'zzzzzzzzzzz';	
+		//if (isset($this->env->ldscheme)) { 
+		//tier only (else srv loop)
+		
 	    //echo 'Trying to load ', $className, ' via ', __METHOD__, "()\n"; 
 		spl_autoload_register(function($className) use ($vendor) 
 		{
 			try {
-				//include($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
-				@include_once($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
+				//require_once($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
+				include_once($this->_include($vendor . str_replace(array('\\', "\0"), array('/', ''), $className) . '.php'));
 				//echo "File {$vendor}{$className} loaded!";
 			}
 			catch (Throwable $t) {
@@ -42,6 +46,9 @@ class processInst {
 				echo $className  . ' NOT found!' . PHP_EOL;
 			}
 		}); 
+		//} //tier only
+		//else
+			//die('xx');
     }	
 
 	//ETL make (decoration pattern)	

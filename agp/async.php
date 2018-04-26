@@ -17,9 +17,9 @@ class async extends processInst {
 		
 		$pid = $this->getChainId(); //next
 		$this->nextCmd = $this->_stack[$pid];
-		echo "process async ({$this->nextCmd}): ". $this->caller->status;// . PHP_EOL;	
+		echo "process async ({$this->nextCmd}): ". $this->caller->status . PHP_EOL;	
 				
-		$this->loader("vendor/process/async/{$this->nextCmd}/"); //next cmd namespace		
+		//$this->loader("vendor/process/async/{$this->nextCmd}/"); //next cmd namespace		
 	}
 	
 	//override
@@ -27,9 +27,14 @@ class async extends processInst {
 		//is tier call, exec
 		if ($this->env->ldscheme) 
 		{	
+			$this->loader("vendor/process/async/{$this->nextCmd}/"); //next cmd namespace		
+	
 			$async = array_shift($this->_stack); //exclude self 'async' call
 			$class = array_shift($this->_stack);
+			
 			return new $class($this);
+			//$run = new $class($this);
+			//return is_object($run) ? $run : false;
 		}	
 		//server part
 		echo "--------- tier go()!!" . PHP_EOL;
