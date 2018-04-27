@@ -733,7 +733,7 @@ class mem
 		}	
 		else
 		{		
-			if (!$this->env->scheduler->findschedule($dpc))
+			if (!$this->env->sch->findschedule($dpc))
 			{
 				$_data = $this->env->pdoQuery($dpc);			
 				$data = json_encode($_data);
@@ -764,7 +764,7 @@ class mem
 	{
 		if (substr($dpc,0,4)!=='www.') return null;
 		   
-		$data = (!$this->env->scheduler->findschedule($dpc)) 
+		$data = (!$this->env->sch->findschedule($dpc)) 
 				?
 				$this->env->utl->httpcl($dpc) : 
 				null; //bypass

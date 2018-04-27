@@ -210,8 +210,10 @@ class scheduler {
 		return array(0, $entry);//not executed yet 
   }
   
-	public function findschedule($agent=null, $tmline) {
-		if ((!$agent) || (empty($tmline))) return false;
+	public function findschedule($agent=null, $schedules=null) {
+		if (!$agent) return false;
+		$tmline = isset($schedules) ? $schedules :
+					json_decode($this->env->read('srvSchedules'), true);		
 	  
 		foreach ($tmline as $inittime=>$entry) {
 

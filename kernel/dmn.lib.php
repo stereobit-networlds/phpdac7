@@ -245,7 +245,7 @@ class dmn {
 		$ret = $this->dmn->show_connections();
 	  
 		//save in resources
-		$this->env->resources->set_resource('_sessions',serialize($ret));	  
+		//$this->env->resources->set_resource('_sessions',serialize($ret));	  
 	  
 		if (!$show)  return ($ret);
 	  

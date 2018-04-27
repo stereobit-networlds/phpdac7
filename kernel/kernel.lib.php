@@ -6,7 +6,7 @@ define ("KERNELVERBOSE", 1);//override daemon VERBOSE_LEVEL
 define ("_DS_", DIRECTORY_SEPARATOR);
 	
 require_once("system/timer.lib.php");
-require_once("kernel/sresc.lib.php");
+//require_once("kernel/sresc.lib.php");
 require_once("kernel/cnf.lib.php");
 require_once("kernel/mem.lib.php");
 require_once("kernel/shm.lib.php");
@@ -18,7 +18,7 @@ require_once("kernel/var.lib.php");
 require_once("kernel/proc.lib.php");
 require_once("kernel/imo.lib.php");
 require_once("kernel/sch.lib.php");
-require_once("agents/resources.lib.php");
+//require_once("agents/resources.lib.php");
 
 
 	function _say($str, $level=0, $crln=true) 
@@ -59,7 +59,7 @@ class kernel {
 		$argc = $GLOBALS['argc'];
 		$argv = $GLOBALS['argv'];
 		
-		$this->saveSrvState = true; //save srvState at mem resources
+		$this->saveSrvState = true; 
 		
 		$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
 	  
@@ -76,10 +76,10 @@ class kernel {
 		$this->cnf->_say("Daemon repository at $this->daemon_ip:$this->daemon_port", 'TYPE_LION');
 	  
 		//REGISTER PHPRES (client side,resources) 		 
-		$phpdac_c = stream_wrapper_register("phpres5","c_resstream");
+		/*$phpdac_c = stream_wrapper_register("phpres5","c_resstream");
 		if (!$phpdac_c) $this->cnf->_say("Client resource protocol failed to registered!" , 'TYPE_LION');
 					else $this->cnf->_say("Client resource protocol registered!", 'TYPE_RAT'); 	  
-	     
+	     */
 		//start buf / shmem	
 		$this->shm = new shm($this); //buf
 		$this->mem = new mem($this);
@@ -92,10 +92,10 @@ class kernel {
 			$this->timer = new timer($this);
 			
 			//init resources
-			$this->resources = new resources($this);
+			/*$this->resources = new resources($this);
 			$this->resources->set_resource('variable','myservervalue');	  
 			$this->resources->set_resource('srvName','kernelv2');//agent use on process?	
-      
+			*/
 			//init printer	  
 			self::initPrinter();
 			//init db
@@ -218,7 +218,7 @@ class kernel {
     public function show_schedules() 
 	{
 		$sh = $this->sch->showschedules();
-		return 'env.show_schedules';//null;
+		return 'env.show_schedules';
     }	
 	
 	//call from mem when variable asked async
@@ -292,18 +292,9 @@ class kernel {
 		$this->mem->showGC(); //show gc
 		//$this->fs->hView(); //show hash table		
 		
-		//save table in sh mem as resource var
-		if ($this->saveSrvState===true) {
-			try //boo!!
-			{	//(TEST OFF >15kb shmem halt)	
-				$this->save('srvState',$this->mem->getShmContents());
-				//$this->cnf->_say("Table saved", 'TYPE_LION');
-			} 
-			catch (Exception $e) {
-				_say('saveSrvState Error: '.  $e->getMessage(). PHP_EOL, 1);
-				//exit;
-			}
-		}								
+		//save state
+		if ($this->saveSrvState===true) 		
+			$this->save('srvState',$this->mem->getShmContents());							
 		
 		return true;
     } 
@@ -314,7 +305,7 @@ class kernel {
 	{
 		if (!$message) return false;
 		
-		$pr = $this->resources->get_resource('printer');
+		//$pr = $this->resources->get_resource('printer');
 		if (is_resource($pr) &&
 			get_resource_type($pr)=='printer') 
 		{
@@ -339,7 +330,7 @@ class kernel {
 				get_resource_type($printout)=='printer') 
 			{  
 				printer_set_option($printout, PRINTER_MODE, 'RAW'); 
-				$this->resources->set_resource('printer',$printout);
+				//$this->resources->set_resource('printer',$printout);
 				$this->cnf->_say("printer:" . $printer . " connected.", 'TYPE_LION');
 				//printer_close($printout);
 			}
@@ -475,7 +466,7 @@ class kernel {
 	  
 		//close printer
 		if (extension_loaded('printer')) {
-			$printout = $this->resources->get_resource('printer');   
+			//$printout = $this->resources->get_resource('printer');   
 			if (is_resource($printout) &&
 				get_resource_type($printout)=='printer')
 				printer_close($printout);	  
@@ -490,7 +481,7 @@ class kernel {
 		//unregister_tick_function(array($this->scheduler,"checkschedules"),true);
 		unset($this->sch); //destruct
 		unset($this->dmn); //destruct
-		unset($this->resources); //destruct
+		//unset($this->resources); //destruct
 		unset($this->timer); //destruct
 		//unset($this->proc); //destruct
 		unset($this->mem); //destruct
