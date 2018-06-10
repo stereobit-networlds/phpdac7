@@ -153,11 +153,11 @@ class cmsform {
 									//save user mail
 									SetSessionParam("FORMMAIL",$email); //use for something...
 								
-									$this->jsDialog('', localize('_RCAMTRUE', $this->lan));									
+									$this->jsDialog(localize('_RCAMTRUE', $this->lan) ,'');									
 								}
 								else { 
-									$this->msg = $err;						
-									$this->jsDialog($err, localize('_RCAMFALSE', $this->lan));
+									$this->msg = $mailerr;						
+									$this->jsDialog($mailerr, localize('_RCAMFALSE', $this->lan));
 								}												
 							}
 							else { 

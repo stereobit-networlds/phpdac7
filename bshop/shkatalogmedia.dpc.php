@@ -320,6 +320,8 @@ class shkatalogmedia {
 										$cartstr = explode(';', GetReq('a'));
 										$item = $cartstr[0]; 
 										_m("cmsvstats.update_item_statistics use $item+cartin");
+										
+										$this->analytics('cartadd', $this->fetchProductTokens($item));
 									}
 									if (_v("shcart.fastpick")) 
 										$this->jsBrowser();
@@ -329,6 +331,8 @@ class shkatalogmedia {
 										$cartstr = explode(';', GetReq('a'));
 										$item = $cartstr[0];
 										_m("cmsvstats.update_item_statistics use $item+cartout");
+										
+										$this->analytics('cartrem', $this->fetchProductTokens($item));
 									}									
 									break;		
 		
@@ -417,8 +421,9 @@ class shkatalogmedia {
 										$out = $this->list_katalog(0,'klist');	
 									break;
 								
-			case 'klist'        : 	if (((GetReq('page')) || (GetReq('asc')) || 
-										(GetReq('order')) || (GetReq('pager'))) &&
+			case 'klist'        : 	/*if (((GetReq('page')) || (GetReq('asc')) || 
+										(GetReq('order')) || (GetReq('pager'))) &&*/
+									if (($this->insideAjaxClick()===true) &&	
 										(($this->filterajax ) && (!$this->mobile))) { //ajax
 										die($this->list_katalog(0,'klist'));
 									}
@@ -450,6 +455,20 @@ class shkatalogmedia {
 		
 		return ($out);
     }
+	
+	/* clicked from inside */
+	/* when a url come from search engines indexing */
+	protected function insideAjaxClick() {
+		$host = $_SERVER['HTTP_HOST'];
+		$referer = $_SERVER['HTTP_REFERER'];
+		
+		if (((GetReq('page')) || (GetReq('asc')) || 
+		     (GetReq('order')) || (GetReq('pager'))) &&
+			(preg_match("/$host/i", $referer)))
+			return true;		
+			
+		return false;	
+	}
 	
 	//js called when in catalog page
 	protected function jsCatalog() {
@@ -1548,7 +1567,15 @@ JSFILTER;
 														2=>$tokens[17],														
 														3=>$caturl,
 														4=>$ogimage, /*array of images*/
-													));			
+													));	
+				/* js ref analytics */ 
+				$cmdtype = ($cmd=='klist') ? 'category' : 'searchresults';
+				$this->analytics('klist', array(0=>$this->siteTitle,
+														1=>array_pop($catarray),
+														2=>$tokens[17],														
+														3=>$caturl,
+														4=>$cmdtype,
+													));									
 			}	
 			else //custom template
 				$toprint .= (!empty($items_custom)) ? implode('',$items_custom) : null;
@@ -1612,31 +1639,30 @@ JSFILTER;
 	    if (count($this->result->fields)>1) {	
 	   
 		 $pp = $this->read_policy();	   
-		 $item_code = $this->fcode;
 		 
 		 //url alias or canonical	
 		 $aliasID = _m("cmsrt.useUrlAlias");		
 		 $aliasExt = _v("cmsrt.aliasExt");
 	   
 		 foreach ($this->result as $n=>$rec) {
-			 
+			 /*
 		    $id2 = $aliasID ? ($rec[$aliasID] ? $this->stralias($rec[$aliasID]) : $rec[$this->fcode]) : $rec[$this->fcode]; 			 
 						 
 			$cat = $this->getkategoriesS(array(0=>$rec['cat0'],1=>$rec['cat1'],2=>$rec['cat2'],3=>$rec['cat3'],4=>$rec['cat4']));	      			      		   
 		   	$price = ($rec[$pp]>0) ? $this->spt($rec[$pp]) : $this->zeroprice_msg;
 	
-		    $cart_code = $rec[$item_code];
+		    $cart_code = $rec[$this->fcode];
 			$cart_title = $this->replace_cartchars($rec[$this->itmname]);
 			$cart_group = $cat;
 			$cart_page = GetReq('page') ? GetReq('page') : 0;
 			$cart_descr = $this->replace_cartchars($rec[$this->itmdescr]);
-			$cart_photo = $rec[$item_code];//$this->get_photo_url($rec[$this->fcode],1);
+			$cart_photo = $rec[$this->fcode];//$this->get_photo_url($rec[$this->fcode],1);
 			$cart_price = $price;
 			$cart_qty = 1;//???
 			if (defined("SHCART_DPC")) {
-				$in_cart = _m("shcart.getCartItemQty use ".$rec[$item_code]); 
+				$in_cart = _m("shcart.getCartItemQty use ".$rec[$this->fcode]); 
 				$icon_cart = _m("shcart.showsymbol use $cart_code;$cart_title;$path;$MYtemplate;$cart_group;$cart_page;;$cart_photo;$cart_price;$cart_qty;",1);
-				$array_cart = $this->read_qty_policy($rec[$item_code],$price,"$cart_code;$cart_title;$path;$MYtemplate;$cart_group;$cart_page;;$cart_photo;$cart_price;$cart_qty");	   
+				$array_cart = $this->read_qty_policy($rec[$this->fcode],$price,"$cart_code;$cart_title;$path;$MYtemplate;$cart_group;$cart_page;;$cart_photo;$cart_price;$cart_qty");	   
 				
 			    $units = $rec['uniname2'] ? localize($rec['uniname1'],$lan).'/'.localize($rec['uniname2'],$lan):
 				   						    localize($rec['uniname1'],$lan); 
@@ -1647,7 +1673,7 @@ JSFILTER;
 			
 			$_u = ($aliasID) ? 
 					$this->httpurl . "/$cat/$id2" . $aliasExt :
-					$this->httpurl . '/' . _m("cmsrt.url use t=kshow&cat=$cat&id=".$rec[$item_code]);
+					$this->httpurl . '/' . _m("cmsrt.url use t=kshow&cat=$cat&id=".$rec[$this->fcode]);
 			$itemlink =  $_u; 
 			
 		    $detailink = ($this->mobile) ? 
@@ -1655,9 +1681,9 @@ JSFILTER;
 							"javascript:gotoTop('{$this->realID}-details')"; //$_u . '#details'; 	   
 			$availability = $this->show_availability($rec['ypoloipo1']);	
 			 
-	        $linkphoto = $this->list_photo($rec[$item_code],null,null,$lnktype,$cat,2,3,$rec[$this->itmname]);	
+	        $linkphoto = $this->list_photo($rec[$this->fcode],null,null,$lnktype,$cat,2,3,$rec[$this->itmname]);	
 
-            $ahtml = $this->show_aditional_html_files($rec[$item_code]);			 
+            $ahtml = $this->show_aditional_html_files($rec[$this->fcode]);			 
             $atext = "";				 		 		   			  
 			$afile = "";			 
 			$details = "";//$ahtml . $atext . $afile;
@@ -1673,7 +1699,7 @@ JSFILTER;
 			$tokens[] = $availability;
 			$tokens[] = $detailink;	
 			$tokens[] = $details;
-			$tokens[] = $rec[$item_code]; //10
+			$tokens[] = $rec[$this->fcode]; //10
 			 
 			$tokens[] = $in_cart ? $in_cart : '0';
 			$tokens[] = $array_cart;
@@ -1685,12 +1711,12 @@ JSFILTER;
 			$tokens[] = _m("shkategories.getcurrentkategory"); //$cat; //$afile;
 			 
             $tokens[] = $rec[$lastprice];	
-            $tokens[] = $this->httpurl . $this->get_photo_url($rec[$item_code],1);
-            $tokens[] = $this->httpurl . $this->get_photo_url($rec[$item_code],2);	
-			/* big pic */		
+            $tokens[] = $this->httpurl . $this->get_photo_url($rec[$this->fcode],1);
+            $tokens[] = $this->httpurl . $this->get_photo_url($rec[$this->fcode],2);	
+			// big pic	
 			$tokens[] = defined('JSDIALOG_DPC') ? 
 							"javascript:jsShowPhoto('{$rec[$this->itmname]}');" :
-							$this->httpurl . $this->get_photo_url($rec[$item_code],3);			 
+							$this->httpurl . $this->get_photo_url($rec[$this->fcode],3);			 
 			 
 			$tokens[] = $rec['weight'];  //20
 			$tokens[] = $rec['volume'];
@@ -1699,7 +1725,7 @@ JSFILTER;
 			$tokens[] = $rec['color'];	
 			 
 			$tokens[] = $this->get_xml_links(); 
-            $tokens[] = $this->item_has_discount($rec[$item_code]);
+            $tokens[] = $this->item_has_discount($rec[$this->fcode]);
             $tokens[] = "addcart/$cart_code;$cart_title;$path;$MYtemplate;$cart_group;$cart_page;;$cart_photo;$cart_price;$cart_qty/$cat/$cart_page/";			 
 			 
 			$tokens[] = $rec['code1'];
@@ -1708,7 +1734,7 @@ JSFILTER;
 			$tokens[] = $rec['ypoloipo1'];
 			$tokens[] = $rec['manufacturer'];	
 			 
-			/*date time */
+			//date time
 			$tokens[] = $rec['year'];
 			$tokens[] = $rec['month'];
 			$tokens[] = $rec['day'];
@@ -1719,7 +1745,7 @@ JSFILTER;
 			$tokens[] = $rec['owner'];	
             $tokens[] = $rec['itmactive'];	//40
 
-			$tokens[] = $this->item_has_points($rec[$item_code]);
+			$tokens[] = $this->item_has_points($rec[$this->fcode]);
 
 			$tokens[] = $rec['p1']; 
 			$tokens[] = $rec['p2']; 
@@ -1727,9 +1753,17 @@ JSFILTER;
 			$tokens[] = $rec['p4'];
 			$tokens[] = $rec['p5'];	
 
-			$tokens[] = _m("shtags.get_tags use " . $rec[$item_code]);	
+			$tokens[] = _m("shtags.get_tags use " . $rec[$this->fcode]);	
+			
+			$pwt = $this->pricewithtax($price, _v('shcart.tax'));
+			$tokens[] = number_format($pwt, $this->decimals,',','.'); //(floatval($price)*24/100)+floatval($price)
+		
+			$tokens[] = $rec['datein'] ; //49		
+			 */
 			 
+			$tokens = $this->tokenizeRecordItem($rec, $pp, true, $aliasID, 2, false);			
 			//print_r($tokens);
+			
 		 	if ($itmpl = $rec['template']) {
 				//echo $this->itmplpath . $itmpl;
 			    //$out = _m("cmsrt._ct use " . $this->itmplpath . $itmpl . "+" . serialize($tokens) . "+1");
@@ -1739,7 +1773,7 @@ JSFILTER;
 			else			 
 				$out = $this->combine_tokens($mytemplate, $tokens, true);
 			 
-			$ogimage[] = $this->get_photo_url($rec[$item_code],2);
+			$ogimage[] = $this->get_photo_url($rec[$this->fcode],2);
 			 
 			$this->ogTags = $this->openGraphTags(array(0=>$this->siteTitle,
 													1=>$tokens[0],
@@ -1747,7 +1781,9 @@ JSFILTER;
 													3=>$itemlink,
 													4=>$tokens[18], 
 													));				 
-			 
+			/* js ref analytics */ 
+			$this->analytics('kshow', $tokens);
+			
 			unset($tokens);	 
 		 }//foreach	   
 	    }//if recs
@@ -2917,7 +2953,7 @@ JSFILTER;
 								$xml->addtag('updated','entry',$date,null);				   			   
 								$xml->addtag('summary','entry',$params[1],null);				   
 								break; 
-			   default ://seo links
+			   default : //seo links
 								$xml->addtag('product','products',null,"id=");
 			   
 								$xml->addtag('name','product',$xml->cdata('name'),null);  //cdata val
@@ -2972,6 +3008,7 @@ JSFILTER;
 		return ($ret);		
 	}
 
+	/*tokenize list of items */		
 	protected function tokenizeRecord($rec, $priceID=null, $cart=null, $aliasID=false, $imgsize=1, $otherimgpath=null) {
 		if (!$rec) return null;
 		$tokens = array(); 
@@ -2990,7 +3027,7 @@ JSFILTER;
 		$itemlinkname = _m("cmsrt.url use t=kshow&cat=$cat&id=" . $rec[$this->fcode] . "+". $rec[$this->itmname]);
 			
 		//tokens
-		$tokens[] = $itemlinkname; //***use href token 11 / name token 16
+		$tokens[] = $itemlinkname; //use href token 11 / name token 16
 		$tokens[] = $rec[$this->itmdescr];
 		$tokens[] = $this->list_photo($rec[$this->fcode],null,null,1,$cat,$imgsize,null,$rec[$this->itmname]);
 		$units = $rec['uniname2'] ? localize($rec['uniname1'], $this->lan) .' / '. localize($rec['uniname2'], $this->lan):
@@ -3019,11 +3056,13 @@ JSFILTER;
 			
 		$tokens[] = ($aliasID) ? $this->httpurl ."/$cat/$id2" . $aliasExt : 
 							     $itemlink;	
-			  
+			 
+		$qty = (($cart==true) && (defined("SHCART_DPC"))) ?
+				_m("shcart.getCartItemQty use ".$rec[$this->fcode]) : 1;			
 		$tokens[] = (($cart==true) && (defined("SHCART_DPC"))) ?
-						_m("shcart.getCartItemQty use ".$rec[$this->fcode]) : '0';
+						$qty : '0';
 		$tokens[] = (($cart==true) && (defined("SHCART_DPC"))) ? 
-						$this->read_qty_policy($rec[$this->fcode],$price,"$cart_code;$cart_title;;;$cat;$cart_page;;$cart_photo;$cart_price;$cart_qty",1) : null;
+						$this->read_qty_policy($rec[$this->fcode],$price,"{$rec[$this->fcode]};{$rec[$this->itmname]};;;$cat;$page;;{$rec[$this->fcode]};$price;1") : null;
 
         $tokens[] = ($otherimgpath) ?
 		            $this->httpurl . '/' . $otherimgpath . $rec[$this->fcode] . $this->restype :
@@ -3036,7 +3075,7 @@ JSFILTER;
         $tokens[] = $this->item_has_discount($rec[$this->fcode]);
 			
 		$cart_title = $this->replace_cartchars($rec[$this->itmname]);
-        $tokens[] = $this->httpurl . "/addcart/{$rec[$this->fcode]};$cart_title;;;$cat;0;;{$rec[$this->fcode]};$price;1/$cat/1/";				  
+        $tokens[] = $this->httpurl . "/addcart/{$rec[$this->fcode]};{$rec[$this->itmname]};;;$cat;0;;{$rec[$this->fcode]};$price;1/$cat/1/";				  
 		      
 		/*date time */
 		$tokens[] = $rec['year'];  //20
@@ -3072,12 +3111,175 @@ JSFILTER;
 		$tokens[] = $rec['ypoloipo1'] ;
 		$tokens[] = $rec['ypoloipo1'] ? '1' : '0';				
 			
-		$pwt = $this->pricewithtax($price, _v('shcart.tax'));
+		$pwt = (($cart==true) && (defined("SHCART_DPC"))) ?
+				$this->pricewithtax($price, _v('shcart.tax')) : $price;
 		$tokens[] = number_format($pwt, $this->decimals,',','.'); //(floatval($price)*24/100)+floatval($price)
 		
 		$tokens[] = $rec['datein'] ; //48
 				
 		return ($tokens);
+	}	
+
+	/*tokenize 1 item read */
+	protected function tokenizeRecordItem($rec, $priceID=null, $cart=null, $aliasID=false, $imgsize=1, $otherimgpath=null) {
+		if (!$rec) return null;
+		$tokens = array(); 
+		$pp = $priceID ? $priceID : 'price1';
+
+		//url alias or canonical	
+		$id2 = $aliasID ? ($rec[$aliasID] ? $this->stralias($rec[$aliasID]) : $rec[$this->fcode]) : $rec[$this->fcode]; 		
+		$aliasExt = _v("cmsrt.aliasExt");
+			
+		$cat = $this->getkategoriesS(array(0=>$rec['cat0'],1=>$rec['cat1'],2=>$rec['cat2'],3=>$rec['cat3'],4=>$rec['cat4']));
+		$price = ($rec[$pp]>0) ? $this->spt($rec[$pp]) : $this->zeroprice_msg;
+		$availability = $this->show_availability($rec['ypoloipo1']);	
+		$details = null;
+		$detailink = ($this->mobile) ? 
+						"javascript:window.scrollTo(0,parseInt($('#{$rec[$this->fcode]}-details').offset().top, 10))" :
+						//"javascript:gotoTop('{$rec[$this->fcode]}-details')"; //href mozilla err		
+						$this->httpurl . '/' . _m("cmsrt.url use t=kshow&cat=$cat&id=".$rec[$this->fcode]) . "#{$rec[$this->fcode]}-details";
+		
+		$itemlink = $this->httpurl . '/' . _m("cmsrt.url use t=kshow&cat=$cat&id=".$rec[$this->fcode]); 
+		$itemlinkname = _m("cmsrt.url use t=kshow&cat=$cat&id=" . $rec[$this->fcode] . "+". $rec[$this->itmname]);
+			
+		//tokens		
+		$tokens[] = $rec[$this->itmname];
+		$tokens[] = $rec[$this->itmdescr];
+		$tokens[] = $linkphoto; 
+		$tokens[] = $units;		 
+		$tokens[] = $rec['itmremark'];
+		$tokens[] = number_format(floatval($price),$this->decimals,',','.');
+		
+		if (($cart==true) && (defined("SHCART_DPC"))) {
+			$page = $_GET['page'] ? $_GET['page'] : 0;
+			$cart_title = $this->replace_cartchars($rec[$this->itmname]);
+			$icon_cart = _m("shcart.showsymbol use {$rec[$this->fcode]};$cart_title;;;$cat;$page;;{$rec[$this->fcode]};$price;1;",1);
+			$array_cart = $this->read_qty_policy($rec[$this->fcode],$price,"{$rec[$this->fcode]};$cart_title;;;$cat;$page;;{$rec[$this->fcode]};$price;1");				
+			$incart = _m("shcart.getCartItemQty use ".$rec[$this->fcode]);
+
+			/*$cartstr = $rec[$this->fcode].';'.
+						$this->replace_cartchars($rec[$this->itmname]).';;;'.
+						$cat.';'.$page.';;'.$rec[$this->fcode].';'.$price.';1;';				
+							
+			$tokens[] = _m("shcart.showsymbol use $cartstr",1);		*/
+			$tokens[] = $icon_cart;
+		}	
+		else
+            $tokens[] = null;
+		
+		$tokens[] = $availability;
+		$tokens[] = $detailink;	
+		$tokens[] = $details;
+		$tokens[] = $rec[$this->fcode]; //10
+		 
+		$tokens[] = $incart; 
+		$tokens[] = $array_cart;
+		$tokens[] = GetReq('qty') ? GetReq('qty') : $incart; // add qty
+				
+		$tokens[] = ($aliasID) ? $this->httpurl ."/$cat/$id2" . $aliasExt : 
+							     $itemlink;						
+		$tokens[] = _m("shkategories.getcurrentkategory"); //$cat; //$afile;
+			 
+        $tokens[] = $rec[$this->getmapf('lastprice')];	
+        $tokens[] = $this->httpurl . $this->get_photo_url($rec[$this->fcode],1);
+        $tokens[] = $this->httpurl . $this->get_photo_url($rec[$this->fcode],2);	
+		/* big pic */		
+		$tokens[] = defined('JSDIALOG_DPC') ? 
+					"javascript:jsShowPhoto('{$rec[$this->itmname]}');" :
+					$this->httpurl . $this->get_photo_url($rec[$this->fcode],3);			 
+			 
+		$tokens[] = $rec['weight'];  //20
+		$tokens[] = $rec['volume'];
+		$tokens[] = $rec['dimensions'];
+		$tokens[] = $rec['size'];
+		$tokens[] = $rec['color'];	
+			 
+		$tokens[] = $this->get_xml_links(); 
+        $tokens[] = $this->item_has_discount($rec[$this->fcode]);
+        $tokens[] = $this->httpurl . "/addcart/{$rec[$this->fcode]};$cart_title;;;$cat;0;;{$rec[$this->fcode]};$price;1/$cat/1/";				  
+		   
+		$tokens[] = $rec['code1'];
+		$tokens[] = $rec['code4'];
+		$tokens[] = $rec['resources']; //id=30
+		$tokens[] = $rec['ypoloipo1'];
+		$tokens[] = $rec['manufacturer'];	
+			 
+		/*date time */
+		$tokens[] = $rec['year'];
+		$tokens[] = $rec['month'];
+		$tokens[] = $rec['day'];
+		$tokens[] = $rec['time'];
+		$tokens[] = $rec['monthname'];		
+
+		$tokens[] = $rec['template'];
+		$tokens[] = $rec['owner'];	
+        $tokens[] = $rec['itmactive'];	//40
+
+		$tokens[] = $this->item_has_points($rec[$this->fcode]);
+
+		$tokens[] = $rec['p1']; 
+		$tokens[] = $rec['p2']; 
+		$tokens[] = $rec['p3'];
+		$tokens[] = $rec['p4'];
+		$tokens[] = $rec['p5'];	
+
+		$tokens[] = _m("shtags.get_tags use " . $rec[$this->fcode]);	
+		
+		//price based on qty (with tax)
+		$q = GetReq('qty') ? GetReq('qty') : ($incart ? $incart : 1);	
+		$priceqty = (($cart==true) && (defined("SHCART_DPC"))) ?
+					$this->read_qty_policy($rec[$this->fcode], $price, null, $q) : $price;	
+		//echo $priceqty . '>' . $q;
+		$pwt = (($cart==true) && (defined("SHCART_DPC"))) ?
+				$this->pricewithtax($priceqty, _v('shcart.tax')) : $priceqty;
+		$tokens[] = number_format($pwt, $this->decimals,',','.'); 
+		
+		$tokens[] = $rec['datein'] ; //49
+		$tokens[] = (($cart==true) && (defined("SHCART_DPC"))) ?
+						_m("shcart.getcartCount") + 1 : 0;
+		$tokens[] = (($cart==true) && (defined("SHCART_DPC"))) ?
+						_m("shcart.getCartItemPosition use " . $rec[$this->fcode]) : 0;					
+								
+				
+        $tokens[] = ($otherimgpath) ?
+		            $this->httpurl . '/' . $otherimgpath . $rec[$this->fcode] . $this->restype :
+		            $this->httpurl . $this->get_photo_url($rec[$this->fcode], $imgsize);	
+								
+
+		return ($tokens);		
+	}
+	
+	/* read and create tokens of 1 read item */
+	public function fetchProductTokens($prodID=null) {
+		if (!$prodID) return array();
+        $db = GetGlobal('db');
+		
+		$item = $prodID ? $prodID : $this->realID; //GetReq('id');
+		$cat = GetReq('cat');
+		$aliasID = _m("cmsrt.useUrlAlias");		
+		
+	    $sSQL = $this->selectSQL;	
+		$sSQL .= " WHERE " . $this->fcode . "=" . $db->qstr($item);
+		$sSQL .= ($aliasID) ? " OR {$aliasID}=" . $db->qstr($this->stralias($item)) : null;
+		$sSQL .= " and itmactive>0 and active>0";
+		
+		if (($lock = $this->itemlockparam) && (!GetGlobal('UserID')))
+		    $sSQL .=  ' and ' . $lock . ' is null';		  	  
+	   
+	    $sSQL .= " LIMIT 1";
+	    $resultset = $db->Execute($sSQL,2);
+
+	    if (count($resultset->fields)>1) {	
+		
+			$pp = $this->read_policy(); 
+	    	
+			foreach ($resultset as $n=>$rec) {	
+			    $tokens = array();
+				$tokens = $this->tokenizeRecordItem($rec, $pp, true, $aliasID, 2, false);
+			}	   
+	    }//if recs		
+		
+		return (array) $tokens;
 	}		
 	
 	
@@ -3407,7 +3609,7 @@ JSFILTER;
 							$retprice = $price ? $price+($price*$pc/100) : $pc;
 						}
 					}
-					return ($retprice);
+					return ($retprice ? $retprice : $price);
 				}
 			}
 			else {  //2nd item cart pick
@@ -3436,7 +3638,7 @@ JSFILTER;
 			} 
 		}	
 		
-		return null;
+		return $policyqty ? $price : null;
 	}	
 	
 	public function read_point_policy($id=null) {
@@ -3918,6 +4120,41 @@ EOF;
 		if (!$tmpl) return null;		
 		return _m("shkategories.select_template use $tmpl+$cat");
 	}
+	
+	/* analytics submit script */
+	protected function submitScript($referer=null, $tokens=null) {
+		$ret = "/* $referer submit analytics script */". PHP_EOL;
+		$tmplbody = $referer ? $referer . '-js-analytics' : 'katalog-js-analytics';
+
+		//$ret = _m("cmsrt._ct use $tmplbody+" . serialize($tokens) . '+1');			
+		//return ($ret);			
+		if ($template = _m("cmsrt.select_template use $tmplbody")) 
+			return $this->combine_tokens($template, $tokens, true);		
+	}
+	
+    /*call from this submit_order */
+	protected function analytics($event=null, $tokens=null) {
+		if (!$tokens) return null;
+		$localization = ($this->lan==1) ? 'el_gr' : 'en_us';		
+		$referer = $_SESSION['http_referer']; //as saved by vstats
+		
+		$rstr = _m('cms.paramload use ESHOP+refererAnalytics');
+		$refs = $rstr ? str_replace(',','|',strtolower($rstr)) : "skroutz|bestprice|google";
+		//echo 'refs:' . $refs;
+		
+		//create analytics script if referer
+		if (preg_match("/($refs)/i", $referer, $matches)) {
+			$_referrer = $event ? $matches[0].'-'.$event : $matches[0];
+			$code = $this->submitScript($_referrer, $tokens);	
+		}
+		$code .= $this->submitScript($event, $tokens);
+		
+		if ($code) {
+			$js = new jscript;	
+			$js->load_js($code,"",1);			   
+			unset ($js);
+		}	
+	}	
 	
 	//tokens method	
 	protected function combine_tokens(&$template_contents, $tokens, $execafter=null) {

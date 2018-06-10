@@ -60,7 +60,10 @@ class shtransactions extends transactions {
 	public function event($event=null) {
    
 		switch ($event) {
-			case 'cancelorder'  : 	$this->cancelOrder(GetReq('tid')); 
+			case 'cancelorder'  : 	//shcart refund
+									_m("shcart.cartRefund use " . GetReq('tid'));
+			
+									$this->cancelOrder(GetReq('tid')); 
 									$this->jsBrowser();
 									break;   
 		   
@@ -369,7 +372,7 @@ class shtransactions extends transactions {
 	protected function cancelOrder($trid) {
 		$db = GetGlobal('db');
 		if (!$this->isTransOwner($trid)) {
-		  echo 'Invalid tranascrion id';
+		  echo 'Invalid transaction id';
 		  die();		
 		}	   	   
 		   

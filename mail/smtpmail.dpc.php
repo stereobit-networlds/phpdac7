@@ -65,7 +65,7 @@ class smtpmail {
 	  $myserver = $server ? $server : $smtp_server;	     	
 	  
       if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) {
-	    echo 'SMTP_PHPMAILER';
+	    //echo 'SMTP_PHPMAILER';
 		
         define("SMTP_SERVER", $myserver);    # here the SMTP server of your ISP
         define("MY_EMAIL", $myuser);//"root@localhost");  # here your email address
@@ -90,7 +90,7 @@ class smtpmail {
         $this->smtp->CharSet = $this->mcharset;//"UTF-8"; # Charset used for subject and body		 	  
 	  }
       elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
-        echo 'SENDMAIL_PHPMAILER';	  
+        //echo 'SENDMAIL_PHPMAILER';	  
         define("SMTP_SERVER", $myserver);    # here the SMTP server of your ISP
         define("MY_EMAIL", $myuser);//"root@localhost");  # here your email address
 		

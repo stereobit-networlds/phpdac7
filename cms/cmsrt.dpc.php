@@ -1393,16 +1393,16 @@ EOF;
 											     localize($rec['uniname1'],$this->lan);
 				
 				$ret_array[$i] = array( 
-			                0=>$item_name_url,
-							1=>$rec[$this->itmdescr],
-							2=>$item_photo_link,
-							3=>$itemunit,
+			                0=>$item_name_url, //reserved
+							1=>$rec[$this->itmdescr], //reserved
+							2=>$item_photo_link, //reserved
+							3=>$itemunit, //reserved (utf-8)
 							4=>$rec['itmremark'],
 							5=> number_format(floatval($itemprice),2,',','.'),
 							6=>_m("shcart.showsymbol use $itemcode;$citemtitle;;;$cat;$page;;$itemphoto;$itemprice;$itemqty;+$cat+$page",0),
 							7=>_m('shkatalogmedia.show_availability use '. $rec['ypoloipo1'],1),
-							8=>'',
-							9=>'',
+							8=>$itemunit,
+							9=>$item_photo_link,
 							10=>$itemcode,
 							11=>$item_url,
 							12=>_m("shcart.getCartItemQty use " . $itemcode,1),
@@ -1410,7 +1410,7 @@ EOF;
 							14=>$item_photo_url,
 							15=>$rec[$this->lastprice],
 							16=>$itemtitle,
-							17=>null,
+							17=>$itemdescr,
 							18=>_m('shkatalogmedia.item_has_discount use '. $itemcode,1),
 							19=>"addcart/$itemcode;$citemtitle;;;$cat;$page;;$itemphoto;$itemprice;$itemqty/$cat/$page/",
 							20=>$rec['year'],			
@@ -1677,7 +1677,11 @@ EOF;
 
 	public function nformat($n, $dec=0) {
 		return (number_format($n,$dec,',','.'));
-	}		
+	}	
+
+	public function dotnum($fnum=null) {
+		return str_replace(',','.',$fnum);
+	}	
 
 	public function replace_spchars($string, $reverse=false, $rep=null) {
 		$repl = $rep ? $rep : $this->replacepolicy;

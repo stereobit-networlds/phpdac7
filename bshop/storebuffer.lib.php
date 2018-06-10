@@ -73,7 +73,8 @@ class storebuffer {
     function remove($id) {
 
         reset ($this->buffer);
-        while (list ($buffer_num, $buffer_data) = each ($this->buffer)) {             	
+        //while (list ($buffer_num, $buffer_data) = each ($this->buffer)) {             	
+		foreach ($this->buffer as $buffer_num => $buffer_data) {
               if ($buffer_data == $id) { 
                  $this->buffer[$buffer_num] = "x";  
                  break;
@@ -85,7 +86,8 @@ class storebuffer {
     function clear() {
 
         reset ($this->buffer);
-        while (list ($buffer_num, $buffer_data) = each ($this->buffer)) {             
+        //while (list ($buffer_num, $buffer_data) = each ($this->buffer)) {             
+		foreach ($this->buffer as $buffer_num => $buffer_data) {
               $this->buffer[$buffer_num] = "x";                                    
         } 
 		$this->setStore();

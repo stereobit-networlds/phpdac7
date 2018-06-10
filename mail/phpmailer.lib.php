@@ -283,7 +283,7 @@ static /*. bool .*/ function IsValidEmailAddress(/*. string .*/ $email)
 {
 	if( ! self::IsValidEmailAddress($address) )
 		throw new ErrorException("invalid email address $address");
-	$cur = count($this->to);
+	$cur = (!empty($this->to)) ? count($this->to) : 0;
 	$this->to[$cur][0] = trim($address);
 	$this->to[$cur][1] = $name;
 }
@@ -423,7 +423,9 @@ private /*. void .*/ function SetMessageType()
 	Sets the message type.
 */
 {
-	if(count($this->attachment) < 1 && strlen($this->AltBody) < 1)
+	$c = (!empty($this->attachment)) ? count($this->attachment) : 0;
+	if ((($c < 1) && strlen($this->AltBody)) < 1)
+	//if(count($this->attachment) < 1 && strlen($this->AltBody) < 1)
 		$this->message_type = "plain";
 	else
 	{
@@ -721,13 +723,15 @@ private /*. string .*/ function CreateHeader()
 		$result .= self::HeaderLine("Return-Path", trim($this->Sender));
 	
 	// To be created automatically by mail()
+	$cto = (!empty($this->to)) ? count($this->to) : 0;
+	$ccc = (!empty($this->cc)) ? count($this->cc) : 0;
 	if($this->Mailer != "mail")
 	{
-		if(count($this->to) > 0)
+		if($cto > 0)
 			$result .= $this->AddrAppend("To", $this->to);
-		else if (count($this->cc) == 0)
+		else if ($ccc == 0)
 			$result .= self::HeaderLine("To", "undisclosed-recipients:;");
-		if(count($this->cc) > 0)
+		if($ccc > 0)
 			$result .= $this->AddrAppend("Cc", $this->cc);
 	}
 
@@ -740,7 +744,8 @@ private /*. string .*/ function CreateHeader()
 	if((($this->Mailer === "sendmail") || ($this->Mailer === "mail")) && (count($this->bcc) > 0))
 		$result .= $this->AddrAppend("Bcc", $this->bcc);
 
-	if(count($this->ReplyTo) > 0)
+	$crep = (!empty($this->ReplyTo)) ? count($this->ReplyTo) : 0;
+	if($crep > 0)
 		$result .= $this->AddrAppend("Reply-to", $this->ReplyTo);
 
 	// mail() sets the subject itself
@@ -758,7 +763,8 @@ private /*. string .*/ function CreateHeader()
 	}
 
 	// Add custom headers
-	for($index = 0; $index < count($this->CustomHeader); $index++)
+	$chead = (!empty($this->CustomHeader)) ? count($this->CustomHeader) : 0;
+	for($index = 0; $index < $chead; $index++)
 	{
 		$result .= self::HeaderLine(trim($this->CustomHeader[$index][0]), 
 				   $this->EncodeHeader(trim($this->CustomHeader[$index][1])));
@@ -1188,7 +1194,11 @@ private /*. void .*/ function SmtpConnect()
 	FIXME: should return the list of invalid recipients.
 .*/
 {
-	$rcpt_total = count($this->to) + count($this->cc) + count($this->bcc);
+	$cto = (!empty($this->to)) ? count($this->to) : 0;
+	$ccc = (!empty($this->cc)) ? count($this->cc) : 0;
+	$cbc = (!empty($this->bcc)) ? count($this->bcc) : 0;
+	
+	$rcpt_total = $cto + $ccc + $cbc;
 	if( $rcpt_total == 0 )
 		throw new Exception("no TO/CC/BCC recipients");
 
@@ -1207,7 +1217,8 @@ private /*. void .*/ function SmtpConnect()
 	}
 
 	// Attempt to send all recipients
-	for($i = 0; $i < count($this->to); $i++)
+	$cto = (!empty($this->to)) ? count($this->to) : 0;
+	for($i = 0; $i < $cto; $i++)
 	{
 		$to = $this->to[$i][0];
 		try { $this->smtp->Recipient($to); }
@@ -1215,7 +1226,9 @@ private /*. void .*/ function SmtpConnect()
 			$bad_rcpt[] = $to;
 		}
 	}
-	for($i = 0; $i < count($this->cc); $i++)
+	
+	$ccc = (!empty($this->cc)) ? count($this->cc) : 0;
+	for($i = 0; $i < $ccc; $i++)
 	{
 		$to = $this->cc[$i][0];
 		try { $this->smtp->Recipient($to); }
@@ -1223,7 +1236,9 @@ private /*. void .*/ function SmtpConnect()
 			$bad_rcpt[] = $to;
 		}
 	}
-	for($i = 0; $i < count($this->bcc); $i++)
+	
+	$cbc = (!empty($this->bcc)) ? count($this->bcc) : 0;
+	for($i = 0; $i < $cbc; $i++)
 	{
 		$to = $this->bcc[$i][0];
 		try { $this->smtp->Recipient($to); }
@@ -1232,7 +1247,8 @@ private /*. void .*/ function SmtpConnect()
 		}
 	}
 
-	if(count($bad_rcpt) > 0) // Create error message
+	$cbr = (!empty($bad_rcpt)) ? count($bad_rcpt) : 0;
+	if($cbr > 0) // Create error message
 	{
 		$this->SetError( $this->Lang("recipients_failed")
 			. implode(", ", $bad_rcpt) );
@@ -1257,7 +1273,11 @@ private /*. void .*/ function SmtpConnect()
 	description of the error.
 .*/
 {
-	if((count($this->to) + count($this->cc) + count($this->bcc)) < 1)
+	$cto = (!empty($this->to)) ? count($this->to) : 0;
+	$ccc = (!empty($this->cc)) ? count($this->cc) : 0;
+	$cbc = (!empty($this->bcc)) ? count($this->bcc) : 0;
+	
+	if(($cto + $ccc + $cbc) < 1)
 	{
 		$this->SetError($this->Lang("provide_address"));
 		return FALSE;
