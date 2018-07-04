@@ -706,33 +706,34 @@ $(document).ready(function(){
 			//return (0); //test bypass
 			
 			//transactions
-			$timeins = $this->sqlDateRange('tdate', false, true);
+			$timeins = $this->sqlDateRange('tdate', true, true);
 			
-			$sSQL = "select count(recid) from transactions where tstatus>=0 and tdata REGEXP '". @implode('|', $items) ."'" . $timeins;
+			$sSQL = "select count(id) from pcartitems where ref=0 and pid in ('" . implode("','", $items) . "') " . $timeins;
+			//echo $sSQL;
 			$res = $db->Execute($sSQL,2);
             $this->stats['Items']['transactions'] = $this->nformat($res->fields[0]);
 
-			$sSQL = "select tdata from transactions where tstatus>=0 and tdata REGEXP '". @implode('|', $items) ."'" . $timeins;
+			$sSQL = "select qty,net,vat from pcartitems where ref=0 and pid in ('" . implode("','", $items) . "') " . $timeins;
 			$result = $db->Execute($sSQL,2);
 			//echo $sSQL;	   
-			$counter = 0;
-			$qty = 0;
-			$value = 0;
+			$counter = 0; $qty = 0;	$value = 0;
+			$trc = array();	$_tr = null; 
+			$_q = 0; $_n = 0; $_nn = 0;
 			foreach ($result as $n=>$rec) {	
-				$tdata = $rec['tdata'];
-				if ($tdata) {
-					$cdata = unserialize($tdata);
-					foreach ($cdata as $i=>$buffer_data) {
-						$param = explode(";",$buffer_data);
-						if (in_array($param[0], $items)) {
-							$counter += 1;
-							$qty += $param[9];
-							$value += $param[9] * floatval(str_replace(',','.',$param[8]));
-							//echo "<br/>" . $param[9]. ' * '.$param[8];
-						}  	
-					}	 
-				} 
-			} 
+
+				$_tr = $rec['tid'];
+				$trc[$_tr] += 1; //group by transaction id
+				
+				$_q = $rec['qty'];
+				$qty += $_q;
+				
+				$_n = floatval($rec['net']);
+				$_v = floatval($rec['vat']);
+				$_nn = $_q * ($_n +($_n * $_v /100));
+				$value += floatval($_nn);
+				//echo "<br/>" . $_q. ' * '.$_n; 
+			}			
+			$counter = !empty($trc) ? count($trc) : 0;
 			$this->stats['Items']['orders'] = $this->nformat($counter);	
 			$this->stats['Items']['qty'] = $this->nformat($qty);
 			$this->stats['Items']['income'] = $this->nformat($value, 2);			

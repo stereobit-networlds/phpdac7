@@ -742,6 +742,30 @@ class shusers extends cmsusers {
 		$ret = $res->fields[0] . ' ' . $res->fields[1];
 		
 		return ($ret);		
+	}
+
+	/*get rec id of active customer use for edit */
+	public function get_cus_id() {
+        $db = GetGlobal('db');
+		$UserName = GetGlobal('UserName');		
+		$user = decode($UserName);
+
+	    $sSQL = "select id from customers where active=1 and code2=" . $db->qstr($user);
+		$res = $db->Execute($sSQL,2);
+		
+		return ($res->fields['id']);		
+	}
+
+	/*get update data of active customer */
+	public function get_cus_lastupdate() {
+        $db = GetGlobal('db');
+		$UserName = GetGlobal('UserName');		
+		$user = decode($UserName);
+
+	    $sSQL = "select timeupd from customers where active=1 and code2=" . $db->qstr($user);
+		$res = $db->Execute($sSQL,2);
+		
+		return ($res->fields['timeupd']);		
 	}	
    
 };

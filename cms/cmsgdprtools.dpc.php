@@ -39,7 +39,7 @@ $__LOCALE['CMSGDPRTOOLS_DPC'][13]='_GDPRGET;Download your data;Μεταφορά 
 $__LOCALE['CMSGDPRTOOLS_DPC'][14]='_GETDATA;Press here;Αποθήκευση';
 $__LOCALE['CMSGDPRTOOLS_DPC'][15]='_GETDATEAPPROVE;Approval date;Ημερομηνία αποδοχής';
 $__LOCALE['CMSGDPRTOOLS_DPC'][16]='_NOTAPPROVED;Not approved;Δεν έχει γίνει αποδοχή';
-
+$__LOCALE['CMSGDPRTOOLS_DPC'][17]='_userdeletefinalquestion;Warning: your personal data will be erased;Προσοχή: θα γίνει διαγραφή των προσωπικών σας στοιχείων';
 
 //$__PARSECOM['CMSGDPRTOOLS_DPC']['quickform']='_QUICKSHSUBSCRIBE_';
 require_once(_r('cms/cmssubscribe.dpc.php'));
@@ -70,11 +70,16 @@ class cmsgdprtools extends cmssubscribe {
   
 	    switch ($event) {
 			case 'gdprget'         :  $file = $this->getUserData('customers', 'code2'); 
-									  //if ($this->instDownload) 
-										  die($file);		
+									  $this->update_statistics('gdpr-get-data', $this->user);
+									  
+									  die($file);		
+									  
 									  break;
 									  
 	        case 'gdprdel'         :  if ($this->delUser()==true) {
+				
+										$this->update_statistics('gdpr-del-data', $this->user);
+										
 										if ((defined('CMSLOGIN_DPC')) && ($this->user)) {
 											if (_m('cmslogin.is_fb_logged_in')) 
 												_m('cmslogin.do_facebook_logout');
@@ -88,24 +93,29 @@ class cmsgdprtools extends cmssubscribe {
 	        case 'gdpron'          :  if ($m = GetParam('submail')) 
 										$this->dosubscribe($m); 
 									
+									  $this->update_statistics('gdpr-on', $this->user);	
 									  $this->jsBrowser();
 									  break;											
 									  
 	        case 'gdproff'         :  if ($m = GetParam('submail')) 
 										$this->dounsubscribe($m);
 
+									  $this->update_statistics('gdpr-off', $this->user);
 									  $this->jsBrowser();		
 									  break;		  
 			
 			case 'subgdpr'		   :  $this->subUser();
+									  $this->update_statistics('gdpr-subscribe', $this->user);	
 									  $this->jsBrowser();
 									  break;
 									  
 			case 'updgdpr'         :  $this->updUser();
+									  $this->update_statistics('gdpr-upd-data', $this->user);	
 									  $this->jsBrowser();
 									  break;
 			case 'gdprtools'       :	
-			default                :  $this->jsBrowser();
+			default                :  $this->update_statistics('gdpr-tools', $this->user);
+									  $this->jsBrowser();
         }
     }	
 
@@ -629,7 +639,7 @@ $(document).ready(function () {
 
 			//disable from ulists
 			//if ($this->isin_ulists($mail, $ulistname)) { //!!!!!!!!!!!!!!!! not a known list name
-			$sSQL = "update ulists set active=0, gdpr=0 where email=" . $db->qstr($mail);
+			$sSQL = "update ulists set active=0, gdpr=1 where email=" . $db->qstr($mail);
 			//$sSQL .= ' and listname=' . $db->qstr($ulistname);  //from all the lists !!!!!(nwsletter have to include the list while unsub)
 			$result = $db->Execute($sSQL,1);
             //echo $sSQL;
@@ -667,16 +677,16 @@ $(document).ready(function () {
 		
 		$sSQL = "DELETE from ulists where email=" . $db->qstr($currentuser);
 		//echo $sSQL;
-		//$db->Execute($sSQL,1); //!!!
+		$db->Execute($sSQL,1); //!!!
 		$sSQL = "DELETE from custaddress where ccode=" . $db->qstr($currentuser);
 		//echo $sSQL;
-		//$db->Execute($sSQL,1); //!!!
+		$db->Execute($sSQL,1); //!!!
 		$sSQL = "DELETE from customers where code2=" . $db->qstr($currentuser);
 		//echo $sSQL;
-		//$db->Execute($sSQL,1); //!!!
+		$db->Execute($sSQL,1); //!!!
 		$sSQL = "DELETE from users where username=" . $db->qstr($currentuser);
 		//echo $sSQL;
-		//$db->Execute($sSQL,1); //!!!		
+		$db->Execute($sSQL,1); //!!!		
 			
 		if($db->Affected_Rows()) {
 
@@ -814,18 +824,6 @@ $(document).ready(function () {
 					'*' : $str[$i];
 		
 		return $cstr;
-	}
-	
-	protected function checkmail($mail=null) {
-		$valid = filter_var($mail, FILTER_VALIDATE_EMAIL);
-		return ($valid);		
-	}
-
-	protected function update_statistics($id, $user=null) {
-        if (defined('CMSVSTATS_DPC'))	
-			return _m('cmsvstats.update_event_statistics use '.$id.'+'.$user);			
-		
-		return false;
 	}
 
 	protected function combine_tokens($template_contents,$tokens) {

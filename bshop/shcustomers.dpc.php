@@ -532,11 +532,16 @@ window.onload=function(){
 		$a = GetReq('a');
 		//$un = GetGlobal('UserName');
 		$myfkey = $fkey ? $fkey : $this->fkey;
+		$update = false;
 
-		if ($id) 
+		if ($id) { 
 			$cid = $id;//param
-		elseif ($a) 
+			$update = true;
+		}	
+		elseif ($a) {
 			$cid = $a;//update
+			$update = true;
+		}	
 		else {
 	        //cart procedure
 		    if ($cid = GetSessionParam('customerway')) { 
@@ -556,6 +561,7 @@ window.onload=function(){
 			    "SELECT name,afm,eforia,prfdescr,address,area,zip,voice1,voice2,fax,mail" :
 				"SELECT code2,name,afm,eforia,prfdescr,address,area,zip,voice1,voice2,fax,mail";
 		$sSQL .= " FROM customers WHERE ". $myfkey . "=" . $cid;
+		$sSQL .= ($update==true) ? " and code2=" . $db->qstr($this->userid) : null;
 
 		$result = $db->Execute($sSQL);
 		//print_r($result->fields);
@@ -642,6 +648,9 @@ window.onload=function(){
 
     protected function makeform($fields='',$notitle=null,$cmd=null,$isupdate=null,$go_to=null,$setinvtype=null) {
 	    $sFormErr = GetGlobal('sFormErr');
+		if (!$this->userid) 
+			return localize('_ACCDENIED',getlocal());
+		
 		$customerid = GetParam('a');
 	    $goto = $go_to ? $go_to : "editcus/$customerid/"; //"t=signup2&a=".GetParam('a'); 
 	   
@@ -1114,6 +1123,7 @@ window.onload=function(){
 	    $db = GetGlobal('db');
 	    $myfkey = $fkey ? $fkey : $this->fkey;
 	    $key = decode(GetGlobal('UserName'));//security..foreign to user
+		$updDate = date("Y-m-d H:i:s");
 
 	    if ($error = $this->checkFields(null,$this->checkuseasterisk)) {
 			//SetGlobal('sFormErr',$error);
@@ -1137,7 +1147,7 @@ window.onload=function(){
 	    }	 
 
         $sSQL = "update customers set ";
-	    $sSQL.=
+	    $sSQL.='timeupd=' . $db->qstr($updDate) . ',' .
 	           'name='.$db->qstr(addslashes(GetParam('name'))) . ',' .
 	           'afm='.$db->qstr(addslashes(GetParam('afm'))) . ',' .
 	           'eforia='.$db->qstr(addslashes(GetParam('eforia'))) . ',' .

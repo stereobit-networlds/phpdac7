@@ -304,7 +304,7 @@ FB.api('/me?fields=id,email,first_name,last_name,gender,timezone', function(resp
 		return ($ret);			  
 	}
 
-    protected function checkFields($bypass=null,$checkasterisk=null) {
+    public function checkFields($bypass=null,$checkasterisk=null) {
 		$sFormErr = GetGlobal('sFormErr');
 		SetGlobal('sFormErr',"");
 		$lan = getlocal() ? getlocal() : '0';	
@@ -376,7 +376,7 @@ FB.api('/me?fields=id,email,first_name,last_name,gender,timezone', function(resp
 		return $sFormErr;
     }
 
-    protected function getuser($id="",$fkey=null,$isadmin=null,$isupdate=null) {
+    public function getuser($id="",$fkey=null,$isadmin=null,$isupdate=null) {
 		$db = GetGlobal('db');
 		$UserName = GetGlobal('UserName');
 		$myfkey = $fkey?$fkey:'username';
@@ -414,8 +414,9 @@ FB.api('/me?fields=id,email,first_name,last_name,gender,timezone', function(resp
 	   
 		$result = $db->Execute($sSQL,2);
 		//echo $sSQL;	   
-
-		if (count($result->fields)>1) {//check result...
+		
+		$cr = !empty($result->fields) ? count($result->fields) : 0;
+		if ($cr > 1) {//check result...
 			foreach ($result->fields as $i=>$rec) {
 				if (is_numeric($i)) {
 					$record[] = $rec;

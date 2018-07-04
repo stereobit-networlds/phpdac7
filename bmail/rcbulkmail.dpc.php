@@ -528,7 +528,7 @@ EOF;
 			$cryptedPost = $_POST;              // Save crypted data for debug
 			$formId = _m('cryptopost.decodeForm');//$crypto->decodeForm();    // Decrypt $_POST contents
 		    */	
-			echo $formId . '>'.$event;
+			//echo $formId . '>'.$event;
 			$this->aesDebug();//$cryptedPost); //already decrypted use var
 		    //print_r($_POST);
 			// Encrypt processed data if you need to fill form again:
@@ -595,7 +595,7 @@ EOF;
 	public function getmyRSAPublickey() {
 		
 		if ($this->cryptPost)
-			return _m('crryptopost.getmyRSAPublickey');
+			return _m('cryptopost.getmyRSAPublickey');
 		
 		return null;
 	}	
@@ -2194,12 +2194,12 @@ EOF;
 		$text0 = "This e-mail sent to _SUBSCRIBER_ from _MAILSENDER_. This e-mail can not be considered spam as long as we include: Contact information & remove instructions. 
 If you have somehow gotten on this list in error, or for any other reason would like to be removed, please click _UNSUBSCRIBE_. 
 This email and any files transmitted with it are confidential and intended solely for the use of the individual or entity to whom they are addressed. Any unauthorized disclosure, use of dissemination, either whole or partial, is prohibited.
-(Relative as A5-270/2001 of European Council).";
+(Regulation EU 2016/679).";
 	  
 		$text1 = "Αυτο το e-mail στάλθηκε στον λογαριασμό ηλ. ταχυδρομείου _SUBSCRIBER_ από τον λογαριασμό _MAILSENDER_. Δεν μπορει να θεωρηθεί spam εφόσον αναγράφονται τα στοιχεία του αποστολέα και διαδικασίες διαγραφής απο την λίστα παραληπτών.  
 Αν είσαστε σε αυτή τη λίστα κατα λάθος ή για οποιονδήποτε άλλο λογο θέλετε να διαγραφεί το e-mail απο αυτή τη λίστα παραληπτών e-mail απλά πατήστε _UNSUBSCRIBE_.   
 Το μήνυμα πληρεί τις προυποθέσεις της Ευρωπαικής Νομοθεσίας περί διαφημιστικών μηνυμάτων. Κάθε μήνυμα θα πρέπει να φέρει τα πλήρη στοιχεια του αποστολέα ευκρινώς και θα πρέπει να δίνει στο δέκτη τη δυνατότητα διαγραφής. 
-(Directiva 2002/31/CE του Ευρωπαικού Κοινοβουλίου).";	
+(Κανονισμός EU 2016/679).";	
 
         $ret = $lan ? $text1 : $text0;	
 		return ($ret);
