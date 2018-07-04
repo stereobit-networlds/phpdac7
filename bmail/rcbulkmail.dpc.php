@@ -180,7 +180,7 @@ class rcbulkmail {
 	var $appname, $appkey, $cptemplate, $urlRedir, $urlRedir2, $webview, $nsPage;
 	var $owner, $seclevid, $isHostedApp;
 	
-	var $userDemoIds, $crmLevel, $maxinpvars, $batchid, $ckeditver;
+	var $userDemoIds, $crmLevel, $maxinpvars, $batchid, $ckeditver, $ckjsurl;
 	var $newtemplatebody, $saved, $savedname, $newsubtemplatebody, $newpatternbody;
 	var $_OPT, $exitCode, $cryptPost;
 		
@@ -259,6 +259,7 @@ class rcbulkmail {
 		$this->userDemoIds = array(5,6);//,7); //remote_arrayload('RCBULKMAIL','demouser', $this->prpath);
 		$this->crmLevel = 9;
 		
+		$this->ckjsurl = remote_paramload('CKEDITOR', 'ckeditorjs',$this->prpath);
 		$ckeditorVersion = remote_paramload('RCBULKMAIL','ckeditor',$this->prpath);		
 		$this->ckeditver = $ckeditorVersion ? $ckeditorVersion : 4; //default version 4
 		//override ckeditver
@@ -287,9 +288,7 @@ class rcbulkmail {
 		
 		if (defined('RCCOLLECTIONS_DPC')) //used by wizard html page !!
 			$this->iscollection = _m('rccollection.isCollection');  		
-							
-		$this->aesDebug(); //cryptopost msgs
-							
+										
 	    switch ($event) {
 			
 			case 'cptemplatenew'	: 	$this->newcopyTemplate(); 
@@ -328,9 +327,10 @@ class rcbulkmail {
 										//$this->javascript(); dont allow second push
 										break; 									 
 			
-	        case 'cpsavemailadv'  	:	$this->save_campaign();
+	        case 'cpsavemailadv'  	:	$this->decryptPost();
+			                            $this->save_campaign();
 										SetSessionParam('messages',$this->messages); //save messages
-										$this->javascript(); 
+										$this->javascript($encrypted); 
 										break;
 									
 			case 'cppausecamp'    	: 	$this->pause_campaign(); 
@@ -365,7 +365,7 @@ class rcbulkmail {
 											else
 												$this->loadTemplate();						  
 										}
-										$this->javascript();		
+										$this->javascript($encrypted);		
         }			
 			
     }	
@@ -432,18 +432,17 @@ class rcbulkmail {
 		return ($ret);  
 	}
 	
-	protected function javascript() {	
-	    return null; //disable
+	protected function javascript($enc=null) {	
+	    //return null; //disable
 		
 		//if ($this->isDemoUser()) return;
 		//if (!$this->cid) return;
 
         if (iniload('JAVASCRIPT')) {   
 		
-			//$enc = _m('pcntl.getEncrypted');
-			//$code = "cryptoPost.decrypt('$enc');"; 
+			$code = "cryptoPost.decrypt('$enc');"; //$this->postDecrypt($enc);
 			
-	        //$code .= $this->javascript_code(); //DISABLED			
+	        //$code .= $this->javascript_code();			
 		    $js = new jscript;
             $js->load_js($code,null,1);   			   
 		    unset ($js);
@@ -516,12 +515,30 @@ function startcampaign(subject, from, xcid, bid, isrecur)
 EOF;
 		return ($js);	
     }	
+
+	
+	protected function decryptPost() {
+		//var_dump($_POST);			
+		// Check for FORM encrypted data
+		if ((defined('CRYPTOPOST_DPC')) /*&& 
+			(isset($_POST['cryptoPost']))*/)   {
+			/*	
+			echo '***>>>';// . $_POST['cryptoPost'] . '>';
+			
+			$cryptedPost = $_POST;              // Save crypted data for debug
+			$formId = _m('cryptopost.decodeForm');//$crypto->decodeForm();    // Decrypt $_POST contents
+		    */	
+			echo $formId . '>'.$event;
+			$this->aesDebug();//$cryptedPost); //already decrypted use var
+		    //print_r($_POST);
+			// Encrypt processed data if you need to fill form again:
+			//$encrypted = _m('cryptopost.encodeData use +'.$formId);//$crypto->encodeData($_POST, $formId);		
+		}		
+	}
 	
 	protected function aesDebug($crPost=null) {
 		    $cryptedPost = isset($crPost) ? $crPost : $_POST;
-			if (!defined('CRYPTOPOST_DPC'))
-				$this->messages[] = "Cryptopost not defined";
-			
+		
             // Debug
             //echo '<h2>Session keys:</h2>';
             if (isset($_SESSION['RSA_Public_key'])){
@@ -549,7 +566,42 @@ EOF;
             }		
 	}	
 	
+	public function cryptOnSubmit($formname) {
+		
+		if ($this->cryptPost)
+			return 'onsubmit="return cryptoPost.encrypt(\''.$formname.'\')"';
+		
+		return null;
+	}
+	
+	public function onSubmitJS($formname) {
+		
+		if ($this->cryptPost)
+			return 'cryptoPost.encrypt(\''.$formname.'\'); document.tForm.submit();';
+		
+		return 'document.getElementById(\''.$formname.'\').submit();';
+	}	
+	
+	// Encrypt processed data if you need to fill form again:
+	// Fill form input fields 
+	public function postDecrypt($enc=null) {
+		
+		if ($this->cryptPost)
+			return "<script>cryptoPost.decrypt('$enc');</script>";
+		
+		return null;
+	}	
+	
+	public function getmyRSAPublickey() {
+		
+		if ($this->cryptPost)
+			return _m('crryptopost.getmyRSAPublickey');
+		
+		return null;
+	}	
 
+	
+	
 	protected function campaigns_grid($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
 	    $height = $height ? $height : 600;
         $rows = $rows ? $rows : 25;
@@ -2203,9 +2255,10 @@ This email and any files transmitted with it are confidential and intended solel
 
 	public function ckjavascript() {
 		if ($this->ckeditver==3)
-			return '<script src="' . 
+			/*return '<script src="' . 
 					_v('cmsrt.paramload use CKEDITOR+ckeditorjs') .
-					'"></script>';
+					'"></script>';*/
+			return "<script src='{$this->ckjsurl}'></script>";		
 		else
 			return '<script src="assets/ckeditor/ckeditor.js"></script>';
 	}

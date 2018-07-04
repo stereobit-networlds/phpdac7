@@ -229,7 +229,9 @@ class shkatalogmedia {
 	  
 		$this->onlyincategory = remote_paramload('SHKATALOGMEDIA','onlyincategory',$this->path);	
 		$this->oneitemlist = remote_paramload('SHKATALOGMEDIA','oneitemlist',$this->path);
-		$this->photodb = remote_paramload('SHKATALOGMEDIA','photodb',$this->path);
+		
+		$pdb = remote_paramload('SHKATALOGMEDIA','photodb',$this->path);
+		$this->photodb = $pdb ? true : false; 
 	  
 		$this->my_one_item = null;
 		$this->feed_on = remote_paramload('SHKATALOGMEDIA','feed',$this->path);
@@ -1606,13 +1608,14 @@ JSFILTER;
 		
 		if (!empty($this->result)) {
 	   
+	        $aliasID = _m("cmsrt.useUrlAlias");
 			$pp = $this->read_policy();
 	
 			foreach ($this->result as $n=>$rec) {
 		
 				$mem = memory_get_peak_usage(true);//memory_get_usage();
 				
-				$tokens = $this->tokenizeRecord($rec, $pp, true, false, $pz);				
+				$tokens = $this->tokenizeRecord($rec, $pp, true, $aliasID, $pz);				
 				$items[] = $this->combine_tokens($mytemplate, $tokens, true);	
 				unset($tokens);													 
 		   
@@ -1642,131 +1645,14 @@ JSFILTER;
 		 
 		 //url alias or canonical	
 		 $aliasID = _m("cmsrt.useUrlAlias");		
-		 $aliasExt = _v("cmsrt.aliasExt");
 	   
 		 foreach ($this->result as $n=>$rec) {
-			 /*
-		    $id2 = $aliasID ? ($rec[$aliasID] ? $this->stralias($rec[$aliasID]) : $rec[$this->fcode]) : $rec[$this->fcode]; 			 
-						 
-			$cat = $this->getkategoriesS(array(0=>$rec['cat0'],1=>$rec['cat1'],2=>$rec['cat2'],3=>$rec['cat3'],4=>$rec['cat4']));	      			      		   
-		   	$price = ($rec[$pp]>0) ? $this->spt($rec[$pp]) : $this->zeroprice_msg;
-	
-		    $cart_code = $rec[$this->fcode];
-			$cart_title = $this->replace_cartchars($rec[$this->itmname]);
-			$cart_group = $cat;
-			$cart_page = GetReq('page') ? GetReq('page') : 0;
-			$cart_descr = $this->replace_cartchars($rec[$this->itmdescr]);
-			$cart_photo = $rec[$this->fcode];//$this->get_photo_url($rec[$this->fcode],1);
-			$cart_price = $price;
-			$cart_qty = 1;//???
-			if (defined("SHCART_DPC")) {
-				$in_cart = _m("shcart.getCartItemQty use ".$rec[$this->fcode]); 
-				$icon_cart = _m("shcart.showsymbol use $cart_code;$cart_title;$path;$MYtemplate;$cart_group;$cart_page;;$cart_photo;$cart_price;$cart_qty;",1);
-				$array_cart = $this->read_qty_policy($rec[$this->fcode],$price,"$cart_code;$cart_title;$path;$MYtemplate;$cart_group;$cart_page;;$cart_photo;$cart_price;$cart_qty");	   
-				
-			    $units = $rec['uniname2'] ? localize($rec['uniname1'],$lan).'/'.localize($rec['uniname2'],$lan):
-				   						    localize($rec['uniname1'],$lan); 
-                $lastprice = $this->getmapf('lastprice');											
-			}	
-			else
-                $icon_cart = null;	
-			
-			$_u = ($aliasID) ? 
-					$this->httpurl . "/$cat/$id2" . $aliasExt :
-					$this->httpurl . '/' . _m("cmsrt.url use t=kshow&cat=$cat&id=".$rec[$this->fcode]);
-			$itemlink =  $_u; 
-			
-		    $detailink = ($this->mobile) ? 
-							"javascript:window.scrollTo(0,parseInt($('#{$this->realID}-details').offset().top, 10))" :
-							"javascript:gotoTop('{$this->realID}-details')"; //$_u . '#details'; 	   
-			$availability = $this->show_availability($rec['ypoloipo1']);	
-			 
-	        $linkphoto = $this->list_photo($rec[$this->fcode],null,null,$lnktype,$cat,2,3,$rec[$this->itmname]);	
-
-            $ahtml = $this->show_aditional_html_files($rec[$this->fcode]);			 
-            $atext = "";				 		 		   			  
-			$afile = "";			 
-			$details = "";//$ahtml . $atext . $afile;
-		 		   
-            //// tokens method												 
-		    $tokens[] = $rec[$this->itmname];
-			$tokens[] = $rec[$this->itmdescr];
-			$tokens[] = $linkphoto; 
-			$tokens[] = $units;		 
-			$tokens[] = $rec['itmremark'];
-			$tokens[] = number_format(floatval($price),$this->decimals,',','.');
-			$tokens[] = $icon_cart;      //6
-			$tokens[] = $availability;
-			$tokens[] = $detailink;	
-			$tokens[] = $details;
-			$tokens[] = $rec[$this->fcode]; //10
-			 
-			$tokens[] = $in_cart ? $in_cart : '0';
-			$tokens[] = $array_cart;
-
-            $tokens[] = $ahtml; //$atext;  			 
-			$tokens[] = ($aliasID) ? 
-							$this->httpurl . "/$cat" . $aliasExt :
-							$this->httpurl . '/' . _m("cmsrt.url use t=klist&cat=$cat");
-			$tokens[] = _m("shkategories.getcurrentkategory"); //$cat; //$afile;
-			 
-            $tokens[] = $rec[$lastprice];	
-            $tokens[] = $this->httpurl . $this->get_photo_url($rec[$this->fcode],1);
-            $tokens[] = $this->httpurl . $this->get_photo_url($rec[$this->fcode],2);	
-			// big pic	
-			$tokens[] = defined('JSDIALOG_DPC') ? 
-							"javascript:jsShowPhoto('{$rec[$this->itmname]}');" :
-							$this->httpurl . $this->get_photo_url($rec[$this->fcode],3);			 
-			 
-			$tokens[] = $rec['weight'];  //20
-			$tokens[] = $rec['volume'];
-			$tokens[] = $rec['dimensions'];
-			$tokens[] = $rec['size'];
-			$tokens[] = $rec['color'];	
-			 
-			$tokens[] = $this->get_xml_links(); 
-            $tokens[] = $this->item_has_discount($rec[$this->fcode]);
-            $tokens[] = "addcart/$cart_code;$cart_title;$path;$MYtemplate;$cart_group;$cart_page;;$cart_photo;$cart_price;$cart_qty/$cat/$cart_page/";			 
-			 
-			$tokens[] = $rec['code1'];
-			$tokens[] = $rec['code4'];
-			$tokens[] = $rec['resources']; //id=30
-			$tokens[] = $rec['ypoloipo1'];
-			$tokens[] = $rec['manufacturer'];	
-			 
-			//date time
-			$tokens[] = $rec['year'];
-			$tokens[] = $rec['month'];
-			$tokens[] = $rec['day'];
-			$tokens[] = $rec['time'];
-			$tokens[] = $rec['monthname'];		
-
-			$tokens[] = $rec['template'];
-			$tokens[] = $rec['owner'];	
-            $tokens[] = $rec['itmactive'];	//40
-
-			$tokens[] = $this->item_has_points($rec[$this->fcode]);
-
-			$tokens[] = $rec['p1']; 
-			$tokens[] = $rec['p2']; 
-			$tokens[] = $rec['p3'];
-			$tokens[] = $rec['p4'];
-			$tokens[] = $rec['p5'];	
-
-			$tokens[] = _m("shtags.get_tags use " . $rec[$this->fcode]);	
-			
-			$pwt = $this->pricewithtax($price, _v('shcart.tax'));
-			$tokens[] = number_format($pwt, $this->decimals,',','.'); //(floatval($price)*24/100)+floatval($price)
-		
-			$tokens[] = $rec['datein'] ; //49		
-			 */
 			 
 			$tokens = $this->tokenizeRecordItem($rec, $pp, true, $aliasID, 2, false);			
 			//print_r($tokens);
 			
 		 	if ($itmpl = $rec['template']) {
-				//echo $this->itmplpath . $itmpl;
-			    //$out = _m("cmsrt._ct use " . $this->itmplpath . $itmpl . "+" . serialize($tokens) . "+1");
+				
 				$this_item_template = _m('cmsrt.select_template use ' . $this->itmplpath . $itmpl);
 				$out = $this->combine_tokens($this_item_template, $tokens, true);
 			}	
@@ -2809,7 +2695,7 @@ JSFILTER;
 			
 			foreach ($this->result as $n=>$rec) {
 					
-				$tokens = $this->tokenizeRecord($rec, $pp, null, $aliasID, 2, $imgxmlPath);					
+				$tokens = $this->tokenizeRecord($rec, $pp, true, $aliasID, 2, $imgxmlPath);					
 				$this->xml_formater($xml,$format,null,$tokens);
 				//echo $rec[$this->fcode] . ',';
 			    $i+=1;	
@@ -2843,7 +2729,7 @@ JSFILTER;
 			
 			foreach ($resultset as $n=>$rec) {
 
-				$tokens = $this->tokenizeRecord($rec, $pp, null, $aliasID, 2, $imgxmlPath);				
+				$tokens = $this->tokenizeRecord($rec, $pp, true, $aliasID, 2, $imgxmlPath);				
 				$this->xml_formater($xml,$format,null,$tokens);
 				$i+=1;	
 				//if ($i==1111) break; //stop to test			
@@ -2981,28 +2867,28 @@ JSFILTER;
 	/* rcxml feed */
 	protected function xml_feed() {  
 		$format = GetReq('format') ? GetReq('format') : 'sitemap';			
+		$ret = null;
+		$items = array();		
 
 		$xmltemplate = _m("cmsrt.select_template use $format");
 		$xmltemplate_products = _m("cmsrt.select_template use $format" . '-items');
 		$imgxmlPath = _m('cmsrt.paramload use CMS+xmlpics'); //else use img token	
 		
 		//$aliasID = _m("cmsrt.useUrlAlias");
-		$aliasID = false; //DISABLED
- 
-		$items = array();
-		
+		$aliasID = false; //DISABLED (BE AWARE FOR NON .HTML LINKS)
 		$pp = $this->read_policy(); 
 	    	
 		foreach ($this->result as $n=>$rec) {	
 			
-			$tokens = $this->tokenizeRecord($rec, $pp, null, $aliasID, 2, $imgxmlPath);
+			$tokens = $this->tokenizeRecord($rec, $pp, true, $aliasID, 2, $imgxmlPath);
 			//if ($n==0) print_r($tokens);
 			$items[] = $this->combine_tokens($xmltemplate_products, $tokens, true);					
+			unset($tokens);
 		}
 		
 		$tt = array();
 		$tt[] = date('Y-m-d h:m'); 
-		$tt[] = implode("", $items);
+		$tt[] = implode(PHP_EOL, $items);
 		$ret = $this->combine_tokens($xmltemplate, $tt, true);
 		unset($tt);
 		return ($ret);		
@@ -3240,11 +3126,13 @@ JSFILTER;
 		$tokens[] = (($cart==true) && (defined("SHCART_DPC"))) ?
 						_m("shcart.getCartItemPosition use " . $rec[$this->fcode]) : 0;					
 								
-				
+		//item image or alt image -52		
         $tokens[] = ($otherimgpath) ?
 		            $this->httpurl . '/' . $otherimgpath . $rec[$this->fcode] . $this->restype :
 		            $this->httpurl . $this->get_photo_url($rec[$this->fcode], $imgsize);	
-								
+		
+		//item html text -53	
+		$tokens[] = $this->show_aditional_html_files($rec[$this->fcode]);						
 
 		return ($tokens);		
 	}
@@ -4161,6 +4049,7 @@ EOF;
 		//$toks = serialize($tokens);
 		//return _m("cmsrt.combine_tokens use $template_contents+$toks+$execafter");
 	    if (!is_array($tokens)) return;
+		$ret = null;
 		
 		if ((!$execafter) && (defined('FRONTHTMLPAGE_DPC'))) {
 			$fp = new fronthtmlpage(null);

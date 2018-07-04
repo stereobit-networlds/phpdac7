@@ -45,7 +45,7 @@ class rccmstemplates {
 	
     var $title, $path, $urlpath;
 	var $seclevid, $userDemoIds;
-	var $ckeditver, $url;	
+	var $ckeditver, $ckjsurl, $editjsurl, $url;	
 	var $appname, $urkRedir, $isHostedApp; 
 	
 	function __construct() {
@@ -59,6 +59,8 @@ class rccmstemplates {
 		$this->userDemoIds = array(5,6,7,8); 		  
 		
 		$this->ckeditver = 3;
+		$this->ckjsurl = remote_paramload('CKEDITOR', 'ckeditorjs',$this->prpath);
+		$this->editjsurl = remote_paramload('CKEDITOR', 'editjs',$this->prpath);
 		
 		$this->appname = paramload('ID','instancename');
 		$this->urlRedir = remote_paramload('RCBULKMAIL','urlredir', $this->path);
@@ -377,11 +379,16 @@ class rccmstemplates {
 		return ($ret);
 	}
 	
+	public function editorjs() {
+		return "<script src='{$this->editjsurl}'></script>";
+	}	
+	
 	public function ckjavascript() {
 		if ($this->ckeditver==3)
-			return '<script src="' . 
+			/*return '<script src="' . 
 					_v('cmsrt.paramload use CKEDITOR+ckeditorjs') .
-					'"></script>';
+					'"></script>';*/
+			return "<script src='{$this->ckjsurl}'></script>";		
 		else
 			return '<script src="assets/ckeditor/ckeditor.js"></script>';
 	}		

@@ -66,7 +66,7 @@ class cryptopost {
         if ($pkey) $pkeyCreated = openssl_pkey_export($pkey, $privatekey, null, $config);
         if ($pkeyCreated) $keydetails = openssl_pkey_get_details($pkey);
         
-        if (!$keydetails) die("RSA key creation failed");
+        if (!$keydetails) die("RSA key creation failed. -" . openssl_error_string() );
         
         return array(
             "rsaPrivateKey" => $privatekey,

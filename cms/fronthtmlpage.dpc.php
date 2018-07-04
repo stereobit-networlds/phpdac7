@@ -190,7 +190,7 @@ class fronthtmlpage {
 	}	
 
 	public function process_commands($data,$is_serialized=null) {
-	
+		$debug = false;
 		if ($is_serialized) 
 			$data = unserialize($data);
 	  
@@ -198,6 +198,10 @@ class fronthtmlpage {
 		preg_match_all($pattern, $data, $matches, PREG_PATTERN_ORDER);
 
 		foreach ($matches[1] as $r=>$cmd) {
+			
+			if ($debug==true)
+				echo '<br/>' . $cmd;
+			
 			$_cmd = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", "", $cmd)));
 			$ret = _m($_cmd); //,1); //no error stop 					 
 			$data = str_replace("<phpdac>".$cmd."</phpdac>",$ret,$data);

@@ -278,7 +278,7 @@ class rcpmenu {
 		//echo 'ADMINSecID:'.$GLOBALS['ADMINSecID'].':'.$sl.':'.$this->seclevid;
 
 		$ini = @parse_ini_file($this->path . "cp.ini");
-		if (!$ini) die('Environment error!');	
+		if (!$ini) die('cp.ini missing!');	
 	
 		foreach ($ini as $env=>$val) {
 			if (stristr($val,',')) {

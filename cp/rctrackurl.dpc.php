@@ -101,11 +101,11 @@ class rctrackurl  {
 	}
 	
 	protected function redirect_js($location=null) {
-		
+		$lc = $location ? $location : $this->location;
 		//$location = $this->appstring . $this->urlstring .  $this->hashstring;
 		//$jlocation = "'".$this->appstring."'+encodeURIComponent('".$this->urlstring ."')+'".$this->hashstring."'";
-		//echo $location;
-		$ret ="window.location = '".$this->location."';"; 
+		//die('>' . $lc);
+		$ret ="window.location = '".$lc."';"; 
 	
         return ($ret);	
 	}
@@ -121,8 +121,12 @@ class rctrackurl  {
 		if ($a) {
 		
 			$hosted_path = $this->prpath . '../' . $a . '/cp/' ;
+			//SOLVED -- WARNING : NEEDS config.ini not config.ini.php
 			$appurl  = remote_paramload('SHELL','urlbase',$hosted_path,1);
-		
+			//$protocol  = remote_paramload('SHELL','protocol',$hosted_path,1);
+			//$ip  = remote_paramload('SHELL','ip',$hosted_path,1);
+			//echo $protocol . $ip .'-'. $appurl;
+			
 			$url = $appurl .'/'. $u . '#' . $cid.'|'. urlencode($r);
 			//$url = $appurl .'/'. str_replace('-','/',$u) . '#' . $cid.'|'.$r; //htaccess / problem
 			$this->location = $url;

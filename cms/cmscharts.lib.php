@@ -114,9 +114,10 @@ class cmscharts extends cpflotcharts {
 			
 			//transactions
 			$diff = 0;
-			$timeins = $this->sqlDateRange('timein', true, true, $diff);
-			
-			$sSQL = "select count(recid) as hits, DAY(timein) as day from transactions where tdata REGEXP '". @implode('|', $items) ."'" . $timeins . " group by DAY(timein) order by DAY(timein)";
+			//$timeins = $this->sqlDateRange('timein', true, true, $diff);
+			//$sSQL = "select count(recid) as hits, DAY(timein) as day from transactions where tdata REGEXP '". @implode('|', $items) ."'" . $timeins . " group by DAY(timein) order by DAY(timein)";
+			$timeins = $this->sqlDateRange('tdate', true, true, $diff);
+			$sSQL = "select count(id) as hits, DAY(tdate) as day from pcartitems where ref=0 and pid in ('" . implode("','", $items) . "') " . $timeins . " group by DAY(tdate) order by DAY(tdate)";
 			$res = $db->Execute($sSQL,2);
             $this->make_chart_data('Transactions', $res, array('day','hits'), localize('_transactions',getlocal()), array('day',$diff));
 		
