@@ -2421,10 +2421,11 @@ class ipp extends ServerIPP {
 
     protected function _checkmail($data) {
 
-		if( !eregi("^[a-z0-9]+([_\\.-][a-z0-9]+)*" . "@([a-z0-9]+([\.-][a-z0-9]{1,})+)*$", $data, $regs) )  
+		/*if( !eregi("^[a-z0-9]+([_\\.-][a-z0-9]+)*" . "@([a-z0-9]+([\.-][a-z0-9]{1,})+)*$", $data, $regs) )  
 			return false;
 
-		return true;  
+		return true; */
+		return filter_var($data, FILTER_VALIDATE_EMAIL);	
 	}	
 	
     protected function _sendmail($from=null,$to=null,$subject=null,$body=null,$mailfile=null) {

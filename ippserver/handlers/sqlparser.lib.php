@@ -59,7 +59,7 @@ class handlers_sqlparser extends skeleton {
 	}
 	elseif (stristr($this->jf, '.csv')) { //csv file
 	
-	    $jobfile_parts = explode('|', $this->jf);
+	    $jobfile_parts = explode(FILE_DELIMITER, $this->jf);
 		
 		//full path csv file (print from win editor)
 		if (stristr($jobfile_parts[4], "-")) { 
@@ -139,8 +139,8 @@ super database;
 		 $this->export_data = mb_convert_encoding($data, 'UTF-8', 'ISO-8859-7');		  
 	   
 	     //READ SCENARIO  	   
-         $sc = parse_ini_file($this->admin_path . '/' .  $scenario);
-		 //self::write2disk('sqlparser.log', print_r($sc, true));
+         $sc = parse_ini_file($this->admin_path . '/' .  $scenario, false, INI_SCANNER_RAW);
+		 self::write2disk('sqlparser.log', print_r($sc, true));
 		 
 		 $delimiter = $sc['delimiter'] ? $sc['delimiter'] : ';';
          //echo '>',$delimiter;
@@ -154,9 +154,28 @@ super database;
 		 //$passtitles = $sc['titles'] ? false : true; //false when titles exists..make it true after 1 ttime of loop
 		 //echo $passtitles;
 		 
+		 //$titlelines = $sc['titles'] ? $sc['titles'] : 0;
+		 
+		 //in case of re-read, get counter as titleline and bypass processed records
+		 /*$parseCounter = intval(@file_get_contents($this->admin_path .'/sqlparser-counter.log'));
+		 if ($parseCounter > 0) {
+			$msg = "\r\n" . "(". date('Y-m-d H:i:s') . ")";
+			$msg .= "\r\n" . $scenario . " file readed!";
+			$msg .= "\r\n" ."Mode:" . $mode;		 
+			$msg .= "\r\n" . $titlelines . " records ignored!";
+			self::write2disk('sqlparser.log', $msg);
+
+			$titlelines = $parseCounter + 1;	
+		 }
+		 else
+			$titlelines = $sc['titles'] ? $sc['titles'] : 0;
+		 */
+		 $titlelines = file_get_contents($this->admin_path .'/sqlparser-counter.log') ? 
+					   intval(file_get_contents($this->admin_path .'/sqlparser-counter.log')) + 1 :
+					   ($sc['titles'] ? $sc['titles'] : 0);		 
+		
 		 $msg = null;
 		 $i = 0;			
-		 $titlelines = $sc['titles'] ? $sc['titles'] : 0;
 		 $mode = trim($sc['mode']);
 			  
          foreach ($source as $lineno=>$record) {	
@@ -259,8 +278,7 @@ super database;
 									  else 
 										$sSQL = $this->insert_cmd($sc,$field,$getrec,$attrrec);   
 									
-									  $msg .= "\r\n" . $sltSQL;
-									  $msg .= "\r\n" . $sSQL;
+									  $msg = $sltSQL . "\t" . $sSQL;
 									  //self::write2disk('sqlparser.log', $sltSQL . "\r\n" . $sSQL);
 																		  
 									  if ($res = $db->Execute($sSQL)) {	
@@ -279,16 +297,21 @@ super database;
                     }//switch			  
 				  
 				    $i+=1;
-		
+					file_put_contents($this->admin_path .'/sqlparser-counter.log', $lineno);
+					self::write2disk('sqlparser.log', date('Y-m-d H:i:s') ." ($lineno) :". $msg . PHP_EOL);
 			    }//if trim
             }//if titles				
+			/*else {
+				$msg = ($lineno>0) ? "Title line, bypass" : "Re-counter, bypass";
+				self::write2disk('sqlparser.log', date('Y-m-d H:i:s') .': '.$msg. PHP_EOL);
+			}*/	
          }//foreach	
 		
-		 $msg .= "\r\n" . "(". date('Y-m-d H:i') . ")" . '----------------------- End of process';
+		 $msg = "\r\n" . "(". date('Y-m-d H:i:s') . ")" . '----------------------- End of process';
 		 $msg .= "\r\n" . $scenario . " file readed!";
          $msg .= "\r\n" ."Mode:" . $mode;		 
          $msg .= "\r\n" . $i . " records readed!";
-		 $msg .= "\r\n" . $ix . " records affercted!";
+		 $msg .= "\r\n" . ($titlelines + $i) . " records affected!";
 	 	 $msg .= "\r\n" . "Import done!";	 			
 	     $msg .= "\r\n" . '----------------------- Errors';			
 	     $msg .= "\r\n" . $errormsg;			 
@@ -297,6 +320,9 @@ super database;
 	    $msg = "\r\n" . "Scenario missing! (" . $scenario . ")" . "\r\n";
 		
 	  self::write2disk('sqlparser.log', $msg);
+	  
+	  //erase counter file
+	  unlink($this->admin_path .'/sqlparser-counter.log');
 			
 	  return true; //$msg;	
    }
@@ -326,7 +352,11 @@ super database;
 		 }  
 		 
          $sSQL.= implode(',',$datasqltype); 
+		 
 		 //echo implode(',',$datasqltype),'<br>';
+		 //self::write2disk('sqlparser.log', implode(',',$datasqltype) . PHP_EOL);
+		 
+		 //self::write2disk('sqlparser.log', implode(',',$sc['getrec2']) . PHP_EOL);
 		 $sSQL.= $this->replace_params($sc['getrec2']);//str_replace('^datetime',"'".$this->datetime."'",$sc['getrec2'])/* . ",'$this->datetime'"*/ . 
 		 $sSQL.= ');';   
 		 

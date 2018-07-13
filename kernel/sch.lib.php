@@ -215,6 +215,8 @@ class scheduler {
 		$tmline = isset($schedules) ? $schedules :
 					json_decode($this->env->read('srvSchedules'), true);		
 	  
+		if (empty($tmline)) return false;
+		
 		foreach ($tmline as $inittime=>$entry) {
 
 			if (strstr($entry['agent'],"\\")) {

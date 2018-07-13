@@ -2178,7 +2178,7 @@ class IPPlistener extends ServerIPP {
             //if ($log)
 		      //self::write2disk('network.log',":start:");			
 			
-		    $srv = new AgentIPP(/*$this->authentication, ****/
+		    $srv = new AgentIPP(/*$this->authentication, ******/
 			                    self::get_printer_name(),
 			                    $this->username,//??? when called what is the name ??
 			                    $callback_function,//must be inside pragent class
@@ -2424,10 +2424,11 @@ class IPPlistener extends ServerIPP {
 
     protected function _checkmail($data) {
 
-		if( !eregi("^[a-z0-9]+([_\\.-][a-z0-9]+)*" . "@([a-z0-9]+([\.-][a-z0-9]{1,})+)*$", $data, $regs) )  
+		/*if( !eregi("^[a-z0-9]+([_\\.-][a-z0-9]+)*" . "@([a-z0-9]+([\.-][a-z0-9]{1,})+)*$", $data, $regs) )  
 			return false;
 
-		return true;  
+		return true; */
+		return filter_var($data, FILTER_VALIDATE_EMAIL);	
 	}	
 	
     protected function _sendmail($from=null,$to=null,$subject=null,$body=null,$mailfile=null) {

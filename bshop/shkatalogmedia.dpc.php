@@ -231,7 +231,7 @@ class shkatalogmedia {
 		$this->oneitemlist = remote_paramload('SHKATALOGMEDIA','oneitemlist',$this->path);
 		
 		$pdb = remote_paramload('SHKATALOGMEDIA','photodb',$this->path);
-		$this->photodb = $pdb ? true : false; 
+		$this->photodb = $pdb ? $pdb : false; 
 	  
 		$this->my_one_item = null;
 		$this->feed_on = remote_paramload('SHKATALOGMEDIA','feed',$this->path);
@@ -973,12 +973,11 @@ JSFILTER;
                      $stype = '';		   
 		}
 	  
-		$interface = $this->photodb; 
-		if (isset($interface)) {
-			if (is_numeric($interface))	  
+		if ($this->photodb) {
+			if (is_numeric($this->photodb))	  
 				$photo = _m("cmsrt.seturl use t=showimage&id=$code&type=$stype");
 			else  
-				$photo = '/' . $interface . '?id='.$code.'&type='.$stype;
+				$photo = '/' . $this->photodb . '?id='.$code.'&type='.$stype;
 		}
 		else {//ordinal image
 			$pfile = $this->encode_image_id($code); //_m('shkategories.encode_image_id use '.$code);
@@ -3507,7 +3506,7 @@ JSFILTER;
 				
 				$template = $data_array['template'] ? $data_array['template'] : 'fpitempolicy';
 				$mylooptemplate = _m("cmsrt.select_template use $template");
-			
+				$data = array(); 
 				foreach ($data_array['PRICE'] as $ix=>$ax) {
 					$data[] = $data_array['QTY'][$ix];
 					$cartd[8] = $price ? $price+($price*$ax/100) : $ax;
@@ -3518,7 +3517,7 @@ JSFILTER;
 					$data[] = _m("shcart.showsymbol use $cartout;+0+".$cartd[9],1);
 					$data[] = $itemcode;
 					$data[] = "addcart/$cartout/$cat/0/";
-					$body .= $this->combine_tokens($mylooptemplate,$data,true);	
+					$body = $this->combine_tokens($mylooptemplate,$data,true);	
 					unset($data);			  
 				}		
 				//echo $body;
