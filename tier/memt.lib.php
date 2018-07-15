@@ -2,7 +2,7 @@
 class memt 
 {	
 	private $env;
-	public $agn_mem_type = 2;//shared 1 vs convensional
+	public $agn_mem_type;// = 2;//shared 1 vs convensional
 	public $agn_mem_store;
 	
 	public $shm_id, $shm_max, $agn_shm_id, $ipcKey;
@@ -13,8 +13,14 @@ class memt
 	public function __construct(& $env=null) 
 	{	
 		$this->env = $env;
-		if (!extension_loaded('shmop')) dl('php_shmop.dll');		
-		if (!extension_loaded('sync')) 	dl('php_sync.dll');			
+		
+		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+			if (!extension_loaded('shmop')) dl('php_shmop.dll');		
+			if (!extension_loaded('sync')) 	dl('php_sync.dll');			
+		}
+		//else linux 
+		
+		$this->agn_mem_type = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 2 : 1;
 		
 		$this->shm_id = null;
 		$this->shm_max = 1024 * 100 * 100;
@@ -28,9 +34,10 @@ class memt
 		$this->shared_buffer = null;
 		$this->extra_space = 1024 * 10; //kb //1000;// per agn
 		$this->dataspace = 1024000 * 1; //mb //50000;
-	  		
-		//$pathname = null;//$argv[0]	!!
-		//$this->ipcKey = $this->_ftok($pathname, 's'); //create ipc Key			
+	  			
+		$this->env->cnf->_say('DUMP FILE:' . realpath(_DUMPFILE), 'TYPE_IRON');
+		$pathname = realpath(_DUMPFILE); 
+		$this->ipcKey = $this->_ftok($pathname, 's'); //create ipc Key			
 	}		
 	
 	public function initialize() 
@@ -46,7 +53,7 @@ class memt
 		
 		$iKey = $this->ipcKey ? $this->ipcKey : 0xff9;	
 		
-		_say("Start mem manager " . $this->agn_mem_type, 1);
+		$this->env->cnf->_say("Start mem manager " . $this->agn_mem_type, 'TYPE_LION');
 		if ($this->agn_mem_type==2) 
 			return true;
 		
@@ -56,7 +63,7 @@ class memt
 		// Create shared memory block with system id if 0xff3
 		$space = $this->shm_max + $this->dataspace;					
 		
-		_say("Allocate memory segment... $space bytes",2);
+		$this->env->cnf->_say("Allocate memory segment... $space bytes", 'TYPE_RAT');
 		$this->shm_id = shmop_open($iKey, "c", 0644, $space);
 		
 		if ($this->shm_id) 
@@ -84,16 +91,18 @@ class memt
    
 	//buffer2 used as optional when reconf-clean mem  
 	private function openmemagn($buffer=null,$buffer2=null) 
-	{  	  
+	{  	 
+		$iKey = $this->ipcKey ? $this->ipcKey : 0xfff;	
+		
         if ($this->agn_mem_type==2) {
 			
 			$this->shm_max = strlen($buffer) + strlen($buffer2);
 
-			$this->shm_id = shmop_open(0xfff, "c", 0644, $this->shm_max);
+			$this->shm_id = shmop_open($iKey, "c", 0644, $this->shm_max);
 			if(!$this->shm_id) 
 			{ 
-				_say("Couldn't create memory segment.",1);
-				_say("System Halted.",1);
+				$this->env->cnf->_say("Couldn't create memory segment.", 'TYPE_LION');
+				$this->env->cnf->_say("System Halted.", 'TYPE_LION');
 				die();
 			}
 			
@@ -104,20 +113,20 @@ class memt
 		{
 			$shm_max = strlen($buffer) + strlen($buffer2);
 			
-			$this->agn_shm_id = shmop_open(0xfff, "c", 0644, $this->shm_max);
+			$this->agn_shm_id = shmop_open($iKey, "c", 0644, $this->shm_max);
 	  
 			if(!$this->agn_shm_id) 
 			{ 
-				_say("Couldn't create memory segment.",1);
-				_say("System Halted.",1);
+				$this->env->cnf->_say("Couldn't create memory segment.", 'TYPE_LION');
+				$this->env->cnf->_say("System Halted.", 'TYPE_LION');
 				die();
 			}  
   
 			$shm_bytes_written = shmop_write($this->agn_shm_id, $buffer, 0);
 			if($shm_bytes_written != $shm_max) 
 			{
-				_say("Couldn't write the entire length of data",1);
-				_say($this->shm_max.":".$shm_bytes_written.">".$buffer,1);
+				$this->env->cnf->_say("Couldn't write the entire length of data", 'TYPE_LION');
+				$this->env->cnf->_say($this->shm_max.":".$shm_bytes_written.">".$buffer, 'TYPE_RAT');
 			}
 			else 
 			{	
@@ -168,11 +177,11 @@ class memt
 				$this->agn_addr[$agent] = &$mem;
 				$this->agn_length[$agent] = $a_size;
 				$this->agn_free[$agent] = $this->extra_space - $a_size;
-				_say("addmemagn: [$agent] start". ':'.$a_size,1);
+				$this->env->cnf->_say("addmemagn: [$agent] start". ':'.$a_size, 'TYPE_LION');
 				return true;
 			}
 			
-			_say("addmemagn: [$agent] failed". ':'.$a_size,1);
+			$this->env->cnf->_say("addmemagn: [$agent] failed". ':'.$a_size, 'TYPE_LION');
 			return false;
 			/*
 			$a_index = $this->getAgnOffset();
@@ -203,7 +212,8 @@ class memt
 			//extend agent info table
 			$this->agn_addr[$agent] = $a_index;			
 			$this->agn_length[$agent] = $a_size;	
-			_say("New [$agent] ". $a_index.':'.$a_size,1);
+			
+			$this->env->cnf->_say("New [$agent] ". $a_index.':'.$a_size, 'TYPE_LION');
 			//var_dump($this->agn_addr);			
 			
 			$shm_max = $a_index + $a_size;
@@ -211,13 +221,13 @@ class memt
 			  
 			//extend and add the new agent at sh mem
 			if ($this->agn_shm_id) { 
-				_say("Close memory segment",2);	  
+				$this->env->cnf->_say("Close memory segment", 'TYPE_RAT');	  
 				$this->closememagn();	 
-				_say("Re-allocate memory segment",2);
+				$this->env->cnf->_say("Re-allocate memory segment", 'TYPE_RAT');
 				$this->openmemagn($this->shared_buffer); 	  
 			}
 			else {
-				_say("Allocate memory segment",2);
+				$this->env->cnf->_say("Allocate memory segment", 'TYPE_RAT');
 				$this->openmemagn($this->shared_buffer); 	  	  
 			}			
 		}	
@@ -227,16 +237,17 @@ class memt
 			
 			//extend agent info table
 			$this->agn_addr[$agent] = $a_index;			
-			$this->agn_length[$agent] = $a_size;	
-			_say("New [$agent] ". $a_index.':'.$a_size,1);
+			$this->agn_length[$agent] = $a_size;
+			
+			$this->env->cnf->_say("New [$agent] ". $a_index.':'.$a_size, 'TYPE_LION');
 			//var_dump($this->agn_addr);			
 			
 			$shm_max = $a_index + $a_size;
 			$this->agn_mem_store .= $data;
 
-			_say("Close standart memory segment",2);	  
+			$this->env->cnf->_say("Close standart memory segment", 'TYPE_RAT');	  
 			$this->closememagn();	   
-			_say("Allocate standart memory segment",2);
+			$this->env->cnf->_say("Allocate standart memory segment", 'TYPE_RAT');
 			$this->openmemagn($this->agn_mem_store);			
 		}	
     }	
@@ -276,14 +287,16 @@ class memt
 					//$this->agn_addr[$agent] = &$mem;
 					$this->agn_length[$agent] = $dataLength;
 					$this->agn_free[$agent] = $this->extra_space - $datalength;
-					_say("updatememagn: [$agent] modified". ':'.$dataLength,1);
+					
+					$this->env->cnf->_say("updatememagn: [$agent] modified". ':'.$dataLength, 'TYPE_LION');
 					return true;
 				}
 			
-				_say("updatememagn: [$agent] failed to modified". ':'.$dataLength,1);
+				$this->env->cnf->_say("updatememagn: [$agent] failed to modified". ':'.$dataLength, 'TYPE_LION');
 				return false;
-			}			
-			_say("updatememagn: [$agent] length error". ':'.$dataLength,1);
+			}	
+			
+			$this->env->cnf->_say("updatememagn: [$agent] length error". ':'.$dataLength, 'TYPE_LION');
 			return false;
 		}			
 		else //1,0
@@ -333,7 +346,7 @@ class memt
 		return false;	
     }	
 	
-	private function removememagn($agent) 
+	public function removememagn($agent) 
 	{
 		if ($this->agn_mem_type==2) 
 		{  	
@@ -343,10 +356,11 @@ class memt
 			if ($mem->write(str_repeat(' ',$this->extra_space),0)) 
 			{
 				$this->agn_free[$agent] = -1;
-				_say("Remove [$agent] " . $length,1);		  
+				$this->env->cnf->_say("Remove [$agent] " . $length, 'TYPE_LION');		  
 				return true;
 			}
-			_say("Remove [$agent] ". $length,1);		  
+			
+			$this->env->cnf->_say("Remove [$agent] ". $length, 'TYPE_LION');		  
 			return false;
 	  
 		}	
@@ -354,8 +368,9 @@ class memt
 		{  
 			$a_index = $this->agn_addr[$agent];   
 			$a_size = $this->agn_length[$agent];
-			echo "\nremove ", $agent,'>',$a_index,':',$a_size,"\n";		
-		
+			//echo "\nremove ", $agent,'>',$a_index,':',$a_size,"\n";		
+			$this->env->cnf->_say("Remove [$agent] " . $a_size, 'TYPE_LION');
+			
 		    $deleted_agent = str_repeat('x',$a_size);
 		    
 			//update shared buffer
@@ -363,7 +378,7 @@ class memt
 		
 			if (!shmop_write($this->agn_shm_id,$deleted_agent,$a_index)) 
 			{
-				_say("[$agent] Couldn't mark memory block for writing.");
+				$this->env->cnf->_say("[$agent] Couldn't mark memory block for writing.", 'TYPE_LION');
 				return false;
 			} 
 			$this->cleanmemagn();	
@@ -466,46 +481,46 @@ class memt
 		}
 		else
 		{
-		$shm_max = 0;
+			$shm_max = 0;
 	  
-		reset($this->agn_addr);
-		foreach ($this->agn_addr as $id=>$value) 
-		{
-			$current_index = $value;				
-			$current_size = $this->agn_length[$id];		
-			$current_free = $this->agn_free[$id];
+			reset($this->agn_addr);
+			foreach ($this->agn_addr as $id=>$value) 
+			{
+				$current_index = $value;				
+				$current_size = $this->agn_length[$id];		
+				$current_free = $this->agn_free[$id];
 			
-			//!!!!
-			/*$s_agent = shmop_read($this->agn_shm_id,$current_index,$current_size); 
-			*/
-			_say('>'.$s_agent.'<'.strlen($s_agent)); 		
-			//$s_agent= substr($this->shared_buffer,$value,$current_size);
+				//!!!!
+				/*$s_agent = shmop_read($this->agn_shm_id,$current_index,$current_size); 
+				_say('>'.$s_agent.'<'.strlen($s_agent)); 		
+				*/
+				//$s_agent= substr($this->shared_buffer,$value,$current_size);
 		
-			$removed_agent = str_repeat('x',$current_size);
-			if ($s_agent==$removed_agent) 
-			{
-				//is a deleted agent
-				_say("removed",2);
-			}
-			else 
-			{
-				$local_agn_addr[$id] = $current_index;
-				$local_agn_length[$id] = $current_size;
-				$local_agn_free[$id] = $current_free;
+				$removed_agent = str_repeat('x',$current_size);
+				if ($s_agent==$removed_agent) 
+				{
+					//is a deleted agent
+					_say("removed",2);
+				}
+				else 
+				{
+					$local_agn_addr[$id] = $current_index;
+					$local_agn_length[$id] = $current_size;
+					$local_agn_free[$id] = $current_free;
 				
-				$local_shared_buffer .= $s_agent;
+					$local_shared_buffer .= $s_agent;
 		  
-				$a_index += $current_size;
-				$shm_max += $current_size;
+					$a_index += $current_size;
+					$shm_max += $current_size;
+				}
 			}
-		}
-		//echo $local_shared_buffer;
-		//$this->shared_buffer = $local_shared_buffer;
-		$this->agn_addr = (array)$local_agn_addr;
-		$this->agn_length = (array)$local_agn_length;
+			//echo $local_shared_buffer;
+			//$this->shared_buffer = $local_shared_buffer;
+			$this->agn_addr = (array)$local_agn_addr;
+			$this->agn_length = (array)$local_agn_length;
 	    
-		$this->closememagn();	//reset shared buffer
-		$this->openmemagn('aek;',$local_shared_buffer);
+			$this->closememagn();	//reset shared buffer
+			$this->openmemagn('aek;',$local_shared_buffer);
 	    }
 	}	
 	
@@ -525,7 +540,7 @@ class memt
 			if (!$this->agn_shm_id) return -1;
 	  
 			if(!shmop_delete($this->agn_shm_id)) {
-				_say("Couldn't mark memory block for deletion.");
+				$this->env->cnf->_say("Couldn't mark memory block for deletion.", 'TYPE_LION');
 			}	  
 	  
 			shmop_close($this->agn_shm_id);	
@@ -535,7 +550,7 @@ class memt
 
 		//delete id file
 		if (is_file('agn.id')) {
-			_say("Deleting state...",2);
+			$this->env->cnf->_say("Deleting state...", 'TYPE_RAT');
 			unlink("agn.id"); //!!!permisions denied when multiple agns
 		}
 		//echo "Ok!\n";   
@@ -556,14 +571,14 @@ class memt
 	
       if (!shmop_delete($this->shm_id)) 
 	  {
-        _say("Couldn't mark memory block for deletion",1);
+        $this->env->cnf->_say("Couldn't mark memory block for deletion", 'TYPE_LION');
 		return false;
       }	  
 	  shmop_close($this->shm_id);	
 	  $this->shm_id = null;   
 	  
 	  @unlink("agn.id");
-	  _say("Deleting state..!",2); 
+	  $this->env->cnf->_say("Deleting state..!", 'TYPE_RAT'); 
 	  
 	  return true;	
     }		
@@ -576,11 +591,11 @@ class memt
 		$fd = @fopen( "agn.id", "w" );
 		if (!$fd) 
 		{
-            _say("agn_id not saved!!!");
+            $this->env->cnf->_say("agn_id not saved!!!", 'TYPE_RAT');
 			return false;
 		}
 
-		_say("Saving state.",2);
+		$this->env->cnf->_say("Saving state.", 'TYPE_RAT');
 		$data = $shm_max ."^". 
 		        serialize($this->agn_addr) ."^". 
 				serialize($this->agn_length); 
@@ -606,6 +621,9 @@ class memt
 	
 	private function _ftok($pathname, $proj_id) 
 	{
+		if (function_exists('ftok'))
+			return ftok($pathname, $proj_id);
+		
 		$st = @stat($pathname);
 		if (!$st) 
 		{

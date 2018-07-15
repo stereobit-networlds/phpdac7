@@ -4,6 +4,8 @@ error_reporting(E_ALL & ~E_NOTICE);
 define ("GLEVEL", 1); 		//main messaging level 
 define ("KERNELVERBOSE", 1);//override daemon VERBOSE_LEVEL
 define ("_DS_", DIRECTORY_SEPARATOR);
+define ("_MACHINENAME", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' : 'LINMS'));
+define ("_DUMPFILE", 'dumpsrv-'. _MACHINENAME . '.log');
 	
 require_once("system/timer.lib.php");
 //require_once("kernel/sresc.lib.php");
@@ -27,13 +29,13 @@ require_once("kernel/sch.lib.php");
 		if ($level <= GLEVEL)
 			echo ucfirst($str) . $cr;
 		
-		_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+','/dumpsrv-'.$_SERVER['COMPUTERNAME'].'.log');
+		//_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+','/'. _DUMPFILE . _MACHINENAME .'.log');
 	}
    
 	function _dump($data=null,$mode=null,$filename=null) 
 	{
 		$m = $mode ? $mode : 'w';
-		$f = $filename ? $filename : '/dumpmem-'.$_SERVER['COMPUTERNAME'].'.log';
+		$f = $filename ? $filename : '/dumpmem-'. _MACHINENAME .'.log';
 
 		if ($fp = @fopen (getcwd() . $f , $m)) 
 		{
@@ -86,7 +88,7 @@ class kernel {
 		if ($this->mem->initialize())
 		{	
 			//clear log
-			@unlink('dumpmem-'.$_SERVER['COMPUTERNAME'].'.log');
+			@unlink('dumpmem-'. _MACHINENAME .'.log');
 			  
 			//init timer
 			$this->timer = new timer($this);
@@ -266,7 +268,7 @@ class kernel {
 		
 		//DUMP MEM FOR UPDATE/SAVE PURPOSES
 		$this->cnf->_say('--------------- MEM DUMP ---------------', 'TYPE_LION');
-		_dump($this->mem->dumpMem() ,'w', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+		_dump($this->mem->dumpMem() ,'w', '/dumpmem-tree-'. _MACHINENAME .'.log');
 		
 		//return ($ret);		
 	}

@@ -554,7 +554,7 @@ class rccollections {
 			$ret[] = "<option value='".$rec['id']."'>". $rec[$code].'-'.$rec[$itmname]."</option>" ;
         }		
 
-		return (implode('',$ret));	
+		return (!empty($ret)) ? (implode('',$ret)) : null;	
 	}		
 		
 	protected function viewDbList() {
@@ -586,7 +586,7 @@ class rccollections {
 			$ret[] = "<option value='".$rec['id']."'>". $rec[$code].'-'.$rec[$itmname]."</option>" ;
         }		
 
-		return (implode('',$ret));			
+		return (!empty($ret)) ? (implode('',$ret)) : null;			
 	}	
 	
 	protected function viewDbCollection() {
@@ -609,7 +609,7 @@ class rccollections {
 			foreach ($resultset as $n=>$rec) {
 				$ret[] = "<option value='".$rec['id']."'>". $rec[$code].'-'.$rec[$itmname]."</option>" ;
 			}		
-			return (implode('',$ret));
+			return (!empty($ret)) ? (implode('',$ret)) : null;
 		}
 		return false;	
 	}		

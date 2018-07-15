@@ -58,7 +58,7 @@ class proc
 	//add / init
 	public function set($cmd=null) //from whom client !!! 
 	{
-		if (!$cmd) return false;
+		if (!$cmd) return $this; // fluent //false;
 		$this->async = false; //reset
 		
 		if ($stack = $this->setProcessStack($cmd)) 

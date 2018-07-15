@@ -56,7 +56,7 @@ class mem
 			if ($sid = $this->env->shm->_shopen($space)) 
 			{
 				//re-load dump file
-				if (!$reloadedData = @file_get_contents($loadFromDir . 'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log'))
+				if (!$reloadedData = @file_get_contents($loadFromDir . 'dumpmem-tree-'.   _MACHINENAME .'.log'))
 						die('Dump file missing.' . PHP_EOL);
 			
 				//WRITE ALL DATA AT ONCE IN SHMEM		
@@ -65,7 +65,7 @@ class mem
 				$bw = $this->env->shm->_shwrite($reloadedData, 0); //direct
 				
 				// Do not dump, do not unlink
-				//unlink(getcwd() . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+				//unlink(getcwd() . '/dumpmem-tree-'.   _MACHINENAME .'.log');
 			
 				if ($bw != strlen($reloadedData)) {
 					$this->env->cnf->_say("Reloaded data:" . strlen($data) .'-'. $bw, 'TYPE_LION');
@@ -94,7 +94,7 @@ class mem
 				$bw = $this->env->shm->_shwrite($data, 0); //direct
 				
 				//init mem dump w not a+ (dump includes all 1st entries not updates)
-				_dump($data ,'w', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+				_dump($data ,'w', '/dumpmem-tree-'.   _MACHINENAME .'.log');
 		
 				if ($bw != $this->shm_max) 
 				{
@@ -131,7 +131,7 @@ class mem
 	{
 		if ((!$dpc) || (!$length)) 
 		{
-			_dump("MEMSET\n\n$dpc length:$length\n\n", 'a+', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
+			_dump("MEMSET\n\n$dpc length:$length\n\n", 'a+', '/dumpmem-error-'.   _MACHINENAME .'.log');
 			return false;
 		}	
 		
@@ -170,7 +170,7 @@ class mem
 				return $offset;
 			}
 		//}	
-		_dump("MEMSET\n$dpc\nlength:$length\nmaxmem:$maxmem\nmempage:$mempage\noffset:$offset\n", 'a+', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
+		_dump("MEMSET\n$dpc\nlength:$length\nmaxmem:$maxmem\nmempage:$mempage\noffset:$offset\n", 'a+', '/dumpmem-error-'.   _MACHINENAME .'.log');
 		return false;
 	}
 	
@@ -579,14 +579,14 @@ class mem
 					
 					//MAKE PERIODICAL DUMPS OF ENTIRE MEM (DUMPMEM)
 					//!!!!update dump-tree for any use (phar creation etc)
-					//_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+					//_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.   _MACHINENAME .'.log');
 										
 					$this->env->cnf->_say("$htnew $dpc updated",'TYPE_LION');
 					_dump("SAVE\n\n\n\n" . $data);
 				}	
 				else
 				{
-					_dump("MEM-ERROR\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
+					_dump("MEM-ERROR\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.   _MACHINENAME .'.log');
 					die($dpc . " (savedpcmem update page: $remaining) error, increase page space!" . PHP_EOL); 
 				}
 			
@@ -604,14 +604,14 @@ class mem
 				$this->env->fs->hAdd($dpc, $htnew);
 				
 				//save dump-tree for any use (phar creation etc)
-				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.   _MACHINENAME .'.log');
 					
 				$this->env->cnf->_say("$htnew $dpc saved",'TYPE_LION');
 				_dump("LOAD\n\n\n\n" . $data);
 			}
 			else
 			{		
-				_dump("MEM-ERROR\n$dpc\noffset: $offset\nlength: ".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
+				_dump("MEM-ERROR\n$dpc\noffset: $offset\nlength: ".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.   _MACHINENAME .'.log');
 				die($dpc . " (savedpcmem save offset:$offset) error, increase data space!" . PHP_EOL);		
 			}	     
 	   }
@@ -664,7 +664,7 @@ class mem
 					}
 					else
 					{
-						_dump("MEM-ERROR\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');
+						_dump("MEM-ERROR\n$dpc\n$remaining\n".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.   _MACHINENAME .'.log');
 						die($dpc . " (savedpcmem update page: $remaining) error, increase mempage space!" . PHP_EOL); 
 					}	
 					
@@ -697,14 +697,14 @@ class mem
 				$this->env->fs->hAdd($dpc, $htnew);
 				
 				//save dump-tree for any use (phar creation etc)
-				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log');
+				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.   _MACHINENAME .'.log');
 				
 				$this->env->cnf->_say("$htnew $dpc saved!",'TYPE_LION');
 				_dump("INSERT\n\n\n\n" . $data);
 			}
 			else
 			{		
-				_dump("MEM-ERROR\n$dpc\noffset: $offset\nlength: ".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.$_SERVER['COMPUTERNAME'].'.log');		
+				_dump("MEM-ERROR\n$dpc\noffset: $offset\nlength: ".strlen($data)."\n" . $data, 'w', '/dumpmem-error-'.   _MACHINENAME .'.log');		
 				die($dpc . " (getdpcmemc save offset:$offset) error, increase data space!" . PHP_EOL);
 			}	
 		
@@ -830,7 +830,7 @@ class mem
 				$param = null;
 				$data = (new proc($this->env))
 								->set($dpc)
-								->go($param);						
+								->go($param);
 			}
 			else
 			{

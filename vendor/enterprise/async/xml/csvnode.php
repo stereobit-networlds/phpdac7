@@ -11,9 +11,9 @@ class csvnode implements xmlnodeInterface
 			   str_replace(array(";","amp","&","<",">",'"'),array('','','','','',"'"), trim($node->get('itmname'))) . ';';
 		$imm.= $node->get('price0') .';'. $node->get('price1') .';';
 		$imm.= $node->get('price2') .';'. $node->get('pricepc') .';';
-		$imm.= str_replace(array(";","amp","&",'"'),array('','','',"'"), trim($node->get('itmdescr'))) .';'. $node->get('uniname1') .';';
+		$imm.= str_replace(array(";","amp","&","<",">",'"'),array('','','','','',"'"), trim($node->get('itmdescr'))) .';'. $node->get('uniname1') .';';
 		$imm.= $node->get('ypoloipo') .';0;'; //xml
-		$imm.= trim($node->get('manufacturer')) .';'. 
+		$imm.= str_replace(array(";","amp","&","<",">",'"'),array('','','','','',"'"), trim($node->get('manufacturer'))) .';'. 
 			   trim($node->get('dimensions')). ';'; 
 		$imm.= trim($node->get('color')) .';';
 		$imm.= trim($node->get('weight')) .';';

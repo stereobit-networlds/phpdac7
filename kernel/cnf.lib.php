@@ -107,7 +107,7 @@ class Config
 		if (($this->checktype($level)===true))	
 			echo ucfirst($str) . $cr;
 		
-		_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+','/dumpsrv-'.$_SERVER['COMPUTERNAME'].'.log');
+		_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+','/' . _DUMPFILE);
 	}	
 }
 ?>

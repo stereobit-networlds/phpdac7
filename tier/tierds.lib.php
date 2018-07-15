@@ -38,7 +38,7 @@ class tierds {
 		//REGISTER PHPDAC 7
 		$dh = $this->phpdac_ip;  //global inside dacstreamc7 for gc
 		$dp = $this->phpdac_port;//global inside dacstreamc7 for gc
-		//require("tier/dacstreamc7.lib.php");			
+		require("tier/dacstreamc7.lib.php"); //linux must set (disable class inside tier.dpc.php)			
 		$phpdac_c = stream_wrapper_register("phpdac5","tier_dacstream");
 		if (!$phpdac_c) 
 		{
@@ -50,9 +50,10 @@ class tierds {
 	  
 		$this->ldscheme = "phpdac5://{$this->phpdac_ip}:{$this->phpdac_port}";
 		self::$ldschemeS = "phpdac5://". ($argv[5] ? $argv[5] : '127.0.0.1') .":". ($argv[6] ? $argv[6] : '19123');	
-				
+	
 		//REGISTER PHPAGN (client side,interconnections) protocol.			
 		require($this->ldscheme . "/kernel/sagnc.lib.php"); 
+
 		$phpdac_c = stream_wrapper_register("phpagn5","c_agnstream");
 		if (!$phpdac_c) 
 		{
@@ -93,9 +94,9 @@ class tierds {
 			$this->mem->open();
 
 			//clear log
-			@unlink('dumpagn-'.$_SERVER['COMPUTERNAME'].'.log');
+			@unlink(_DUMPFILE);
 		  
-			$this->env['name'] = $_SERVER['COMPUTERNAME'];  			 
+			$this->env['name'] = _MACHINENAME;  			 
 			$this->env['os'] = $_SERVER['OS'];	  
 			$this->env['domain'] = $_SERVER['USERDNSDOMAIN'];				 
 			$this->env['appdata'] = $_SERVER['APPDATA'];	  

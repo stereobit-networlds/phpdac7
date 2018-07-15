@@ -4,6 +4,8 @@ error_reporting(E_ALL & ~E_NOTICE);
 define ("GLEVEL", 1); 
 define ("KERNELVERBOSE", 2);//override daemon VERBOSE_LEVEL
 define ("_DS_", DIRECTORY_SEPARATOR);	
+define ("_MACHINENAME", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' : 'LINMS'));
+define ("_DUMPFILE", 'dumpagn-'. _MACHINENAME . '.log');
 	
 define('_DACSTREAMCVIEW_', 3); //must be 3 to clean replies
 define('_DACSTREAMCREP1_', '');
@@ -23,7 +25,7 @@ define('_DACSTREAMCREP0_', '');
 	function _dump($data=null,$mode=null,$filename=null) 
 	{
 	   $m = $mode ? $mode : 'w';
-	   $f = $filename ? $filename : '/dumpagn-'.$_SERVER['COMPUTERNAME'].'.log';
+	   $f = $filename ? $filename : '/'. _DUMPFILE;
 
         if ($fp = @fopen (getcwd() . $f , $m)) {
             fwrite ($fp, $data);
@@ -36,7 +38,7 @@ define('_DACSTREAMCREP0_', '');
 require_once("tier/tierds.lib.php"); 
 new tierds();
 
-class tier_dacstream {
+class tier_dacstream_DISABLED {
 
 	public $position, $data, $size;
 	public $DPCEOF, $path, $dpcmem;

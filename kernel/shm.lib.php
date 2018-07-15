@@ -10,9 +10,11 @@ class shm
 		$this->env = $env;
 		
 		//create ipc key 	
-		//$pathname = null;//realpath(__FILE__) !!!
-		//$this->ipcKey = $this->_ftok($pathname, 's'); //create ipc Key		
-		$this->ipcKey = $iKey ? $iKey : 0xfff;
+		$this->env->cnf->_say('DUMP FILE:' . realpath(_DUMPFILE), 'TYPE_IRON');
+		$pathname = realpath(_DUMPFILE); 
+		$this->ipcKey = $this->_ftok($pathname, 's'); //create ipc Key		
+		
+		//$this->ipcKey = $iKey ? $iKey : 0xfff;
 		
 		$this->shm_id = null;
 	}
