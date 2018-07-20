@@ -239,9 +239,17 @@ class kernel {
 		//exec("start /D $cwd\\tier tierp.bat $batch"); //createprocess.exe in phpdac7/ptier
 		//exec("$cwd\\tier\\tierp.bat pdo"); //!!! insilenent, createprocess.exe in phpdac7
 		
-		exec("start /D $cwd\\tier tierp.bat $batch"); //createprocess.exe in phpdac7/ptier
-		
-		//!!exec("createprocess.exe /w=2000 /term /f=CREATE_NEW_CONSOLE tier.bat pdo"); //!!!
+		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+			exec("start /D $cwd\\tier tierp.bat $batch"); //createprocess.exe in phpdac7/ptier
+			//!!exec("createprocess.exe /w=2000 /term /f=CREATE_NEW_CONSOLE tier.bat pdo"); //!!!
+		}
+		else {//require screen gnu package
+			//exec("screen /usr/local/php727/bin/php $cwd/tier/tier.dpc.php");	
+			
+			//screen -S NameOfScreen -d -m 'php -f sniper.php > results.html'
+			//screen -S TIER001 -d -m './start.sh'
+			exec("screen $cwd/tier.sh");	
+		}	
 		
 		return true;
 	}

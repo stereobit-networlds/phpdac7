@@ -48,7 +48,7 @@ require_once(_r('filesystem/downloadfile.lib.php'));
 class cmsgdprtools extends cmssubscribe {
 	
     var $userLevelID, $user, $activeUser;
-	var $prpath;
+	var $prpath, $jobdone;
 
 	public function __construct() {
 	
@@ -64,6 +64,8 @@ class cmsgdprtools extends cmssubscribe {
 		$aUser = GetParam('actuser'); //md5ed - security !!!
 		$this->activeUser = $this->user;// ? $this->user : $aUser;
 	    $this->prpath = paramload('SHELL','prpath');
+		
+		$this->jobdone = false;
 	}
 	
     public function event($event) {	
@@ -91,14 +93,14 @@ class cmsgdprtools extends cmssubscribe {
 									  break;			 
 		 
 	        case 'gdpron'          :  if ($m = GetParam('submail')) 
-										$this->dosubscribe($m); 
+											$this->jobdone = $this->dosubscribe($m); 
 									
 									  $this->update_statistics('gdpr-on', $this->user);	
 									  $this->jsBrowser();
 									  break;											
 									  
 	        case 'gdproff'         :  if ($m = GetParam('submail')) 
-										$this->dounsubscribe($m);
+											$this->jobdone = $this->dounsubscribe($m);
 
 									  $this->update_statistics('gdpr-off', $this->user);
 									  $this->jsBrowser();		
@@ -198,7 +200,9 @@ $(document).ready(function () {
 
 	//override
     protected function form($action=null)  { 	
-        
+        //$sFormErr = GetGlobal('sFormErr');
+		//$urlFormPost = GetReq('submail'); //get method subscribe/on
+		
 		//if (!$this->user) {//not logged in user / ulist user
 			switch ($action) {	   
 				case 'gdproff' : $stemplate= "unsubscribe-gdpr"; break;
@@ -207,23 +211,28 @@ $(document).ready(function () {
 									$stemplate= "unsubscribe-gdpr";
 			}
 		
-			if ($stemplate) {
+			//when not already post
+			if (($stemplate) && ($this->jobdone==false)) { 
+				//(($sFormErr!="ok") || (!$urlFormPost))) {
+					
 				//echo '-' . $stemplate;
 				$tokens = array();		
-				$tokens[] = $this->msg;		 
+				$tokens[] = $this->msg; //cms+ text come from sub/unsub		 
 				$tokens[] = $this->strcrypt($this->activeUser);
 				$out = _m("cmsrt._ct use $stemplate+" . serialize($tokens));
 			}
+			else
+				$out = $this->msg; //cms+ text
         //}
 		
 		//registred users NOT this->activeUser
-		$out.= $this->gdprRegister($this->user,'username',null,'updategdpr');
+		$out.= $this->gdprRegister($action, $this->user,'username',null,'updategdpr');
 		
         return ($out);
     }
 	
 	/* user reg data - shusers register() cpy */
-	protected function gdprRegister($myuser=null,$myfkey=null,$selectid=null,$cmd=null) {
+	protected function gdprRegister($action=null, $myuser=null,$myfkey=null,$selectid=null,$cmd=null) {
 		if (defined('SHUSERS_DPC')) //check first adapter
 			$usrv = 'shusers';
 		elseif (defined('CMSUSERS_DPC')) //second adapter
@@ -241,8 +250,7 @@ $(document).ready(function () {
 
 			SetGlobal('sFormErr',"");
 
-			$myaction = GetGlobal('controller')->getqueue(); //echo $myaction,"<><><><";
-			switch ($myaction) {
+			switch ($action) {	
 
 				case "gdprdel"  :  $out = localize('_userdeleted', $this->lan); break;
 				case "gdproff"  :  $out = localize('_userdeleted', $this->lan); break;
@@ -254,7 +262,7 @@ $(document).ready(function () {
 			
 			//cms+ text
 			$tokens = array();
-			$out .= _m("cmsrt.ct use gdpr-" . $myaction, $tokens, true);
+			$out .= _m("cmsrt.ct use gdpr-" . $action, $tokens, true);
 	    }
 	    else {
 			
@@ -579,21 +587,18 @@ $(document).ready(function () {
 					//cms+ text
 					$this->msg = _m("cmsrt.ct use gdpr-gdpron", array(), true);
 		    
-				 
 				if ($this->tell_it) {//tell to me
-					//$this->mailto($this->tell_from,$this->tell_it,$this->subject,$mailbody);
 					$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
 					$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+{$this->tell_it}+{$this->subject}+$body");
 				}	
 				 			     							  
 				//tell to subscriber
 				if ($mail_tell_user>0) {	   
-					//$this->mailto($this->tell_from,$mail,$this->subject,$mailbody);	 
 					$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
 					$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+$mail+{$this->subject}+$body");
 				}	
-		  }		  
-          else {
+			}		  
+			else {
 				$sSQL = "insert into ulists (email,startdate,active,gdpr,lid,listname,name,owner) " .
 						"values (" .
 						$db->qstr(strtolower($mail)) . "," . $db->qstr($dtime) . "," .
@@ -605,23 +610,23 @@ $(document).ready(function () {
 				 
 				//echo $sSQL;
 				if ($this->tell_it) {//tell to me
-					//$this->mailto($this->tell_from,$this->tell_it,$this->subject,$mailbody);
 					$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
 					$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+{$this->tell_it}+{$this->subject}+$body");
 				}	
 				 			     							  
 				//tell to subscriber	   
-				//$this->mailto($this->tell_from,$mail,$this->subject,$mailbody);	 	 	 
 				$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
 				$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+$mail+{$this->subject}+$body");
-		  }
+			}
 		  
-		  $this->update_statistics('subscribe', $mail);
-	   }
-	   else {
-			if (!$bypasscheck)
-				$this->msg = localize('_MSG5',getlocal());		   	 
-	   }	   
+			$this->update_statistics('subscribe', $mail);
+			return true;
+	    }
+
+		if (!$bypasscheck)
+			$this->msg = localize('_MSG5',getlocal());		   	 
+
+		return false;	   
 	}
 	
 	//override, gdpr=0
@@ -648,23 +653,22 @@ $(document).ready(function () {
 			$this->msg = _m("cmsrt.ct use gdpr-gdproff", array(), true);
 		    
 			if ($this->tell_it) {//tell to me
-				//$this->mailto($this->tell_from,$this->tell_it,$this->subject2,$mailbody);
 				$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
 				$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+{$this->tell_it}+{$this->subject2}+$body");
 			}	
 				 			     							  
 			//tell to subscriber   
 			if ($mail_tell_user>0) { 			 
-				//$this->mailto($this->tell_from,$mail,$this->subject2,$mailbody);	 	  
 				$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
 				$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+$mail+{$this->subject2}+$body");		
 			}		
 			
 			$this->update_statistics('unsubscribe', $mail);
-		  //}  
+			return true; 
 		}
-		else 
-			$this->msg = localize('_MSG5',getlocal());	  
+		
+		$this->msg = localize('_MSG5',getlocal());	  
+		return false;
 	}	
 	
 	/* delete user */

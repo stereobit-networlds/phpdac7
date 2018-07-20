@@ -12,6 +12,9 @@ class tierds {
 	
 	public static $ldschemeS;  	
 	public static $pdo;
+	
+	private static $timeout_counter;
+	private $timeout;
 
 	public function __construct() { 
 		global $dh, $dp;
@@ -20,7 +23,10 @@ class tierds {
 		//print_r($argv);
 		
 		$this->verboseLevel = GLEVEL;	  
-		$this->agent = 'SH';//default	
+		$this->agent = 'SH';//default
+		
+		self::$timeout_counter = 0;
+		$this->timeout = 3; //times to loop x20sec scheduler
 
 		//argv1 is daemon type -param or batchfile .ash
 		$this->argbatch = (substr($argv[1],0,1)!='-') ? $argv[1].'.ash' : '';
@@ -177,6 +183,13 @@ class tierds {
 	
 	public function show_connections($show=null,$dacserver=null)
 	{
+		//set timeout inc by 1, when called as proc
+		if (self::$timeout_counter == $this->timeout) /* 5 x 20 sec of show scheduler */
+			$this->shutdown(true);
+		else	
+			self::$timeout_counter += 1;
+		//$this->_say("Timeout:" . self::$timeout_counter);
+		
 		return $this->dmn->show_connections($show,$dacserver);
 	}
 	
@@ -766,7 +779,7 @@ class tierds {
 		
 		$this->free_agents();
 		
-	  	//if ($now) die();		
+	  	if ($now) die();		
 	  
 		//close printer	 
 		if (extension_loaded('printer')) {	

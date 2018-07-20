@@ -862,12 +862,11 @@ goBack();
                      $stype = '';		   
 		}
 
-		$interface = $this->photodb;
-		if (isset($interface)) { 
-			if (is_numeric($interface))	  
+		if ($this->photodb) {
+			if (is_numeric($this->photodb))	  
 				$photo = seturl('t=showimage&id='.$code.'&type='.$stype);
 			else  
-				$photo = $interface . '?id='.$code.'&type='.$stype;
+				$photo = $this->photodb . '?id='.$code.'&type='.$stype;
 		}
 		else {//ordinal image
 	  

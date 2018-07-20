@@ -973,7 +973,7 @@ JSFILTER;
                      $stype = '';		   
 		}
 	  
-		if ($this->photodb) {
+		if ($this->photodb) { 
 			if (is_numeric($this->photodb))	  
 				$photo = _m("cmsrt.seturl use t=showimage&id=$code&type=$stype");
 			else  

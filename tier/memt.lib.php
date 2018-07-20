@@ -18,9 +18,10 @@ class memt
 			if (!extension_loaded('shmop')) dl('php_shmop.dll');		
 			if (!extension_loaded('sync')) 	dl('php_sync.dll');			
 		}
-		//else linux 
+		else //linux 
+			if (!extension_loaded('sync')) 	dl('sync.so');
 		
-		$this->agn_mem_type = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 2 : 1;
+		$this->agn_mem_type = 2;//(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 2 : 1;
 		
 		$this->shm_id = null;
 		$this->shm_max = 1024 * 100 * 100;
@@ -183,29 +184,35 @@ class memt
 			
 			$this->env->cnf->_say("addmemagn: [$agent] failed". ':'.$a_size, 'TYPE_LION');
 			return false;
-			/*
-			$a_index = $this->getAgnOffset();
+		}	
+		/*elseif ($this->agn_mem_type==1)	{
+			
+			$offset = $this->getAgnOffset() + 1;
 			
 			//extend agent info table
-			$this->agn_addr[$agent] = $a_index;			
-			$this->agn_length[$agent] = $a_size + $this->extra_space;
-			$this->agn_free[$agent] = $this->extra_space;
+			$this->agn_addr[$agent] = $offset;			
+			$this->agn_length[$agent] = $a_size;
+			$this->agn_free[$agent] = $this->extra_space - $a_size;
 				
-			_say("New $agent ". $a_index.':'.$a_size,1);
+			$this->env->cnf->_say("New $agent ". $offset.':'.$a_size, 'TYPE_LION');
 			//var_dump($this->agn_addr);			
-			*/
-			/*
-			$this->shm_max = $a_index + $a_size + $this->extra_space;	
+			
+			
+			$this->shm_max = $offset + $a_size + $this->extra_space;	
 			$data .= str_repeat(' ',$this->extra_space);
 			if (shmop_write($this->shm_id, "\0". $data ."\0", $offset))
 			{
 				$this->savestate($this->shm_max);
 				_say("$agent inserted",1);
-				_dump("INSERT\n\n\n\n" . $data);
+				//_dump("INSERT\n\n\n\n" . $data);
+				$this->env->cnf->_say("addmemagn: [$agent] start". ':'.$a_size, 'TYPE_LION');
+				return true;
 			}
-			*/
-		}
-		elseif ($this->agn_mem_type==1) 	
+			
+			$this->env->cnf->_say("addmemagn: [$agent] failed". ':'.$a_size, 'TYPE_LION');
+			return false;
+		}*/
+		elseif ($this->agn_mem_type==1) //3 !!!!
 		{
 			$a_index = strlen($this->shared_buffer);
 			
