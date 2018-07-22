@@ -12,16 +12,10 @@ class memt
 	
 	public function __construct(& $env=null) 
 	{	
-		$this->env = $env;
+		$this->env = $env;	
 		
-		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-			if (!extension_loaded('shmop')) dl('php_shmop.dll');		
-			if (!extension_loaded('sync')) 	dl('php_sync.dll');			
-		}
-		else //linux 
-			if (!extension_loaded('sync')) 	dl('sync.so');
-		
-		$this->agn_mem_type = 2;//(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 2 : 1;
+		//$this->agn_mem_type = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 2 : 1;
+		$this->agn_mem_type = 2;
 		
 		$this->shm_id = null;
 		$this->shm_max = 1024 * 100 * 100;
@@ -33,8 +27,8 @@ class memt
 		$this->agn_free = array();
 	  
 		$this->shared_buffer = null;
-		$this->extra_space = 1024 * 10; //kb //1000;// per agn
-		$this->dataspace = 1024000 * 1; //mb //50000;
+		$this->extra_space = 1024 * 3200; //kb //1000;// per agn
+		$this->dataspace = 1024000 * 9; //mb //90000;
 	  			
 		$this->env->cnf->_say('DUMP FILE:' . realpath(_DUMPFILE), 'TYPE_IRON');
 		$pathname = realpath(_DUMPFILE); 
@@ -49,14 +43,26 @@ class memt
 	//buffer2 used as optional when reconf-clean mem  
 	private function startmemagn() 
 	{ 
-		if ($this->agn_mem_type!=2)
-			return true; //bypass
-		
-		$iKey = $this->ipcKey ? $this->ipcKey : 0xff9;	
-		
+		$oswin = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? true : false;			
 		$this->env->cnf->_say("Start mem manager " . $this->agn_mem_type, 'TYPE_LION');
+		
 		if ($this->agn_mem_type==2) 
+		{	
+			if (!extension_loaded('sync')) 	
+				$oswin ? dl('php_sync.dll') : dl('sync.so');
+			
 			return true;
+		}
+		else
+		{
+			if (!extension_loaded('shmop')) 
+				$oswin ? dl('php_shmop.dll') : dl('shmop.so');	
+			
+			return true; //bypass
+		}			
+		
+		//bypass ...
+		$iKey = $this->ipcKey ? $this->ipcKey : 0xfff;		
 		
 		$this->shm_max = 1024;
 		$data = "\0" . str_repeat('~',$this->shm_max) . "\0"; 	

@@ -27,7 +27,7 @@ class c_agnstream {
 		  return false;
 		}
         $agnmem = substr($path,1);//exclude '/' from the begining of str
-		$request = "callagentc " . $agnmem . "\r\n\r\n";//client version of getdpcmem
+		$request = "callagentc " . $agnmem . PHP_EOL;//"\r\n\r\n";//client version of getdpcmem
         fputs($socket, $request); 
         $ret = ''; 
         while (!feof($socket)) { 

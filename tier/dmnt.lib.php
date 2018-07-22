@@ -12,12 +12,13 @@ class dmnt {
 		$this->daemon_type = $type;
 		$this->daemon_ip = $ip;
 		$this->daemon_port = $port;
-		$this->promptString = 'phpagn5>';		
-		_say("Phpagn5 client at {$this->daemon_ip}:{$this->daemon_port}");	  
+		$this->promptString = 'phpagn5>';
+		$this->env->_say("Phpagn5 client at {$this->daemon_ip}:{$this->daemon_port}", 'TYPE_IRON');	  
 		
-		require($this->env->ldscheme . "/system/daemon.lib.php");
+		//require($this->env->ldscheme . "/system/daemon.lib.php");
+		require($this->env->ldscheme . "/tier/dmnl.lib.php");
 		
-		$this->dmn = new daemon($type, true);//$prompt);	  
+		$this->dmn = new daemon($type, true, $this->env);//$prompt);	  
 		$this->dmn->setAddress ($ip);//'127.0.0.1');
 		$this->dmn->setPort ($port);
 		$this->dmn->Header = "PHPDAC5 Agent v2, ". $this->env->env['name'] . ' ' . $this->daemon_ip .':'. $this->daemon_port;
@@ -170,7 +171,8 @@ class dmnt {
                 break;					
 				
 		case 'SHOW':
-		        $dmn->Println($this->show_agents());
+				$data = $this->env->show_agents();
+		        $dmn->Println($data);
                 return true;
                 break;
 				
@@ -199,9 +201,13 @@ class dmnt {
                 break;																	
 
 		case 'GETRESOURCE' : //this resource
+				$dmn->setEcho(0);
+				$dmn->setSilence(1);
 		        $resource = $this->env->get_agent('resources')->get_resource($arguments[0],$arguments[1]);
-		        $dmn->Println ($resource);
-				return true;
+				//$resource = ($this->env->daemon_type=='inetd') ? 'inetd' : 'standalone';
+				
+		        $dmn->Println(trim($resource));
+				return ($this->env->daemon_type=='inetd') ? true : false;
 				//return false;//and quit				
 		        break;										
 				
@@ -273,7 +279,7 @@ class dmnt {
 		case 'STARTGTK':
 		        if ($this->gtk) 
 				{
-					_say("Starting GTK Console...");
+					$this->env->_say("Starting GTK Console...", "TYPE_LION");
 					new gtkds($this,0);
 					$dmn->Println($c);
 					return true;
@@ -378,13 +384,13 @@ class dmnt {
 		*/
 		//remote file
 		$batchfile = $this->env->ldscheme . "/tier/" . $file;			
-		$this->env->cnf->_say('Init batch file: ' . $batchfile, 'TYPE_LION');	
+		$this->env->_say('Init batch file: ' . $batchfile, 'TYPE_LION');	
 		
 		$fdata = @file_get_contents($batchfile);
 		if (isset($fdata))
 		{
 			//if ($say)
-				//$this->env->cnf->_say('Init batch file: ' . $batchfile, 'TYPE_LION');			
+				//$this->env->_say('Init batch file: ' . $batchfile, 'TYPE_LION');			
 		  
 		    $f = explode(PHP_EOL, $fdata);
 			

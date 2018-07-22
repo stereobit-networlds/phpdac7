@@ -265,7 +265,7 @@ class mem
 			
 			if ($free < intval(1024 * 5)) //1 kb --- BANKSWITCH
 			{
-				$warning = ' <<<<<<<<<<<<<<<<<< need extra space!'; 
+				$warning = ' <<<< need extra space!'; 
 				//$read = PHP_EOL . $this->readSH($dpc) . PHP_EOL;
 			}	
 			
@@ -382,9 +382,9 @@ class mem
 	{
 		if (empty($this->dpc_gc)) return;
 		
-		echo '----------- GC -----------' . PHP_EOL;
+		$this->env->cnf->_say('----------- GC -----------', 'TYPE_LION');
 		foreach ($this->dpc_gc as $entry)
-			echo implode("\t", $entry) . PHP_EOL;
+			$this->env->cnf->_say(implode("\t", $entry), 'TYPE_LION');
 	}
 	
 	//sh mem read
@@ -595,7 +595,7 @@ class mem
 	   else { //write first time (append)
 	   
 			if (!$data) return false;	
-			_say($data,3);
+			//_say($data,3);
 		
 		    $htnew = md5($data);
 			if (($offset = $this->set($dpc, $dataLength, $data)) &&
@@ -642,6 +642,8 @@ class mem
 						if (!$data = $this->_sqlquery($dpc, false))
 							if (!$data = $this->_wwwquery($dpc, false))
 								if (!$data = $this->_localfile($dpc, false, $rlength)) //rlenght = md5($invdata)
+									//if (!$data = $this->_variable($dpc, false))
+										//$data = $this->_uMonitor($dpc, false);
 									$data = $this->_variable($dpc, false);
 									//files comes as variables when no change=null val
 
@@ -683,10 +685,11 @@ class mem
 						if (!$data = $this->_wwwquery($dpc, true))
 							if (!$data = $this->_localfile($dpc, true, false))
 								if (!$data = $this->_variable($dpc, true))
-									return false;
+									if (!$data = $this->_uMonitor($dpc, true))
+										return false;
 
 			//if (!$data) return false;	
-			_say($data,3);		
+			//_say($data,3);		
 		
 			$dataLength = strlen($data);		
 			$htnew = md5($data);
@@ -729,7 +732,7 @@ class mem
 		{	
 			$_data = $this->env->pdoQuery($dpc);
 			$data = json_encode($_data);
-			_say($data,3); //show new data				
+			//_say($data,3); //show new data				
 		}	
 		else
 		{		
@@ -754,7 +757,7 @@ class mem
 		   	
 		$_data = $this->env->pdoExec($dpc);
 		$data = json_encode($_data);
-		_say($data,3); //show new data	
+		//_say($data,3); //show new data	
 
 		return $data;	
 	}	
@@ -772,7 +775,7 @@ class mem
 		if ((!$data) && (!$new))
 		{
 			$this->env->cnf->_say('Scheduled data stream:' . $dpc, 'TYPE_LION');
-			_say($data,3);
+			//_say($data,3);
 		}				
 		
 		return $data;		
@@ -795,7 +798,7 @@ class mem
 			if (strcmp($htexist, $htnew)!==0)
 			{
 				$data = $this->env->fs->_readPHP($this->env->dpcpath . $dpc); 
-				_say($data,3); 
+				//_say($data,3); 
 			}	
 			else
 				$data = null; //bypass and read			
@@ -840,6 +843,37 @@ class mem
 		//}		
 		
 		return $data;		
+	}
+
+	//uuid process
+	private function _uMonitor($uuid=null, $new=false)
+	{
+		//if (!trim($uuid)) return '';
+		$cwd = getcwd();
+		
+		if (($new) && (!@file_get_contents(getcwd() . '/umon-' . $uuid . '.log')))
+		{
+			$this->env->cnf->_say('New uMonitor: '. $uuid, 'TYPE_IRON');	
+			@file_put_contents(getcwd() . '/umon-' . $uuid . '.log', "1\r\n", LOCK_EX);
+			
+			echo "\x07"; //beep
+			if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+				exec("start /D $cwd\\tier tierp.bat "); 
+			}
+			else {//require screen gnu package
+				exec("screen $cwd/tier.sh ");	
+			}
+			
+			$data = false; //return false
+		}	
+		else
+		{
+			$this->env->cnf->_say('uMonitor: '. $uuid, 'TYPE_IRON');	
+			$data = null ;//bypass and read
+			//$data = @file_get_contents(getcwd() . '/umon-' . $uuid . '.log');
+		}
+		
+		return ($data);
 	}	
 	
     private function close() 

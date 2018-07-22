@@ -1,5 +1,6 @@
 <?php
-require_once("system/daemon.lib.php");
+//require_once("system/daemon.lib.php");
+require_once("kernel/dmnl.lib.php");
 
 class dmn {
 	
@@ -10,7 +11,7 @@ class dmn {
 		
 	  $this->env = $env;	
 		
-      $this->dmn = new daemon($type, true);//$prompt);
+      $this->dmn = new daemon($type, true, $this->env);//$prompt);
       $this->dmn->setAddress ($ip);
       $this->dmn->setPort ($port);
       $this->dmn->Header = "PHPDAC5 Kernel v2, " . $ip . ':' . $port;
@@ -252,7 +253,7 @@ class dmn {
 		if (!empty($ret)) 
 		{
 			foreach ($ret as $session)
-				$out .= implode("-",$session). "\r\n";	  
+				$out .= implode("-",$session). PHP_EOL;	  
 		}  
 		
 		return ($out);  

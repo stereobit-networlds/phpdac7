@@ -24,10 +24,7 @@ class tierds {
 		
 		$this->verboseLevel = GLEVEL;	  
 		$this->agent = 'SH';//default
-		
-		self::$timeout_counter = 0;
-		$this->timeout = 3; //times to loop x20sec scheduler
-
+	
 		//argv1 is daemon type -param or batchfile .ash
 		$this->argbatch = (substr($argv[1],0,1)!='-') ? $argv[1].'.ash' : '';
 		
@@ -35,11 +32,15 @@ class tierds {
 		$this->daemon_ip = $argv[2] ? $argv[2] : '127.0.0.1';//$ip;//'192.168.4.203';
 		$this->daemon_port = $argv[3] ? $argv[3] : '19125';//$port;//19123;
 		//!!!_say("Phpagn5 client at $this->daemon_ip:$this->daemon_port");	  
+		
+		self::$timeout_counter = 0;
+		$this->timeout = ($this->daemon_type=='inetd') ? 0 : 3; //times to loop x20sec scheduler		
 	  
 		//dac server	
 		$this->phpdac_ip = $argv[5] ? $argv[5] : '127.0.0.1';//$dacip;
 		$this->phpdac_port = $argv[6] ? $argv[6] : '19123';//$dacport; 
-		_say("Phpdac5 server at $this->phpdac_ip:$this->phpdac_port"); 
+		//_say("Phpdac5 server at $this->phpdac_ip:$this->phpdac_port"); 
+		echo "Phpdac5 server at $this->phpdac_ip:$this->phpdac_port" . PHP_EOL; 
 	    
 		//REGISTER PHPDAC 7
 		$dh = $this->phpdac_ip;  //global inside dacstreamc7 for gc
@@ -48,7 +49,8 @@ class tierds {
 		$phpdac_c = stream_wrapper_register("phpdac5","tier_dacstream");
 		if (!$phpdac_c) 
 		{
-			_say("Client dac protocol failed to registered!");
+			//_say("Client dac protocol failed to registered!");
+			echo "Client dac protocol failed to registered!" . PHP_EOL;
 			die();
 		}	  
 		//else 
@@ -63,7 +65,8 @@ class tierds {
 		$phpdac_c = stream_wrapper_register("phpagn5","c_agnstream");
 		if (!$phpdac_c) 
 		{
-			_say("Client agent protocol failed to registered!");
+			//_say("Client agent protocol failed to registered!");
+			echo "Client agent protocol failed to registered!" . PHP_EOL;
 			//die();
 		}	  
 		//else 
@@ -74,7 +77,8 @@ class tierds {
 		$phpdac_c = stream_wrapper_register("phpres5","c_resstream");
 		if (!$phpdac_c) 
 		{
-			_say("Client resource protocol failed to registered!");
+			//_say("Client resource protocol failed to registered!");
+			echo "Client resource protocol failed to registered!" . PHP_EOL;
 			die();
 		}	  
 		//else 
@@ -158,8 +162,8 @@ class tierds {
 		}
 		else 
 		{
-		  _say('Memory critical error!');
-		  $this->shutdown(true);
+			$this->cnf->_say('Memory critical error!');
+			$this->shutdown(true);
 		}	  
 	}
 
@@ -170,9 +174,9 @@ class tierds {
 	}
 	
 	//cnf say
-	public function _say($msg, $type='TYPE_LION') 
+	public function _say($msg, $type='TYPE_LION', $crln=true) 
 	{
-		$this->cnf->_say($msg, $type);
+		$this->cnf->_say($msg, $type, $crln);
 	}	
 
 	//include -remote- file (return string to require/require_once)
@@ -184,13 +188,29 @@ class tierds {
 	public function show_connections($show=null,$dacserver=null)
 	{
 		//set timeout inc by 1, when called as proc
-		if (self::$timeout_counter == $this->timeout) /* 5 x 20 sec of show scheduler */
-			$this->shutdown(true);
-		else	
-			self::$timeout_counter += 1;
-		//$this->_say("Timeout:" . self::$timeout_counter);
+		$this->set_timeout();
 		
 		return $this->dmn->show_connections($show,$dacserver);
+	}
+	
+	//set timeout inc by 1, when called as proc
+	private function set_timeout() 
+	{
+		if (!$this->timeout) return;// false; //-inetd daemon type
+		
+		if (self::$timeout_counter == $this->timeout) 
+		{
+			$this->shutdown(true);
+			
+			//clone kernel !!!
+			//require_once($this->ldscheme . "/kernel/kernel.lib.php");
+			//new kernel();
+		}	
+		else	
+			self::$timeout_counter += 1;
+		
+		//$this->_say("Timeout:" . self::$timeout_counter);
+		return true;
 	}
 	
 	//reead file of agents to initialize
@@ -270,7 +290,7 @@ class tierds {
 	  
 		if (defined($class)) 
 		{
-			_say($agent . " exists!");
+			$this->_say($agent . " exists!", 'TYPE_IRON');
 			return true;
 		}	  
 	  
@@ -370,15 +390,18 @@ class tierds {
 				{
 					$this->mem->agn_length[$agent] = strlen($s_agent);
 					$this->mem->agn_free[$agent] = $this->mem->extra_space - strlen($s_agent);
-					$this->cnf->_say("update agent [$agent] ok:" . $length, 'TYPE_LION');	
+					$this->cnf->_say("update agent [$agent]: " . $length, 'TYPE_CAT');	
 					return true;		
 				}
-				$this->cnf->_say("update write [$agent] failed:" . $length, 'TYPE_LION');	
+				$this->cnf->_say("update agent [$agent] write failed:" . $length, 'TYPE_LION');	
 				return false;						
 			}	
 			$this->cnf->_say("update agent [$agent] failed:" . $length, 'TYPE_LION');
 			return false;
 		}
+		
+		//else
+		
 		//var_dump($this->agn_addr);
 		//var_dump($this->agn_length);	  
 		//echo "\n",$this->agn_mem_store,"\n",strlen($this->agn_mem_store),"\n";   
@@ -435,7 +458,7 @@ class tierds {
 			{
 				if ($s_agent = $mem->read(0,$length)) 
 				{
-					$this->cnf->_say("getAgent [$agent] ok:" . $length, 'TYPE_LION');
+					$this->cnf->_say("getAgent [$agent]: " . $length, 'TYPE_CAT');
 					
 					if (!$serialized) 
 					{
@@ -453,9 +476,12 @@ class tierds {
 				$this->cnf->_say("getAgent [$agent] read error:" . $length, 'TYPE_LION');		  
 				return false;
 			}
+			
 			$this->cnf->_say("getAgent [$agent] free error " . $length, 'TYPE_LION');		  
 			return false;
 		}
+		
+		//else
 		
 		//echo $agent,"\n>>>>>>>>>>>>>";
 		if (isset($this->mem->agn_addr[$agent])) 
@@ -580,7 +606,7 @@ class tierds {
 		//get agent
 		$f_agent = file_get_contents("phpagn5://$from:19125/" . $agent);//call callagentc from $from
 		$s_agent = substr($f_agent,68,strlen($f_agent)-68-1);//header of daemon OFF
-		_say('>'.$s_agent.'<');
+		$this->_say('>'.$s_agent.'<', 'TYPE_BIRD');
 		/*for ($i=0;$i<68;$i++) 
 		{
 			echo ord($f_agent{$i}),'.';
@@ -619,47 +645,58 @@ class tierds {
    
 	public function show_agents() 
 	{
-      if (!is_array($this->mem->agn_addr)) return -1;
+		if (!is_array($this->mem->agn_addr)) return -1;
 	  
-      //var_dump($this->agn_addr);	  
-	  //var_dump($this->agn_length);  
-   
-      foreach ($this->mem->agn_addr as $agn=>$addr) 
-	  {					
-		  if ($this->mem->agn_mem_type==2) 
-		  {
-			  $mem = & $addr;
-			  $length = $this->mem->agn_length[$agn];
-			  $free = $this->mem->agn_free[$agn];
-			  $s_agent = $mem->read(0,$length);
-		  }
-		  else 
-		  {
-
-			/*if ($this->agn_mem_type==2) 
-				$s_agent = shmop_read($this->shm_id,$addr,$this->agn_length[$agn]);  
-			else*/if ($this->mem->agn_mem_type==1) 
-				$s_agent = shmop_read($this->mem->agn_shm_id,$addr,$this->mem->agn_length[$agn]);  
+		//var_dump($this->agn_addr);	  
+		//var_dump($this->agn_length);  
+		$xi = 0;
+		foreach ($this->mem->agn_addr as $agn=>$addr) 
+		{	
+			$xi+= 1;
+			
+			if ($this->mem->agn_mem_type==2) 
+			{
+				$mem = & $addr;
+				$length = $this->mem->agn_length[$agn];
+				$free = $this->mem->agn_free[$agn];
+				$s_agent = $mem->read(0,$length);
+			}
 			else 
-				$s_agent = substr($this->mem->agn_mem_store,$addr,$this->mem->agn_length[$agn]);  		
+			{
+
+				/*if ($this->agn_mem_type==2) 
+					$s_agent = shmop_read($this->shm_id,$addr,$this->agn_length[$agn]);  
+				else*/if ($this->mem->agn_mem_type==1) 
+					$s_agent = shmop_read($this->mem->agn_shm_id,$addr,$this->mem->agn_length[$agn]);  
+				else 
+					$s_agent = substr($this->mem->agn_mem_store,$addr,$this->mem->agn_length[$agn]);  		
  
-			_say($this->mem->agn_addr[$agn].":".$this->mem->agn_length[$agn],2);
-			//echo $s_agent,"\n";
-		   }
+				$this->_say($this->mem->agn_addr[$agn].":".$this->mem->agn_length[$agn], 'TYPE_BIRD');
+				//echo $s_agent,"\n";
+			}
+		   
 			$o_agent = unserialize($s_agent);	
 		
 			if (is_object($o_agent)) 
 			{
 				//$daemon->changePrompt($agent.">");   
-				$ret .= (method_exists($o_agent,'iam')) ?
-							$o_agent->iam()."\n" : $agn." Ok!"."\n";
+				/*$ret .= (method_exists($o_agent,'iam')) ?
+							$o_agent->iam()."\t" : $agn." Ok!"."\t";*/
+				if (method_exists($o_agent,'iam')) 
+				{			
+					$this->_say($o_agent->iam(), 'TYPE_IRON');
+					//$this->_say("agent [$agn] ok!", 'TYPE_IRON');
+				}	
+				else
+					$this->_say($agn . ' ok!', 'TYPE_IRON');
 			}
 			else
-				$ret .= "Invalid agent!\n";	
+				//$ret .= "Invalid agent [$agn]!\t";	
+				$this->_say("Invalid agent [$agn]", 'TYPE_LION');
 	    
 		}
-	  
-		return ($ret);
+
+		return $xi; //($ret);
 	}
    
 	private function free_agents() 
@@ -727,7 +764,7 @@ class tierds {
 	    } 
 		catch (PDOException $e) 
 		{
-            _say("Failed to get DB handle: " . $e->getMessage(),1);
+            $this->_say("Failed to get DB handle: " . $e->getMessage(), 'TYPE_LION');
         }
 		return false;	
 	}	

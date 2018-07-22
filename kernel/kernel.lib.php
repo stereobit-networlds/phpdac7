@@ -2,7 +2,7 @@
 error_reporting(E_ALL & ~E_NOTICE);
 
 define ("GLEVEL", 1); 		//main messaging level 
-define ("KERNELVERBOSE", 1);//override daemon VERBOSE_LEVEL
+define ("KERNELVERBOSE", 1);//override daemon VERBOSE_LEVEL 1/2
 define ("_DS_", DIRECTORY_SEPARATOR);
 define ("_MACHINENAME", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' : 'LINMS'));
 define ("_DUMPFILE", 'dumpsrv-'. _MACHINENAME . '.log');
@@ -22,14 +22,14 @@ require_once("kernel/imo.lib.php");
 require_once("kernel/sch.lib.php");
 //require_once("agents/resources.lib.php");
 
-
+/* MOVED TO CNF 
 	function _say($str, $level=0, $crln=true) 
 	{
 	    $cr = $crln ? PHP_EOL : null;
 		if ($level <= GLEVEL)
 			echo ucfirst($str) . $cr;
 		
-		//_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+','/'. _DUMPFILE . _MACHINENAME .'.log');
+		//_dump(date ("Y-m-d H:i:s :"). $str . PHP_EOL, 'a+', '/'. _DUMPFILE);
 	}
    
 	function _dump($data=null,$mode=null,$filename=null) 
@@ -45,7 +45,7 @@ require_once("kernel/sch.lib.php");
 		}
 		return false;
 	}    
-
+*/
 class kernel {
 	
 	private $timer, $saveSrvState;
@@ -139,7 +139,7 @@ class kernel {
 			$this->cnf->_say('Memory critical error!', 'TYPE_LION');
 			$this->shutdown(true);
 		}	  
-	}
+	}		
 	  
     //return pseudo pointer for comaptibility with agentds class
     public function get_agent($agent,$serialized=null) 
@@ -248,7 +248,7 @@ class kernel {
 			
 			//screen -S NameOfScreen -d -m 'php -f sniper.php > results.html'
 			//screen -S TIER001 -d -m './start.sh'
-			exec("screen $cwd/tier.sh");	
+			exec("screen $cwd/tier.sh $batch");	
 		}	
 		
 		return true;
@@ -286,17 +286,17 @@ class kernel {
 		//$this->cnf->_say("SERVER print", 'TYPE_LION');
 		//printer_write($this->resources->get_resource('printer'), "SERVER print"."\n\r");  
 		
-		$this->cnf->_say($this->dmn->show_connections(), 'TYPE_LION');
-		$this->cnf->_say($this->show_schedules(), 'TYPE_LION');
+		//$this->cnf->_say($this->dmn->show_connections(), 'TYPE_IRON');
+		$this->dmn->show_connections();
+		//$this->cnf->_say($this->show_schedules(), 'TYPE_LION');
+		$this->show_schedules();
 		
 		$this->utl->grapffiti(); //grpahixs on
 				
 		$tb = $this->mem->calc(); //calc
-	    $this->cnf->_say("Total buffer : ". 
-						$this->utl->convert($tb) . 
-						', mem usage: ' . 
-						$this->utl->convert(memory_get_usage()), 
-						'TYPE_LION');
+	    $this->cnf->_say("Total buffer : ". $this->utl->convert($tb) . 
+						', mem usage: ' .	$this->utl->convert(memory_get_usage()), 
+						'TYPE_IRON');
 						
 		$this->mem->checkMem(false); //mem check on (silent)
 		$this->mem->showGC(); //show gc
@@ -361,7 +361,7 @@ class kernel {
 	    } 
 		catch (PDOException $e) 
 		{
-            _say("Failed to get DB handle: " . $e->getMessage(), 1);
+            $this->cnf->_say("Failed to get DB handle: " . $e->getMessage(), 'TYPE_LION');
         }
 		return false;	
 	}
@@ -464,6 +464,12 @@ class kernel {
 	public function _echo($msg) 
 	{
 		$this->dmn->Println($msg);
+	}	
+	
+	//cnf say
+	public function _say($msg, $type='TYPE_LION', $crln=true) 
+	{
+		$this->cnf->_say($msg, $type, $crln);
 	}	
 
 	//SHUTDOWN

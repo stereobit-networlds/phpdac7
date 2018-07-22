@@ -215,7 +215,7 @@ class scheduler {
      //echo "Schedules\n";
      foreach ($this->timeline as $t=>$d) {
 	   if ($header) {		
-			echo implode("\t",array_keys($d)) ."\n";	 	
+			$this->env->_say(implode("\t",array_keys($d)), 'TYPE_LION');	 	
 			$header = false;
 	   }			
 
@@ -225,13 +225,14 @@ class scheduler {
 			$agent = $arg[1];//$arg[0] . "\\" . $arg[1];
 			$u = isset($arg[2]) ? '*' : null; //username
 			$p = isset($arg[3]) ? '*' : null; //password
-			echo $agent.$u.$p . "\t" . $d['freq'] . "\t" . 
+			
+			$this->env->_say($agent.$u.$p . "\t" . $d['freq'] . "\t" . 
 				$d['time']. "\t" . $d['lasttime'] . "\t" . 
-				$d['counter'] ."\n";
+				$d['counter'], 'TYPE_LION');
 			unset($arg);	
 	   }
 	   else
-		  echo implode("\t",$d) . "\n";	
+		  $this->env->_say(implode("\t",$d), 'TYPE_LION');	
 	 }  
 	 
      return (array) $this->timeline;  
@@ -239,7 +240,7 @@ class scheduler {
   
   function __destruct() {
   
-	  unregister_tick_function(array($this,'checkschedules'));  
+	  @unregister_tick_function(array($this,'checkschedules'));  
   }
   	 
 };

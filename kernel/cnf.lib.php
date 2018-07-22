@@ -10,6 +10,33 @@ new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT);
 //rat lion bird
 //https://stackoverflow.com/questions/2209934/php-operator
 */
+
+
+	function _say($str, $level=0, $crln=true) 
+	{
+	    $cr = $crln ? PHP_EOL : null;
+		if ($level <= GLEVEL)
+			echo ucfirst($str) . $cr;
+		
+		//_dump(date ("Y-m-d H:i:s :"). $str . PHP_EOL, 'a+', '/'. _DUMPFILE);
+	}
+	
+
+	function _dump($data=null,$mode=null,$filename=null) 
+	{
+		$m = $mode ? $mode : 'w';
+		//$f = $filename ? $filename : '/dumpmem-'. _MACHINENAME .'.log';
+		$f = $filename ? $filename : '/'. _DUMPFILE;
+
+		if ($fp = @fopen (getcwd() . $f , $m)) 
+		{
+			fwrite ($fp, $data);
+			fclose ($fp);
+			return true;
+		}
+		return false;
+	} 
+
 class Config 
 {
     // our constants must be 1,2,4,8,16,32,64 ....so on
@@ -54,7 +81,7 @@ class Config
 		'TYPE_CAT' => 'yellow',		'TYPE_DOG' => 'light_red',
 		'TYPE_RAT' => 'light_cyan',	'TYPE_LION' => 'light_gray',
 		'TYPE_BIRD' => 'white',	'TYPE_IRON' => 'light_green',
-		'TYPE_ZION' => 'light_purple',
+		'TYPE_ZION' => 'light_green',
 	);
 	
 	static $confbcl = array(

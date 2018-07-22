@@ -27,7 +27,7 @@ class resources {
   
    function set_resource($rname,$resource) {
    
-      //in case of resource name with spaces
+	  //in case of resource name with spaces
       $rname = str_replace(' ','_',$rname);
 
 	  if (is_object($resource)) {
@@ -57,9 +57,10 @@ class resources {
 		//print_r($this->_resources);		
 	    $this->env->update_agent($this,'resources');			
 	    //echo '>>>',$resource;
-	    return true;
+	    return $resource; //true;
 	  }
-      _("WARNING:resource [$rname] failed to register!",1);
+	  
+      $this->env->_say("WARNING:resource [$rname] failed to register!", 'TYPE_LION');
 	  return false;
    }
    
@@ -75,8 +76,9 @@ class resources {
    
    //local version
    //name called by stream of server
-   function get_resource($resource,$name=null) {
-   
+   function get_resource($resource=null, $name=null) {
+	   if (!$resource) return ($resource . ' undefined!');
+	   
 	   //print_r($this->_resources); 
 	   //print_r($this->_resptr);	    
 	    
@@ -84,16 +86,28 @@ class resources {
 	   //if no resource or invalid resource...
        if (!array_key_exists($resource,$this->_resources)) {
 		   
-	     $r = $this->get_resourcec($resource,$this->ip2get,$this->port2get);
+		    $sres = (substr_compare($resource, "/", 0, 1)==0) ? $resource : '/' . $resource;
+			
+			//$this->env->_say('remote:['.$this->ip2get.']:'.$resource, 'TYPE_LION');  
+			$this->env->_say('remote:' . $this->env->ldscheme . $sres, 'TYPE_BIRD');  
 		 
-		 if ($r) {
-		   if ($rp = $this->create_resource($resource,$r))//if create physical resource
-             $this->set_resource($r,$rp);//save it to local resource table		 
-		   else //else scalar 
-		     $this->set_resource($resource,$r);//save it to local resource table	
-		    	 
-		   _('remote:['.$this->ip2get.']:'.$resource,2);
-		 }
+			//$r = $this->get_resourcec($resource,$this->ip2get,$this->port2get);
+			//get from phpdac5
+			if ($r = file_get_contents($this->env->ldscheme . $sres)) {
+			 
+				//$this->env->_say('ok!', 'TYPE_BIRD');
+			
+				/*if ($rp = $this->create_resource($resource,$r))//if create physical resource
+					$this->set_resource($r,$rp);//save it to local resource table		 
+				else //else scalar 
+					$this->set_resource($resource,$r);//save it to local resource table	 
+				*/
+				return $this->set_resource($resource,$r);
+			}
+			else {
+				//$this->env->_say('error!', 'TYPE_BIRD');
+				return ($resource . ' undefined!');
+			}	
 	   }
 	   /*elseif ($res = file_get_contents("phpres5://192.168.1.35:19125/" . $resource)) {
 	     echo 'ooouuura!!!!!';
@@ -101,21 +115,31 @@ class resources {
 		 return ($res);
 	   }*/
 	   else {
-	     if (!$this->_resptr[$resource])
-	       $rp = $this->create_resource($resource,$this->_resources[$resource]); 
-		 else  
-		   $rp = $this->_resptr[$resource];
-	     _('local:'.$resource,2);
+		   	$this->env->_say('local:'.$resource, 'TYPE_BIRD');
+			/*	 
+			if (!$this->_resptr[$resource])
+				$rp = $this->create_resource($resource,$this->_resources[$resource]); 
+			else  
+				$rp = $this->_resptr[$resource];
+			*/
+			if ($r = $this->_resources[$resource]) {
+				//$this->env->_say('ok!', 'TYPE_BIRD');
+				return $r;
+			}
+			else {
+				//$this->env->_say('error!', 'TYPE_BIRD');
+				return ($resource . ' undefined!');
+			}	
 	   }	 
 		 
 	   //print_r($this->_resources);
 	   //print_r($this->_resptr);	    		 	 
-	    
+	   /* 
 	   if ($name!=null)
 	     return ($this->_resources[$resource]); //get parameter to re-assign resource in client
 	   else
 		 return ($rp);
-	 
+	   */ 
 	    	 
 	   //else search the net for the specified resource.....	 
 	   //or..autometed
@@ -190,19 +214,27 @@ class resources {
    } 
    
   //show the resources running ........ 
-  function showresources() {
+  function showresources($ptr=false) {
      //print_r($this->_resources);
-	 //echo 'z';
-     foreach ($this->_resources as $t=>$d) {
-	   //$ret .= "[" . $t . "]\r\n";
-	   $ret .= $t . "=" . $d;
-	   if (is_object($this->_resptr[$t]))
-	     $ret .= " (object) " . get_class($this->_resptr[$t]) . "\r\n";
-	   else
-	     $ret .= " (scalar) " . $this->_resptr[$t] . "\r\n";
-	 }  
-  
-     return ($ret);  
+	
+	 if ($ptr) {
+		foreach ($this->_resources as $t=>$d) {
+			//$ret .= "[" . $t . "]\r\n";
+			$ret .= $t . "=" . $d;
+			if (is_object($this->_resptr[$t]))
+				$ret .= " (object) " . get_class($this->_resptr[$t]) . PHP_EOL;
+			else
+				$ret .= " (scalar) " . $this->_resptr[$t] . PHP_EOL;
+		}  
+     
+		return ($ret);  
+	 }
+	 //else
+	 foreach ($this->_resources as $rname=>$rdata) 
+	 {
+		$this->env->_say($rname . "\t" . strlen($rdata), 'TYPE_IRON');
+	 }
+	 return true;		 
   } 
   
   function has_resource($resource) {

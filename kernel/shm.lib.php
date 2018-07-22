@@ -1,5 +1,7 @@
 <?php
-if (!extension_loaded('shmop'))  dl('php_shmop.dll');
+if (!extension_loaded('shmop'))  
+	(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ?
+	dl('php_shmop.dll') : dl('shmop.so');
 
 class shm 
 {	
@@ -9,12 +11,17 @@ class shm
 	{	
 		$this->env = $env;
 		
-		//create ipc key 	
 		$this->env->cnf->_say('DUMP FILE:' . realpath(_DUMPFILE), 'TYPE_IRON');
-		$pathname = realpath(_DUMPFILE); 
-		$this->ipcKey = $this->_ftok($pathname, 's'); //create ipc Key		
 		
-		//$this->ipcKey = $iKey ? $iKey : 0xfff;
+		//create ipc key 	
+		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+			$this->ipcKey = $iKey ? $iKey : 0xfff;
+		}
+		else {
+			$this->ipcKey = $this->_ftok(realpath(_DUMPFILE), 'sa'); 
+			//$this->ipcKey = ftok(realpath(_DUMPFILE), 'sa');
+		}
+		//echo $this->ipcKey;
 		
 		$this->shm_id = null;
 	}

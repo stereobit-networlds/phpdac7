@@ -2,7 +2,7 @@
 error_reporting(E_ALL & ~E_NOTICE);
 
 define ("GLEVEL", 1); 
-define ("KERNELVERBOSE", 2);//override daemon VERBOSE_LEVEL
+define ("KERNELVERBOSE", 1);//override daemon VERBOSE_LEVEL 1/2
 define ("_DS_", DIRECTORY_SEPARATOR);	
 define ("_MACHINENAME", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' : 'LINMS'));
 define ("_DUMPFILE", 'dumpagn-'. _MACHINENAME . '.log');
@@ -13,13 +13,14 @@ define('_DACSTREAMCREP2_', '');
 define('_DACSTREAMCREP3_', '');
 define('_DACSTREAMCREP0_', '');
 
+/* MOVED TO CNF (FOR BOTH TIER AND KERNEL)
 	function _say($str, $level=0, $crln=true) 
 	{
 	    $cr = $crln ? PHP_EOL : null;
 		if ($level <= GLEVEL)
 			echo ucfirst($str) . $cr;
 		
-		_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+');
+		_dump(date ("Y-m-d H:i:s :"). $str . PHP_EOL, 'a+');
 	}
    
 	function _dump($data=null,$mode=null,$filename=null) 
@@ -34,7 +35,7 @@ define('_DACSTREAMCREP0_', '');
         }
         return false;
 	} 
-	
+*/	
 require_once("tier/tierds.lib.php"); 
 new tierds();
 
