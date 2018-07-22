@@ -17,7 +17,8 @@ class async extends processInst {
 		
 		$pid = $this->getChainId(); //next
 		$this->nextCmd = $this->_stack[$pid];
-		echo "process async ({$this->nextCmd}): ". $this->caller->status . PHP_EOL;	
+		//echo "process async ({$this->nextCmd}): ". $this->caller->status . PHP_EOL;	
+		$this->env->_say("process async ({$this->nextCmd}): ". $this->caller->status, 'TYPE_IRON');
 				
 		//$this->loader("vendor/process/async/{$this->nextCmd}/"); //next cmd namespace		
 	}
@@ -37,7 +38,8 @@ class async extends processInst {
 			return is_object($run) ? $run : false;
 		}	
 		//server part
-		echo "--------- tier go()!!" . PHP_EOL;
+		//echo "--------- tier go()!!" . PHP_EOL;
+		$this->env->_say("--------- tier go()!!", 'TYPE_LION');
 		return false;		
 	}	
  

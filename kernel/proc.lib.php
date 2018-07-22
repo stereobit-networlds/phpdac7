@@ -106,13 +106,18 @@ class proc
 			$this->process = new process($this, null, $data);
 			if ($data = $this->process->isFinished($event)) 
 			{   //async escape
-				echo '>PROCESSDATA:'. $data . PHP_EOL;
+				//echo '>PROCESSDATA:'. $data . PHP_EOL;
+				$this->env->_say('Process data :' . $data, 'TYPE_IRON');
+				
 				if ($data=='async') 
 				//if ($chain[0]=='async') 
 				{
-					echo "\x07"; //beep
+					if (defined('_BELL')) _verbose(_BELL); //echo "\x07"; //beep
+					
 					$achain = implode('/',$chain) .'/';
-					echo '>OPENPROCESS:'. $achain . PHP_EOL;
+					
+					//echo '>OPENPROCESS:'. $achain . PHP_EOL;
+					$this->env->_say('Open Process:' . $achain, 'TYPE_IRON');
 					$this->env->openProcess('process', $chain);
 					//tier must return closed chain (server update stack)
 					//setvar option

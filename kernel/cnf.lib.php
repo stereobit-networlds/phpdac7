@@ -11,6 +11,11 @@ new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT);
 //https://stackoverflow.com/questions/2209934/php-operator
 */
 
+	function _verbose($str=null)
+	{
+		if (KERNELVERBOSE > 0)
+			echo $str;
+	}
 
 	function _say($str, $level=0, $crln=true) 
 	{
@@ -135,7 +140,9 @@ class Config
 	{
 		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') 
 		{
-			echo $str;
+			//echo $str;
+			_verbose($str);
+			
 			return true;
 		}
 		else
@@ -159,7 +166,7 @@ class Config
 			// Add string and end coloring
 			$colorstr .= $str . "\033[0m";
 			
-			echo $colorstr;	
+			_verbose($colorstr);	
 			return true;
 		}	
 

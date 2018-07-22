@@ -95,13 +95,17 @@ class resources {
 			//get from phpdac5
 			if ($r = file_get_contents($this->env->ldscheme . $sres)) {
 			 
-				//$this->env->_say('ok!', 'TYPE_BIRD');
-			
 				/*if ($rp = $this->create_resource($resource,$r))//if create physical resource
 					$this->set_resource($r,$rp);//save it to local resource table		 
 				else //else scalar 
 					$this->set_resource($resource,$r);//save it to local resource table	 
 				*/
+			
+			    //reset the heartbeat
+				$x = $this->env->setHeartbeat();
+				
+				//$this->env->_say('ok!', 'TYPE_BIRD');
+							
 				return $this->set_resource($resource,$r);
 			}
 			else {
@@ -196,11 +200,11 @@ class resources {
 		                 break; 
 		
 		case 'odbc link':				 
-		case 'odbc link persistent' : echo 'zzz';break;
+		case 'odbc link persistent' : _verbose('zzz'); break;
 		
 		case 'sqlite'  : $db_name = $this->get_resource('sqlite_name');
 		                 $resource = new SQLiteDatabase($db_name, 0666, $sqliteerror);				  
-						 if ($sqliteerror) echo 'ERROR:',$sqliteerror,'\n';
+						 if ($sqliteerror) _verbose('ERROR:' . $sqliteerror . PHP_EOL);
 						 
 		default        : //scalar
 		                 //if (is_scalar($resource_string))
@@ -293,7 +297,7 @@ class resources {
         }  
         fclose($socket);*/  	 
 	 
-	 echo 'end';
+	 _verbose('end');
 	 
 	 return ($res);
   

@@ -104,7 +104,8 @@ class process extends pstack {
 									$callback = json_encode($this->envChain); //current
 									//$callback = json_encode($this->getNextProcessChain());//next
 									if ($cl = file_get_contents($dac5 .'/setvar-' . $chainData . '-srvProcessStack-' . $callback))
-										echo 'Sync data!' . PHP_EOL;// . $cl;
+										//echo 'Sync data!' . PHP_EOL;// . $cl;
+										$this->env->_say('Sync data!', 'TYPE_IRON');
 									//die('Exit'); //..and close async terminal !!!!!
 								}	
 								break;				
@@ -162,7 +163,12 @@ class process extends pstack {
 	}
 	
 	protected function runInstance($inst=null, $event=null, $chain=null, $data=null) {
-		if (!$inst) {echo 'No instance to run!' . PHP_EOL; return false;}		
+		if (!$inst) {
+			//echo 'No instance to run!' . PHP_EOL; 
+			$this->env->_say('No instance to run!', 'TYPE_LION');
+			return false;
+		}
+			
 		$file = 'agp/'. str_replace(array('_', "\0"), array('/', ''), $inst).'.php';
 		
 		$myChain = isset($chain) ? $chain : $this->envChain;
@@ -187,15 +193,18 @@ class process extends pstack {
 					return $data;			
 			}
 			catch (Throwable $t) {
-				echo $inst . ' class found with errors!'. PHP_EOL;
-				echo $t . PHP_EOL; //<<<<<<<<< err
+				//echo $inst . ' class found with errors!'. PHP_EOL;
+				$this->env->_say($inst . ' class found with errors!', 'TYPE_LION');
+				//echo $t . PHP_EOL; //<<<<<<<<< err
+				$this->env->_say($t, 'TYPE_LION');
 				return false;
 			}
 		}
 		//else
 			//echo $inst . ' class not exist!' . PHP_EOL;
 		
-		echo $inst . ' not found! ' . "($file)" . PHP_EOL; 
+		//echo $inst . ' not found! ' . "($file)" . PHP_EOL; 
+		$this->env->_say($inst . ' not found! ' . "($file)", 'TYPE_LION');
 		return false;	
 	}
 	

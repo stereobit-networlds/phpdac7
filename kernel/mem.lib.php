@@ -849,20 +849,34 @@ class mem
 	private function _uMonitor($uuid=null, $new=false)
 	{
 		//if (!trim($uuid)) return '';
+		$ip = $this->env->daemon_ip;
+		$port = '19125';
 		$cwd = getcwd();
 		
-		if (($new) && (!@file_get_contents(getcwd() . '/umon-' . $uuid . '.log')))
-		{
-			$this->env->cnf->_say('New uMonitor: '. $uuid, 'TYPE_IRON');	
-			@file_put_contents(getcwd() . '/umon-' . $uuid . '.log', "1\r\n", LOCK_EX);
+		if (($new) && (!@file_get_contents($cwd . _UMONFILE . $uuid . '.log')))
+		{	/*
+			$this->env->cnf->_say('uMonitor (new): '. $uuid, 'TYPE_IRON');	
+			@file_put_contents($cwd . _UMONFILE . $uuid . '.log', "1\r\n", LOCK_EX);
 			
-			echo "\x07"; //beep
+			if (defined('_BELL')) _verbose(_BELL); //"\007"; //beep
+			
 			if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-				exec("start /D $cwd\\tier tierp.bat "); 
+				exec("start /D $cwd\\tier tierp.bat -x $ip $port $uuid"); 
 			}
 			else {//require screen gnu package
-				exec("screen $cwd/tier.sh ");	
+				exec("screen $cwd/tier.sh -x $ip $port $uuid");	
 			}
+			*/
+			
+			//new monitor 
+			/*$port = (new umon($this->env))
+								->set($uuid)
+								->go(); */
+								
+			if ($port = $this->env->umon->go($uuid)) 	
+				$this->env->cnf->_say('port assigned: '. $port, 'TYPE_IRON');			
+			else
+				$this->env->cnf->_say('port error: '. $port, 'TYPE_IRON');
 			
 			$data = false; //return false
 		}	
@@ -874,7 +888,7 @@ class mem
 		}
 		
 		return ($data);
-	}	
+	}
 	
     private function close() 
     {

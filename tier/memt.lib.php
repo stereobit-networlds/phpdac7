@@ -330,13 +330,13 @@ class memt
 		  
 					//update and replace the new agent at sh mem
 					if ($this->agn_shm_id) { 
-						echo "Close shared memory segment ...\n";	  
+						$this->env->cnf->_say("Close shared memory segment", 'TYPE_LION');	  
 						$this->closememagn();	 
-						echo "Re-allocate shared memory segment ...\n";
+						$this->env->cnf->_say("Re-allocate shared memory segment", 'TYPE_LION');
 						$this->openmemagn($this->shared_buffer); 	  
 					}
 					else {
-						echo "Allocate shared memory segment ...\n";
+						$this->env->cnf->_say("Allocate shared memory segment", 'TYPE_LION');
 						$this->openmemagn($this->shared_buffer); 	  	  
 					}
 				}
@@ -344,16 +344,16 @@ class memt
 		
 					$this->agn_mem_store = substr_replace($this->agn_mem_store,$agn_serialized,$a_index,$a_old_size);    		
 		
-					echo "Close standart memory segment ...\n";	  
+					$this->env->cnf->_say("Close standart memory segment", 'TYPE_LION');	  
 					$this->closememagn();	   
-					echo "Allocate standart memory segment ...\n";
+					$this->env->cnf->_say("Allocate standart memory segment", 'TYPE_LION');
 					$this->openmemagn($this->agn_mem_store);		
 				}
 		
 				return true;			
 			}	
 			else
-				echo "Dimension error!\n";			
+				$this->env->cnf->_say("Dimension error!", 'TYPE_LION');			
 		}
 		
 		return false;	
@@ -400,7 +400,7 @@ class memt
 		{
 			$a_index = $this->agn_addr[$agent];   
 			$a_size = $this->agn_length[$agent];
-			echo "\nremove ", $agent,'>',$a_index,':',$a_size,"\n";		
+			$this->env->cnf->_say("remove ". $agent.'>'.$a_index .':'. $a_size, "TYPE_LION");		
 			
 			$deleted_agent = str_repeat('x',$a_size);
 			

@@ -42,13 +42,13 @@ class kfs
 		return self::$hTable[$name];
 	}	
 
-	//export to save
+	//export to save (not used)
 	public static function hExp() 
 	{
 		return json_encode(self::$hTable);
 	}	
 	
-	//import (replace) load
+	//import (replace) load (not used)
 	public static function hImp($arr) 
 	{
 		self::$hTbable = (array) json_decode($arr, true);
@@ -64,10 +64,10 @@ class kfs
 	//view hash table (use scheduled tasks)
 	public static function hView() 
 	{
-		echo '[------------- hash -------------]' . "\tentry" . PHP_EOL; //header
+		_verbose('[------------- hash -------------]' . "\tentry" . PHP_EOL); //header
 		reset(self::$hTable);
 		foreach (self::$hTable as $n=>$v)
-			echo '[' . $v . ']' . "\t" . $n . PHP_EOL;
+			_verbose('[' . $v . ']' . "\t" . $n . PHP_EOL);
 			
 		return $ret;
 	}		

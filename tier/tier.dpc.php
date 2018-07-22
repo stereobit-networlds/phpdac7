@@ -6,6 +6,9 @@ define ("KERNELVERBOSE", 1);//override daemon VERBOSE_LEVEL 1/2
 define ("_DS_", DIRECTORY_SEPARATOR);	
 define ("_MACHINENAME", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' : 'LINMS'));
 define ("_DUMPFILE", 'dumpagn-'. _MACHINENAME . '.log');
+//due to getcwd diff from win to unx
+define ("_UMONFILE", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '/umon-'. _MACHINENAME . '-' : '/tier/umon-'. _MACHINENAME . '-'));
+define ("_TIMEOUT", 3); //30 time x 20sec = 600 /60 = 10 min
 	
 define('_DACSTREAMCVIEW_', 3); //must be 3 to clean replies
 define('_DACSTREAMCREP1_', '');
@@ -13,29 +16,13 @@ define('_DACSTREAMCREP2_', '');
 define('_DACSTREAMCREP3_', '');
 define('_DACSTREAMCREP0_', '');
 
-/* MOVED TO CNF (FOR BOTH TIER AND KERNEL)
-	function _say($str, $level=0, $crln=true) 
+    //tier ver, before load cnf
+	function _tverbose($str=null)
 	{
-	    $cr = $crln ? PHP_EOL : null;
-		if ($level <= GLEVEL)
-			echo ucfirst($str) . $cr;
-		
-		_dump(date ("Y-m-d H:i:s :"). $str . PHP_EOL, 'a+');
+		if (KERNELVERBOSE > 0)
+			echo $str;
 	}
-   
-	function _dump($data=null,$mode=null,$filename=null) 
-	{
-	   $m = $mode ? $mode : 'w';
-	   $f = $filename ? $filename : '/'. _DUMPFILE;
-
-        if ($fp = @fopen (getcwd() . $f , $m)) {
-            fwrite ($fp, $data);
-            fclose ($fp);
-            return true;
-        }
-        return false;
-	} 
-*/	
+	
 require_once("tier/tierds.lib.php"); 
 new tierds();
 

@@ -14,7 +14,7 @@ class tierds {
 	public static $pdo;
 	
 	private static $timeout_counter;
-	private $timeout;
+	private $timeout, $uuid;
 
 	public function __construct() { 
 		global $dh, $dp;
@@ -34,13 +34,13 @@ class tierds {
 		//!!!_say("Phpagn5 client at $this->daemon_ip:$this->daemon_port");	  
 		
 		self::$timeout_counter = 0;
-		$this->timeout = ($this->daemon_type=='inetd') ? 0 : 3; //times to loop x20sec scheduler		
+		$this->timeout = ($this->daemon_type=='inetd') ? 0 : _TIMEOUT; //times to loop x20sec scheduler		
 	  
 		//dac server	
 		$this->phpdac_ip = $argv[5] ? $argv[5] : '127.0.0.1';//$dacip;
 		$this->phpdac_port = $argv[6] ? $argv[6] : '19123';//$dacport; 
-		//_say("Phpdac5 server at $this->phpdac_ip:$this->phpdac_port"); 
-		echo "Phpdac5 server at $this->phpdac_ip:$this->phpdac_port" . PHP_EOL; 
+		
+		_tverbose("Phpdac5 server at $this->phpdac_ip:$this->phpdac_port" . PHP_EOL); 
 	    
 		//REGISTER PHPDAC 7
 		$dh = $this->phpdac_ip;  //global inside dacstreamc7 for gc
@@ -50,7 +50,7 @@ class tierds {
 		if (!$phpdac_c) 
 		{
 			//_say("Client dac protocol failed to registered!");
-			echo "Client dac protocol failed to registered!" . PHP_EOL;
+			_tverbose("Client dac protocol failed to registered!" . PHP_EOL);
 			die();
 		}	  
 		//else 
@@ -66,7 +66,7 @@ class tierds {
 		if (!$phpdac_c) 
 		{
 			//_say("Client agent protocol failed to registered!");
-			echo "Client agent protocol failed to registered!" . PHP_EOL;
+			_tverbose("Client agent protocol failed to registered!" . PHP_EOL);
 			//die();
 		}	  
 		//else 
@@ -78,7 +78,7 @@ class tierds {
 		if (!$phpdac_c) 
 		{
 			//_say("Client resource protocol failed to registered!");
-			echo "Client resource protocol failed to registered!" . PHP_EOL;
+			_tverbose("Client resource protocol failed to registered!" . PHP_EOL);
 			die();
 		}	  
 		//else 
@@ -143,6 +143,8 @@ class tierds {
 				require($this->ldscheme . "/tier/gtkds.lib.php");
 				//new gtkds($this,0);//connector init is off ..bellow loaded!		
 			}
+			else
+				$this->uuid = $argv[4]; //uuid param
 	    
 			//init daemon
 			require_once($this->ldscheme . "/tier/dmnt.lib.php");
@@ -197,20 +199,53 @@ class tierds {
 	private function set_timeout() 
 	{
 		if (!$this->timeout) return;// false; //-inetd daemon type
+		$cwd = getcwd(); // tier/ dir, saved from kernel into tier/ directory
+		$uufile = $cwd . _UMONFILE . $this->uuid . '.log';
+		//echo $uufile . '>>>>>>>>>>>>>>>>>>>>>>' . PHP_EOL;
 		
 		if (self::$timeout_counter == $this->timeout) 
 		{
-			$this->shutdown(true);
+			//delete umon file
+			if ($this->uuid) //manual tiers has no uuid
+				@unlink($uufile); 
 			
-			//clone kernel !!!
-			//require_once($this->ldscheme . "/kernel/kernel.lib.php");
-			//new kernel();
+			//shutdown
+			$this->shutdown(true);
 		}	
 		else	
+			//self::$timeout_counter += 1;
+			self::set_timeout_counter();
+		
+		$this->_say("Timeout ({$this->uuid}):" . self::$timeout_counter, 'TYPE_RAT');
+		return true;
+	}
+	
+	//set timeout counter (heartbeat when reset)
+	private function set_timeout_counter($c=null)
+	{
+		if (($c) && (is_numeric($c))) 
+		{
+			if (self::$timeout_counter > $c) 
+			{	
+				self::$timeout_counter = $c; //1 = reset (heartbeat)
+				//return true; //if no msg
+			}
+			else
+				return false;	
+		}	
+		else
 			self::$timeout_counter += 1;
 		
-		//$this->_say("Timeout:" . self::$timeout_counter);
+		$this->_say("Heartbeat ({$this->uuid}):" . self::$timeout_counter . '/' . _TIMEOUT, 'TYPE_BIRD');
 		return true;
+	}
+	
+	//set the heartbeat, called by resources 
+	//when get_resource() is a srv remote call
+	//tier/phpdac7 asks for remote/sresc.lib protocol every time
+	public function setHeartbeat()
+	{
+		return $this->set_timeout_counter(1);
 	}
 	
 	//reead file of agents to initialize
@@ -838,7 +873,7 @@ class tierds {
 		unset($this->dmn); //destruct
 		unset($this->mem); //destruct
 		//$this->cnf->_say('.', 'TYPE_LION');
-		echo '.' . PHP_EOL;
+		_tverbose('.' . PHP_EOL);
 	}	
 	
 }

@@ -6,6 +6,8 @@ define ("KERNELVERBOSE", 1);//override daemon VERBOSE_LEVEL 1/2
 define ("_DS_", DIRECTORY_SEPARATOR);
 define ("_MACHINENAME", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' : 'LINMS'));
 define ("_DUMPFILE", 'dumpsrv-'. _MACHINENAME . '.log');
+define ("_UMONFILE", '/tier/umon-'. _MACHINENAME . '-');
+define ("_BELL", "\007");
 	
 require_once("system/timer.lib.php");
 //require_once("kernel/sresc.lib.php");
@@ -20,39 +22,24 @@ require_once("kernel/var.lib.php");
 require_once("kernel/proc.lib.php");
 require_once("kernel/imo.lib.php");
 require_once("kernel/sch.lib.php");
+require_once("kernel/umon.lib.php");
 //require_once("agents/resources.lib.php");
 
-/* MOVED TO CNF 
-	function _say($str, $level=0, $crln=true) 
+    //srv ver, before load cnf
+	function _sverbose($str=null)
 	{
-	    $cr = $crln ? PHP_EOL : null;
-		if ($level <= GLEVEL)
-			echo ucfirst($str) . $cr;
-		
-		//_dump(date ("Y-m-d H:i:s :"). $str . PHP_EOL, 'a+', '/'. _DUMPFILE);
+		if (KERNELVERBOSE > 0)
+			echo $str;
 	}
-   
-	function _dump($data=null,$mode=null,$filename=null) 
-	{
-		$m = $mode ? $mode : 'w';
-		$f = $filename ? $filename : '/dumpmem-'. _MACHINENAME .'.log';
 
-		if ($fp = @fopen (getcwd() . $f , $m)) 
-		{
-			fwrite ($fp, $data);
-			fclose ($fp);
-			return true;
-		}
-		return false;
-	}    
-*/
 class kernel {
 	
 	private $timer, $saveSrvState;
 	private $process, $processStack, $startProcess;	
 		
     public $dmn, $daemon_ip, $daemon_port, $daemon_type;
-	public $cnf, $fs, $utl, $sch, $dpcpath, $resources;
+	public $cnf, $fs, $utl, $sch, $umon;
+	public $dpcpath, $resources;
 
 	public static $pdo;	
    
@@ -63,7 +50,7 @@ class kernel {
 		
 		$this->saveSrvState = true; 
 		
-		$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
+		$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_BIRD & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
 	  
 		$this->utl = new utils($this); //utils
 		$this->utl->grapffiti(1);	
@@ -104,6 +91,11 @@ class kernel {
 			self::$pdo = null;	
 			if (self::initPDO())
 				$this->cnf->_say("PDO connection: ok!" , 'TYPE_IRON');
+			
+			//init umonitor
+			$this->cnf->_say("uMonitor start", 'TYPE_LION');			
+			$this->umon = new umon($this);
+			$this->umon->checkPorts();			
 			
 			//init scheduler
 			$this->sch = new scheduler($this);
@@ -286,11 +278,8 @@ class kernel {
 		//$this->cnf->_say("SERVER print", 'TYPE_LION');
 		//printer_write($this->resources->get_resource('printer'), "SERVER print"."\n\r");  
 		
-		//$this->cnf->_say($this->dmn->show_connections(), 'TYPE_IRON');
 		$this->dmn->show_connections();
-		//$this->cnf->_say($this->show_schedules(), 'TYPE_LION');
 		$this->show_schedules();
-		
 		$this->utl->grapffiti(); //grpahixs on
 				
 		$tb = $this->mem->calc(); //calc
@@ -495,6 +484,9 @@ class kernel {
 	{	
 		//$this->mem->free(); !!!
 		//unregister_tick_function(array($this->scheduler,"checkschedules"),true);
+		
+		unset($this->umon); //destruct
+		
 		unset($this->sch); //destruct
 		unset($this->dmn); //destruct
 		//unset($this->resources); //destruct
@@ -507,7 +499,7 @@ class kernel {
 		unset($this->cnf); //destruct
 		
 		//unset(self::$pdo); //err, self destruct
-		echo ". " . PHP_EOL;
+		_sverbose(". " . PHP_EOL);
 	}	
 }
 ?>
