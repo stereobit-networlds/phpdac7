@@ -24,7 +24,7 @@ class dmn {
 									  "print","getresource", "getresourcec", "showresources", 
 									  "findresource", "findresourcec", "setresource", "delresource",
 									  "checkschedules","showschedules", "setschedule", 
-									  "who", "http", "***"));
+									  "who", "http", "netport", "***"));
       //list of valid commands that must be accepted by the server	
 	  
       $this->dmn->CommandAction ("help", array($this,"command_handler")); //add callback
@@ -58,6 +58,7 @@ class dmn {
 	  $this->dmn->CommandAction ("setschedule", array($this,"command_handler"));
       $this->dmn->CommandAction ("who", array($this,"command_handler"));	  
 	  $this->dmn->CommandAction ("http", array($this,"command_handler"));	  
+	  $this->dmn->CommandAction ("netport", array($this,"command_handler"));	  
 	  	  	  	  	  
 	  $this->dmn->CommandAction ("***", array($this,"phpdac_handler"));//handle everyting else...	  
 	  		
@@ -225,7 +226,13 @@ class dmn {
 				$this->env->save($arguments[0],$data);
 				$dmn->Println($data);
 				return true;
-		        break;				
+		        break;	
+
+		case 'NETPORT':
+		        $data = $this->env->umon->umonPort($arguments[0]);
+				$dmn->Println($data);
+				return true;
+		        break;					
       }
 	}
 	

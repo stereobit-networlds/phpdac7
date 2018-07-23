@@ -50,7 +50,7 @@ class kernel {
 		
 		$this->saveSrvState = true; 
 		
-		$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_BIRD & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
+		$this->cnf = new Config(Config::TYPE_ALL /*& ~Config::TYPE_BIRD*/ & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
 	  
 		$this->utl = new utils($this); //utils
 		$this->utl->grapffiti(1);	
@@ -95,7 +95,9 @@ class kernel {
 			//init umonitor
 			$this->cnf->_say("uMonitor start", 'TYPE_LION');			
 			$this->umon = new umon($this);
-			$this->umon->checkPorts();			
+			$this->umon->portTableView();			
+			$this->umon->checkPorts();
+			$this->umon->portTableView();
 			
 			//init scheduler
 			$this->sch = new scheduler($this);
@@ -154,9 +156,28 @@ class kernel {
 		return ($ret);
 	}
    
-	//alias - remote read
+	//alias - remote read (tiers)
 	public function readC($dpc) 
-	{
+	{		
+	    //dispatch ram cmds (no shm cmds)
+		$keycmd = strstr($dpc, '-') ? explode('-', $dpc) : $dpc;
+		$cmd = is_array($keycmd) ? array_shift($keycmd) : $keycmd;
+		if ($this->umon->iscmd($cmd))
+		{
+			$this->_say('read umon key: '. $cmd, 'TYPE_IRON');
+			
+			if (method_exists($this->umon, $cmd))
+			{	
+				return $this->umon->$cmd($keycmd); //rest of array
+			}	
+			else
+				$this->_say('unknown method for key: '. $cmd, 'TYPE_IRON');
+		}
+		//elseif (module->iscmd)
+		//...
+		
+		//else		
+		//read mem
 		//return $this->_gc($this->mem->readC($dpc));
 		return $this->mem->readC($dpc);
 	}

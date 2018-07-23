@@ -30,9 +30,10 @@ class memt
 		$this->extra_space = 1024 * 3200; //kb //1000;// per agn
 		$this->dataspace = 1024000 * 9; //mb //90000;
 	  			
+		//create ipc Key		
 		$this->env->cnf->_say('DUMP FILE:' . realpath(_DUMPFILE), 'TYPE_IRON');
 		$pathname = realpath(_DUMPFILE); 
-		$this->ipcKey = $this->_ftok($pathname, 's'); //create ipc Key			
+		$this->ipcKey = $this->_ftok($pathname, 's'); 			
 	}		
 	
 	public function initialize() 
@@ -97,7 +98,7 @@ class memt
 	}	
    
 	//buffer2 used as optional when reconf-clean mem  
-	private function openmemagn($buffer=null,$buffer2=null) 
+	private function openmemagn($buffer=null, $buffer2=null) 
 	{  	 
 		$iKey = $this->ipcKey ? $this->ipcKey : 0xfff;	
 		
@@ -155,12 +156,12 @@ class memt
 	}
 	
 	
-	public function add($agent,$data) 
+	public function add($agent, $data) 
 	{
 		return $this->addmemagn($agent, $data);
 	}	
    	
-	private function addmemagn($agent,$data) 
+	private function addmemagn($agent, $data) 
 	{
 		//if ($agent=='scheduler') 
 		//{
@@ -168,7 +169,6 @@ class memt
 		//echo "\n,.",strlen($this->agn_mem_store),$this->agn_mem_store;
 		//}
 		
-	
 		$a_size = strlen($data);
 	  
 		if ($this->agn_mem_type==2) 	
@@ -184,11 +184,12 @@ class memt
 				$this->agn_addr[$agent] = &$mem;
 				$this->agn_length[$agent] = $a_size;
 				$this->agn_free[$agent] = $this->extra_space - $a_size;
-				$this->env->cnf->_say("addmemagn: [$agent] start". ':'.$a_size, 'TYPE_LION');
+				
+				$this->env->cnf->_say("addmemagn [$agent] :". $a_size, 'TYPE_LION');
 				return true;
 			}
 			
-			$this->env->cnf->_say("addmemagn: [$agent] failed". ':'.$a_size, 'TYPE_LION');
+			$this->env->cnf->_say("addmemagn [$agent] failed:". $a_size, 'TYPE_LION');
 			return false;
 		}	
 		/*elseif ($this->agn_mem_type==1)	{
@@ -265,64 +266,47 @@ class memt
 		}	
     }	
 	
-	private function updatememagn($agent,$data) 
+	public function upd($agent, $data) 
 	{
+		return $this->updatememagn($agent, $data);
+	}	
+	
+	//agent name and data as the object
+	private function updatememagn($agent, $data) 
+	{	
+		$s_size = strlen($data);
+	
 		if ($this->agn_mem_type==2)
 		{
-			//replace agent info table  
-			/*$offset = $this->agn_addr[$agent];			
+			$mem = & $this->agn_addr[$agent];
 			$length = $this->agn_length[$agent];
-			$rlength = $length - $this->agn_free[$agent];		  
-			$dataLength = strlen($data);
-			//echo "Update old ",$a_index,':',$rlength,"\n"; 
-			//echo "update new ",$a_index,':',$dataLength,"\n";			
-			if ($rlenght==$dataLength) 
-			{ 
-				$remaining = $length - $dataLength;			  
-				_say("diff:" . $rlength.':'.$dataLength,2);
-			  
-				//$oldData = $this->loaddpcmem($dpc);		
-				$oldData = shmop_read($this->shm_id, $offset, $rlength); 				
-				$hold = md5($oldData);	
-				$hnew = md5($data);// . str_repeat(' ',$remaining));
-				_say("md5:" . $hold . ':'. $hnew,2);
-			}*/
+			$free = $this->agn_free[$agent];
 			
-			$mem = &$this->agn_addr[$agent];
-			$length = $this->agn_length[$agent];
-			$rlength = $length - $this->agn_free[$agent];
-			$dataLength = strlen($data);
-			if ($dataLength < $this->extra_space) 
-			{ 			  
-				_say("diff:" . $rlength.':'.$dataLength,2);
-			    if ($mem->write($data,0)) 
+			if ($free>0)
+			{
+				if ($mem->write($data,0)) 
 				{
-					//$this->agn_addr[$agent] = &$mem;
-					$this->agn_length[$agent] = $dataLength;
-					$this->agn_free[$agent] = $this->extra_space - $datalength;
+					$this->agn_length[$agent] = $s_size;
+					$this->agn_free[$agent] = ($this->extra_space - $s_size);
 					
-					$this->env->cnf->_say("updatememagn: [$agent] modified". ':'.$dataLength, 'TYPE_LION');
-					return true;
+					$this->env->cnf->_say("updmemagn [$agent]: " . $length, 'TYPE_LION');	
+					return true;		
 				}
-			
-				$this->env->cnf->_say("updatememagn: [$agent] failed to modified". ':'.$dataLength, 'TYPE_LION');
-				return false;
-			}	
-			
-			$this->env->cnf->_say("updatememagn: [$agent] length error". ':'.$dataLength, 'TYPE_LION');
-			return false;
-		}			
+				
+				$this->env->cnf->_say("updmemagn [$agent] write failed:" . $length, 'TYPE_LION');	
+				//return false;						
+			}
+		}
 		else //1,0
 		{
-			
 			//replace agent info table  
 			$a_index = $this->agn_addr[$agent];			
 			$a_old_size = $this->agn_length[$agent];		
 			//echo "\nupdate old ",$a_index,':',$a_old_size,"\n";   
-			$a_new_size = strlen($agn_serialized);
+			$a_new_size = $s_size;//strlen($agn_serialized);
 			//echo "update new ",$a_index,':',$a_new_size,"\n";			
 			
-			if ($a_old_size==$a_new_size) { //1st method
+			if ($a_old_size == $a_new_size) { //1st method
 		
 				if ($this->agn_mem_type==1) {//shared	  
 		
@@ -342,7 +326,7 @@ class memt
 				}
 				else {
 		
-					$this->agn_mem_store = substr_replace($this->agn_mem_store,$agn_serialized,$a_index,$a_old_size);    		
+					$this->agn_mem_store = substr_replace($this->agn_mem_store, $s_size, $a_index, $a_old_size);    		
 		
 					$this->env->cnf->_say("Close standart memory segment", 'TYPE_LION');	  
 					$this->closememagn();	   
@@ -352,12 +336,12 @@ class memt
 		
 				return true;			
 			}	
-			else
-				$this->env->cnf->_say("Dimension error!", 'TYPE_LION');			
+			//else
+			$this->env->cnf->_say("Dimension error!", 'TYPE_LION');			
 		}
 		
-		return false;	
-    }	
+		return false;
+	}
 	
 	public function removememagn($agent) 
 	{

@@ -8,75 +8,81 @@ $__DPC['RESOURCES_DPC'] = 'resources';
 
 class resources {
 
-   var $_resources, $_resptr;
-   var $ip2get, $port2get;
-   var $env;
-   var $daemon_port;
+	var $_resources, $_resptr;
+	var $ip2get, $port2get;
+	var $env;
+	var $daemon_port;
 
-   function __construct($env=null) {
+	public function __construct($env=null) {
    
-      $this->env = $env;
+		$this->env = $env;
    
-      $this->_resources = array();   
-      $this->_resptr = array();	
+		$this->_resources = array();   
+		$this->_resptr = array();	
 	  
-	  $this->ip2get = $env->phpdac_ip; 
-	  $this->port2get = $env->phpdac_port;  
-	  $this->daemon_port = $env->daemon_port;
-   }
+		$this->ip2get = $env->phpdac_ip; 
+		$this->port2get = $env->phpdac_port;  
+		$this->daemon_port = $env->daemon_port;
+	}
   
-   function set_resource($rname,$resource) {
+	public function set_resource($rname,$resource) {
    
-	  //in case of resource name with spaces
-      $rname = str_replace(' ','_',$rname);
+		//in case of resource name with spaces
+		$rname = str_replace(' ','_',$rname);
 
-	  if (is_object($resource)) {
-		//echo 'RESOURCE object:'.$rname. '(' . memory_get_usage() .")\n";
-	    $this->_resources[$rname] = serialize($resource);//serialized object???
-		$this->_resptr[$rname] = & $resource;//object instance		
-		//print_r($this->_resources);	
-	    $this->env->update_agent($this,'resources');			
+		if (is_object($resource)) {
+			//echo 'RESOURCE object:'.$rname. '(' . memory_get_usage() .")\n";
+			$this->_resources[$rname] = serialize($resource);//serialized object???
+			$this->_resptr[$rname] = & $resource;//object instance		
 		
-		return true;
-	  }
-	  elseif (is_resource($resource)) {
-        //echo 'RESOURCE resource:'.$rname. '(' . memory_get_usage() .")\n";
-	    $type = get_resource_type($resource);
-		$this->_resources[$type] = $rname;
-		$this->_resptr[$type] = & $resource;
-	    //print_r($this->_resptr);
-		//print_r($this->_resources);
-	    $this->env->update_agent($this,'resources');
+			$this->env->update_agent($this,'resources');			
+		
+			return true;
+		}
+		elseif (is_resource($resource)) {
+			//echo 'RESOURCE resource:'.$rname. '(' . memory_get_usage() .")\n";
+			$type = get_resource_type($resource);
+			$this->_resources[$rname] = $type;
+			$this->_resptr[$type] = & $resource;
+		
+			$this->env->update_agent($this,'resources');
    
-		return true;
-	  }
-	  elseif (is_scalar($resource)) {//integer,float,string,boolean
-	    //echo 'RESOURCE scalar:'.$rname. '(' . memory_get_usage() .")\n";
-	    $this->_resources[$rname] = $resource;
-	    $this->_resptr[$rname] = & $resource;	
-		//print_r($this->_resources);		
-	    $this->env->update_agent($this,'resources');			
-	    //echo '>>>',$resource;
-	    return $resource; //true;
-	  }
+			return true;
+		}
+		elseif (is_scalar($resource)) {//integer,float,string,boolean
+			//echo 'RESOURCE scalar:'.$rname. '(' . memory_get_usage() .")\n";
+			$this->_resources[$rname] = $resource;
+			$this->_resptr[$rname] = & $resource;	
+		
+			$this->env->update_agent($this,'resources');			
+
+			return $resource; //true;
+		}
 	  
-      $this->env->_say("WARNING:resource [$rname] failed to register!", 'TYPE_LION');
-	  return false;
-   }
+		$this->env->_say("resource [$rname] failed to register!", 'TYPE_LION');
+		return false;
+	}
    
-   //delete local resource
-   function del_resource($resource) {
+	//delete local resource
+	public function del_resource($resource) {
    
-     if (array_key_exists($resource,$this->_resources)) {
+		if (@array_key_exists($resource, $this->_resources)) {
 	 
-	    unset($this->_resources[$resource]);
-	    unset($this->_resptr[$resource]);
-	 }
-   }
+			$this->env->_say('resource delete:'.$resource, 'TYPE_BIRD');
+			
+			unset($this->_resources[$resource]);
+			unset($this->_resptr[$resource]);
+			
+			$this->env->update_agent($this,'resources');
+			return true;
+		}
+		
+		return false;
+	}
    
-   //local version
-   //name called by stream of server
-   function get_resource($resource=null, $name=null) {
+	//local version
+	//name called by stream of server
+	public function get_resource($resource=null, $name=null) {
 	   if (!$resource) return ($resource . ' undefined!');
 	   
 	   //print_r($this->_resources); 
@@ -84,63 +90,41 @@ class resources {
 	    
        //auto get from net 
 	   //if no resource or invalid resource...
-       if (!array_key_exists($resource,$this->_resources)) {
+       if (!array_key_exists($resource, $this->_resources)) {
 		   
 		    $sres = (substr_compare($resource, "/", 0, 1)==0) ? $resource : '/' . $resource;
 			
 			//$this->env->_say('remote:['.$this->ip2get.']:'.$resource, 'TYPE_LION');  
-			$this->env->_say('remote:' . $this->env->ldscheme . $sres, 'TYPE_BIRD');  
+			$this->env->_say('resource remote:' . $this->env->ldscheme . $sres, 'TYPE_BIRD');  
 		 
 			//$r = $this->get_resourcec($resource,$this->ip2get,$this->port2get);
 			//get from phpdac5
 			if ($r = file_get_contents($this->env->ldscheme . $sres)) {
-			 
-				/*if ($rp = $this->create_resource($resource,$r))//if create physical resource
-					$this->set_resource($r,$rp);//save it to local resource table		 
-				else //else scalar 
-					$this->set_resource($resource,$r);//save it to local resource table	 
-				*/
-			
-			    //reset the heartbeat
-				$x = $this->env->setHeartbeat();
 				
-				//$this->env->_say('ok!', 'TYPE_BIRD');
-							
-				return $this->set_resource($resource,$r);
+				//$this->env->_say('Resource remote (' .$resource . ') ok!', 'TYPE_BIRD');		
+				return $this->set_resource($resource, $r);
 			}
 			else {
-				//$this->env->_say('error!', 'TYPE_BIRD');
-				return ($resource . ' undefined!');
+				//$this->env->_say('Resource remote (' . $resource . ' error!', 'TYPE_BIRD');
+				return ('undefined');
 			}	
 	   }
-	   /*elseif ($res = file_get_contents("phpres5://192.168.1.35:19125/" . $resource)) {
-	     echo 'ooouuura!!!!!';
-		 echo 'remote:[','192.168.1.35',']:',$resource,"\n";
-		 return ($res);
-	   }*/
 	   else {
-		   	$this->env->_say('local:'.$resource, 'TYPE_BIRD');
-			/*	 
-			if (!$this->_resptr[$resource])
-				$rp = $this->create_resource($resource,$this->_resources[$resource]); 
-			else  
-				$rp = $this->_resptr[$resource];
-			*/
+		   	$this->env->_say('resource local:'.$resource, 'TYPE_BIRD');
+
 			if ($r = $this->_resources[$resource]) {
-				//$this->env->_say('ok!', 'TYPE_BIRD');
-				return $r;
+				//$this->env->_say('Resource local (' . $resource . ') ok!', 'TYPE_BIRD');
+				return ($name ? $r : $this->_resptr[$resource]);
 			}
 			else {
-				//$this->env->_say('error!', 'TYPE_BIRD');
-				return ($resource . ' undefined!');
+				//$this->env->_say('Resource local (' . $resource . ') error!', 'TYPE_BIRD');
+				return ('undefined');
 			}	
 	   }	 
-		 
-	   //print_r($this->_resources);
-	   //print_r($this->_resptr);	    		 	 
+		 	    		 	 
 	   /* 
 	   if ($name!=null)
-	     return ($this->_resources[$resource]); //get parameter to re-assign resource in client
+	     return ($this->_resources[$resource]); 
 	   else
 		 return ($rp);
 	   */ 
@@ -153,7 +137,7 @@ class resources {
    }
    
    //remote version
-   function get_resourcec($resource,$from=null,$port=null) {
+   public function get_resourcec($resource,$from=null,$port=null) {
    
       $ip = ($from ? $from : $this->ip2get);
 	  $po = ($port ? $port : $this->port2get);
@@ -178,7 +162,7 @@ class resources {
 	  return false;	
    }
    
-   function unset_resource($resource_name) {
+   public function unset_resource($resource_name) {
    
        //if (in_array($resource_name,$this->_resources))
 	     //remove resource by value!!!!!
@@ -186,7 +170,7 @@ class resources {
 	   return false;	 
    }
    
-   function create_resource($resource_name,$resource_string) {
+   public function create_resource($resource_name,$resource_string) {
    
       switch ($resource_name) {
 	  
@@ -218,7 +202,7 @@ class resources {
    } 
    
   //show the resources running ........ 
-  function showresources($ptr=false) {
+  public function showresources($ptr=false) {
      //print_r($this->_resources);
 	
 	 if ($ptr) {
@@ -241,7 +225,7 @@ class resources {
 	 return true;		 
   } 
   
-  function has_resource($resource) {
+  public function has_resource($resource) {
   
      if (!array_key_exists($resource,$this->_resources)) 
 	   return false;
@@ -249,7 +233,7 @@ class resources {
 	   return true;  
   } 
   
-  function findresource($resource,$showname=null) {
+  public function findresource($resource,$showname=null) {
   
   
     /* if (!$res=$this->get_resource($resource,$showname)) {//local

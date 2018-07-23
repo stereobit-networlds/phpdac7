@@ -8,7 +8,7 @@ define ("_MACHINENAME", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' 
 define ("_DUMPFILE", 'dumpagn-'. _MACHINENAME . '.log');
 //due to getcwd diff from win to unx
 define ("_UMONFILE", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '/umon-'. _MACHINENAME . '-' : '/tier/umon-'. _MACHINENAME . '-'));
-define ("_TIMEOUT", 3); //30 time x 20sec = 600 /60 = 10 min
+define ("_TIMEOUT", 3); //30= time x 20sec = 600 /60 = 10 min
 	
 define('_DACSTREAMCVIEW_', 3); //must be 3 to clean replies
 define('_DACSTREAMCREP1_', '');

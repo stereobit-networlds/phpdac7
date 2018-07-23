@@ -1,7 +1,7 @@
 <?php
 class umon 
 {	
-	private $env, $pstart, $pend;
+	private $env, $pstart, $pend, $ukeys;
 	
 	public function __construct(& $env=null) 
 	{
@@ -10,23 +10,26 @@ class umon
 		$this->ip = $this->env->daemon_ip;
 		$this->pstart = 19126;
 		$this->pend = 19999;
+		
+		$this->ukeys = array('netport', 'uuid');
 	}
 
 	public function go($uuid=null) 
 	{
-		if (!$uuid) return false;
+		if (!$uuid) return 'undefined uuid'; //when no uuid port err at return
 		//$this->env->cnf->_say('uuid: ' . $uuid, 'TYPE_LION');		
 		$cwd = getcwd();
 		
-		$port = '19125'; //generate port...
-		
+		//generate port...		
 		$tport = $this->portAdd($uuid);
-		_verbose('Port:' . $tport . PHP_EOL);
+		$port = $tport ? $tport : 19125; 
+		//_verbose('Port:' . $tport . PHP_EOL);
 		
 		if (!@file_get_contents($cwd . _UMONFILE . $uuid . '.log'))
 		{
-			$this->env->cnf->_say('uMonitor (new): '. $uuid, 'TYPE_IRON');	
-			@file_put_contents($cwd . _UMONFILE . $uuid . '.log', "1\r\n", LOCK_EX);
+			$this->env->_say("uMonitor ($port): ". $uuid, 'TYPE_IRON');	
+			
+			@file_put_contents($cwd . _UMONFILE . $uuid . '.log', "$port\r\n", LOCK_EX);
 			
 			if (defined('_BELL')) _verbose(_BELL); //"\007"; //beep
 			
@@ -39,26 +42,26 @@ class umon
 			
 			$this->portTableView();			
 			
-			return $tport; //$this->port;
+			return $port;
 		}			
 		
-		return false;
+		return 'file ptr exist!';
 	}
 
 	public function portAdd($uuid) 
 	{
 		$portTable = json_decode($this->env->read('srvPorts'), true);
-		print_r($portTable);
+		//print_r($portTable);
 		
 		$portTable = $this->cleanPorts();
-		print_r($portTable);		
+		//print_r($portTable);		
 		
 		if ($port = $this->portFind($uuid, $portTable))
 			$portTable[$uuid] = $port;
 		
 		//save to mem
 		$this->env->save('srvPorts', json_encode($portTable));		
-		print_r($portTable);
+		//print_r($portTable);
 		
 		return $port;//true;
 	}	
@@ -101,7 +104,8 @@ class umon
 	{
 		$cwd = getcwd();
 		$portTable = json_decode($this->env->read('srvPorts'), true);		
-		
+		if (empty($portTable)) return array();
+			
 		foreach ($portTable as $u=>$p)	
 		{
 			if (@file_exists($cwd . _UMONFILE . $u . '.log'))
@@ -117,12 +121,14 @@ class umon
 	{
 		$portTable = json_decode($this->env->read('srvPorts'), true);
 		
-		_verbose('[-------- session --------]' . "\tport" . PHP_EOL); //header
+		$this->env->_say('[-------- session --------]' . "\tport", 'TYPE_IRON'); //header
+		if (empty($portTable)) return ;
+		
 		reset($portTable);
 		foreach ($portTable as $u=>$p)
-			_verbose('[' . $u . ']' . "\t" . $p . PHP_EOL);
+			$this->env->_say('[' . $u . ']' . "\t" . $p, 'TYPE_IRON');
 			
-		return $ret;
+		return ;
 	}	
 	
 	public function checkPorts() {
@@ -132,8 +138,37 @@ class umon
 		//save to mem
 		$this->env->save('srvPorts', json_encode($portTable));
 		
-		$this->env->cnf->_say('check ports... ', 'TYPE_LION');  
+		$this->env->_say('check ports', 'TYPE_IRON');  
 		return true; 
 	}
+	
+	//get the umon port number, fetch to phpdac7(uuid)
+	public function umonPort($uuid=null)
+	{
+		//manual tiers has no uuid 
+		if (!$uuid) return false; 
+		
+		$cwd = getcwd(); 
+		$uufile = $cwd . _UMONFILE . $uuid . '.log';
+		//echo $uufile . '>>>>>>>>>>>>>>>>>>>>>>' . PHP_EOL;		
+		$port = @file_get_contents($uufile);
+		
+		return $port ? trim($port) : false; 	
+	}	
+	
+	public function iscmd($k=null)
+	{
+		if (!$k) return false;
+		
+		return in_array($k, $this->ukeys);
+	}
+
+	public function netport($args=null)
+	{
+		$port = $this->umonPort($args[0]);
+		$this->env->_say('netport reply:'. $port , 'TYPE_IRON');
+		
+		return $port;
+	}	
 }	
 ?>

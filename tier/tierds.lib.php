@@ -2,7 +2,7 @@
 class tierds {
 
 	private $mem; 
-	public $env, $dmn, $cnf, $utl;
+	public $env, $dmn, $cnf, $utl, $res;
 	public $agent, $active_agent, $active_o_agent; 
 	public $daemon_ip, $daemon_port, $daemon_type;	
   
@@ -14,7 +14,7 @@ class tierds {
 	public static $pdo;
 	
 	private static $timeout_counter;
-	private $timeout, $uuid;
+	private $timeout, $uuid, $tkeys;
 
 	public function __construct() { 
 		global $dh, $dp;
@@ -24,6 +24,7 @@ class tierds {
 		
 		$this->verboseLevel = GLEVEL;	  
 		$this->agent = 'SH';//default
+		$this->tkeys = array('heartbeat', 'heartbrst', 'netport');
 	
 		//argv1 is daemon type -param or batchfile .ash
 		$this->argbatch = (substr($argv[1],0,1)!='-') ? $argv[1].'.ash' : '';
@@ -40,7 +41,7 @@ class tierds {
 		$this->phpdac_ip = $argv[5] ? $argv[5] : '127.0.0.1';//$dacip;
 		$this->phpdac_port = $argv[6] ? $argv[6] : '19123';//$dacport; 
 		
-		_tverbose("Phpdac5 server at $this->phpdac_ip:$this->phpdac_port" . PHP_EOL); 
+		_tverbose("[----]Phpdac5 server at $this->phpdac_ip:$this->phpdac_port" . PHP_EOL); 
 	    
 		//REGISTER PHPDAC 7
 		$dh = $this->phpdac_ip;  //global inside dacstreamc7 for gc
@@ -50,123 +51,127 @@ class tierds {
 		if (!$phpdac_c) 
 		{
 			//_say("Client dac protocol failed to registered!");
-			_tverbose("Client dac protocol failed to registered!" . PHP_EOL);
+			_tverbose("[----]Dac protocol failed to registered" . PHP_EOL);
 			die();
 		}	  
-		//else 
-			//_say("Client dac protocol registered!");
+		else
+		{		
+			_tverbose("[----]Dac protocol registered" . PHP_EOL);
 	  
-		$this->ldscheme = "phpdac5://{$this->phpdac_ip}:{$this->phpdac_port}";
-		self::$ldschemeS = "phpdac5://". ($argv[5] ? $argv[5] : '127.0.0.1') .":". ($argv[6] ? $argv[6] : '19123');	
+			$this->ldscheme = "phpdac5://{$this->phpdac_ip}:{$this->phpdac_port}";
+			self::$ldschemeS = "phpdac5://". ($argv[5] ? $argv[5] : '127.0.0.1') .":". ($argv[6] ? $argv[6] : '19123');	
 	
-		//REGISTER PHPAGN (client side,interconnections) protocol.			
-		require($this->ldscheme . "/kernel/sagnc.lib.php"); 
-
-		$phpdac_c = stream_wrapper_register("phpagn5","c_agnstream");
-		if (!$phpdac_c) 
-		{
-			//_say("Client agent protocol failed to registered!");
-			_tverbose("Client agent protocol failed to registered!" . PHP_EOL);
-			//die();
-		}	  
-		//else 
-			//_say("Client agent protocol registered!"); 	
-
-		//REGISTER PHPRES (client side,resources) protocol.		
-		require_once($this->ldscheme . "/kernel/sresc.lib.php"); 
-		$phpdac_c = stream_wrapper_register("phpres5","c_resstream");
-		if (!$phpdac_c) 
-		{
-			//_say("Client resource protocol failed to registered!");
-			_tverbose("Client resource protocol failed to registered!" . PHP_EOL);
-			die();
-		}	  
-		//else 
-			//_say("Client resource protocol registered!"); 
-				 				 
-
-		//INITIALIZE ENVIRONMENT
-		
-		require_once($this->ldscheme . "/kernel/cnf.lib.php");
-		$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
-		$this->cnf->_say('Load conf', 'TYPE_LION');
-		require_once($this->ldscheme . "/kernel/utils.lib.php");
-		$this->utl = new utils($this); //utils	
-		$this->cnf->_say('Load utils', 'TYPE_LION');
-		
-		//kernel other
-		require_once($this->ldscheme . "/kernel/imo.lib.php");
-		
-		require_once($this->ldscheme . "/tier/memt.lib.php");
-		$this->mem = new memt($this);
-		if ($this->mem->initialize())			
-		{	
-			$this->mem->open();
-
-			//clear log
-			@unlink(_DUMPFILE);
-		  
-			$this->env['name'] = _MACHINENAME;  			 
-			$this->env['os'] = $_SERVER['OS'];	  
-			$this->env['domain'] = $_SERVER['USERDNSDOMAIN'];				 
-			$this->env['appdata'] = $_SERVER['APPDATA'];	  
-			$this->env['homepath'] = $_SERVER['HOMEPATH'];	  	
-			$this->env['host'] = $_SERVER['REMOTE_ADDR'];  
-			//var_dump($this->env);	
-			//var_dump($_SERVER);
-			
-			//init printer	 
-			$this->initPrinter();
-		    //init db
-			self::$pdo = null;	//serialize err 1250 (see inside process)		
-			if (self::initPDO())
-				$this->cnf->_say("PDO connection: ok!" , 'TYPE_IRON');
-				  
-			//INITIALIZE AGENTS
-			$this->active_agent = null;
-			$this->active_o_agent = null;	
-			$this->init_agents();
-	  
-			//initialize task from already loaded agents (BEWARE TO LOAD THE DEFAULT AGENTS)
-			if ($s = $this->get_agent('scheduler'))
-				$s->schedule('env.show_connections','every','20'); 
-  
-			//initialize GTk connector (for calling proc from this ($env) class ...purposes)
-			$this->gtk = ($argv[4]==='-gtk') ? true : false;
-			if ($this->gtk) 
+			//REGISTER PHPAGN (client side,interconnections) protocol.			
+			require($this->ldscheme . "/kernel/sagnc.lib.php"); 
+			$phpdac_c = stream_wrapper_register("phpagn5","c_agnstream");
+			if (!$phpdac_c) 
 			{
-				require($this->ldscheme . "/tier/gtklib.lib.php");  			  
-				$this->cnf->_say("GTK connector loaded!", 'TYPE_LION');
-				$this->gtkds_conn = new gtkds_connector();
+				_tverbose("[----]Agent protocol failed to registered" . PHP_EOL);
+				die();
+			}	  
+			else 
+			{
+				_tverbose("[----]Agent protocol registered" . PHP_EOL); 	
+
+				//REGISTER PHPRES (client side,resources) protocol.		
+				require_once($this->ldscheme . "/kernel/sresc.lib.php"); 
+				$phpdac_c = stream_wrapper_register("phpres5","c_resstream");
+				if (!$phpdac_c) 
+				{
+					_tverbose("[----]Resource protocol failed to registered" . PHP_EOL);
+					die();
+				}	  
+				else
+				{		
+					_tverbose("[----]Resource protocol registered" . PHP_EOL); 
+	
+					//INITIALIZE ENVIRONMENT
 		
-				//////////////////////////////////// gtk win
-				require($this->ldscheme . "/tier/gtkds.lib.php");
-				//new gtkds($this,0);//connector init is off ..bellow loaded!		
-			}
-			else
-				$this->uuid = $argv[4]; //uuid param
+					require_once($this->ldscheme . "/kernel/cnf.lib.php");
+					$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
+					$this->cnf->_say('Load conf', 'TYPE_LION');
+					require_once($this->ldscheme . "/kernel/utils.lib.php");
+					$this->utl = new utils($this); //utils	
+					$this->cnf->_say('Load utils', 'TYPE_LION');
+					
+					//client res (no shm agent for resources)
+					require_once($this->ldscheme . "/tier/res.lib.php");
+					$this->res = new res($this); 	
+					$this->cnf->_say('Load resource handler', 'TYPE_LION');
+		
+					//kernel tools
+					require_once($this->ldscheme . "/kernel/imo.lib.php");
+		
+					require_once($this->ldscheme . "/tier/memt.lib.php");
+					$this->mem = new memt($this);
+					if ($this->mem->initialize())			
+					{	
+						$this->mem->open();
+
+						//clear log
+						@unlink(_DUMPFILE);
+		  
+						$this->env['name'] = _MACHINENAME;  			 
+						$this->env['os'] = $_SERVER['OS'];	  
+						$this->env['domain'] = $_SERVER['USERDNSDOMAIN'];				 
+						$this->env['appdata'] = $_SERVER['APPDATA'];	  
+						$this->env['homepath'] = $_SERVER['HOMEPATH'];	  	
+						$this->env['host'] = $_SERVER['REMOTE_ADDR'];  
+						//var_dump($this->env);	
+						//var_dump($_SERVER);
+			
+						//init printer	 
+						$this->initPrinter();
+						
+						//init db
+						self::$pdo = null;	//serialize err 1250 (see inside process)		
+						if (self::initPDO())
+							$this->cnf->_say("PDO connection: ok!" , 'TYPE_IRON');
+				  
+						//INITIALIZE AGENTS
+						$this->active_agent = null;
+						$this->active_o_agent = null;	
+						$this->init_agents();
+	  
+						//initialize task from already loaded agents (BEWARE TO LOAD THE DEFAULT AGENTS)
+						if ($s = $this->get_agent('scheduler'))
+							$s->schedule('env.show_connections','every','20'); 
+  
+						//initialize GTk connector (for calling proc from this ($env) class ...purposes)
+						$this->gtk = ($argv[4]==='-gtk') ? true : false;
+						if ($this->gtk) 
+						{
+							require($this->ldscheme . "/tier/gtklib.lib.php");  			  
+							$this->cnf->_say("GTK connector loaded!", 'TYPE_LION');
+							$this->gtkds_conn = new gtkds_connector();
+		
+							//////////////////////////////////// gtk win
+							require($this->ldscheme . "/tier/gtkds.lib.php");
+							//new gtkds($this,0);//connector init is off ..bellow loaded!		
+						}
+						else
+							$this->uuid = $argv[4]; //uuid param
 	    
-			//init daemon
-			require_once($this->ldscheme . "/tier/dmnt.lib.php");
-			if ($this->dmn = new dmnt($this, /*daemonize this*/
+						//init daemon
+						require_once($this->ldscheme . "/tier/dmnt.lib.php");
+						if ($this->dmn = new dmnt($this, /*daemonize this*/
 								 $this->daemon_type,
 								 $this->daemon_ip,
 								 $this->daemon_port))
-			{
-				//$this->dmn->RegisterAction(array(&$this,'timer'));
-	   
-				//dispatch batch (in dmnt)
-				//$this->exebatchfile($this->argbatch, true);
-				
-				//listen
-				$this->dmn->listen(1); 				
+						{
+							//$this->dmn->RegisterAction(array(&$this,'timer'));
+							//listen
+							$this->dmn->listen(1); 				
+						}	
+					}
+					else 
+					{
+						$this->cnf->_say('Memory critical error', 'TYPE_LION');
+						$this->shutdown(true);
+					}
+				}
 			}	
 		}
-		else 
-		{
-			$this->cnf->_say('Memory critical error!');
-			$this->shutdown(true);
-		}	  
 	}
 
 	//dmn Println
@@ -195,22 +200,20 @@ class tierds {
 		return $this->dmn->show_connections($show,$dacserver);
 	}
 	
+	
+	
+	//HEARTBEAT
+	
 	//set timeout inc by 1, when called as proc
 	private function set_timeout() 
 	{
 		if (!$this->timeout) return;// false; //-inetd daemon type
-		$cwd = getcwd(); // tier/ dir, saved from kernel into tier/ directory
-		$uufile = $cwd . _UMONFILE . $this->uuid . '.log';
-		//echo $uufile . '>>>>>>>>>>>>>>>>>>>>>>' . PHP_EOL;
-		
+
 		if (self::$timeout_counter == $this->timeout) 
-		{
-			//delete umon file
-			if ($this->uuid) //manual tiers has no uuid
-				@unlink($uufile); 
-			
-			//shutdown
-			$this->shutdown(true);
+		{				
+			//shutdown when uuid	
+			if ($this->umonDestroy())
+				$this->shutdown(true);
 		}	
 		else	
 			//self::$timeout_counter += 1;
@@ -225,10 +228,10 @@ class tierds {
 	{
 		if (($c) && (is_numeric($c))) 
 		{
-			if (self::$timeout_counter > $c) 
+			if (self::$timeout_counter > 0) 
 			{	
 				self::$timeout_counter = $c; //1 = reset (heartbeat)
-				//return true; //if no msg
+				return true; // no msg if rem
 			}
 			else
 				return false;	
@@ -240,13 +243,101 @@ class tierds {
 		return true;
 	}
 	
-	//set the heartbeat, called by resources 
-	//when get_resource() is a srv remote call
-	//tier/phpdac7 asks for remote/sresc.lib protocol every time
-	public function setHeartbeat()
+	//delete umon file	
+	//tier/file, saved from kernel into tier/ directory	
+	private function umonDestroy()
 	{
-		return $this->set_timeout_counter(1);
+		//no shutdown when no uuid, manual tier
+		//manual tiers has no uuid
+		if (!$this->uuid) return false; 
+		
+		$cwd = getcwd(); 
+		$uufile = $cwd . _UMONFILE . $this->uuid . '.log';
+		
+		return @unlink($uufile); 	
 	}
+	
+	//get the umon port number, fetch to phpdac7(uuid)
+	public function umonPort($uuid=null)
+	{
+		//manual tiers has no uuid
+		$uid = $uuid ? $uuid : $this->uuid; 
+		if (!$uid) return false; 
+		
+		$cwd = getcwd(); 
+		$uufile = $cwd . _UMONFILE . $uid . '.log';
+		$port = @file_get_contents($uufile);
+		
+		return $port ? trim($port) : false; 	
+	}	
+	
+	//reset the heartbeat 
+	public function heartbrst($args=null)
+	{
+		$h = $this->set_timeout_counter(1);
+		$this->_say('heartbeat reset:'. $h , 'TYPE_IRON');
+		return $h;
+	}
+	
+	//get the heartbeat
+	public function heartbeat($args=null)
+	{
+		$h = self::$timeout_counter;
+		$this->_say('heartbeat reply:'. $h , 'TYPE_IRON');
+		return ($h);
+	}	
+	
+	//get umon port
+	public function netport($args=null)
+	{
+		$port = $this->umonPort();
+		$this->_say('netport reply:'. $port , 'TYPE_IRON');
+		return ($port);
+	}	
+	
+	public function iscmd($k=null)
+	{
+		if (!$k) return false;
+		
+		return in_array($k, $this->tkeys);
+	}
+
+	
+	//READS / RESOURCES
+	
+	//alias - remote read (phpdac7)
+	public function readC($dpc) 
+	{		
+	    //dispatch ram cmds (no shm cmds)
+		$keycmd = strstr($dpc, '-') ? explode('-', $dpc) : $dpc;
+		$cmd = is_array($keycmd) ? array_shift($keycmd) : $keycmd;
+		if ($this->iscmd($cmd))
+		{
+			$this->_say('read key: '. $cmd, 'TYPE_IRON');
+			
+			if (method_exists($this, $cmd))
+			{	
+				return $this->$cmd($keycmd); //rest of array
+			}	
+			else
+				$this->_say('unknown method for key: '. $cmd, 'TYPE_IRON');
+		}
+		
+		//else		
+		//read resource
+		return $this->res->get_resource($dpc);
+	}	
+	
+	//alias - local read
+	public function read($dpc) 
+	{
+		//echo "AGENT READ ($dpc):" . $this->res->get_resource($dpc) . "---->" . PHP_EOL;
+		return $this->res->get_resource($dpc);
+	}	
+	
+	
+	
+	//AGENTS
 	
 	//reead file of agents to initialize
 	private function init_agents() 
@@ -354,19 +445,20 @@ class tierds {
 			
 					if (isset($as_name)) 
 					{
-						$this->mem->add($as_name,$s_agent);
-						$this->cnf->_say("Create agent [$agent] as $as_name", 'TYPE_LION');
+						if ( $_m = $this->mem->add($as_name,$s_agent))
+							$this->cnf->_say("Create agent [$agent] as $as_name", 'TYPE_LION');
 					}
 					else {
-						$this->mem->add($agent,$s_agent);
-						$this->cnf->_say("Create agent [$agent]", 'TYPE_LION');
+						if ($_m = $this->mem->add($agent,$s_agent))
+							$this->cnf->_say("Create agent [$agent]", 'TYPE_LION');
 					}  
  
 					//var_dump($this->agn_addr);
 					//var_dump($this->agn_length);	  
 					//echo "\n",substr($this->agn_mem_store,0,256),"\n",strlen($this->agn_mem_store),"\n";				
 					//echo "NEW AGENT(".strlen($s_agent)."):" . get_class($o_agent) . '(' . memory_get_usage() .")\n";		
-					return true;
+					
+					return $_m; //true;
 				}
 				else {
 					$this->cnf->_say("loading agent [$agent] failed!", 'TYPE_LION');
@@ -384,105 +476,139 @@ class tierds {
    
 	public function destroy_agent($agent) 
 	{
-	  $o_agent = $this->get_agent($agent);
+		$o_agent = $this->get_agent($agent);
 	  
-      //seems to load the 1st agent in case of invalid agent name   
-	  if (is_object($o_agent) && ($this->active_agent!=$agent)) {   
+		//seems to load the 1st agent in case of invalid agent name   
+		if (is_object($o_agent) && ($this->active_agent!=$agent)) {   
      
-	    if ($this->mem->removememagn($agent)) 
-		{
-		  $o_agent->destroy();
-		
-	      unset($this->mem->agn_attr[$agent]);//RESIDENT ATTRIBUTE
-	      $this->cnf->_say("[$agent] Destroyed", 'TYPE_LION');
-		  
-		  return true;
-	    }	
-	    else 
-		{
-	      $this->cnf->_say("[$agent] NOT destroyed!", 'TYPE_LION');			
-		  return false;
-	    }	
-	  }
-	  else
-	    $this->cnf->_say("Invalid object or agent is active!", 'TYPE_LION');
+			if ($this->mem->removememagn($agent)) 
+			{
+				$o_agent->destroy();
+				unset($this->mem->agn_attr[$agent]);//RESIDENT ATTRIBUTE
+				
+				$this->cnf->_say("[$agent] destroyed", 'TYPE_LION');
+				return true;
+			}	
+			else 
+			{
+				$this->cnf->_say("[$agent] NOT destroyed!", 'TYPE_LION');			
+				return false;
+			}	
+		}
+		//else
+		$this->cnf->_say("Invalid object or agent is active!", 'TYPE_LION');
 	}
    
 	//update the object data in shared mem
-	public function update_agent(&$o_agent,$agent) 
-	{
-		
+	public function update_agent(&$o_agent, $agent=null) 
+	{	
+		//$o_agent = $this->get_agent($agent); //!!!!!!!!!!!!!
+	
 		if ($this->mem->agn_mem_type==2)
 		{
-			$mem = & $this->mem->agn_addr[$agent];
-			$length = $this->mem->agn_length[$agent];
-			$free = $this->mem->agn_free[$agent];
+			if (is_object($o_agent)) // is object !!!
+			{		
+				if ($agent)
+				{/*
+					$mem = & $this->mem->agn_addr[$agent];
+					$length = $this->mem->agn_length[$agent];
+					$free = $this->mem->agn_free[$agent];
 			
-			if ($free>0)
-			{
-				$s_agent = serialize($o_agent);
-				if ($mem->write($s_agent,0)) 
-				{
-					$this->mem->agn_length[$agent] = strlen($s_agent);
-					$this->mem->agn_free[$agent] = $this->mem->extra_space - strlen($s_agent);
-					$this->cnf->_say("update agent [$agent]: " . $length, 'TYPE_CAT');	
-					return true;		
-				}
-				$this->cnf->_say("update agent [$agent] write failed:" . $length, 'TYPE_LION');	
-				return false;						
-			}	
-			$this->cnf->_say("update agent [$agent] failed:" . $length, 'TYPE_LION');
-			return false;
-		}
-		
-		//else
-		
-		//var_dump($this->agn_addr);
-		//var_dump($this->agn_length);	  
-		//echo "\n",$this->agn_mem_store,"\n",strlen($this->agn_mem_store),"\n";   
-		//echo "\n,.",strlen($this->shared_buffer),$this->shared_buffer;
-	   
-		if (is_object($o_agent)) 
-		{
-			$old_agent = $this->get_agent($agent,true);
-          
-			//$o_agent->env = $this;
-			$s_agent = serialize($o_agent);    
-		  
-			//if (strlen($old_agent)!=strlen($s_agent)) 
-			//{
-			if (strcmp($old_agent,$s_agent)) 
-			{
-				//echo '+++++',strcmp($old_agent,$s_agent),'++++'; 
-		  
-				//1st method
-				//$this->updatememagn($agent,$s_agent);
-		  
-				//2nd method
-				//remove and then insert 2ND METHOD
-				//echo  strlen($this->agn_mem_store),">>>>>\n";			
-				$removed = $this->mem->removememagn($agent);
-				//echo  strlen($this->agn_mem_store),">>>>>\n";
-				if ($removed) 
-				{		  
-					$this->mem->add($agent,$s_agent);
-					$this->cnf->_say("Update agent [$agent]", 'TYPE_LION');			
+					if ($free>0)
+					{
+						$s_agent = serialize($o_agent);
+						if ($mem->write($s_agent,0)) 
+						{
+							$this->mem->agn_length[$agent] = strlen($s_agent);
+							$this->mem->agn_free[$agent] = $this->mem->extra_space - strlen($s_agent);
+							$this->cnf->_say("update agent [$agent]: " . $length, 'TYPE_CAT');	
+							return true;		
+						}
+						$this->cnf->_say("update agent [$agent] write failed:" . $length, 'TYPE_LION');	
+						//return false;						
+					}
+					$this->cnf->_say("update agent [$agent] failed:" . $length, 'TYPE_LION');
+					//return false;
+					*/
+					
+					$s_agent = serialize($o_agent);
+					
+					if ($_m = $this->mem->upd($agent, $s_agent))
+					{
+						$this->cnf->_say("update agent [$agent] ", 'TYPE_LION');	
+						return true;
+					}
+					else
+						$this->cnf->_say("update agent [$agent] failed:" . $length, 'TYPE_LION');
+						
 				}
 				else
-					$this->cnf->_say("Update agent [$agent] failed!", 'TYPE_LION');
+					$this->cnf->_say("update agent [$agent] has no id!", 'TYPE_LION');
 			}
 			else
-				$this->cnf->_say("Update agent [$agent] not neccesery!", 'TYPE_LION');	 
-	  }
+				$this->cnf->_say("Update agent [$agent] is not an object:" . gettype($o_agent), 'TYPE_LION');
+		}
+		else  //1/0
+		{
+			//var_dump($this->agn_addr);
+			//var_dump($this->agn_length);	  
+			//echo "\n",$this->agn_mem_store,"\n",strlen($this->agn_mem_store),"\n";   
+			//echo "\n,.",strlen($this->shared_buffer),$this->shared_buffer;
+	   
+			if (is_object($o_agent)) 
+			{
+				$old_agent = $this->get_agent($agent,true);
+          
+				//$o_agent->env = $this;
+				$s_agent = serialize($o_agent);    
+		  
+				//if (strlen($old_agent)!=strlen($s_agent)) 
+				//{
+				if (strcmp($old_agent,$s_agent)) 
+				{
+					//echo '+++++',strcmp($old_agent,$s_agent),'++++'; 
+		  
+					//1st method
+					//$this->updatememagn($agent,$s_agent);
+		  
+					//2nd method
+					//remove and then insert 2ND METHOD
+					//echo  strlen($this->agn_mem_store),">>>>>\n";			
+					$removed = $this->mem->removememagn($agent);
+					//echo  strlen($this->agn_mem_store),">>>>>\n";
+					if ($removed) 
+					{		  
+						$this->mem->add($agent,$s_agent);
+						
+						$this->cnf->_say("Update agent [$agent]", 'TYPE_LION');			
+						return true;
+					}
+					else
+						$this->cnf->_say("Update agent [$agent] failed!", 'TYPE_LION');
+				}
+				else
+					$this->cnf->_say("Update agent [$agent] not neccesery!", 'TYPE_LION');	 
+			}
+			else
+				$this->cnf->_say("Update agent [$agent] is not an object!", 'TYPE_LION');
 	  
-	  //var_dump($this->agn_addr);
-	  //var_dump($this->agn_length);	  
-	  //echo "\n",$this->agn_mem_store,"\n",strlen($this->agn_mem_store),"\n";		  		
+			//var_dump($this->agn_addr);
+			//var_dump($this->agn_length);	  
+			//echo "\n",$this->agn_mem_store,"\n",strlen($this->agn_mem_store),"\n";		  		
+		}
+		
+		return false;
 	} 
    
 	//return object pointer of agent OR serialized string of agent
-	public function get_agent($agent,$serialized=null) 
+	public function get_agent($agent, $serialized=null) 
 	{
+		if (!$agent)
+		{
+			$this->cnf->_say("getAgent id not defined! ", 'TYPE_LION');
+			return false;
+		}	
+		
 		if ($this->mem->agn_mem_type==2)
 		{
 			$mem = & $this->mem->agn_addr[$agent];
@@ -492,22 +618,23 @@ class tierds {
 			if ($free>0) 
 			{
 				if ($s_agent = $mem->read(0,$length)) 
-				{
-					$this->cnf->_say("getAgent [$agent]: " . $length, 'TYPE_CAT');
-					
+				{				
 					if (!$serialized) 
 					{
 						$o_agent = unserialize($s_agent);
 	  
 						//auto update
 						$o_agent->env = &$this;
-		  
 						//echo "get_agent($size):" . get_class($o_agent) . '(' . memory_get_usage() .")\n";
+		  
+						$this->cnf->_say("getAgent [$agent]: " . $length, 'TYPE_LION');
 						return ($o_agent);
 					}
 					
+					$this->cnf->_say("getAgent [$agent] serialized: " . $length, 'TYPE_LION');
 					return ($s_agent);
 				}
+				
 				$this->cnf->_say("getAgent [$agent] read error:" . $length, 'TYPE_LION');		  
 				return false;
 			}
@@ -592,7 +719,7 @@ class tierds {
 			$this->active_agent = $agent;
 			$daemon->changePrompt($agent . '>');
 		
-			$ret = implode(".",get_class_methods($this->active_o_agent)) . "\n";
+			$ret = implode(".", get_class_methods($this->active_o_agent)) . "\n";
 	    }
 	    else 
 			$ret = "Invalid agent!";	
@@ -601,14 +728,16 @@ class tierds {
 	}
    
 	//uncall agent from cmd
-	public function uncall_agent($daemon) 
+	public function uncall_agent($daemon=null) 
 	{
 		if (is_object($this->active_o_agent)) 
 		{   
 			$this->active_o_agent = null;
-			$this->active_agent = null;	
-			$daemon->changePrompt($daemon->promptString);	
-			$ret = "Ok!";					  
+			$this->active_agent = null;		
+			$ret = "Ok!";				
+
+			if (is_object($daemon))
+				$daemon->changePrompt($daemon->promptString);	
 		}
 		else
 			$ret = "Invalid agent!";	

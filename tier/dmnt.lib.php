@@ -31,7 +31,8 @@ class dmnt {
 									  "getresource", "getresourcec", "showresources", 
 									  "findresource", "findresourcec", "setresource", "delresource",
 									  "checkschedules", "showschedules", "setschedule",
-									  "who", "http", "startgtk", "system", "batch", "***"));	  
+									  "who", "http", "startgtk", "system", "batch", 
+									  "netport", "heartbeat", "heartbrst", "***"));	  
 		//list of valid commands that must be accepted by the server	
 	  
 		$this->dmn->CommandAction ("help", array($this,"command_handler")); //add callback
@@ -72,6 +73,9 @@ class dmnt {
 		$this->dmn->CommandAction ("startgtk", array($this,"command_handler"));	  
 		$this->dmn->CommandAction ("system", array($this,"command_handler"));
 		$this->dmn->CommandAction ("batch", array($this,"command_handler"));
+		$this->dmn->CommandAction ("netport", array($this,"command_handler"));
+		$this->dmn->CommandAction ("heartbeat", array($this,"command_handler"));
+		$this->dmn->CommandAction ("heartbrst", array($this,"command_handler"));
 	  
 		$this->dmn->CommandAction ("***", array($this,"agent_handler"));//handle everyting else...	  
 	  									
@@ -200,11 +204,13 @@ class dmnt {
                 return true;
                 break;																	
 
-		case 'GETRESOURCE' : //this resource
+		case 'GETRESOURCE' : //local (or remote) resources
 				$dmn->setEcho(0);
 				$dmn->setSilence(1);
-		        $resource = $this->env->get_agent('resources')->get_resource($arguments[0],$arguments[1]);
-				//$resource = ($this->env->daemon_type=='inetd') ? 'inetd' : 'standalone';
+		        //$resource = $this->env->get_agent('resources')->get_resource($arguments[0],$arguments[1]);
+				//$resource = $this->env->res->get_resource($arguments[0],$arguments[1]);
+				//alias
+				$resource = $this->env->readC($arguments[0]);
 				
 		        $dmn->Println(trim($resource));
 				return ($this->env->daemon_type=='inetd') ? true : false;
@@ -219,26 +225,30 @@ class dmnt {
 		        break;
 				
 		case 'SHOWRESOURCES':
-		        $r = $this->env->get_agent('resources')->showresources();
+		        //$r = $this->env->get_agent('resources')->showresources();
+				$r = $this->env->res->showresources();
 				$dmn->Println ($r);
                 return true;
                 break;			
 									 						
 		case 'FINDRESOURCE':				
 		case 'FINDRESOURCEC':
-		        $r = $this->env->get_agent('resources')->findresource($arguments[0],1);
+		        //$r = $this->env->get_agent('resources')->findresource($arguments[0],1);
+				$r = $this->env->res->findresource($arguments[0],1);
 				$dmn->Println ($r);
                 return true;
                 break;	
 				
 		case 'SETRESOURCE':
-		        $r = $this->env->get_agent('resources')->set_resource($arguments[0],$arguments[1]);
+		        //$r = $this->env->get_agent('resources')->set_resource($arguments[0],$arguments[1]);
+				$r = $this->env->res->set_resource($arguments[0],$arguments[1]);
 				$dmn->Println ($r);
                 return true;
                 break;		
 				
 		case 'DELRESOURCE':
-		        $r = $this->env->get_agent('resources')->del_resource($arguments[0]);
+		        //$r = $this->env->get_agent('resources')->del_resource($arguments[0]);
+				$r = $this->env->res->del_resource($arguments[0]);
 				$dmn->Println ($r);
                 return true;
                 break;													
@@ -297,6 +307,24 @@ class dmnt {
 				$this->exebatchfile($arguments[0]);
 				return true;
 				break;
+				
+		case 'NETPORT': 
+				$ret = $this->env->umonPort($arguments[0]);
+				$dmn->Println ($ret);
+				return ($this->env->daemon_type=='inetd') ? true : false;
+				break;
+
+		case 'HEARTBEAT': 
+				$ret = $this->env->getHeartbeat();
+				$dmn->Println ($ret);
+				return ($this->env->daemon_type=='inetd') ? true : false;
+				break;
+
+		case 'HEARTBRST': 
+				$this->env->setHeartbeat();
+				//$dmn->Println ($ret);
+				return ($this->env->daemon_type=='inetd') ? true : false;
+				break;				
         }		
 	}  
    

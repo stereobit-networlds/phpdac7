@@ -18,7 +18,7 @@ class shm
 			$this->ipcKey = $iKey ? $iKey : 0xfff;
 		}
 		else {
-			$this->ipcKey = $this->_ftok(realpath(_DUMPFILE), 'sa'); 
+			$this->ipcKey = $this->_ftok(realpath(_DUMPFILE), 19123);//'sa'); 
 			//$this->ipcKey = ftok(realpath(_DUMPFILE), 'sa');
 		}
 		//echo $this->ipcKey;
@@ -124,8 +124,9 @@ class shm
 	
 	public function _ftok($pathname, $proj_id) 
 	{
-		if (function_exists('ftok'))
-			return ftok($pathname, $proj_id);
+		//DISABLED due to invalid proj_id (became int)
+		//if (function_exists('ftok'))
+			//return ftok($pathname, $proj_id);
 		
 		$st = @stat($pathname);
 		if (!$st) 
