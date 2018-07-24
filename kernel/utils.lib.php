@@ -1,4 +1,29 @@
 <?php
+/*
+	Licence
+	
+	Copyright (c) 2018 stereobit.networlds | Vassilis Alexiou
+	balexiou@stereobit.com | https://www.stereobit.com
+	
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+	The above copyright notice and this permission notice shall be included in
+	all copies or substantial portions of the Software.
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+	THE SOFTWARE.
+	
+*/
+
 class utils {
 	
 	private $env;
@@ -324,70 +349,47 @@ _verbose("\r\n\r\n");
 
 		
 		case 1 :
-		//default:	
-/*		
-echo "\n**************************************************";
-echo "\n* stereobit daemon - a minimal script agency*.   *";
-echo "\n*                                                *";
-echo "\n*   Copyright 2015-18,  balexiou@stereobit.com   *";
-echo "\n*                                                *";
-echo "\n*   This digital loop is owned by the numbers.   *";
-echo "\n*   Is free for them but you can play as long    *";
-echo "\n*   your personal pc can consume electric energy.*";
-echo "\n*   Distribute with care and ask for detailsit   *";
-echo "\n*   if you like to modify it under the terms of  *";
-echo "\n*   the GNU Library General Public License.      *";
-echo "\n*                                                *";
-echo "\n*   License as published by the Free Software    *";
-echo "\n*   Foundation; either version 2 of the License, *";
-echo "\n*   (at your option) any later version.          *";
-echo "\n*                                                *";
-echo "\n*   This piece of software is distributed in the *";
-echo "\n*   hope that it will be useful somehow,         *";
-echo "\n*   but WITHOUT ANY WARRANTY without even        *";
-echo "\n*   the implied warranty of MERCHANTABILITY or   *";
-echo "\n*   FITNESS FOR A PARTICULAR PURPOSE.            *";
-echo "\n*   See the GNU Library General Public License   *";
-echo "\n*   for Library General Public License for more  *";
-echo "\n*   details.                                     *";
-echo "\n*                                                *";
-echo "\n*   You should have received a copy of the GNU   *";
-echo "\n*   Library General Public License along with    *";
-echo "\n*   this library.                                *";
-echo "\n*	If not, write to the Free Software			 *";
-echo "\n*                                                *";
-echo "\n*   (*)If you feel that writing scripts and code *";
-echo "\n*   is your forte, these are some agents who     *";
-echo "\n*   specialise in handling this type of material *";
-echo "\n*                                                *";
-echo "\n**************************************************";
+		//default:			
+/*
+	Licence
+	
+	Copyright (c) 2018 stereobit.networlds | Vassilis Alexiou
+	balexiou@stereobit.com | https://www.stereobit.com
+	
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+	The above copyright notice and this permission notice shall be included in
+	all copies or substantial portions of the Software.
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+	THE SOFTWARE.
 
-	    echo "\n\r\n\r";*/
-		echo self::licence();
+	    _verbose("\n\r\n\r");
+*/
+_verbose(self::licence());
 			
 		}//switch
 	}
 
 	static public function licence() {
-		$ret =
- "\n/***************************************************************************".
- "\n*                                                                          *".
- "\n*  Copyright 2018,     balexiou@stereobit.com                              *".
- "\n*                                                                          *".
- "\n*  Licensed under the Apache License, Version 2.0 (the \"License\");         *".
- "\n*  you may not use this file except in compliance with the License         *".
- "\n*  You may obtain a copy of the License at                                 *".
- "\n*                                                                          *".
- "\n*  http://www.apache.org/licenses/LICENSE-2.0                              *".
- "\n*                                                                          *".
- "\n*  Unless required by applicable law or agreed to in writing, software     *".
- "\n*  distributed under the License is distributed on an \"AS IS\" BASIS,       *".
- "\n*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.*".
- "\n*  See the License for the specific language governing permissions and     *".
- "\n*  limitations under the License.                                          *".
- "\n*                                                                          *".
- "\n*                                                                          *".
- "\n****************************************************************************/\n";	
+		$ret = "
+[----]Copyright (c) 2018 stereobit.networlds | Vassilis Alexiou
+[----]balexiou@stereobit.com | https://www.stereobit.com
+";
+/*	
+ "\n ***************************************************************************".
+ "\n*                                                                          *".                                                                         *".
+ "\n****************************************************************************\n";	
+ */
 		return ($ret);
 	}
 	
