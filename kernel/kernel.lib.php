@@ -1,28 +1,16 @@
 <?php
-/*
-	Licence
-	
-	Copyright (c) 2018 stereobit.networlds | Vassilis Alexiou
-	balexiou@stereobit.com | https://www.stereobit.com
-	
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
-	
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
-	
-*/
+/**
+ * This file is part of phpdac7.
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the MIT-LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @author    balexiou<balexiou@stereobit.com>
+ * @copyright balexiou<balexiou@stereobit.com>
+ * @link      http://www.stereobit.com/php-dac7.php
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
+ */
 error_reporting(E_ALL & ~E_NOTICE);
 
 define ("GLEVEL", 1); 		//main messaging level 
@@ -32,6 +20,8 @@ define ("_MACHINENAME", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' 
 define ("_DUMPFILE", 'dumpsrv-'. _MACHINENAME . '.log');
 define ("_UMONFILE", '/tier/umon-'. _MACHINENAME . '-');
 define ("_BELL", "\007");
+define ("_MEMEXTRSPC", 1024 * 10); ////10 / 10 kb
+define ("_MEMDATASPC", 1024000 * 9); // 9 mb 
 	
 require_once("system/timer.lib.php");
 //require_once("kernel/sresc.lib.php");
@@ -55,6 +45,20 @@ require_once("kernel/umon.lib.php");
 		if (KERNELVERBOSE > 0)
 			echo $str;
 	}
+	
+	function _checkEnv()
+    {
+        // Only for cli.
+        if (php_sapi_name() != "cli") {
+            exit("only run in cli mode" . PHP_EOL);
+        }
+        if (DIRECTORY_SEPARATOR === '\\') 
+            return 'WIN';
+		
+		return 'NIX';
+    }
+
+_checkEnv();	
 
 class kernel {
 	

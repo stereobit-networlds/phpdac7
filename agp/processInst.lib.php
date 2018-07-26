@@ -1,5 +1,17 @@
 <?php
-
+/**
+ * This file is part of phpdac7.
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the MIT-LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @author    balexiou<balexiou@stereobit.com>
+ * @copyright balexiou<balexiou@stereobit.com>
+ * @link      http://www.stereobit.com/php-dac7.php
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
+ */
+ 
 class processInst {
 	
 	protected $processStepName, $processChain;
@@ -43,7 +55,7 @@ class processInst {
 			}
 			catch (Throwable $t) {
 				//echo $t . PHP_EOL;
-				echo $className  . ' NOT found!' . PHP_EOL;
+				_tverbose($className  . ' NOT found!' . PHP_EOL);
 			}
 		}); 
 		//} //tier only
@@ -63,13 +75,13 @@ class processInst {
 			$cc[] = "new $pInst(";
 		}
 		$zcmd = implode('', $cc) . str_repeat(')', count($_stack)) . ';';
-		echo 'Run ETL command: ' . $zcmd;// . PHP_EOL;
+		_tverbose('Run ETL command: ' . $zcmd . PHP_EOL);
 			
 		try {
 			eval("\$etl = " . $zcmd);
 		} 
 		catch (Throwable $t) {
-			echo $t . PHP_EOL;
+			_tverbose($t . PHP_EOL);
 			return false;
 		}		
 		

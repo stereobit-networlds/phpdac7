@@ -1,28 +1,16 @@
 <?php
-/*
-	Licence
-	
-	Copyright (c) 2018 stereobit.networlds | Vassilis Alexiou
-	balexiou@stereobit.com | https://www.stereobit.com
-	
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
-	
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
-	
-*/
+/**
+ * This file is part of phpdac7.
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the MIT-LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @author    balexiou<balexiou@stereobit.com>
+ * @copyright balexiou<balexiou@stereobit.com>
+ * @link      http://www.stereobit.com/php-dac7.php
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
+ */
 
 class dmnt {	
 
@@ -157,13 +145,13 @@ class dmnt {
 				
 		case 'CALL'     ://alias		
 		case 'CALLAGENT'://server version
-		        $data = $this->env->call_agent($arguments[0],$dmn);
+		        $data = $this->env->agn->call_agent($arguments[0],$dmn);
 		        $dmn->Println ($data);
                 return true;
                 break;	
 				
 		case 'UNCALL'://server version
-		        $data = $this->env->uncall_agent($dmn);
+		        $data = $this->env->agn->uncall_agent($dmn);
 		        $dmn->Println ($data);
                 return true;
                 break;					
@@ -172,7 +160,7 @@ class dmnt {
 		        $dmn->setEcho(0);//echo off
 				//header from 1st command still appear...must set client silence off				
 				$dmn->setSilence(1);//silence off...???
-		        $data = $this->env->call_agentc($arguments[0]);
+		        $data = $this->env->agn->call_agentc($arguments[0]);
 		        $dmn->Println ($data);
                 return false;//and quit
                 break;					
@@ -200,31 +188,31 @@ class dmnt {
                 break;					
 				
 		case 'SHOW':
-				$data = $this->env->show_agents();
+				$data = $this->env->agn->show_agents();
 		        $dmn->Println($data);
                 return true;
                 break;
 				
 		case 'CREATE':
-		        $data = $this->env->create_agent($arguments[0],$arguments[1],$arguments[2],$arguments[3]);
+		        $data = $this->env->agn->create_agent($arguments[0],$arguments[1],$arguments[2],$arguments[3]);
 		        $dmn->Println ($data);			
                 return true;
                 break;
 				
 		case 'DESTROY':
-		        $data = $this->env->destroy_agent($arguments[0]);
+		        $data = $this->env->agn->destroy_agent($arguments[0]);
 		        $dmn->Println ($data);			
                 return true;
                 break;								
 				
 		case 'MOVE':
-		        $data = $this->env->move_agentc($arguments[0],$arguments[1]);
+		        $data = $this->env->agn->move_agentc($arguments[0],$arguments[1]);
 		        $dmn->Println ($data);			
                 return true;
                 break;
 				
 		case 'ACCEPT':	
-		        $data = $this->env->accept_agentc($arguments[0],$arguments[1],$arguments[2]);
+		        $data = $this->env->agn->accept_agentc($arguments[0],$arguments[1],$arguments[2]);
 		        $dmn->Println ($data);		
                 return true;
                 break;																	
@@ -232,7 +220,7 @@ class dmnt {
 		case 'GETRESOURCE' : //local (or remote) resources
 				$dmn->setEcho(0);
 				$dmn->setSilence(1);
-		        //$resource = $this->env->get_agent('resources')->get_resource($arguments[0],$arguments[1]);
+		        //$resource = $this->env->agn->get_agent('resources')->get_resource($arguments[0],$arguments[1]);
 				//$resource = $this->env->res->get_resource($arguments[0],$arguments[1]);
 				//alias
 				$resource = $this->env->readC($arguments[0]);
@@ -243,14 +231,14 @@ class dmnt {
 		        break;										
 				
 		case 'GETRESOURCEC' : //phpdac5 resource saved in shmem
-		        //$resource = $this->get_agent('resources')->get_resourcec($arguments[0],$this->phpdac_ip,$this->phpdac_port);
+		        //$resource = $this->env->agn->get_agent('resources')->get_resourcec($arguments[0],$this->phpdac_ip,$this->phpdac_port);
 				$resource = file_get_contents($this->env->ldscheme .'/'. $arguments[0]);
 				$dmn->Println ($resource);
 				return true;
 		        break;
 				
 		case 'SHOWRESOURCES':
-		        //$r = $this->env->get_agent('resources')->showresources();
+		        //$r = $this->env->agn->get_agent('resources')->showresources();
 				$r = $this->env->res->showresources();
 				$dmn->Println ($r);
                 return true;
@@ -258,42 +246,42 @@ class dmnt {
 									 						
 		case 'FINDRESOURCE':				
 		case 'FINDRESOURCEC':
-		        //$r = $this->env->get_agent('resources')->findresource($arguments[0],1);
+		        //$r = $this->env->agn->get_agent('resources')->findresource($arguments[0],1);
 				$r = $this->env->res->findresource($arguments[0],1);
 				$dmn->Println ($r);
                 return true;
                 break;	
 				
 		case 'SETRESOURCE':
-		        //$r = $this->env->get_agent('resources')->set_resource($arguments[0],$arguments[1]);
+		        //$r = $this->env->agn->get_agent('resources')->set_resource($arguments[0],$arguments[1]);
 				$r = $this->env->res->set_resource($arguments[0],$arguments[1]);
 				$dmn->Println ($r);
                 return true;
                 break;		
 				
 		case 'DELRESOURCE':
-		        //$r = $this->env->get_agent('resources')->del_resource($arguments[0]);
+		        //$r = $this->env->agn->get_agent('resources')->del_resource($arguments[0]);
 				$r = $this->env->res->del_resource($arguments[0]);
 				$dmn->Println ($r);
                 return true;
                 break;													
 				
 		case 'CHECKSCHEDULES':
-		        $c = $this->env->get_agent('scheduler')->checkschedules();
+		        $c = $this->env->agn->get_agent('scheduler')->checkschedules();
 				$dmn->Println ($c);
                 return true;
                 break;	
 				
 		case 'SHOWSCHEDULES':
-		        $s = $this->env->get_agent('scheduler')->showschedules();
+		        $s = $this->env->agn->get_agent('scheduler')->showschedules();
 				$dmn->Println ($s);
                 return true;
                 break;
 
 		case 'SETSCHEDULE' :
-		        $sh = $this->env->get_agent('scheduler');
+		        $sh = $this->env->agn->get_agent('scheduler');
 				$entry = $sh->schedule($arguments[0],$arguments[1],$arguments[2]);				
-				$this->env->update_agent($sh,'scheduler');
+				$this->env->agn->update_agent($sh,'scheduler');
 				
 				$dmn->Println($entry);
 				return true;
@@ -359,13 +347,13 @@ class dmnt {
 		//create command line from daemon			
 		$shell_command = $command . " " . implode(' ',$arguments);			
 		
-		if (is_object($this->env->active_o_agent)) 
+		if (is_object($this->env->agn->active_o_agent)) 
 		{
-			if (method_exists($this->env->active_o_agent,$command))
-				$ret = $this->env->active_o_agent->$command($arguments[0],$arguments[1],$arguments[2]);
+			if (method_exists($this->env->agn->active_o_agent,$command))
+				$ret = $this->env->agn->active_o_agent->$command($arguments[0],$arguments[1],$arguments[2]);
 			else
 				$ret = "Invalid command.\n\n" . 
-						implode("\n",get_class_methods($this->env->active_o_agent)) . "\n";  
+						implode("\n",get_class_methods($this->env->agn->active_o_agent)) . "\n";  
 		  
 			$dmn->Println ($ret); 
 			return true;  
@@ -380,7 +368,7 @@ class dmnt {
 	{
 		if ($dacserver) 
 		{ 	//get sessions from phpdac server's daemon...
-			$sret = $this->env->get_agent('resources')->get_resourcec('_sessions',$this->env->phpdac_ip,$this->env->phpdac_port);
+			$sret = $this->env->agn->get_agent('resources')->get_resourcec('_sessions',$this->env->phpdac_ip,$this->env->phpdac_port);
 			$ret = unserialize($sret);
 		}
 		else 
@@ -388,7 +376,7 @@ class dmnt {
 			$ret = $this->dmn->show_connections();
 	  
 			//save in resources
-			//$this->get_agent('resources')->set_resource('_sessions',serialize($ret));		  
+			//$this->env->agn->get_agent('resources')->set_resource('_sessions',serialize($ret));		  
 		}
 	  
 		if ($show) 

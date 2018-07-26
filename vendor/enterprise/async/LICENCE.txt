@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-# GNU shell script to start phpdac7 srv in a screen (detached)
-# --------------------------------------------------------------------
 #
 # This file is part of phpdac7.
 #
@@ -14,4 +11,3 @@
 # @license   http://www.opensource.org/licenses/mit-license.php MIT License
 # --------------------------------------------------------------------
 #
-screen -S DAC7SRV -d -m /var/www/phpdac7/start.sh

@@ -1,4 +1,17 @@
 <?php
+/**
+ * This file is part of phpdac7.
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the MIT-LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @author    balexiou<balexiou@stereobit.com>
+ * @copyright balexiou<balexiou@stereobit.com>
+ * @link      http://www.stereobit.com/php-dac7.php
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
+ */
+ 
 $__DPCSEC['RESOURCES_DPC']='1;1;1;1;1;1;1;1;2';
 
 if (!defined("RESOURCES_DPC")) {
@@ -35,7 +48,7 @@ class resources {
 			$this->_resources[$rname] = serialize($resource);//serialized object???
 			$this->_resptr[$rname] = & $resource;//object instance		
 		
-			$this->env->update_agent($this,'resources');			
+			$this->env->agn->update_agent($this,'resources');			
 		
 			return true;
 		}
@@ -45,7 +58,7 @@ class resources {
 			$this->_resources[$rname] = $type;
 			$this->_resptr[$type] = & $resource;
 		
-			$this->env->update_agent($this,'resources');
+			$this->env->agn->update_agent($this,'resources');
    
 			return true;
 		}
@@ -54,7 +67,7 @@ class resources {
 			$this->_resources[$rname] = $resource;
 			$this->_resptr[$rname] = & $resource;	
 		
-			$this->env->update_agent($this,'resources');			
+			$this->env->agn->update_agent($this,'resources');			
 
 			return $resource; //true;
 		}
@@ -73,7 +86,7 @@ class resources {
 			unset($this->_resources[$resource]);
 			unset($this->_resptr[$resource]);
 			
-			$this->env->update_agent($this,'resources');
+			$this->env->agn->update_agent($this,'resources');
 			return true;
 		}
 		

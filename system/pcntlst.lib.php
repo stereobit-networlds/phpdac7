@@ -194,6 +194,9 @@ parse_ini_string_m:
     }	
 	
 	protected function _loadinifiles() {
+		//manual typed config var in file
+		$loadedConf = (array) GetGlobal('config');
+		if (!empty($loadedConf)) return true;
 
 		if (is_readable(getcwd() . "/config.ini.php")) {//in root	  
 			include(getcwd() . "/config.ini.php");
@@ -224,8 +227,7 @@ parse_ini_string_m:
 			$config = array_merge($config, $myconfig); 			
 		
 		SetGlobal('config',$config);   
-	  	  
-		//$this->preprocessor = new CCPP($config);
+		return true;
 	}  	
    
 	//overwrite

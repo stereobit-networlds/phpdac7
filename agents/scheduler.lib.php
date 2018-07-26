@@ -1,4 +1,17 @@
 <?php
+/**
+ * This file is part of phpdac7.
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the MIT-LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @author    balexiou<balexiou@stereobit.com>
+ * @copyright balexiou<balexiou@stereobit.com>
+ * @link      http://www.stereobit.com/php-dac7.php
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
+ */
+ 
 $__DPCSEC['SCHEDULER_DPC']='1;1;1;1;1;1;1;1;2';
 
 if (!defined("SCHEDULER_DPC")) {
@@ -56,7 +69,7 @@ class scheduler {
 	 //print_r($this->timeline); //test scheduler
 	 //var_dump($this);
 	 
-	 $this->env->update_agent($this,'scheduler');
+	 $this->env->agn->update_agent($this,'scheduler');
 	 
 	 //re-register
 	 unregister_tick_function(array($this,"checkschedules"));
@@ -97,7 +110,7 @@ class scheduler {
    
    function check_schedule_entry(&$entry,$inittime) {  
    
-     //echo $this->env->get_agent('scheduledtask')->value;
+     //echo $this->env->agn->get_agent('scheduledtask')->value;
 	 //echo ".\n";   
    
      if (array_key_exists('lasttime',$entry))
@@ -128,12 +141,12 @@ class scheduler {
 			$entry['lasttime'] = $now;
 			$entry['counter'] = $entry['counter']+1;
 		  
-			//$this->env->update_agent($this,'scheduler');		  
+			//$this->env->agn->update_agent($this,'scheduler');		  
 	   
 			return ($entry['freq']==0) ? 0 : $entry;//once or new array element 			   
 	   }
 	   else {
-			$o_agent = $this->env->get_agent($agent);	
+			$o_agent = $this->env->agn->get_agent($agent);	
 			//print_r($o_agent);
 			if ((is_object($o_agent)) && (method_exists($o_agent,$cmd))) {   
 			
@@ -149,7 +162,7 @@ class scheduler {
 				$entry['lasttime'] = $now;
 				$entry['counter'] = $entry['counter']+1;
 		  
-				//$this->env->update_agent($this,'scheduler');		  
+				//$this->env->agn->update_agent($this,'scheduler');		  
 	   
 				return ($entry['freq']==0) ? 0 : $entry;//once or new array element 	   
 			}
@@ -163,7 +176,7 @@ class scheduler {
 				$entry['lasttime'] = $now;
 				$entry['counter'] = $entry['counter']+1;
 		  
-				//$this->env->update_agent($this,'scheduler');		  
+				//$this->env->agn->update_agent($this,'scheduler');		  
 	   
 				return ($entry['freq']==0) ? 0 : $entry;//once or new array element			 
 			}

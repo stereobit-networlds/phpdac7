@@ -441,7 +441,7 @@ class transactions {
 	
 	public function getpage($array,$id){
 	
-	   if (count($array)>0) {
+	   if (@count($array)>0) {
          //while(list ($num, $data) = each ($array)) {
          foreach ($array as $num => $data) {
 		    $msplit = explode(";",$data);

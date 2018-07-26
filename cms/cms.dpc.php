@@ -332,7 +332,9 @@ class cms extends fronthtmlpage {
 	//variable funcs
 	
 	//load (and override) config db variables
+	//skip if no loaded db
 	protected function loadVariables() {
+		if (!defined('DATABASE_DPC')) return false;		
 		$db = GetGlobal('db');
 		$lan = getlocal();
 		$currlang = $lan ? $lan : '0';
@@ -341,7 +343,7 @@ class cms extends fronthtmlpage {
 		global $__DPCLOCALE;
 		
 		if (!$variablesloaded = GetSessionParam('cmsvars')) {
-
+			
 			$sSQL = "select name,value,value0,value1,value2,translate,cookie,session,section,varname,usevarname from cmsvariables WHERE active=1";
 			$res = $db->Execute($sSQL);
 			
