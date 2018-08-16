@@ -226,7 +226,7 @@ class rccontrolpanel {
 	var $stats, $cpStats, $hasgraph, $gotourl;
 	var $turl, $cpGet, $turldecoded, $tasks;
 	var $owner, $seclevid, $userDemoIds, $crmLevel, $isCrm;
-	var $rootapp_path;
+	var $rootapp_path, $mailapp_path;
 		
 	public function __construct() {
 		
@@ -238,9 +238,12 @@ class rccontrolpanel {
 		$this->subpath = $this->urlpath . "/cp";		
 		$this->path = paramload('SHELL','urlpath') . $this->subpath;   		
 		$this->prpath = paramload('SHELL','prpath');	
+		
+	    $this->title = localize('RCCONTROLPANEL_DPC',getlocal());				
         $this->application_path = paramload('SHELL','urlpath');			
 		$this->rootapp_path = remote_paramload('RCCONTROLPANEL','rootpath',$this->prpath); 
-	    $this->title = localize('RCCONTROLPANEL_DPC',getlocal());		
+		$maildir = remote_paramload('RCCONTROLPANEL','mailpath',$this->prpath);
+		$this->mailapp_path = $maildir ?? '/home/'. $this->rootapp_path .'/mail/';
 		
 		$this->owner = $_POST['Username'] ? $_POST['Username'] : GetSessionParam('LoginName');
 		$this->seclevid = $GLOBALS['ADMINSecID'] ? $GLOBALS['ADMINSecID'] : $_SESSION['ADMINSecID'];		
@@ -896,7 +899,8 @@ $(document).ready(function(){
     } 
 	
     protected function cached_mail_size($cahcetime=null) {
-	   $path = '/home/'.$this->rootapp_path.'/mail/' . str_replace('www.','',$this->url);
+	   //$path = '/home/'.$this->rootapp_path.'/mail/' . str_replace('www.','',$this->url);
+	   $path = $this->mailapp_path . str_replace('www.','',$this->url); 
        $name = 'a';//strval(date('Ymd'));
        $msize = $this->prpath . $name . '-msize.size';
 	   $size = 0;

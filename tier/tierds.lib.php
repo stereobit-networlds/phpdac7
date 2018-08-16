@@ -425,14 +425,27 @@ class tierds {
 
 	public static function initPDO() 
 	{
+		if (!$dbcon = @file_get_contents(self::$ldschemeS . "/kernel/dbcon.db"))
+		{
+			_tverbose("[----]Dbcon not exist, bypass.." . PHP_EOL);
+			return false;
+		}
+		//'mysql:host=localhost:3306;dbname=admin_pangr;charset=utf8<@>panik<@>fxpower77'
+		$_DBCON = explode('<@>', $dbcon);
+		
 		try 
 		{
-		  self::$pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
-		  return true;
+			//self::$pdo = @new PDO('mysql:host=localhost:3306;dbname=admin_pangr;charset=utf8', 'panik', 'fxpower77');
+			$con = trim($_DBCON[0]);
+			$usr = trim($_DBCON[1]);
+			$pas = trim($_DBCON[2]);
+			self::$pdo = @new PDO($con, $usr, $pas);
+
+			return true;
 	    } 
 		catch (PDOException $e) 
 		{
-            _tverbose("[----]Failed to get DB handle: " . $e->getMessage(), 'TYPE_LION');
+            _tverbose("[----]Failed to get DB handle: " . $e->getMessage() . PHP_EOL);
         }
 		return false;	
 	}	

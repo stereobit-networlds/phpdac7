@@ -17,11 +17,13 @@ class database {
     var $dbp;
     var $path, $hosted_path;
 	var $serviceMode;
+	var $app;
 
     public function __construct() {
 		static $i;
 		$db = GetGlobal('db');
 	  
+	    $this->app = paramload('ID','name');
 		$this->path = paramload('SHELL','prpath');  
 		$this->hosted_path = $this->path;	 
 	  
@@ -121,7 +123,8 @@ class database {
    
 	public function switch_db($appname=null,$rootdb=null,$returnpointer=null, $check_object=false) {
 		if ($appname) 
-			$this->hosted_path = $this->path . '../' . $appname . '/cp/' ;
+			//$this->hosted_path = $this->path . '../' . $appname . '/cp/' ;
+			$this->hosted_path = str_replace($this->app, $appname, $this->path);
 
 		if ($rootdb)//force root db connection
 			$path = $this->path ; //'/home/stereobi/projects/';//demosoft/';

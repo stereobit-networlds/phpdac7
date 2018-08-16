@@ -18,27 +18,31 @@
 $usage ="[updphar.dpc.php] Update and generate .phar files from shared memory dump file and update build/update/ dir." . PHP_EOL . 
         "Usage: param1=selected file, number in list or 0 to proceed all files, " . PHP_EOL . 
 		"       param2=phar name (with extension), default value 'testapp.phar',". PHP_EOL .
-		"       param3=destination folder, on null value '/' is selected.". PHP_EOL . 
-        "Example: php -d phar.readonly=0 updphar.dpc.php 12 testapp1" . PHP_EOL .
-		"         php -d phar.readonly=0 updphar.dpc.php 0 vendor/anameselected/" . PHP_EOL;
+		"       param3=destination folder, on null value './' is selected". PHP_EOL . 
+        "Example: php -d phar.readonly=0 updphar.dpc.php 12 app1.phar" . PHP_EOL .
+		"         php -d phar.readonly=0 updphar.dpc.php 0 app2.phar path/to/" . PHP_EOL;
 		
+define ("_DS_", DIRECTORY_SEPARATOR);
+define ("_MACHINENAME", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' : 'LINMS'));		
+define ("_DEFDIR", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : './'));		
+			
 //ini_set('phar.readonly','0'); //use php -d phar.readonly=0 scriptname 
 $pharReadOnly = ini_get('phar.readonly'); 
 echo 'Phar Readonly:' . $pharReadOnly . PHP_EOL;		
 $selected = isset($argv[1]) ? $argv[1] : 0;
 $pharName = isset($argv[2]) ? $argv[2] : 'testapp.phar';
 $selectdir = isset($argv[3]) ? $argv[3] : ''; //getcwd'/' //'/vendor/stereobit/';
-$outputdir = /*getcwd() .*/ $selectdir;
-$inpath = 'build/' . str_replace('.phar', '', $pharName);
-$updpath = 'build/update/';
+$inpath = $selectdir ? $selectdir : _DEFDIR; //'build/' . str_replace('.phar', '', $pharName);
+$updpath = $inpath . 'update/'; //'build/update/';
 
 if ($selected=='-?') die($usage);
 
-if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName) . '/shm.id')) {
+//if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName) . '/shm.id')) {
+if ($shmTable = @file_get_contents($inpath . 'shm.id')) {	
 	
 	if ($pharReadOnly == 0) {
-		echo '-------------' . $outputdir . $pharName . '-------------'.PHP_EOL;
-		$phar = new Phar($outputdir . $pharName, 0, $pharName); 
+		echo '-------------' . $inpath . $pharName . '-------------'.PHP_EOL;
+		$phar = new Phar($inpath . $pharName, 0, $pharName); 
 					
 		//pre-req files
 		if ($selected == 0) {
@@ -54,14 +58,14 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 		}
 	}
 	else
-		echo '-------------' . $inpath .'dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log' . '-------------'.PHP_EOL;	
+		echo '-------------' . $inpath .'dumpmem-tree-'. _MACHINENAME .'.log' . '-------------'.PHP_EOL;	
 	
 	$parts = explode("@^@",$shmTable);
 	$addr = (array) unserialize($parts[1]);
 	$length = (array) unserialize($parts[2]); 
 	$free = (array) unserialize($parts[3]); 
 	
-	$buildMEM = $inpath . '/dumpmem-tree-'.$_SERVER['COMPUTERNAME'].'.log';
+	$buildMEM = $inpath . 'dumpmem-tree-'. _MACHINENAME .'.log';
 	$mem = file_get_contents($buildMEM);
 	//echo $mem;
 	
@@ -110,11 +114,11 @@ if ($shmTable = @file_get_contents('build/' . str_replace('.phar', '', $pharName
 	echo $i . ' files in shmem.' . PHP_EOL;
 	
 	//insert new files from build/update/ dir 
-	if ($ins = insertFiles($phar, str_replace('.phar', '.txt', $pharName)))
+	if ($ins = insertFiles($phar, 'insertlist.txt', $inpath))
 		echo $ins . ' files added in phar.' . PHP_EOL;
 	
 	//delete files from build/update/ dir 
-	if ($del = removeFiles($phar, str_replace('.phar', '-exclude.txt', $pharName)))
+	if ($del = removeFiles($phar, 'removelist.txt', $inpath))
 		echo $del . ' files removed from phar.' . PHP_EOL;	
 	
 	if ($pharReadOnly == 0)

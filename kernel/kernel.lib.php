@@ -391,15 +391,31 @@ class kernel {
 	
 	private static function initPDO() 
 	{
+		$_dbconfile = getcwd() . "/kernel/dbcon.db";
+		if (!$dbcon = @file_get_contents($_dbconfile))
+		{
+			_sverbose("[----]Dbcon not exist, bypass ($_dbconfile)" . PHP_EOL);
+			return false;
+		}
+		//'mysql:host=localhost:3306;dbname=admin_pangr;charset=utf8<@>panik<@>fxpower77'
+		$_DBCON = explode('<@>', $dbcon);
+		//echo $dbcon . PHP_EOL;
+		//print_r($_DBCON);
+		
 		try 
 		{
 			//$dbh = new PDO('sqlite:memory:');	
-			self::$pdo = @new PDO('mysql:host=localhost;dbname=basis;charset=utf8', 'e-basis', 'sisab2018');
+			//self::$pdo = @new PDO('mysql:host=localhost:3306;dbname=admin_pangr;charset=utf8', 'panik', 'fxpower77');
+			$con = trim($_DBCON[0]);
+			$usr = trim($_DBCON[1]);
+			$pas = trim($_DBCON[2]);
+			self::$pdo = @new PDO($con, $usr, $pas);
+			
 			return true;
 	    } 
 		catch (PDOException $e) 
 		{
-            _sverbose("[----]Failed to get DB handle: " . $e->getMessage(), 'TYPE_LION');
+            _sverbose("[----]Failed to get DB handle: " . $e->getMessage() . PHP_EOL);
         }
 		return false;	
 	}

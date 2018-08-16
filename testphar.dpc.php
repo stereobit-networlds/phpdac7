@@ -16,18 +16,23 @@
 $usage ="[testphar.dpc.php] Test generated .phar files from shared memory dump file." . PHP_EOL . 
         "Usage: param1=selected file, number in list or 0,". PHP_EOL .
 		"       param2=phar name (with extension), default value 'testapp.phar',". PHP_EOL . 		
-		"       param3=source folder, on null value '/vendor/stereobit/' is selected.". PHP_EOL . 
-        "Example: php -d phar.readonly=0 testphar.dpc.php testapp1" . PHP_EOL .
-		"         php -d phar.readonly=0 testphar.dpc.php testapp2 /vendor/anameselected/" . PHP_EOL;
+		"       param3=source folder, on null value './' is selected". PHP_EOL . 
+		"       param4=search string". PHP_EOL .	
+        "Example: php -d phar.readonly=0 testphar.dpc.php app1.phar" . PHP_EOL .
+		"         php -d phar.readonly=0 testphar.dpc.php app2.phar /path/to/ findstring" . PHP_EOL;
+		
+define ("_DS_", DIRECTORY_SEPARATOR);
+define ("_DEFDIR", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : './'));
 		
 //ini_set('phar.readonly','0'); //use php -d phar.readonly=0 scriptname 
 $pharReadOnly = ini_get('phar.readonly'); 	
 $selected = isset($argv[1]) ? $argv[1] : 0;	
 $pharName = isset($argv[2]) ? $argv[2] : 'testapp.phar';
-$selectdir = isset($argv[3]) ? $argv[3] : '';// '/' //'/vendor/stereobit/';
+$selectdir = isset($argv[3]) ? $argv[3] : _DEFDIR; //'/vendor/stereobit/';
 $sourcedir = /*getcwd() .*/ $selectdir;
+$searchphartext = isset($argv[4]) ? $argv[4] : null;
 
-if ($pharName=='-?') die($usage);
+if ($selected == '-?') die($usage);
 
 try {
 	echo '-------------' . $sourcedir . $pharName . '-------------'.PHP_EOL;
@@ -41,11 +46,20 @@ try {
         //echo $file->getFileName() . PHP_EOL;
         //echo file_get_contents($file->getPathName()) . "\n"; // display contents;
 		$i+=1;
-		if ($selected==$i) {
+		
+		if ($searchphartext) { 
+			//search for a given string
+			$text = file_get_contents($file->getPathName());
+			if (strstr($text, $searchphartext)) 
+				echo $i . '-' .$file->getPathName() . PHP_EOL;
+		}
+		elseif ($selected==$i) {
+			//return selected file content
 			echo file_get_contents($file->getPathName()) . PHP_EOL;
 			echo $i . '-' .$file->getPathName() . PHP_EOL;
 		}
 		elseif ($selected==0) {
+			//show file
 			echo $i . '-' .$file->getPathName() . PHP_EOL;
 		}	
 		else {

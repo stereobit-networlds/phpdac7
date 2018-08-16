@@ -32,8 +32,11 @@ class rcbmailbounce {
 	  $this->url = paramload('SHELL','urlbase');
 	  $this->title = localize('RCBMAILBOUNCE_DPC',getlocal());
 
+	  $mailpath =  remote_paramload('RCCONTROLPANEL','mailpath',$this->prpath);
 	  $rootpath = paramload('RCCONTROLPANEL','rootpath', $this->prpath);
-      $this->cpanelmailpath = $rootpath ? '/home/'.$rootpath.'/mail/' : '/home/stereobi/mail/';	 
+      $this->cpanelmailpath = $mailpath ? $mailpath : 
+		($rootpath ? '/home/'.$rootpath.'/mail/' : '/home/stereobi/mail/');	 
+	  
 	  $sender = remote_paramload('RCBULKMAIL','user',$this->prpath); //default
 	  $mp = explode('@',$sender);
 	  $this->sendermailfolder = $mp[1] . '/' . str_replace('.','_',$mp[0]) . '/cur/';
