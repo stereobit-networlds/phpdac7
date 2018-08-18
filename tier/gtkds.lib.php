@@ -273,5 +273,4 @@ class PhpEditWidget extends GtkSourceView {  // Note 1
     $edit->set_buffer($this->get_buffer());
     return $edit;
   }
-} // end of class PhpEditWidget
-?>
+}

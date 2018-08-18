@@ -122,86 +122,95 @@ class daemon {
 
         function start ($PromptString=null) {	
 		
-		        if ($PromptString) $this->PromptString = $PromptString;
+		    if ($PromptString) $this->PromptString = $PromptString;
                 
-                if (SERVER_TYPE == 'inetd') {
-                  /* This daemon is already listening to a socket. Thanks to inetd.
-                   * we just output to stdout and read from stdin.
-                   */
-                  $this->stdin = fopen ('php://stdin', 'r');
-                } else {
-				        //prepare pool
-						for ($i=0;$i<MAX_CONNECTIONS;$i++)
-				           $this->cpool[$i] = new connect_pool();	
+            if (SERVER_TYPE == 'inetd') {
+				
+				/* This daemon is already listening to a socket. Thanks to inetd.
+                * we just output to stdout and read from stdin.
+				*/
+				$this->stdin = fopen ('php://stdin', 'r');
+            } 
+			else {
+				//prepare pool
+				for ($i=0;$i<MAX_CONNECTIONS;$i++)
+					$this->cpool[$i] = new connect_pool();	
 						   
 						   
-                        $this->verbose (2, "Server Ready for connections");
-                        /* This is being run as a standalone server. lets create a socket
-                         */
-                        $sock = socket_create (AF_INET, SOCK_STREAM, SOL_TCP);
-                        $this->verbose (3, "Socket created");
-                        if ($sock < 0) {
-                                //error!
-                                $this->sock_die ('Couldn\'t create a socket!', $sock);
-                        }
-                        socket_setopt($sock, SOL_SOCKET, SO_REUSEADDR, 1);
-                        $this->verbose (3, "Making socket reuseable");
-
-                        $ret = socket_bind ($sock, $this->Address, $this->Port);
-                        if ($ret < 0) {
-                                //error!
-                                $this->sock_die ('Couldn\'t bind socket!', $ret);
-                        }
-                        $this->verbose (3, "Socket bind complete");
-
-                        $ret = socket_listen ($sock, MAX_CONNECTIONS);
-                        if ($ret < 0) {
-                                //error!
-                                $this->sock_die ('listen failed!', $ret);
-                        }
-
-                        $this->socket = $sock;
-                        //$this->sock_message_socket_create ();//master
+                $this->verbose (2, "Server Ready for connections");
+                /* This is being run as a standalone server. lets create a socket
+                */
+                $sock = socket_create (AF_INET, SOCK_STREAM, SOL_TCP);
+                $this->verbose (3, "Socket created");
+                if ($sock < 0) {
+					//error!
+                    $this->sock_die ('Couldn\'t create a socket!', $sock);
                 }
+                socket_setopt($sock, SOL_SOCKET, SO_REUSEADDR, 1);
+                $this->verbose (3, "Making socket reuseable");
+
+                $ret = socket_bind ($sock, $this->Address, $this->Port);
+                if ($ret < 0) {
+					//error!
+					$this->sock_die ('Couldn\'t bind socket!', $ret);
+                }
+                $this->verbose (3, "Socket bind complete");
+
+                $ret = socket_listen ($sock, MAX_CONNECTIONS);
+                if ($ret < 0) {
+					//error!
+                    $this->sock_die ('listen failed!', $ret);
+                }
+
+                $this->socket = $sock;
+                //$this->sock_message_socket_create ();//master
+            }
         }
 
         function sock_message_socket_create ($i) {//=null) {second method
 		
-				// for ($i = 0; $i <= count($this->cpool); $i ++) {
-                  //  if (!isset ($this->cpool[$i]->resource) || $this->cpool[$i]->resource == null) {
+			// for ($i = 0; $i <= count($this->cpool); $i ++) {
+                 //  if (!isset ($this->cpool[$i]->resource) || $this->cpool[$i]->resource == null) {
 					  
-                      $this->cpool[$i]->resource = socket_accept($this->socket);
-                      if ($this->cpool[$i]->resource < 0) {
-                        //error
-                        $this->sock_die ('socket accept failed!', $this->cpool[$i]->resource);
-                      }					  
+			try 
+			{		  
+                $this->cpool[$i]->resource = socket_accept($this->socket);
+                if ($this->cpool[$i]->resource < 0) {
+                    //error
+                    $this->sock_die ('socket accept failed!', $this->cpool[$i]->resource);
+                }					  
 					  
-                      socket_setopt($this->cpool[$i]->resource, SOL_SOCKET, SO_REUSEADDR, 1);
-                      $peer_host = "";
-                      $peer_port = "";
-                      socket_getpeername($this->cpool[$i]->resource, $peer_host, $peer_port);
-                      $this->cpool[$i]->session = array ("host" => $peer_host, 
-					                                     "port" => $peer_port, 
-												   	     "connectOn" => time(),
-													     "First_time"=>true,
-					                                     "PromptString"=>$this->PromptString,
-													     "Echo"=>$this->Echo,
-														 "Silent"=>$this->silent);
-					  //at connection....									 
-					  $this->active = $i;
-					  if (!SILENCE || 
-							(!$this->cpool[$i]->session['Silent'])) 
-					  {
-							$this->ShowHeader($i);
+                socket_setopt($this->cpool[$i]->resource, SOL_SOCKET, SO_REUSEADDR, 1);
+                $peer_host = "";
+                $peer_port = "";
+                socket_getpeername($this->cpool[$i]->resource, $peer_host, $peer_port);
+                $this->cpool[$i]->session = array ("host" => $peer_host, 
+													"port" => $peer_port, 
+												   	"connectOn" => time(),
+													"First_time"=>true,
+					                                "PromptString"=>$this->PromptString,
+													"Echo"=>$this->Echo,
+													"Silent"=>$this->silent);
+				//at connection....									 
+				$this->active = $i;
+				if (!SILENCE || 
+				    (!$this->cpool[$i]->session['Silent'])) 
+				{
+					$this->ShowHeader($i);
 						
-							if (SHOW_PROMPT) {
-								$this->showPrompt($i);
-							}
-					  }
-					  //return $i; 
-					//}
-				  //}	                    
-
+					if (SHOW_PROMPT) {
+						$this->showPrompt($i);
+					}
+				}
+			}
+			catch (Throwable $t) {
+				
+				$this->env->_say('Socket setopt (dmnl):' .$t, 'TYPE_LION');
+			}			
+				
+				  //return $i; 
+				//}
+			//}	                    
         }
 		
 
@@ -241,57 +250,73 @@ class daemon {
 		//alias
 		function closeConnection($id) {
 		
-		  $this->close($id);
+			$this->close($id);
 		}
 		
         function resetConnection ($id) {
 		
-		        //if (!$id) $id = $this->active;
-			    if (!SILENCE || 
-					(!$this->cpool[$id]->session['Silent']))
-                  $this->Println('Exit', $id);
+		    //if (!$id) $id = $this->active;
+			if (!SILENCE || 
+				(!$this->cpool[$id]->session['Silent']))	
+                $this->Println('Exit', $id);
 				
-                if (SERVER_TYPE == 'inetd') {
-                        exit; 
-                } else {
-                        $this->cpool[$id]->session['First_time'] = true;				
-                        $this->sock_reset ($id);
-                }
+            if (SERVER_TYPE == 'inetd') 
+			{
+                exit; 
+            } 
+			else 
+			{
+                $this->cpool[$id]->session['First_time'] = true;				
+                $this->sock_reset ($id);
+            }
         }	
 		
 		function refuseConnection($id) {
 		    
-			   $this->env->_say('Connection refused!', 'TYPE_LION');
-			   //$this->closeConnection();
+			$this->env->_say('Connection refused!', 'TYPE_LION');
+			//$this->closeConnection();
 		}	
 
         function shutdown () {
-                if (SERVER_TYPE != 'inetd') { //because it just doesn't make sense
+			
+			if (SERVER_TYPE != 'inetd') { //because it just doesn't make sense
                                                                                                 
-  	           //      to have an 'inetd' service shut
-               //      itself down... ;-/
+  	        //      to have an 'inetd' service shut
+            //      itself down... ;-/
 			   
-              /*          $maxFD = count($this->clientFD);
-                        for ($i = 0; $i < $maxFD; $i ++) {
-                            $this->close($i);
-                        }	*/	
-						for ($i=0;$i<MAX_CONNECTIONS;$i++) {
-		                  if (!is_resource($this->cpool[$i]->resource)) {
-			                break;
-			              }   
-			              else {
-			               $this->closeConnection($i);
-			              }
-		                }	   
+            /*      $maxFD = count($this->clientFD);
+                    for ($i = 0; $i < $maxFD; $i ++) {
+                        $this->close($i);
+                    }	*/	
+				for ($i=0;$i<MAX_CONNECTIONS;$i++) 
+				{
+		            if (!is_resource($this->cpool[$i]->resource)) 
+					{
+			            break;
+			        }   
+			        else 
+					{
+			            $this->closeConnection($i);
+			        }
+		        }	   
 			   
-                        //$this->println ('*** Server Shutting down ***');
-						$this->BroadPrint ('*** Server Shutting down ***');
-                        $this->verbose (2, '=======Server Shutdown=========');
-                        //$this->close ();
-						//socket_shutdown ($this->socket);
-						socket_close($this->socket);
-									 						
-                } 
+                //$this->println ('*** Server Shutting down ***');
+				$this->BroadPrint ('*** Server Shutting down ***');
+                $this->verbose (2, '=======Server Shutdown=========');
+						
+                //$this->close ();
+				//socket_shutdown ($this->socket);
+						
+				try 
+				{
+					socket_close($this->socket);
+				
+				}
+				catch (Throwable $t) {
+				
+					$this->env->_say('Socket close (dmnl):' . $t, 'TYPE_LION');
+				}						
+			} 
         }
 
         function sock_die ($msg, $return_code, $to_be_closed) {
@@ -653,11 +678,13 @@ class daemon {
 		*/
 		
         function listen($timeout=null) {		
-declare(ticks=10) {		
-                if (SERVER_TYPE == 'inetd') {
-		          $this->showHeader(null);
+		
+			declare(ticks=10) {		
+			
+				if (SERVER_TYPE == 'inetd') {
+					$this->showHeader(null);
 				  
-                  while (true) {
+					while (true) {
 						if (SHOW_PROMPT) {
 							  $this->showPrompt(null);
                         }					
@@ -669,19 +696,27 @@ declare(ticks=10) {
 						/*while (Gtk::events_pending()) {
                          Gtk::main_iteration();//(false);
                         }*/
-				  }	
+					}	
 				}
                 else {		
-				  //declare(ticks=2) {		
-                  while (true) {
+		
+					while (true) {
+						
 				        if (SERVER_TYPE == 'standalone') {  
-				          /*while (Gtk::events_pending()) {
-                           Gtk::main_iteration();//(false);
-                          }*/
+						
+							/*while (Gtk::events_pending()) {
+								Gtk::main_iteration();//(false);
+							}*/
 						}
 						//else gtk error by the server (start))
-						
-						
+						/*
+						// Did the connection fail? !!!!!!!!
+						//echo "\n"; //<-- send this to the client TO WORK
+						if(connection_status() != CONNECTION_NORMAL)
+						{
+							break;
+						}
+						*/
 				        //echo '0'; 
                         $current = array ();
                         array_push($current, $this->socket);
@@ -706,10 +741,19 @@ declare(ticks=10) {
 						
 						//echo '1'; 
                         // block and wait for data or new connection
-                        $ready =  socket_select($current, $this->null, $this->null, $timeout);//null);
-                        if ($ready === false) {
-                          $this->shutdown();
-                        }	
+						try 
+						{
+							$ready =  socket_select($current, $this->null, $this->null, $timeout);//null);
+							if ($ready === false) 
+							{
+								$this->shutdown();
+							}
+						}
+						catch (Throwable $t) {
+				
+							$this->env->_say('Socket select (dmnl)' . $t, 'TYPE_LION');
+							$this->env->shutdown();
+						}						
 						
 						//echo '2';
 						// check for new connection
@@ -788,10 +832,9 @@ declare(ticks=10) {
 						  }
 						}
 						//echo '4';
-                  }//while
-				  //}//declare
+					}//while
 				}
-}//declare
+			}//declare
         }//end of function
 		
 		function RegisterAction($action) {
@@ -857,4 +900,3 @@ class connect_pool {
   }
   
 }
-?>

@@ -1,17 +1,4 @@
 <?php
-/**
- * This file is part of phpdac7.
- *
- * Licensed under The MIT License
- * For full copyright and license information, please see the MIT-LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @author    balexiou<balexiou@stereobit.com>
- * @copyright balexiou<balexiou@stereobit.com>
- * @link      http://www.stereobit.com/php-dac7.php
- * @license   http://www.opensource.org/licenses/mit-license.php MIT License
- */
- 
 $__DPCSEC['SCHEDULER_DPC']='1;1;1;1;1;1;1;1;2';
 
 if (!defined("SCHEDULER_DPC")) {
@@ -133,7 +120,7 @@ class scheduler {
 	   //in case of 'env' execute from env'
 	   if (($agent=='env') && (method_exists($this->env,$cmd))) {
 		   
-			$this->env->cnf->_say("$agent.". $cmd, 'TYPE_LION');
+			$this->env->cnf->_say("$agent.". $cmd, 'TYPE_IRON');
 			
 			$ret = $this->env->$cmd($p1,$p2,$p3); 
 			$this->env->dmn->Println ($ret);
@@ -150,7 +137,7 @@ class scheduler {
 			//print_r($o_agent);
 			if ((is_object($o_agent)) && (method_exists($o_agent,$cmd))) {   
 			
-				$this->env->cnf->_say("$agent.". $cmd, 'TYPE_LION');
+				$this->env->cnf->_say("$agent.". $cmd, 'TYPE_IRON');
 				
 				if (method_exists($o_agent,$cmd)) 
 					$ret = $o_agent->$cmd($p1,$p2,$p3);
@@ -169,7 +156,7 @@ class scheduler {
 			else {
 				//dmn dispatch, batch files, commands, etc
 				$cmd = str_replace("\\"," ",$entry['agent']);
-				$this->env->cnf->_say($entry['agent'] .".". $cmd, 'TYPE_LION');				
+				$this->env->cnf->_say($entry['agent'] .".". $cmd, 'TYPE_IRON');				
 				
 				$this->env->dmn->dispatch(str_replace("\\"," ",$entry['agent']),null); 
 								
@@ -228,7 +215,7 @@ class scheduler {
      //echo "Schedules\n";
      foreach ($this->timeline as $t=>$d) {
 	   if ($header) {		
-			$this->env->_say(implode("\t",array_keys($d)), 'TYPE_LION');	 	
+			$this->env->_say(implode("\t",array_keys($d)), 'TYPE_IRON');	 	
 			$header = false;
 	   }			
 
@@ -241,11 +228,11 @@ class scheduler {
 			
 			$this->env->_say($agent.$u.$p . "\t" . $d['freq'] . "\t" . 
 				$d['time']. "\t" . $d['lasttime'] . "\t" . 
-				$d['counter'], 'TYPE_LION');
+				$d['counter'], 'TYPE_IRON');
 			unset($arg);	
 	   }
 	   else
-		  $this->env->_say(implode("\t",$d), 'TYPE_LION');	
+		  $this->env->_say(implode("\t",$d), 'TYPE_IRON');	
 	 }  
 	 
      return (array) $this->timeline;  

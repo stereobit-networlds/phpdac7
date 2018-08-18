@@ -167,41 +167,47 @@ class daemon {
 
         function sock_message_socket_create ($i) {//=null) {second method
 		
-				// for ($i = 0; $i <= count($this->cpool); $i ++) {
-                  //  if (!isset ($this->cpool[$i]->resource) || $this->cpool[$i]->resource == null) {
+			// for ($i = 0; $i <= count($this->cpool); $i ++) {
+            //  if (!isset ($this->cpool[$i]->resource) || $this->cpool[$i]->resource == null) {
+			try {
+					
+				$this->cpool[$i]->resource = socket_accept($this->socket);
+                if ($this->cpool[$i]->resource < 0) 
+				{
+                    //error
+                    $this->sock_die ('socket accept failed!', $this->cpool[$i]->resource);
+                }					  
 					  
-                      $this->cpool[$i]->resource = socket_accept($this->socket);
-                      if ($this->cpool[$i]->resource < 0) {
-                        //error
-                        $this->sock_die ('socket accept failed!', $this->cpool[$i]->resource);
-                      }					  
-					  
-                      socket_setopt($this->cpool[$i]->resource, SOL_SOCKET, SO_REUSEADDR, 1);
-                      $peer_host = "";
-                      $peer_port = "";
-                      socket_getpeername($this->cpool[$i]->resource, $peer_host, $peer_port);
-                      $this->cpool[$i]->session = array ("host" => $peer_host, 
-					                                     "port" => $peer_port, 
-												   	     "connectOn" => time(),
-													     "First_time"=>true,
-					                                     "PromptString"=>$this->PromptString,
-													     "Echo"=>$this->Echo,
-														 "Silent"=>$this->silent);
-					  //at connection....									 
-					  $this->active = $i;
-					  if (!SILENCE || 
-							(!$this->cpool[$i]->session['Silent'])) 
-					  {
-							$this->ShowHeader($i);
+                socket_setopt($this->cpool[$i]->resource, SOL_SOCKET, SO_REUSEADDR, 1);
+                $peer_host = "";
+                $peer_port = "";
+                socket_getpeername($this->cpool[$i]->resource, $peer_host, $peer_port);
+                $this->cpool[$i]->session = array ("host" => $peer_host, 
+					                               "port" => $peer_port, 
+												   "connectOn" => time(),
+												   "First_time"=>true,
+					                               "PromptString"=>$this->PromptString,
+												   "Echo"=>$this->Echo,
+												   "Silent"=>$this->silent);
+				//at connection....									 
+				$this->active = $i;
+				if (!SILENCE || 
+					(!$this->cpool[$i]->session['Silent'])) 
+				{
+					$this->ShowHeader($i);
 						
-							if (SHOW_PROMPT) {
-								$this->showPrompt($i);
-							}
-					  }
+					if (SHOW_PROMPT) {
+						$this->showPrompt($i);
+					}
+				}	  
+			}
+			catch (Throwable $t) {
+				
+				$this->env->_say('Socket setopt (dmnl):' .$t, 'TYPE_LION');
+			}
 					  //return $i; 
 					//}
-				  //}	                    
-
+				  //}	 
         }
 		
 
@@ -266,7 +272,7 @@ class daemon {
 		}	
 
         function shutdown () {
-                if (SERVER_TYPE != 'inetd') { //because it just doesn't make sense
+			if (SERVER_TYPE != 'inetd') { //because it just doesn't make sense
                                                                                                 
   	           //      to have an 'inetd' service shut
                //      itself down... ;-/
@@ -275,23 +281,32 @@ class daemon {
                         for ($i = 0; $i < $maxFD; $i ++) {
                             $this->close($i);
                         }	*/	
-						for ($i=0;$i<MAX_CONNECTIONS;$i++) {
-		                  if (!is_resource($this->cpool[$i]->resource)) {
-			                break;
-			              }   
-			              else {
-			               $this->closeConnection($i);
-			              }
-		                }	   
+				for ($i=0;$i<MAX_CONNECTIONS;$i++) 
+				{
+					if (!is_resource($this->cpool[$i]->resource)) 
+					{
+						break;
+					}   
+					else {
+						$this->closeConnection($i);
+					}
+				}	   
 			   
-                        //$this->println ('*** Server Shutting down ***');
-						$this->BroadPrint ('*** Server Shutting down ***');
-                        $this->verbose (2, '=======Server Shutdown=========');
-                        //$this->close ();
-						//socket_shutdown ($this->socket);
-						socket_close($this->socket);
-									 						
-                } 
+                //$this->println ('*** Server Shutting down ***');
+				$this->BroadPrint ('*** Server Shutting down ***');
+                $this->verbose (2, '=======Server Shutdown=========');
+                //$this->close ();
+				//socket_shutdown ($this->socket);
+						
+				try
+				{				
+					socket_close($this->socket);
+				}
+				catch (Throwable $t) {
+				
+					$this->env->_say('Socket close (dmnl):' . $t, 'TYPE_LION');
+				}											 						
+			} 
         }
 
         function sock_die ($msg, $return_code, $to_be_closed) {
@@ -653,7 +668,7 @@ class daemon {
 		*/
 		
         function listen($timeout=null) {		
-declare(ticks=10) {		
+			declare(ticks=10) {		
                 if (SERVER_TYPE == 'inetd') {
 		          $this->showHeader(null);
 				  
@@ -706,10 +721,19 @@ declare(ticks=10) {
 						
 						//echo '1'; 
                         // block and wait for data or new connection
-                        $ready =  socket_select($current, $this->null, $this->null, $timeout);//null);
-                        if ($ready === false) {
-                          $this->shutdown();
-                        }	
+						try 
+						{
+							$ready =  socket_select($current, $this->null, $this->null, $timeout);//null);
+							if ($ready === false) 
+							{
+								$this->shutdown();
+							}
+						}
+						catch (Throwable $t) {
+				
+							$this->env->_say('Socket select (dmnl)' . $t, 'TYPE_LION');
+							$this->env->shutdown();
+						}						
 						
 						//echo '2';
 						// check for new connection
@@ -791,7 +815,7 @@ declare(ticks=10) {
                   }//while
 				  //}//declare
 				}
-}//declare
+			}//declare
         }//end of function
 		
 		function RegisterAction($action) {

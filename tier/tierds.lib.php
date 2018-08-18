@@ -11,7 +11,15 @@
  * @link      http://www.stereobit.com/php-dac7.php
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-   
+define ('_CAT',  1);  //MEM WRITES
+define ('_DOG',  2);  //SPINLOCKS / READS
+define ('_LION', 4);  //MESSAGES 
+define ('_RAT',  8);  //DATA
+define ('_BIRD', 16); //VAR
+define ('_IRON', 32); //MESSAGES
+define ('_ZION', 64); //MESSAGES	
+define ('_ALL', 127); //31;	
+	
 class tierds {
 
 	public $env, $dmn, $cnf, $utl, $res, $mem, $agn;
@@ -20,9 +28,8 @@ class tierds {
 	public $resources, $timer, $scheduler;
 	public $gtk, $gtkds_conn, $window, $agentbox;  
 	public $ldscheme, $verboseLevel, $argbatch;
-	
-	public static $ldschemeS;  	
-	public static $pdo;
+		
+	public static $ldschemeS, $pdo, $_SIG;
 	
 	private static $timeout_counter;
 	private $timeout, $uuid, $tkeys;
@@ -35,7 +42,10 @@ class tierds {
 		
 		$this->verboseLevel = GLEVEL;	  
 		$this->tkeys = array('heartbeat', 'heartbrst', 'netport');
-	
+		
+		//PCNTL SIGNALS
+		$this->installSIG();	
+		
 		//argv1 is daemon type -param or batchfile .ash
 		$this->argbatch = (substr($argv[1],0,1)!='-') ? $argv[1].'.ash' : '';
 		
@@ -98,7 +108,7 @@ class tierds {
 					//INITIALIZE ENVIRONMENT
 		
 					require_once($this->ldscheme . "/kernel/cnf.lib.php");
-					$this->cnf = new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
+					$this->cnf = $this->zooConf(); //new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
 					$this->cnf->_say('Load conf', 'TYPE_LION');
 					require_once($this->ldscheme . "/kernel/utils.lib.php");
 					$this->utl = new utils($this); //utils	
@@ -293,7 +303,7 @@ class tierds {
 	public function heartbrst($args=null)
 	{
 		$h = $this->set_timeout_counter(1);
-		$this->_say('heartbeat reset:'. $h , 'TYPE_IRON');
+		$this->_say('heartbeat reset:'. $h , 'TYPE_BIRD');
 		return $h;
 	}
 	
@@ -301,7 +311,7 @@ class tierds {
 	public function heartbeat($args=null)
 	{
 		$h = self::$timeout_counter;
-		$this->_say('heartbeat reply:'. $h , 'TYPE_IRON');
+		$this->_say('heartbeat reply:'. $h , 'TYPE_BIRD');
 		return ($h);
 	}	
 	
@@ -343,7 +353,7 @@ class tierds {
 			$cmd = is_array($keycmd) ? array_shift($keycmd) : $keycmd;
 			if ($this->iscmd($cmd))
 			{
-				$this->_say('read key: '. $cmd, 'TYPE_IRON');
+				$this->_say('read key: '. $cmd, 'TYPE_BIRD');
 			
 				if (method_exists($this, $cmd))
 				{	
@@ -521,7 +531,115 @@ class tierds {
 		unset($this->mem); //destruct
 		//$this->cnf->_say('.', 'TYPE_LION');
 		_tverbose('.' . PHP_EOL);
+	}
+
+	
+	//ZOO CONF MESSAGES
+	protected function zooConf($zooconf = null)
+	{
+		//return new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);
+		
+		$zoo = $zooconf ? $zooconf : _ALL & ~_DOG & ~_CAT & ~_RAT;
+		//_tverbose('[----]' . $zoo . PHP_EOL);
+		//return new Config($zoo);
+		
+		//ERR if (!$zconf = @file_get_contents(self::$ldschemeS . "/kernel/zoo.conf"))
+		$_zc = getcwd() . "/tier/zoo.conf";
+		if (!$zconf = trim(@file_get_contents($_zc)))	
+		{
+			_tverbose('[----]' . $zoo . PHP_EOL);
+			return new Config($zoo);
+		}
+			
+		_tverbose('[----]' . $zconf . PHP_EOL);
+		return new Config(eval("return $zconf;"));
+	}	
+	
+	
+	//SIGNALS
+	
+	protected function installSIG() 
+	{
+		if (!function_exists('pcntl_signal'))
+		{
+			_tverbose("[----]WARNING: you need to enable the pcntl extension". PHP_EOL);
+			//exit(1);
+			self::$_SIG = false;
+		}
+		else
+		{	
+			self::$_SIG = true;
+			_tverbose("[----]Installing signals handler..." . PHP_EOL);
+			
+			pcntl_signal(SIGINT, array($this,'sig_handler')); //ctrl-c
+			pcntl_signal(SIGTERM, array($this,"sig_handler"));
+			pcntl_signal(SIGHUP,  array($this,"sig_handler"));
+			pcntl_signal(SIGUSR1, array($this,"sig_handler"));
+			
+			return true;
+		}		
+		
+		return false;
+	}	
+	
+	//SIGNALS HANDLER
+	public function sig_handler($signo)
+	{
+		switch ($signo) {
+			case SIGINT: 
+						// handle ctrl-c
+						//exit;
+						_tverbose("[----]Caught SIGINT..." . PHP_EOL);
+						
+						$this->umonDestroy(); //destroy umon (if any, uuid session)
+						$this->shutdown(true);
+						
+						break;		
+						
+			case SIGTERM:
+						// handle shutdown tasks
+						//exit;
+						_tverbose("[----]Caught SIGTERM..." . PHP_EOL);
+						
+						$this->umonDestroy(); //destroy umon (if any, uuid session)
+						$this->shutdown(true);
+						
+						break;
+						
+			case SIGHUP:
+						// handle restart tasks
+						_tverbose("[----]Caught SIGHUP..." . PHP_EOL);
+						
+						$this->umonDestroy(); //destroy umon (if any, uuid session)
+						$this->shutdown(true);
+						
+						break;
+						
+			case SIGUSR1:
+						_tverbose("[----]Caught SIGUSR1..." . PHP_EOL);
+						break;
+						
+			default:
+						// handle all other signals
+						/*
+1) SIGHUP       2) SIGINT       3) SIGQUIT      4) SIGILL
+5) SIGTRAP      6) SIGABRT      7) SIGBUS       8) SIGFPE
+9) SIGKILL      10) SIGUSR1     11) SIGSEGV     12) SIGUSR2
+13) SIGPIPE     14) SIGALRM     15) SIGTERM     16) SIGSTKFLT
+17) SIGCHLD     18) SIGCONT     19) SIGSTOP     20) SIGTSTP
+21) SIGTTIN     22) SIGTTOU     23) SIGURG      24) SIGXCPU
+25) SIGXFSZ     26) SIGVTALRM   27) SIGPROF     28) SIGWINCH
+29) SIGIO       30) SIGPWR      31) SIGSYS      34) SIGRTMIN
+35) SIGRTMIN+1  36) SIGRTMIN+2  37) SIGRTMIN+3  38) SIGRTMIN+4
+39) SIGRTMIN+5  40) SIGRTMIN+6  41) SIGRTMIN+7  42) SIGRTMIN+8
+43) SIGRTMIN+9  44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12
+47) SIGRTMIN+13 48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14
+51) SIGRTMAX-13 52) SIGRTMAX-12 53) SIGRTMAX-11 54) SIGRTMAX-10
+55) SIGRTMAX-9  56) SIGRTMAX-8  57) SIGRTMAX-7  58) SIGRTMAX-6
+59) SIGRTMAX-5  60) SIGRTMAX-4  61) SIGRTMAX-3  62) SIGRTMAX-2
+63) SIGRTMAX-1  64) SIGRTMAX
+						*/
+		}
 	}	
 	
 }
-?>

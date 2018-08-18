@@ -126,4 +126,3 @@ class c_resstream {
      return (array('size'=>strlen($this->data)));
    }
 }
-?>

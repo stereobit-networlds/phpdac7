@@ -194,4 +194,3 @@ class tier_dacstream_DISABLED {
 		return ($g);// . $d); //error when trail text
 	}	
 }
-?>

@@ -277,13 +277,19 @@ class mem
 			
 			if ($free < intval(1024 * 5)) //1 kb --- BANKSWITCH
 			{
-				$warning = ' <<<< need extra space!'; 
+				$warning = '(extra space required!)'; 
 				//$read = PHP_EOL . $this->readSH($dpc) . PHP_EOL;
 			}	
 			
-			if (($show)||($warning))
-				$this->env->cnf->_say($offset . "\t". $length . "\t" . $free .
-									  "\t" . $dpc . " re-loaded\t" . $warning,	'TYPE_IRON');	
+			if ($show) {
+				
+				if ($warning)
+					$this->env->cnf->_say($offset . "\t". $length . "\t" . $free .
+					"\t" . $dpc . " re-loaded " . $warning,	'TYPE_LION');					
+				else	
+					$this->env->cnf->_say($offset . "\t". $length . "\t" . $free .
+					"\t" . $dpc . " re-loaded " . $warning,	'TYPE_BIRD');	
+			}						  
 					
 		}
 		
@@ -291,7 +297,7 @@ class mem
 		$this->env->cnf->_say('shmax:' . $this->shm_max . 
 							"\t mem length:" . $this->memlength . 
 							"\t mem offset: " . $memOffset, 
-							'TYPE_LION');	
+							'TYPE_BIRD');	
 	}
 	
 	//re-create hash-table (not used, create per file at checkMem)
@@ -394,9 +400,9 @@ class mem
 	{
 		if (empty($this->dpc_gc)) return;
 		
-		$this->env->cnf->_say('----------- GC -----------', 'TYPE_LION');
+		$this->env->cnf->_say('----------- GC -----------', 'TYPE_BIRD');
 		foreach ($this->dpc_gc as $entry)
-			$this->env->cnf->_say(implode("\t", $entry), 'TYPE_LION');
+			$this->env->cnf->_say(implode("\t", $entry), 'TYPE_BIRD');
 	}
 	
 	//sh mem read
@@ -516,7 +522,7 @@ class mem
 				}
 			}
 			$totalbytes = strlen($data);
-			$this->env->cnf->_say("Total Bytes : ".$totalbytes, 'TYPE_IRON');
+			$this->env->cnf->_say("Total Bytes : ".$totalbytes, 'TYPE_LION');
 	
 			return $totalbytes; 
 		}
@@ -593,7 +599,7 @@ class mem
 					//!!!!update dump-tree for any use (phar creation etc)
 					//_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.   _MACHINENAME .'.log');
 										
-					$this->env->cnf->_say("$htnew $dpc updated",'TYPE_LION');
+					$this->env->cnf->_say("$htnew $dpc updated",'TYPE_BIRD');
 					_dump("SAVE\n\n\n\n" . $data);
 				}	
 				else
@@ -673,7 +679,7 @@ class mem
 						//get md5 before extra spaces added
 						$this->env->fs->hEdt($dpc, $htnew); //update md5
 						
-						$this->env->cnf->_say("$htnew $dpc updated!",'TYPE_LION');
+						$this->env->cnf->_say("$htnew $dpc updated",'TYPE_BIRD');
 						_dump("UPDATE\n\n\n\n" . $data);
 					}
 					else
@@ -898,5 +904,4 @@ class mem
 
 		return true;	
 	}	
-}	
-?>
+}

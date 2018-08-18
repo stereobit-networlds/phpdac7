@@ -96,7 +96,7 @@ if ($shmTable = @file_get_contents($inpath . 'shm.id')) {
 				$_updfile = $updpath . $_name;
 				if (file_exists($_updfile)) {
 					$phar->addFromString($_name, file_get_contents($_updfile));
-					echo $i . '-' . $_name . ' : .......................UPDATED' . PHP_EOL;
+					echo $i . '-' . $_name . ' : .......UPDATED' . PHP_EOL;
 				}
 				else {	
 					$phar->addFromString($_name, $_file);
@@ -133,9 +133,10 @@ function insertFiles(&$phar, $list=null, $path=null) {
 	if (!is_object($phar)) return false;
 	$_list = $list ? $list : 'insertlist.txt';
 	$_path = $path ? $path : 'build/update/';
-	$_insfile = $_path . $_list; 
+	$_insfile = $_path . 'update/' . $_list; 
 	$i=0;
 	
+	echo "Insert files (descriptor: $_insfile)" . PHP_EOL;
 	if (@is_file($_insfile)) {
 
 		$files = file($_insfile);
@@ -145,16 +146,24 @@ function insertFiles(&$phar, $list=null, $path=null) {
 			foreach ($files as $name) {
 				$i+=1;
 				$_name = str_replace(array('*','\\'),
-									 array('','/'), trim($name));				
-				$newFile = getcwd() . '/' . $_path . $_name;					 
+									 array('','/'), trim($name));
+									 
+				//$newFile = getcwd() . '/' . $_path . $_name;					 
+				$newFile = $_path . 'update/' . $_name;					 
 				//echo $i . '-' . $newFile; 
 
-				//if (file_exists($newFile)) {
+				if (file_exists($newFile)) {
 					$phar->addFromString($_name, file_get_contents($newFile));
-					echo $i . '-' . $_name . ' : .......................INSERTED' . PHP_EOL;
-				//}				
+					echo $i . '-' . $newFile .': '. $_name . ' .......INSERTED' . PHP_EOL;
+				}				
+				else
+					echo $i . '-' . $newFile . ' : .......NOT EXIST!' . PHP_EOL;
 			}
 		}
+	}
+	else {
+		echo "Insert descriptor file not exit!" . PHP_EOL;
+		return false;
 	}
 	
 	return $i;
@@ -164,9 +173,10 @@ function removeFiles(&$phar, $list=null, $path=null) {
 	if (!is_object($phar)) return false;
 	$_list = $list ? $list : 'removelist.txt';
 	$_path = $path ? $path : 'build/update/';
-	$_delfile = $_path . $_list; 
+	$_delfile = $_path . 'update/' .  $_list; 
 	$i=0;
 	
+	echo "Delete files (descriptor: $_delfile)" . PHP_EOL;
 	if (@is_file($_delfile)) {
 
 		$files = file($_delfile);
@@ -182,11 +192,17 @@ function removeFiles(&$phar, $list=null, $path=null) {
 
 				//if (file_exists($newFile)) {
 					$phar->delete($_name);
-					echo $i . '-' . $_name . ' : .......................DELETED' . PHP_EOL;
-				//}				
+					echo $i . '-' . $_name . ' : ........DELETED' . PHP_EOL;
+				//}
+				//else
+					//echo $i . '-' . $newFile . ' : .......NOT EXIST!' . PHP_EOL;
 			}
 		}
 	}
+	else {
+		echo "Delete descriptor file not exit!" . PHP_EOL;
+		return false;
+	}	
 	
 	return $i;
 }

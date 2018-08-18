@@ -24,7 +24,7 @@ class shm
 	{	
 		$this->env = $env;
 		
-		$this->env->cnf->_say('DUMP FILE:' . realpath(_DUMPFILE), 'TYPE_IRON');
+		$this->env->cnf->_say('DUMP FILE:' . realpath(_DUMPFILE), 'TYPE_LION');
 		
 		//create ipc key 	
 		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
@@ -163,4 +163,3 @@ class shm
 		return @shmop_close($this->shm_id);	
 	}	
 }
-?>

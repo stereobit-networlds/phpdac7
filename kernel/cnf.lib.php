@@ -206,12 +206,12 @@ class Config
         if (($type=='TYPE_IRON') && ($this->is(Config::TYPE_IRON)))
 		{
             //echo '[iron]';
-			return $this->_echo('[iron]', self::$confcl['TYPE_IRON'], 'yellow', 'reverse'); 
+			return $this->_echo('[dac7]', self::$confcl['TYPE_IRON'], 'yellow', 'reverse'); 
         }	
         if (($type=='TYPE_ZION') && ($this->is(Config::TYPE_ZION)))
 		{
             //echo '[zion]';
-			return $this->_echo('[zion]', self::$confcl['TYPE_ZION']); 
+			return $this->_echo('[con7]', self::$confcl['TYPE_ZION']); 
         }			
         //echo "\n";
 		return false;
@@ -230,4 +230,3 @@ class Config
 		_dump(date ("Y-m-d H:i:s :").$str.PHP_EOL,'a+','/' . _DUMPFILE);
 	}	
 }
-?>

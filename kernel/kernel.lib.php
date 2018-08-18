@@ -22,6 +22,15 @@ define ("_UMONFILE", '/tier/umon-'. _MACHINENAME . '-');
 define ("_BELL", "\007");
 define ("_MEMEXTRSPC", 1024 * 10); ////10 / 10 kb
 define ("_MEMDATASPC", 1024000 * 9); // 9 mb 
+
+define ('_CAT',  1);  //MEM WRITES
+define ('_DOG',  2);  //SPINLOCKS / READS
+define ('_LION', 4);  //MESSAGES 
+define ('_RAT',  8);  //DATA
+define ('_BIRD', 16); //VAR
+define ('_IRON', 32); //MESSAGES
+define ('_ZION', 64); //MESSAGES	
+define ('_ALL', 127); //31;	
 	
 require_once("system/timer.lib.php");
 //require_once("kernel/sresc.lib.php");
@@ -69,7 +78,7 @@ class kernel {
 	public $cnf, $fs, $utl, $sch, $umon;
 	public $dpcpath, $resources;
 
-	public static $pdo;	
+	public static $pdo, $_SIG;	
    
 	public function __construct($dtype=null,$ip='127.0.0.1',$port='19123') 
 	{  
@@ -78,10 +87,13 @@ class kernel {
 		
 		$this->saveSrvState = true; 
 		
-		$this->cnf = new Config(Config::TYPE_ALL /*& ~Config::TYPE_BIRD*/ & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
+		$this->cnf = $this->zooConf(); //new Config(Config::TYPE_ALL /*& ~Config::TYPE_BIRD*/ & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
 	  
 		$this->utl = new utils($this); //utils
 		$this->utl->grapffiti(1);	
+		
+		//PCNTL SIGNALS
+		$this->installSIG();
 	  
 		$this->dpcpath = isset($argv[1]) ? ((substr($argv[1],0,1)!='-') ? $argv[1] . '/' : './') : './'; //getcwd().'/' php7
 	    $this->fs = new kfs($this, $this->dpcpath); //filesystem
@@ -121,11 +133,11 @@ class kernel {
 				$this->cnf->_say("PDO connection: ok!" , 'TYPE_IRON');
 			
 			//init umonitor
-			$this->cnf->_say("uMonitor start", 'TYPE_LION');			
+			$this->cnf->_say("uMonitor start", 'TYPE_IRON');			
 			$this->umon = new umon($this);
-			$this->umon->portTableView();			
-			$this->umon->checkPorts();
-			$this->umon->portTableView();
+			$this->umon->portTableView('TYPE_LION'); //def TYPE_BIRD			
+			$this->umon->checkPorts('TYPE_LION');//def TYPE_BIRD 'TYPE_IRON');
+			//$this->umon->portTableView(); //check
 			
 			//init scheduler
 			$this->sch = new scheduler($this);
@@ -192,14 +204,14 @@ class kernel {
 		$cmd = is_array($keycmd) ? array_shift($keycmd) : $keycmd;
 		if ($this->umon->iscmd($cmd))
 		{
-			$this->_say('read umon key: '. $cmd, 'TYPE_IRON');
+			$this->_say('read umon key: '. $cmd, 'TYPE_BIRD');
 			
 			if (method_exists($this->umon, $cmd))
 			{	
 				return $this->umon->$cmd($keycmd); //rest of array
 			}	
 			else
-				$this->_say('unknown method for key: '. $cmd, 'TYPE_IRON');
+				$this->_say('unknown method for key: '. $cmd, 'TYPE_LION');
 		}
 		//elseif (module->iscmd)
 		//...
@@ -316,7 +328,7 @@ class kernel {
 		*/	
 		
 		//DUMP MEM FOR UPDATE/SAVE PURPOSES
-		$this->cnf->_say('--------------- MEM DUMP ---------------', 'TYPE_LION');
+		$this->cnf->_say('--------------- MEM DUMP ---------------', 'TYPE_BIRD');
 		_dump($this->mem->dumpMem() ,'w', '/dumpmem-tree-'. _MACHINENAME .'.log');
 		
 		//return ($ret);		
@@ -329,12 +341,12 @@ class kernel {
 		
 		$this->dmn->show_connections();
 		$this->show_schedules();
-		$this->utl->grapffiti(); //grpahixs on
+		$this->utl->grapffiti(null, 1); //grpahixs on /1 = silent
 				
 		$tb = $this->mem->calc(); //calc
 	    $this->cnf->_say("Total buffer : ". $this->utl->convert($tb) . 
 						', mem usage: ' .	$this->utl->convert(memory_get_usage()), 
-						'TYPE_IRON');
+						'TYPE_LION');
 						
 		$this->mem->checkMem(false); //mem check on (silent)
 		$this->mem->showGC(); //show gc
@@ -530,9 +542,9 @@ class kernel {
 
 	public function shutdown($now=false) 
 	{
-		if ($now) die(); 
-   	
 		$this->cnf->_say("Shutdown!", 'TYPE_LION');
+		
+		if ($now) die(); 
 	  
 		//close printer
 		if (extension_loaded('printer')) {
@@ -565,6 +577,109 @@ class kernel {
 		
 		//unset(self::$pdo); //err, self destruct
 		_sverbose(". " . PHP_EOL);
+	}
+	
+	
+	//ZOO CONF MESSAGES
+	protected function zooConf($zooconf = null)
+	{
+		//return new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);
+		
+		$zoo = $zooconf ? $zooconf : _ALL & ~_DOG & ~_CAT & ~_RAT;
+		//_sverbose('[----]' . trim($zoo) . PHP_EOL);
+		//return new Config($zoo);
+		
+		$_zc = getcwd() . "/kernel/zoo.conf";
+		if (!$zconf = trim(@file_get_contents($_zc)))	
+		{
+			//_sverbose('[----]' . trim($zoo) . PHP_EOL);
+			return new Config($zoo);
+		}
+			
+		//_sverbose('[----]' . $zconf . PHP_EOL);
+		return new Config(eval("return $zconf;"));
+	}	
+	
+
+	//SIGNALS
+	
+	protected function installSIG() 
+	{
+		if (!function_exists('pcntl_signal'))
+		{
+			//_sverbose("[----]WARNING: you need to enable the pcntl extension". PHP_EOL);
+			$this->_say("WARNING: you need to enable the pcntl extension", 'TYPE_LION');
+			//exit(1);
+			self::$_SIG = false;
+		}
+		else
+		{	
+			self::$_SIG = true;
+			//_sverbose("[----]Installing signals handler..." . PHP_EOL);
+			$this->_say("Installing signals handler...", 'TYPE_LION'); 
+			
+			pcntl_signal(SIGINT, array($this,'sig_handler')); //ctrl-c
+			pcntl_signal(SIGTERM, array($this,"sig_handler"));
+			pcntl_signal(SIGHUP,  array($this,"sig_handler"));
+			pcntl_signal(SIGUSR1, array($this,"sig_handler"));
+			
+			return true;
+		}		
+		
+		return false;
+	}	
+	
+	//SIGNALS HANDLER
+	public function sig_handler($signo)
+	{
+		switch ($signo) {
+			case SIGINT: 
+						// handle ctrl-c
+						//exit;
+						_sverbose("[----]Caught SIGINT..." . PHP_EOL);
+						$this->shutdown(true);
+						
+						break;		
+						
+			case SIGTERM:
+						// handle shutdown tasks
+						//exit;
+						_sverbose("[----]Caught SIGTERM..." . PHP_EOL);
+						$this->shutdown(true);
+						
+						break;
+						
+			case SIGHUP:
+						// handle restart tasks
+						_sverbose("[----]Caught SIGHUP..." . PHP_EOL);
+						$this->shutdown(true);
+						
+						break;
+						
+			case SIGUSR1:
+						_sverbose("[----]Caught SIGUSR1..." . PHP_EOL);
+						break;
+						
+			default:
+						// handle all other signals
+						/*
+1) SIGHUP       2) SIGINT       3) SIGQUIT      4) SIGILL
+5) SIGTRAP      6) SIGABRT      7) SIGBUS       8) SIGFPE
+9) SIGKILL      10) SIGUSR1     11) SIGSEGV     12) SIGUSR2
+13) SIGPIPE     14) SIGALRM     15) SIGTERM     16) SIGSTKFLT
+17) SIGCHLD     18) SIGCONT     19) SIGSTOP     20) SIGTSTP
+21) SIGTTIN     22) SIGTTOU     23) SIGURG      24) SIGXCPU
+25) SIGXFSZ     26) SIGVTALRM   27) SIGPROF     28) SIGWINCH
+29) SIGIO       30) SIGPWR      31) SIGSYS      34) SIGRTMIN
+35) SIGRTMIN+1  36) SIGRTMIN+2  37) SIGRTMIN+3  38) SIGRTMIN+4
+39) SIGRTMIN+5  40) SIGRTMIN+6  41) SIGRTMIN+7  42) SIGRTMIN+8
+43) SIGRTMIN+9  44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12
+47) SIGRTMIN+13 48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14
+51) SIGRTMAX-13 52) SIGRTMAX-12 53) SIGRTMAX-11 54) SIGRTMAX-10
+55) SIGRTMAX-9  56) SIGRTMAX-8  57) SIGRTMAX-7  58) SIGRTMAX-6
+59) SIGRTMAX-5  60) SIGRTMAX-4  61) SIGRTMAX-3  62) SIGRTMAX-2
+63) SIGRTMAX-1  64) SIGRTMAX
+						*/
+		}
 	}	
 }
-?>

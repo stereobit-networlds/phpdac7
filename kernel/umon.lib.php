@@ -99,16 +99,19 @@ class umon
 		{
 			if ($i == $this->pend)
 			{
-				_verbose('Port scan has exhausted' . PHP_EOL);
+				//_verbose('Port scan has exhausted' . PHP_EOL);
+				$this->env->_say('Port scan has exhausted', 'TYPE_LION');
 				return false;
 			}
 			//else	
 				
 			$i+= 1;
-			_verbose('Port scan:' . $i . PHP_EOL);
+			//_verbose('Port scan:' . $i . PHP_EOL);
+			$this->env->_say('Port scan:' . $i, 'TYPE_LION');
 		}
 		
-		_verbose('Port selected :' . $i . PHP_EOL);
+		//_verbose('Port selected :' . $i . PHP_EOL);
+		$this->env->_say('Port selected :' . $i, 'TYPE_LION');
 		return $i;	
 	}
 	
@@ -130,28 +133,30 @@ class umon
 	}
 
 	//view port table (use scheduled tasks)
-	public function portTableView() 
+	public function portTableView($msgType=null) 
 	{
+		$_type = $msgType ? $msgType : 'TYPE_BIRD';
 		$portTable = json_decode($this->env->read('srvPorts'), true);
 		
-		$this->env->_say('[-------- session --------]' . "\tport", 'TYPE_IRON'); //header
+		$this->env->_say('[-------- session --------]' . "\tport", $_type); //header
 		if (empty($portTable)) return ;
 		
 		reset($portTable);
 		foreach ($portTable as $u=>$p)
-			$this->env->_say('[' . $u . ']' . "\t" . $p, 'TYPE_IRON');
+			$this->env->_say('[' . $u . ']' . "\t" . $p, $_type);
 			
 		return ;
 	}	
 	
-	public function checkPorts() {
+	public function checkPorts($msgType=null) {
 		
+		$_type = $msgType ? $msgType : 'TYPE_BIRD';
 		$portTable = $this->cleanPorts();
 		
 		//save to mem
 		$this->env->save('srvPorts', json_encode($portTable));
 		
-		$this->env->_say('check ports', 'TYPE_IRON');  
+		$this->env->_say('check ports', $_type);  
 		return true; 
 	}
 	
@@ -179,9 +184,8 @@ class umon
 	public function netport($args=null)
 	{
 		$port = $this->umonPort($args[0]);
-		$this->env->_say('netport reply:'. $port , 'TYPE_IRON');
+		$this->env->_say('netport reply:'. $port , 'TYPE_BIRD');
 		
 		return $port;
 	}	
-}	
-?>
+}

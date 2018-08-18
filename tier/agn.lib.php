@@ -504,4 +504,3 @@ class agn {
 		return $xi; //($ret);
 	}
 }
-?>

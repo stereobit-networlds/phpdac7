@@ -158,5 +158,3 @@ class tier_dacstream {
 		return ($g);// . $d); //error when trail text
 	}	
 }
-
-?>

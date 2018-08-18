@@ -297,5 +297,4 @@ class dmn {
 	{	
         unset($this->dmn);	
 	} 	
-} 
-?>
+}

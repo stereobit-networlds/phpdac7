@@ -159,4 +159,3 @@ function inline($data, $level=null, $copyr=false)
 	
 	return ($data);
 }
-?>

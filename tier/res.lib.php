@@ -188,4 +188,3 @@ class res {
 		return false;
 	}  
 }
-?>

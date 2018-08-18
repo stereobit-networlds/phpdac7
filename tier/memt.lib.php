@@ -44,7 +44,7 @@ class memt
 		$this->dataspace = _MEMDATASPC; //1024000 * 9; //mb //90000;
 	  			
 		//create ipc Key		
-		$this->env->cnf->_say('DUMP FILE:' . realpath(_DUMPFILE), 'TYPE_IRON');
+		$this->env->cnf->_say('DUMP FILE:' . realpath(_DUMPFILE), 'TYPE_LION');
 		$pathname = realpath(_DUMPFILE); 
 		$this->ipcKey = $this->_ftok($pathname, 's'); 			
 	}		
@@ -652,4 +652,3 @@ class memt
 		return true;	
 	}		
 }
-?>

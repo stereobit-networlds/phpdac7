@@ -206,5 +206,4 @@ class kfs
 	{	
         unset($this->dpcpath);	
 	}   
-}	
-?>	
+}

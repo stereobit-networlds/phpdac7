@@ -124,4 +124,3 @@ class c_agnstream {
      return (array('size'=>strlen($this->data)));
    }
 }
-?>

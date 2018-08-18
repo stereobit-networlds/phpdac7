@@ -150,4 +150,3 @@ final class ImmutableDataC {
         $this->data = static::sanitiseInput($this->data);
     }
 }
-?>
