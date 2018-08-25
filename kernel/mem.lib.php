@@ -63,7 +63,7 @@ class mem
 				//no die, delete shm_id
 			}
 			$space = $this->shm_max + $this->dataspace;
-			$this->env->cnf->_say("Re-allocate memory segment. $space bytes",'TYPE_CAT');
+			$this->env->cnf->_say("Re-allocate memory segment. $space bytes",'TYPE_LION');
 		
 			if ($sid = $this->env->shm->_shopen($space)) 
 			{
@@ -96,7 +96,7 @@ class mem
 	  
 			// Create shared memory block with system id if 0xff3
 			$space = $this->shm_max + $this->dataspace;
-			$this->env->cnf->_say("Allocate smemory segment. $space bytes",'TYPE_CAT');
+			$this->env->cnf->_say("Allocate smemory segment. $space bytes",'TYPE_LION');
 			
 			if ($sid = $this->env->shm->_shopen($space)) 
 			{
@@ -624,7 +624,7 @@ class mem
 				//save dump-tree for any use (phar creation etc)
 				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.   _MACHINENAME .'.log');
 					
-				$this->env->cnf->_say("$htnew $dpc saved",'TYPE_LION');
+				$this->env->cnf->_say("$htnew $dpc saved",'TYPE_BIRD');
 				_dump("LOAD\n\n\n\n" . $data);
 			}
 			else
@@ -720,7 +720,7 @@ class mem
 				//save dump-tree for any use (phar creation etc)
 				_dump("\0". $data ."\0" ,'a+', '/dumpmem-tree-'.   _MACHINENAME .'.log');
 				
-				$this->env->cnf->_say("$htnew $dpc saved!",'TYPE_LION');
+				$this->env->cnf->_say("$htnew $dpc saved",'TYPE_BIRD');
 				_dump("INSERT\n\n\n\n" . $data);
 			}
 			else

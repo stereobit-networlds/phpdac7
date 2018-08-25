@@ -95,7 +95,8 @@ class maildbqueue  {
 		//server-root app side vars
 		$this->trackapp = remote_arrayload('MAILDBQUEUE','apptrack',$this->path);	  
 	  
-		$this->thisapp = paramload('ID','instancename');	
+		//$this->thisapp = paramload('ID','instancename');	
+		$this->thisapp = paramload('ID','name');	
 	  
 		$rootpath = paramload('RCCONTROLPANEL','rootpath', $this->prpath);
 		$this->cpanelmailpath = $rootpath ? '/home/'.$rootpath.'/mail/' : '/home/stereobi/mail/';	 
@@ -137,6 +138,70 @@ class maildbqueue  {
 	    return ($out);
 	}
 					
+	
+	//(this app) excuted every hour sending mails to limit	
+	public function sendMyMailDaemon($limit=null) {
+		$db = GetGlobal('db');
+		$i = 0;
+		$ret = null;
+		
+		$sSQL = "select id,timein,active,sender,receiver,subject,body,altbody,cc,bcc,ishtml,encoding,origin,user,pass,name,server from mailqueue where active=1 order by id ";
+		$sSQL .= ($limit>0) ? "limit " . $limit : "limit 1"; 		
+	    $result = $db->Execute($sSQL);
+
+	    if (!empty($result)) {		
+			$i = 0;	
+			foreach ($result as $n=>$rec) {
+				$id = $rec['id'];	     
+				$from = $rec['sender'];//$user . '@' . $domain;
+				$to = $rec['receiver'];
+				$subject = $rec['subject'];
+				$body = $rec['body'];			 			 			 
+				$altbody = $rec['altbody'];				 
+				$cc = $rec['cc'];	
+				$bcc = $rec['bcc'];				 			 
+				$ishtml = $rec['ishtml'];	
+			       
+				$encoding = $rec['encoding'] ? $rec['encoding'] : ($this->mail_encoding ? $this->mail_encoding :$this->encoding);	
+				 
+				$origin = $rec['origin'];	 
+				$user = $rec['user']; 			 		 
+				$pass = base64_decode($rec['pass']); 
+				$name = $rec['name']; 
+				$server = $rec['server']; 			 			 			 
+			 
+				//server side root app depending tracking var..NOT FOR ROOT APP (appvar depends)			 
+				//update db
+				$datetime = date('Y-m-d h:s:m');
+				$active = 0;
+			    if ($this->is_valid_email($to)) { 
+					$error = $this->sendmail($from,$to,$subject,$body,$altbody,$cc,$bcc,$ishtml,$encoding,$user,$pass,$name,$server);				
+					$sSQL = "update mailqueue set timeout=".$db->qstr($datetime).
+			            ",mailstatus=".$db->qstr($error).",active=" . $active ." where id=" . $id;
+						
+					$i+=1;
+				}
+				else {//invalid email address...disable it 
+					$sSQL = "update mailqueue set status=-1,timeout=".$db->qstr($datetime).
+							",mailstatus=".$db->qstr('Invalid email address').",active=" . $active ." where id=" . $id;				   
+				}
+				//exec
+				$result = $db->Execute($sSQL,1);
+			}
+			//$sumi+=$i; //sum of messages of all app
+			$ret .= "\r\n[mailqueue]". $i ." message(s) send from {$this->thisapp} application!";		
+			
+			//SCAN FOR BOUNCED MAILS (this app)
+			$_from = $from ? $from : _m("cmsrt.paramload use RCBULKMAIL+user");
+			$ret .= $this->scanBounce($this->thisapp, $_from, false, $mylimit);						
+	    }
+		else {
+			$ret .= "\r\n[mailqueue]...no messages to send from {$this->thisapp} application!";		 		 
+			$limit += $limit;
+		} 
+
+		return $ret;	
+	}		
 		
     //excuted every hour sending mails to limit		
 	public function sendmail_daemon($limit=null,$forcelimits=null) {
@@ -147,7 +212,7 @@ class maildbqueue  {
 		if ($forcelimits) {//calibrate mail send queue
 		 
 			$boostlimits = $this->force_mail_limits($limit,$forcelimits);
-			echo 'BOOST LIMITS ARRAY:';
+			echo "\r\nBOOST LIMITS ARRAY:";
 			print_r($boostlimits);
 		   
 			$mylimit = (is_array($boostlimits)) ? array_shift($boostlimits) : $limit;
@@ -161,7 +226,7 @@ class maildbqueue  {
 		$sSQL .= ($mylimit>0) ? "limit " . $mylimit : "limit " . $this->batch; 		
 	    $result = $db->Execute($sSQL,2);
 			
-		echo '\r\nROOTAPP-select:',$mylimit,'-',$this->batch,'-',$sSQL . "\r\n";		
+		echo "\r\nROOTAPP-select:" . $mylimit . '-' . $this->batch . '-' . $sSQL . "\r\n";		
 		
 	    if (!empty($result)) {		
 			$i = 0;	
@@ -180,7 +245,7 @@ class maildbqueue  {
 				 
 				$origin = $rec['origin'];	 
 				$user = $rec['user']; 			 		 
-				$pass = $rec['pass']; 
+				$pass = base64_decode($rec['pass']); 
 				$name = $rec['name']; 
 				$server = $rec['server']; 			 			 			 
 			 
@@ -203,18 +268,18 @@ class maildbqueue  {
 				$result = $db->Execute($sSQL,1);
 			}
 			$sumi+=$i; //sum of messages of all app
-			$ret .= '[mailqueue]'.$i.' message(s) send from root application!';		
+			$ret .= "\r\n[mailqueue]". $i ." message(s) send from {$this->thisapp} application!";		
 			
 			//SCAN FOR BOUNCED MAILS (this app)
-			$ret .= $this->scanBounce($from, false, $mylimit);						
+			$ret .= $this->scanBounce($this->thisapp, $from, false, $mylimit);						
 	    }
 		else {
-			$ret .= '[mailqueue]...no messages to send from root application!';		 		 
+			$ret .= "\r\n[mailqueue]...no messages to send from {$this->thisapp} application!";		 		 
 			$limit += $limit;
 		}  	
 		
 		 
-		echo 'DAEMON LOOP:<pre>';		 
+		echo "\r\nDAEMON LOOP:<pre>";		 
 		print_r($this->app_pool);
 		echo '</pre>';	  
 		
@@ -222,87 +287,106 @@ class maildbqueue  {
 		if (empty($this->app_pool)) return;
 		
         foreach ($this->app_pool as $aid=>$ap) {
-		 
-			GetGlobal('controller')->calldpc_method('database.switch_db use '.$ap);		 
-			$db = GetGlobal('db'); 
-		   
-			if ($forcelimits) {
-				$force_limit = $boostlimits[$ap];
-				$mylimit = $force_limit; 
-				echo "\r\nFORCE LIMITS:".$ap.'='.$mylimit;
-			}
-			else
-				$mylimit = $limit;		   
-		   
-			$sSQL = "select id,timein,active,sender,receiver,subject,body,altbody,cc,bcc,ishtml,encoding,origin,user,pass,name,server from mailqueue where active=1 order by id ";		   
-			$sSQL .= ($mylimit>0) ? "limit " . $mylimit : "limit " . $this->batch; 		   			
-			$result = $db->Execute($sSQL,2);			 
 			
-			echo "\r\n".$ap.'-select:',$mylimit,'-',$this->batch,'-',$sSQL . "\r\n";			
-		 
-			if (!empty($result)) {	
-				$i = 0;
-				foreach ($result as $n=>$rec) {
-					$id = $rec['id'];	     
-					$from = $rec['sender'];//$user . '@' . $domain;
-					$to = $rec['receiver'];
-					$subject = $rec['subject'];
-					$body = $rec['body'];			 			 			 
-					$altbody = $rec['altbody'];				 
-					$cc = $rec['cc'];	
-					$bcc = $rec['bcc'];				 			 
-					$ishtml = $rec['ishtml'];	
-			   
-					$encoding = $rec['encoding'] ? $rec['encoding'] : ($this->mail_encoding ? $this->mail_encoding :$this->encoding);
+			//if ($db = GetGlobal('controller')->calldpc_method("database.switch_db use $ap++1")) 
+			if (true == _m("database.switch_db use $ap")) 	
+			{
+				echo "\r\nAPP: " . $ap;
+				$db = GetGlobal('db'); 
 			
-					$origin = $rec['origin'];	 
-					$user = $rec['user']; 			 		 
-					$pass = $rec['pass']; 
-					$name = $rec['name']; 
-					$server = $rec['server']; 		
-			   
-					//server side root app depending tracking var		
-					if ($this->trackapp[$aid]) {
-						$ta[] = encode(date('Ymd-H:m:s'));
-						$ta[] = $from;
-						$ta[] = $ap;
-						$tc = implode('<DLM>',$ta);
-						$tid = rawurlencode(encode($tc));		 
-						$trackid = $tid;	
-				 
-						$mybody = $this->add_tracker_to_mailbody($body,$trackid,$to,$ishtml);				 			   
-					}
-					else
-						$mybody = $body;
-			   			   	 			 			
-					$datetime = date('Y-m-d h:s:m');
-					$active = 0;													
-
-					if ($this->is_valid_email($to)) {
-						$error = $this->sendmail($from,$to,$subject,$mybody,$altbody,$cc,$bcc,$ishtml,$encoding,$user,$pass,$name,$server);			 
-						//update db
-						$sSQL = "update mailqueue set timeout=".$db->qstr($datetime).
-								",mailstatus=".$db->qstr($error).",active=" . $active . " where id=" . $id;				 
-			 
-						$i+=1;
-					}
-					else {//invalid email address...disable it 
-						$sSQL = "update mailqueue set status=-1,timeout=".$db->qstr($datetime).
-								",mailstatus=".$db->qstr('Invalid email address').",active=" . $active . " where id=" . $id;				   
-					}
-					//exec
-					$result = $db->Execute($sSQL,1);
+			/*$hpath = str_replace($this->thisapp, $ap, $this->path);
+			if (is_readable($hpath . "/config.ini.php")) 
+			{ 
+				echo "\r\nCONFIG: " . $hpath . "/config.ini.php";
+				include($hpath . "/config.ini.php");				
+				$hconfig = @parse_ini_string($conf, 1, INI_SCANNER_RAW);		
+				$db = ADONewConnection($hconfig['DATABASE']['dbtype']);
+				$db->PConnect($hconfig['DATABASE']['dbhost'], 
+							  $hconfig['DATABASE']['dbuser'], 
+							  $hconfig['DATABASE']['dbpwd'], 
+							  $hconfig['DATABASE']['dbname']); */
+				
+				if ($forcelimits) {
+					$force_limit = $boostlimits[$ap];
+					$mylimit = $force_limit; 
+					echo "\r\nFORCE LIMITS:".$ap.'='.$mylimit;
 				}
+				else
+					$mylimit = $limit;		   
+		   
+				$sSQL = "select id,timein,active,sender,receiver,subject,body,altbody,cc,bcc,ishtml,encoding,origin,user,pass,name,server from mailqueue where active=1 order by id ";		   
+				$sSQL .= ($mylimit>0) ? "limit " . $mylimit : "limit " . $this->batch; 		   			
+				$result = $db->Execute($sSQL,2);			 
+			
+				echo "\r\n".$ap.'-select:',$mylimit,'-',$this->batch,'-',$sSQL . "\r\n";			
+		 
+				if (!empty($result)) {	
+					$i = 0;
+					foreach ($result as $n=>$rec) {
+						$id = $rec['id'];	     
+						$from = $rec['sender'];//$user . '@' . $domain;
+						$to = $rec['receiver'];
+						$subject = $rec['subject'];
+						$body = $rec['body'];			 			 			 
+						$altbody = $rec['altbody'];				 
+						$cc = $rec['cc'];	
+						$bcc = $rec['bcc'];				 			 
+						$ishtml = $rec['ishtml'];	
+			   
+						$encoding = $rec['encoding'] ? $rec['encoding'] : ($this->mail_encoding ? $this->mail_encoding :$this->encoding);
+			
+						$origin = $rec['origin'];	 
+						$user = $rec['user']; 			 		 
+						$pass = base64_decode($rec['pass']); 
+						$name = $rec['name']; 
+						$server = $rec['server']; 		
+			   
+						//server side root app depending tracking var		
+						if ($this->trackapp[$aid]) {
+							$ta[] = encode(date('Ymd-H:m:s'));
+							$ta[] = $from;
+							$ta[] = $ap;
+							$tc = implode('<DLM>',$ta);
+							$tid = rawurlencode(encode($tc));		 
+							$trackid = $tid;	
+				 
+							$mybody = $this->add_tracker_to_mailbody($body,$trackid,$to,$ishtml);				 			   
+						}
+						else
+							$mybody = $body;
+			   			   	 			 			
+						$datetime = date('Y-m-d h:s:m');
+						$active = 0;													
+
+						if ($this->is_valid_email($to)) {
+							$error = $this->sendmail($from,$to,$subject,$mybody,$altbody,$cc,$bcc,$ishtml,$encoding,$user,$pass,$name,$server);			 
+							//update db
+							$sSQL = "update mailqueue set timeout=".$db->qstr($datetime).
+									",mailstatus=".$db->qstr($error).",active=" . $active . " where id=" . $id;				 
+			 
+							$i+=1;
+						}
+						else {//invalid email address...disable it 
+							$sSQL = "update mailqueue set status=-1,timeout=".$db->qstr($datetime).
+									",mailstatus=".$db->qstr('Invalid email address').",active=" . $active . " where id=" . $id;				   
+						}
+						//exec
+						$result = $db->Execute($sSQL,1);
+					}
 				
-				$sumi+=$i; //sum of messages of all app
-				$ret .= "\r\n[mailqueue]".$i.' message(s) send from application '. $ap ."!";			
+					$sumi+=$i; //sum of messages of all app
+					$ret .= "\r\n[mailqueue]". $i .' message(s) send from application '. $ap ."!";			
 				
-				//SCAN FOR BOUNCED MAILS
-				$ret .= $this->scanBounce($from, false, $mylimit);				
-			}		   	 
+					//SCAN FOR BOUNCED MAILS
+					$ret .= $this->scanBounce($ap, $from, false, $mylimit);				
+				}		   	 
+				else {
+					$ret .= "\r\n[mailqueue]...no messages to send from application ". $ap .'!';
+					$limit += $limit;			 	
+				}
+			}//if connection
 			else {
-				$ret .= "\r\n[mailqueue]...no messages to send from application ". $ap .'!';
-				$limit += $limit;			 	
+				$ret .= "\r\n[mailqueue]...no db connection at ". $ap .'!';
 			}	
 		   
 		}//app loop
@@ -632,7 +716,7 @@ class maildbqueue  {
 	       $app = trim($p[1]);	   
 		   //echo $app,'>';
 		   if (($app) && ($app!=$this->thisapp))
-		     $db = GetGlobal('controller')->calldpc_method('database.switch_db use '.$app.'++1');
+		     $db = _m('database.switch_db use '.$app.'++1');
 		   else
 		     $db = GetGlobal('db');//root db
 			 
@@ -663,24 +747,29 @@ class maildbqueue  {
 	}	
 
 
-	public function scanBounce($sender, $delete=false, $maxfiles=null) {
+	public function scanBounce($capp=null, $sender, $delete=false, $maxfiles=null) {
+		$app = $capp ? $capp : $this->thisapp;
 		$maxf = $maxfiles ? $maxfiles : $this->batch;
 		//$maxbatch = 2400; //100*24
 		$db = GetGlobal('db'); //for every app in cycle or def(this) app
 		
-		if (!$sender) return ("Scan bounce sender not exists \r\n");
+		if (!$sender) 
+			return ("Scan bounce sender not exists \r\n");
+		
 		$mp = explode('@',$sender);
-		$app_sendermailfolder = $mp[1] . '/' . str_replace('.','_',$mp[0]) . '/cur/';
+		//$app_sendermailfolder = $mp[1] . '/' . str_replace('.','_',$mp[0]) . '/cur/';
+		$app_sendermailfolder = $app . '/' . str_replace('.','_',$mp[0]) . '/cur/';
 		$senderfolder = $this->cpanelmailpath . $app_sendermailfolder;		
-		$folder = is_dir($senderfolder) ? $senderfolder : null;
-		echo "\r\nSender folder:" . $folder;
+		$folder = is_dir($senderfolder) ? $senderfolder : null; //not a dir (invalid perms)
+		echo "\r\nSender folder ($senderfolder):" . $folder;
 		if (!$folder) return false;
 		
 		//$daysback = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
 		$ret = null;
 		
 		$mfiles = scandir($folder, SCANDIR_SORT_DESCENDING); //desc
-		if (empty($mfiles)) return ($folder . " : Empty\n");	
+		if (empty($mfiles)) 
+			return ($folder . " : Empty\n");	
 		
 		$c = count($mfiles);
 		$max = ($c<$maxf) ? $c : $maxf;		

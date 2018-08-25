@@ -261,8 +261,9 @@ class dmn {
 
     public function show_connections($show=null) 
 	{
-		$out = null;		
-		$ret = $this->dmn->show_connections();
+		$out = null;
+		$titles = array("Host\t", "Port", "On\t", "First", "Prompt\t", "Echo", "Silent");	
+		$ret = $this->dmn->show_connections($titles);
 	  
 		//save in resources
 		//$this->env->resources->set_resource('_sessions',serialize($ret));	  

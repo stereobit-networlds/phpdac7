@@ -37,7 +37,7 @@ require_once(_r('cms/fronthtmlpage.dpc.php'));
 
 class cms extends fronthtmlpage {
 
-    var $appname, $httpurl, $tpath;
+    var $app, $appname, $httpurl, $tpath;
 	var $user, $seclevid, $userDemoIds, $useragent, $mobile;
 	var $session_use_cookie, $protocol, $secprotocol, $sslpath;
 	var $activeSSL, $encURLparam, $shellfn, $aliasExt, $aliasID, $aliasUrl;
@@ -56,6 +56,7 @@ class cms extends fronthtmlpage {
 		$language = getlocal();
 	    $this->lan = $language ? $language : '0';
 		
+		$this->app = paramload('ID','name');
 		$this->appname = paramload('ID','instancename');
 		$this->tpath = $this->htmlpage; //fronthtmlpage
 		

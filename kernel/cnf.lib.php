@@ -46,13 +46,13 @@ new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT);
 class Config 
 {
     // our constants must be 1,2,4,8,16,32,64 ....so on
-    const TYPE_CAT=1; //MEM WRITES
-    const TYPE_DOG=2; //SPINLOCKS / READS
-    const TYPE_LION=4;//MESSAGES 
-    const TYPE_RAT=8; //DATA
-    const TYPE_BIRD=16; //VAR
-    const TYPE_IRON=32; //..
-    const TYPE_ZION=64; //..	
+    const TYPE_CAT=1; // UMON / SCHEDULES / PROCESS
+    const TYPE_DOG=2; //KERNEL / TIER 
+    const TYPE_LION=4;//MEM / MESSAGES /AGENTS
+    const TYPE_RAT=8; //MEM DATA
+    const TYPE_BIRD=16; //VAR DATA
+    const TYPE_IRON=32; //DAC7 MESSAGES
+    const TYPE_ZION=64; //CON7 MESSAGES	
     const TYPE_ALL=127; //31;
 
     private $config;
@@ -181,12 +181,12 @@ class Config
         if (($type=='TYPE_CAT') && ($this->is(Config::TYPE_CAT)))
 		{
             //echo '[cat ]';
-			return $this->_echo('[cat ]', self::$confcl['TYPE_CAT']); //true
+			return $this->_echo('[cat ]', self::$confcl['TYPE_CAT'], 'normal', 'reverse'); //true
         }
         if (($type=='TYPE_DOG') && ($this->is(Config::TYPE_DOG)))
 		{
             //echo '[dog ]';
-			return $this->_echo('[dog ]', self::$confcl['TYPE_DOG']); 
+			return $this->_echo('[dog ]', self::$confcl['TYPE_DOG'], 'normal', 'reverse'); 
         }
         if (($type=='TYPE_RAT') && ($this->is(Config::TYPE_RAT)))
 		{

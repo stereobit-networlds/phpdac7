@@ -120,7 +120,7 @@ class scheduler {
 	   //in case of 'env' execute from env'
 	   if (($agent=='env') && (method_exists($this->env,$cmd))) {
 		   
-			$this->env->cnf->_say("$agent.". $cmd, 'TYPE_IRON');
+			$this->env->cnf->_say("$agent.". $cmd, 'TYPE_CAT');
 			
 			$ret = $this->env->$cmd($p1,$p2,$p3); 
 			$this->env->dmn->Println ($ret);
@@ -137,7 +137,7 @@ class scheduler {
 			//print_r($o_agent);
 			if ((is_object($o_agent)) && (method_exists($o_agent,$cmd))) {   
 			
-				$this->env->cnf->_say("$agent.". $cmd, 'TYPE_IRON');
+				$this->env->cnf->_say("$agent.". $cmd, 'TYPE_CAT');
 				
 				if (method_exists($o_agent,$cmd)) 
 					$ret = $o_agent->$cmd($p1,$p2,$p3);
@@ -156,7 +156,7 @@ class scheduler {
 			else {
 				//dmn dispatch, batch files, commands, etc
 				$cmd = str_replace("\\"," ",$entry['agent']);
-				$this->env->cnf->_say($entry['agent'] .".". $cmd, 'TYPE_IRON');				
+				$this->env->cnf->_say($entry['agent'] .".". $cmd, 'TYPE_CAT');				
 				
 				$this->env->dmn->dispatch(str_replace("\\"," ",$entry['agent']),null); 
 								
@@ -215,7 +215,7 @@ class scheduler {
      //echo "Schedules\n";
      foreach ($this->timeline as $t=>$d) {
 	   if ($header) {		
-			$this->env->_say(implode("\t",array_keys($d)), 'TYPE_IRON');	 	
+			$this->env->_say(implode("\t",array_keys($d)), 'TYPE_CAT');	 	
 			$header = false;
 	   }			
 
@@ -228,11 +228,11 @@ class scheduler {
 			
 			$this->env->_say($agent.$u.$p . "\t" . $d['freq'] . "\t" . 
 				$d['time']. "\t" . $d['lasttime'] . "\t" . 
-				$d['counter'], 'TYPE_IRON');
+				$d['counter'], 'TYPE_CAT');
 			unset($arg);	
 	   }
 	   else
-		  $this->env->_say(implode("\t",$d), 'TYPE_IRON');	
+		  $this->env->_say(implode("\t",$d), 'TYPE_CAT');	
 	 }  
 	 
      return (array) $this->timeline;  

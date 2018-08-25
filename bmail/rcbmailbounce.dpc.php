@@ -24,6 +24,7 @@ class rcbmailbounce {
 	
 	var $title, $prpath, $urlpath, $url;
 	var $cpanelmailpath, $sendermailfolder, $folder;
+	var $app;
 
     function __construct() {
 		
@@ -31,6 +32,8 @@ class rcbmailbounce {
       $this->urlpath = paramload('SHELL','urlpath');	
 	  $this->url = paramload('SHELL','urlbase');
 	  $this->title = localize('RCBMAILBOUNCE_DPC',getlocal());
+	  
+	  $this->app = paramload('ID','name');
 
 	  $mailpath =  remote_paramload('RCCONTROLPANEL','mailpath',$this->prpath);
 	  $rootpath = paramload('RCCONTROLPANEL','rootpath', $this->prpath);
@@ -319,26 +322,45 @@ class rcbmailbounce {
 		$ret = null;
 		
 		if ($app) {
-			$appprpath = str_replace('/cp', '/'.$app.'/cp', $this->prpath);
-			//echo $appprpath;
-			//$sender = remote_paramload('RCBULKMAIL','user', $appprpath);
-			$appconfig = @parse_ini_file($appprpath . "myconfig.txt", 1, INI_SCANNER_NORMAL);	
+			
+			//$appprpath = str_replace('/cp', '/'.$app.'/cp', $this->prpath);
+			//$appprpath = str_replace($this->app, $app, $this->prpath);
+			$appprpath = $this->prpath . 'apps/' . $app .'/';
+			echo "\r\nApp path:" . $appprpath;
+			
+			//$appconfig = @parse_ini_file($appprpath . "myconfig.txt", 1, INI_SCANNER_NORMAL);	
+			include($appprpath . "myconfig.txt.php");
+
+			$appconfig = @parse_ini_string($conf, 1, INI_SCANNER_RAW);
 			$sender = $appconfig['RCBULKMAIL']['user'];
 			//echo $sender;
-			if (!$sender) return ('conf error:'.$app);
+			if (!$sender) 
+				return ('conf error:'.$app);
+			
 			//$this->sendermailfolder = '.' . str_replace('.','_',$sender) . '/cur/'; //.link to folder cur
 			$mp = explode('@',$sender);
-			$this->sendermailfolder = $mp[1] . '/' . str_replace('.','_',$mp[0]) . '/cur/';
+			//$this->sendermailfolder = $mp[1] . '/' . str_replace('.','_',$mp[0]) . '/cur/';
+			$this->sendermailfolder = $app . '/' . str_replace('.','_',$mp[0]) . '/cur/';
 			$this->folder = $this->cpanelmailpath . $this->sendermailfolder;		
 			//echo '>App:', $this->folder;
 			
 			//direct call to db for ulists update
-			GetGlobal('controller')->calldpc_method('database.switch_db use '.$app);		 
+			_m('database.switch_db use '.$app);		 
 			$db = GetGlobal('db'); 				
+		}
+		else { //this app
+			$sender = _m("cmsrt.paramload use RCBULKMAIL+user");
+			if (!$sender) 
+				return ('conf error:'.$this->app);
+			
+			$mp = explode('@',$sender);
+			$this->sendermailfolder = $this->app . '/' . str_replace('.','_',$mp[0]) . '/cur/';
+			$this->folder = $this->cpanelmailpath . $this->sendermailfolder;			
 		}
 		
 		$mfiles = scandir($this->folder, SCANDIR_SORT_DESCENDING); //1/ //desc
-		if (empty($mfiles)) return ($this->folder . " : Empty\n");	
+		if (empty($mfiles)) 
+			return ($this->folder . " : Empty\n");	
 		
 		$c = count($mfiles);
 		$max = ($c<$maxf) ? $c : $maxf;		

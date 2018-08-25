@@ -63,7 +63,7 @@ class rctrackurl  {
 	     case 'mtrack'      :
 		 case 'mt'          :
 		 default            : 
-		                      $this->insert_into_local_ulist();	
+		                      //$this->insert_into_local_ulist();	
 		                      $this->urlTracker();
 							  $this->javascript();
 	   }

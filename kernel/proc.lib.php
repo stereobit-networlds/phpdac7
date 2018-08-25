@@ -61,7 +61,7 @@ class proc
 	}	
 
 	//cnf say
-	public function _say($msg, $type='TYPE_LION') 
+	public function _say($msg, $type='TYPE_IRON') 
 	{
 		$this->env->cnf->_say($msg, $type);
 	}	
@@ -76,7 +76,7 @@ class proc
 		
 		if ($stack = $this->setProcessStack($cmd)) 
 		{		
-			$this->env->cnf->_say('set new proc: ' . $cmd, 'TYPE_LION');
+			$this->env->cnf->_say('set new proc: ' . $cmd, 'TYPE_CAT');
 			//return $this; //fluent
 		}
 		return $this; //fluent

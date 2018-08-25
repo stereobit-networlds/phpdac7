@@ -1832,6 +1832,40 @@ EOF;
 		}
 		
 		return ($i);	 
+	}
+
+	public function readTracker() {
+	   if (!$i = GetReq('i')) return;
+
+	   $trackid = $i;
+	   
+	   $p = explode('@',$trackid);	   
+	   if (!empty($p)) {	   
+	   
+	       $app = trim($p[1]);	   
+		   //echo $app,'>';
+		   if (($app) && ($app != $this->appname))
+				$db = _m('database.switch_db use '.$app.'++1');
+		   else
+				$db = GetGlobal('db');//root db
+			 
+           $sSQL = "select id,trackid,reply from mailqueue where trackid=" . $db->qstr($trackid);			 	 
+		   $result = $db->Execute($sSQL,2);
+		   //echo $sSQL;
+		   
+		   if ($tid = $result->fields['trackid']) {//if trackid exist...
+		     
+				$replies = intval($result->fields['reply'])+1;//addon replies
+			 
+				$sSQL = "update mailqueue set reply=$replies, status=1 where trackid=" . $db->qstr($trackid);			 	 
+				$result = $db->Execute($sSQL,1);
+				//echo $sSQL;
+			 
+				return true;	
+		   }
+		   	 
+	   }
+	   return false;
 	}	
 
 

@@ -102,7 +102,7 @@ class kernel {
 		$this->daemon_ip = isset($argv[2]) ? $argv[2] : '127.0.0.1';
 		$this->daemon_port = isset($argv[3]) ? $argv[3] : '19123';
 	  	  
-		$this->cnf->_say("Daemon repository at $this->daemon_ip:$this->daemon_port", 'TYPE_LION');
+		$this->cnf->_say("Daemon repository at $this->daemon_ip:$this->daemon_port", 'TYPE_IRON');
 	  
 		//REGISTER PHPRES (client side,resources) 		 
 		/*$phpdac_c = stream_wrapper_register("phpres5","c_resstream");
@@ -135,8 +135,8 @@ class kernel {
 			//init umonitor
 			$this->cnf->_say("uMonitor start", 'TYPE_IRON');			
 			$this->umon = new umon($this);
-			$this->umon->portTableView('TYPE_LION'); //def TYPE_BIRD			
-			$this->umon->checkPorts('TYPE_LION');//def TYPE_BIRD 'TYPE_IRON');
+			$this->umon->portTableView('TYPE_CAT'); //def TYPE_BIRD			
+			$this->umon->checkPorts('TYPE_CAT');//def TYPE_BIRD 'TYPE_IRON');
 			//$this->umon->portTableView(); //check
 			
 			//init scheduler
@@ -147,11 +147,11 @@ class kernel {
 				$this->sch->schedule('env.internalClient','every','50');	  		  
 				//$this->sch->schedule('env.show_connections','every','20');		  	  		  
 				
-				$this->cnf->_say("New Scheduler", 'TYPE_LION');
+				$this->cnf->_say("New Scheduler", 'TYPE_CAT');
 			}
 			else
 			{
-				$this->cnf->_say("Loading schedules from mem", 'TYPE_LION');
+				$this->cnf->_say("Loading schedules from mem", 'TYPE_CAT');
 				//print_r(json_decode($this->read('srvSchedules'), true));
 			}	
 
@@ -239,7 +239,7 @@ class kernel {
 	public function setvar($var=null)	
 	{
 		if (!$var) return false;
-		$this->cnf->_say("Set var: " . $var, 'TYPE_LION');
+		$this->cnf->_say("Set var: " . $var, 'TYPE_DOG');
 		
 		$set = false;
 		$pv = explode('-', $var);
@@ -272,7 +272,8 @@ class kernel {
 
     public function show_schedules() 
 	{
-		$sh = $this->sch->showschedules();
+		$titles = array("Agent\t", "Freq", "Time", "Last\t", "Counter");
+		$sh = $this->sch->showschedules($titles);
 		return 'env.show_schedules';
     }	
 	
@@ -336,7 +337,7 @@ class kernel {
 
     public function scheduleprint() 
 	{	
-		//$this->cnf->_say("SERVER print", 'TYPE_LION');
+		//$this->cnf->_say("SERVER print", 'TYPE_DOG');
 		//printer_write($this->resources->get_resource('printer'), "SERVER print"."\n\r");  
 		
 		$this->dmn->show_connections();
@@ -372,11 +373,11 @@ class kernel {
 			printer_start_doc($pr, $doctitle);	  
 			printer_write($pr,$message."\n\r");  	 
 			//printer_end_doc($pr, $doctitle); //double print 0 bytes when enabled !!!!
-			$this->cnf->_say($message, 'TYPE_LION');
+			$this->cnf->_say($message, 'TYPE_DOG');
 			return true;
 		}
 	  
-		$this->cnf->_say("printing error!", 'TYPE_LION'); 
+		$this->cnf->_say("printing error!", 'TYPE_DOG'); 
 		return false;	
     }	
 	
@@ -391,11 +392,11 @@ class kernel {
 			{  
 				printer_set_option($printout, PRINTER_MODE, 'RAW'); 
 				//$this->resources->set_resource('printer',$printout);
-				$this->cnf->_say("printer:" . $printer . " connected.", 'TYPE_LION');
+				$this->cnf->_say("printer:" . $printer . " connected.", 'TYPE_DOG');
 				//printer_close($printout);
 			}
 			else
-				$this->cnf->_say("printer:" . $printer . " error: Could not connect!", 'TYPE_LION');  
+				$this->cnf->_say("printer:" . $printer . " error: Could not connect!", 'TYPE_DOG');  
 		}
 	}	
 
@@ -486,7 +487,7 @@ class kernel {
 				  ->execute($entryData['title'], $entryData['article'], $entryData['category'], $entryData['when']);	
 		*/	
 
-		$this->cnf->_say("SQL Exec:". $dpc, 'TYPE_LION');		
+		$this->cnf->_say("SQL Exec:". $dpc, 'TYPE_DOG');		
 	}	
 
 	//UTILS
@@ -497,7 +498,7 @@ class kernel {
 	    if (!$file) return false;
 		
 		$batchfile = getcwd() . _DS_ . 'kernel' . _DS_ . $file;
-		$this->cnf->_say("Init batch file: " . $batchfile, 'TYPE_LION'); 
+		$this->cnf->_say("Init batch file: " . $batchfile, 'TYPE_DOG'); 
 		
 		if (is_readable($batchfile)) 
 		{	
@@ -514,7 +515,7 @@ class kernel {
 			return true;	
 		}
 		
-		$this->cnf->_say('Init batch file not found!', 'TYPE_LION'); 
+		$this->cnf->_say('Init batch file not found!', 'TYPE_DOG'); 
 		return false;
 	}	
 	
@@ -533,7 +534,7 @@ class kernel {
 	}	
 	
 	//cnf say
-	public function _say($msg, $type='TYPE_LION', $crln=true) 
+	public function _say($msg, $type='TYPE_DOG', $crln=true) 
 	{
 		$this->cnf->_say($msg, $type, $crln);
 	}	
@@ -542,7 +543,7 @@ class kernel {
 
 	public function shutdown($now=false) 
 	{
-		$this->cnf->_say("Shutdown!", 'TYPE_LION');
+		$this->cnf->_say("Shutdown!", 'TYPE_IRON');
 		
 		if ($now) die(); 
 	  
@@ -608,7 +609,7 @@ class kernel {
 		if (!function_exists('pcntl_signal'))
 		{
 			//_sverbose("[----]WARNING: you need to enable the pcntl extension". PHP_EOL);
-			$this->_say("WARNING: you need to enable the pcntl extension", 'TYPE_LION');
+			$this->_say("WARNING: you need to enable the pcntl extension", 'TYPE_DOG');
 			//exit(1);
 			self::$_SIG = false;
 		}
@@ -616,7 +617,7 @@ class kernel {
 		{	
 			self::$_SIG = true;
 			//_sverbose("[----]Installing signals handler..." . PHP_EOL);
-			$this->_say("Installing signals handler...", 'TYPE_LION'); 
+			$this->_say("Installing signals handler...", 'TYPE_DOG'); 
 			
 			pcntl_signal(SIGINT, array($this,'sig_handler')); //ctrl-c
 			pcntl_signal(SIGTERM, array($this,"sig_handler"));

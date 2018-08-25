@@ -168,7 +168,7 @@ class scheduler {
 	   //in case of 'env' execute from env'
 	   if (($agent=='env') && (method_exists($this->env,$cmd))) {
 		   
-			$this->env->cnf->_say("$agent.". $cmd, 'TYPE_LION');
+			$this->env->cnf->_say("$agent.". $cmd, 'TYPE_CAT');
 			
 			$ret = $this->env->$cmd($p1,$p2,$p3); 
 			$this->env->dmn->Println ($ret);
@@ -185,7 +185,7 @@ class scheduler {
 			//print_r($o_agent);
 			if ((is_object($o_agent)) && (method_exists($o_agent,$cmd))) {   
 			
-				$this->env->cnf->_say("$agent.". $cmd, 'TYPE_LION');
+				$this->env->cnf->_say("$agent.". $cmd, 'TYPE_CAT');
 				
 				if (method_exists($o_agent,$cmd)) 
 					$ret = $o_agent->$cmd($p1,$p2,$p3);
@@ -204,7 +204,7 @@ class scheduler {
 			else {
 				//dmn dispatch, batch files, commands, etc
 				$cmd = str_replace("\\"," ",$entry['agent']);
-				$this->env->cnf->_say($entry['agent'] .".". $cmd, 'TYPE_LION');				
+				$this->env->cnf->_say($entry['agent'] .".". $cmd, 'TYPE_CAT');				
 				
 				$this->env->dmn->dispatch(str_replace("\\"," ",$entry['agent']),null); 
 								
@@ -248,15 +248,17 @@ class scheduler {
 	}
 
 	//show the schedules
-	public function showschedules() {
+	public function showschedules($titles = null) {
 	  
 		$tmline = json_decode($this->env->read('srvSchedules'), true); 
 		$header= true;
 	 
 		//echo "Schedules\n";
 		foreach ($tmline as $t=>$d) {
-			if ($header) {		
-				$this->env->_say(implode("\t",array_keys($d)), 'TYPE_LION');	 	
+			if ($header) {	
+			
+				$htitles = is_array($titles) ? $titles : array_keys($d);	
+				$this->env->_say(implode("\t", $htitles), 'TYPE_CAT');	 	
 				$header = false;
 			}			
 		
@@ -268,11 +270,11 @@ class scheduler {
 				$p = isset($arg[3]) ? '*' : null; //password
 				$this->env->_say($agent.$u.$p . "\t" . $d['freq'] . "\t" . 
 					$d['time']. "\t" . $d['lasttime'] . "\t" . 
-					$d['counter'], 'TYPE_LION');
+					$d['counter'], 'TYPE_CAT');
 				unset($arg);	
 			}
 			else
-				$this->env->_say(implode("\t",$d), 'TYPE_LION');	
+				$this->env->_say(implode("\t",$d), 'TYPE_CAT');	
 		}  
 	 
 		return (array) $tmline;  

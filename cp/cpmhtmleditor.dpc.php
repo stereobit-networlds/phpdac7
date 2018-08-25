@@ -1275,8 +1275,14 @@ class cpmhtmleditor {
 			
 			$aret[] = "<option value='$cat'>$lcat</option>";
 		}	
-        $ret = array_unique($aret); 
-		return (implode('',$ret));		
+		
+		if (!empty($aret)) {
+			
+			$ret = array_unique($aret);
+			return (implode('', $ret));		
+		}	
+		
+		return array();
 	}
 
 	protected function add_tags_data($code=null,$title=null,$descr=null,$keywords=null) {

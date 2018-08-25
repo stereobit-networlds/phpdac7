@@ -197,6 +197,18 @@ EOF;
 		return ('1|ns.php?a='.urlencode($this->mc));		
 	}
 	
+	/*replace htmlpage->render due to .phar cp pages */
+	public function render($cid=null) {
+		if (!$this->cid) return '.';
+		//echo $this->cid,'>';
+		$ccid = $cid ? $cid : $this->cid . '.html';
+		$nsname = $this->nspath . '/' . $ccid;		
+		if (is_readable($nsname))
+			return file_get_contents($nsname);
+		
+		return $ccid . " unknown";
+	}
+	
 	protected function update_url_statistics() {
         $db = GetGlobal('db'); 
 

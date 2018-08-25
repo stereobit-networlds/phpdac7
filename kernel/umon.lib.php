@@ -30,7 +30,7 @@ class umon
 	public function go($uuid=null) 
 	{
 		if (!$uuid) return 'undefined uuid'; //when no uuid port err at return
-		//$this->env->cnf->_say('uuid: ' . $uuid, 'TYPE_LION');		
+		//$this->env->cnf->_say('uuid: ' . $uuid, 'TYPE_CAT');		
 		$cwd = getcwd();
 		
 		//generate port...		
@@ -100,18 +100,18 @@ class umon
 			if ($i == $this->pend)
 			{
 				//_verbose('Port scan has exhausted' . PHP_EOL);
-				$this->env->_say('Port scan has exhausted', 'TYPE_LION');
+				$this->env->_say('Port scan has exhausted', 'TYPE_CAT');
 				return false;
 			}
 			//else	
 				
 			$i+= 1;
 			//_verbose('Port scan:' . $i . PHP_EOL);
-			$this->env->_say('Port scan:' . $i, 'TYPE_LION');
+			$this->env->_say('Port scan:' . $i, 'TYPE_CAT');
 		}
 		
 		//_verbose('Port selected :' . $i . PHP_EOL);
-		$this->env->_say('Port selected :' . $i, 'TYPE_LION');
+		$this->env->_say('Port selected :' . $i, 'TYPE_CAT');
 		return $i;	
 	}
 	

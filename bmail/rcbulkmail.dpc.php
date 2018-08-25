@@ -233,7 +233,7 @@ class rcbulkmail {
 		$this->savehtmlpath = $savepath ? $this->urlpath . $savepath : null;
 		$this->savehtmlurl = $savepath ? ($this->webview ? $this->url .'/'. $this->nsPage : $this->url . $savepath) : null;
 
-		$this->appname = paramload('ID','instancename');
+		$this->appname = paramload('ID','name'); //paramload('ID','instancename');
 		$this->appkey = new appkey();			
 		
 		$this->messages = array(); //reset messages any time page reload - local msg system
@@ -544,12 +544,14 @@ EOF;
             if (isset($_SESSION['RSA_Public_key'])){
                 //echo 'RSA public key (hex) = '. $_SESSION['RSA_Public_key'];
                 //echo '<br /><br />';
-				$this->messages[] = 'RSA public key (hex) = '. $_SESSION['RSA_Public_key']; 
+				
+				//$this->messages[] = 'RSA public key (hex) = '. $_SESSION['RSA_Public_key']; 
             }
             if (isset($_SESSION['aesKey'])){
                 //echo 'AES key (hex) = '. bin2hex($_SESSION['aesKey']);
                 //echo '<br />';
-				$this->messages[] = 'AES key (hex) = '. bin2hex($_SESSION['aesKey']);
+				
+				//$this->messages[] = 'AES key (hex) = '. bin2hex($_SESSION['aesKey']);
             }
 			else
 				$this->messages[] = 'AES key NOT FOUND';
@@ -1156,7 +1158,7 @@ EOF;
 			
 		//make it global to used be html form (hide default settings)
 		if ($res->fields[5]!=$this->mailuser) SetParam('user', $res->fields[5]); //alternative mail user
-		if ($res->fields[6]!=$this->mailpass) SetParam('pass', $res->fields[6]); //alternative mail pass
+		if ($res->fields[6]!=$this->mailpass) SetParam('pass', base64_decode($res->fields[6])); //alternative mail pass
 		if ($res->fields[7]!=$this->mailserver) SetParam('server', $res->fields[7]); //alternative mail server
 		
 		//fetch user realm from users
@@ -1170,7 +1172,7 @@ EOF;
 				$sSQL = 'update mailcamp set ulists=' . $db->qstr($ulist);
 				$sSQL .= ' where '. $ownerSQL . $cidSQL;	
 				$resultset = $db->Execute($sSQL);
-				$this->messages[] = $sSQL;	
+				//$this->messages[] = $sSQL;	
 
 				SetParam('include', $ulist);
 			}
@@ -1484,7 +1486,7 @@ EOF;
 				 $db->qstr($collection).",".
 				 $db->qstr($this->owner).",".
 				 $db->qstr($m_user).",".
-				 $db->qstr($m_pass).",".
+				 $db->qstr(base64_encode($m_pass)).",".
 				 $db->qstr($m_realm).",".
 				 $db->qstr($m_server).				 
 				 ")"; 
@@ -1564,8 +1566,11 @@ EOF;
 		//echo $sSQL;
 		//$this->messages[] = $sSQL;	
 		$result = $db->Execute($sSQL,2);
+		
+		if (empty($result)) 
+			return false;
 	   
-		if (count($result)>0) {		   
+		if (@count($result) > 0) {		   
 			foreach ($result as $n=>$rec) {
 				//MUST ALWAYS RETURN BATCH AS WHOLE, iF IT IS REDUCED BATCH WILL STOPPED
 				/*if ($m = $this->checkmail(trim($rec['email']))) 		 
@@ -1632,7 +1637,7 @@ EOF;
 			if (is_array($m)) {
 				
 			  if ($this->isDemoUser())  { //demo user
-			    $max = (count($m)<2) ? count($m) : 2; //max 3 addresess (2csv+'to')
+			    $max = (count($m) < 2) ? count($m) : 2; //max 3 addresess (2csv+'to')
 				for ($i=0;$i<$max;$i++) { 
 					$tcsvMail = $this->csvTrim($m[$i]);
                     if ($ml = $this->checkmail($tcsvMail)) 					
@@ -2024,7 +2029,7 @@ EOF;
 			 $db->qstr($encoding) . "," .
 			 $db->qstr($origin) . "," .			 
 			 $db->qstr($user) . "," .
-			 $db->qstr($pass) .	"," .	
+			 $db->qstr(base64_encode($pass)) .	"," .	
 			 $db->qstr($name) . "," .
 			 $db->qstr($server) . "," .
 			 $db->qstr($trackid) . "," .
@@ -2090,7 +2095,7 @@ EOF;
 			 $db->qstr($encoding) . "," .
 			 $db->qstr($origin) . "," .			 
 			 $db->qstr($user) . "," .
-			 $db->qstr($pass) .	"," .	
+			 $db->qstr(base64_encode($pass)) .	"," .	
 			 $db->qstr($name) . "," .
 			 $db->qstr($server) . "," .
 			 $db->qstr($trackid) . "," .
@@ -2114,13 +2119,13 @@ EOF;
 	   
 			$smtpm = new smtpmail($this->encoding,$this->mailuser,$this->mailpass,$this->mailname,$this->mailserver);
 		   	   
-			if ((SMTP_PHPMAILER=='true') || ($method=='SMTP')) {
+			if (('SMTP_PHPMAILER'=='true') || ($method=='SMTP')) {
 				$smtpm->from($from,$this->mailname);		   
 				$smtpm->to($to);  
 				$smtpm->subject($subject);
 				$smtpm->body($mail_text,$is_html);		   			   	   
 			}
-			elseif ((SENDMAIL_PHPMAILER=='true') || ($method=='SENDMAIL')) {	  	   
+			elseif (('SENDMAIL_PHPMAILER'=='true') || ($method=='SENDMAIL')) {	  	   
 				$smtpm->from($from,$this->mailname);		   
 				$smtpm->to($to);  			    
 				$smtpm->subject($subject);

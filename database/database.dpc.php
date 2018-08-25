@@ -124,19 +124,20 @@ class database {
 	public function switch_db($appname=null,$rootdb=null,$returnpointer=null, $check_object=false) {
 		if ($appname) 
 			//$this->hosted_path = $this->path . '../' . $appname . '/cp/' ;
-			$this->hosted_path = str_replace($this->app, $appname, $this->path);
+			//$this->hosted_path = str_replace($this->app, $appname, $this->path);
+			$this->hosted_path = $this->path . 'apps/' . $appname .'/';
 
 		if ($rootdb)//force root db connection
 			$path = $this->path ; //'/home/stereobi/projects/';//demosoft/';
 		else
 			$path = $this->hosted_path;
-		//echo $path,'-<br>-';
-		  		  
+		
+		//echo "\r\n\r\nSWITCH DB CONF FILE:" . $path . "\r\n";  
 		$_Dbtype   = remote_paramload('DATABASE','dbtype', $path ,1);
 		$_Dbname   = remote_paramload('DATABASE','dbname', $path, 1);
 		$_User     = remote_paramload('DATABASE','dbuser', $path, 1);
 		$_Password = remote_paramload('DATABASE','dbpwd', $path, 1);
-		//echo $_Dbname,$_User,$_Password,'!<br>';
+		//echo "\r\nDB Params:" . $_Dbname .' '. $_User .' '. $_Password . "\r\n\r\n";
 		  
 		//return ;		  
 		if ((stristr($_Dbtype,'mysql')) || (stristr($_Dbtype,'mysqli'))) {	
@@ -169,8 +170,9 @@ class database {
 			//return pointer...... 
 			if ($returnpointer)
 				return ($dbp);
-			else	
-				SetGlobal('db',$dbp);//global alias 		  
+			//else	
+			SetGlobal('db',$dbp);//global alias 		  
+			return true;
 		}				
 	}   
    

@@ -109,15 +109,15 @@ class tierds {
 		
 					require_once($this->ldscheme . "/kernel/cnf.lib.php");
 					$this->cnf = $this->zooConf(); //new Config(Config::TYPE_ALL & ~Config::TYPE_DOG & ~Config::TYPE_CAT & ~Config::TYPE_RAT);		
-					$this->cnf->_say('Load conf', 'TYPE_LION');
+					$this->cnf->_say('Load conf', 'TYPE_DOG');
 					require_once($this->ldscheme . "/kernel/utils.lib.php");
 					$this->utl = new utils($this); //utils	
-					$this->cnf->_say('Load utils', 'TYPE_LION');
+					$this->cnf->_say('Load utils', 'TYPE_DOG');
 					
 					//client res (no shm agent for resources)
 					require_once($this->ldscheme . "/tier/res.lib.php");
 					$this->res = new res($this); 	
-					$this->cnf->_say('Load resource handler', 'TYPE_LION');
+					$this->cnf->_say('Load resource handler', 'TYPE_DOG');
 		
 					//kernel tools
 					require_once($this->ldscheme . "/kernel/imo.lib.php");
@@ -158,14 +158,14 @@ class tierds {
 								$s->schedule('env.show_connections','every','20'); 
 						}
 						else
-							$this->cnf->_say('Agents init error!', 'TYPE_LION');							
+							$this->cnf->_say('Agents init error!', 'TYPE_DOG');							
   
 						//initialize GTk connector (for calling proc from this ($env) class ...purposes)
 						$this->gtk = ($argv[4]==='-gtk') ? true : false;
 						if ($this->gtk) 
 						{
 							require($this->ldscheme . "/tier/gtklib.lib.php");  			  
-							$this->cnf->_say("GTK connector loaded!", 'TYPE_LION');
+							$this->cnf->_say("GTK connector loaded!", 'TYPE_DOG');
 							$this->gtkds_conn = new gtkds_connector();
 		
 							//////////////////////////////////// gtk win
@@ -221,10 +221,13 @@ class tierds {
 	
 	public function show_connections($show=null,$dacserver=null)
 	{
+		//connections
+		$conn = $this->dmn->show_connections($show,$dacserver);
+		
 		//set timeout inc by 1, when called as proc
 		$this->set_timeout();
 		
-		return $this->dmn->show_connections($show,$dacserver);
+		return ($conn);
 	}
 	
 	
@@ -247,7 +250,7 @@ class tierds {
 			//self::$timeout_counter += 1;
 			self::set_timeout_counter();
 		
-		$this->_say("Timeout ({$this->uuid}):" . self::$timeout_counter, 'TYPE_RAT');
+		$this->_say("Timeout ({$this->uuid}):" . self::$timeout_counter, 'TYPE_BIRD');
 		return true;
 	}
 	
@@ -267,7 +270,7 @@ class tierds {
 		else
 			self::$timeout_counter += 1;
 		
-		$this->_say("Heartbeat ({$this->uuid}):" . self::$timeout_counter . '/' . _TIMEOUT, 'TYPE_BIRD');
+		$this->_say("Heartbeat ({$this->uuid}):" . self::$timeout_counter . '/' . _TIMEOUT, 'TYPE_DOG');
 		return true;
 	}
 	
@@ -319,7 +322,7 @@ class tierds {
 	public function netport($args=null)
 	{
 		$port = $this->umonPort();
-		$this->_say('netport reply:'. $port , 'TYPE_IRON');
+		$this->_say('netport reply:'. $port , 'TYPE_CAT');
 		return ($port);
 	}	
 	
@@ -343,7 +346,7 @@ class tierds {
         if ($pos = strpos($dpc, "\r\n\r\n"))
 		//if ($pos = strstr($dpc, 'socket.io'))	
         {
-			$this->_say('pos: '. $pos, 'TYPE_IRON');
+			$this->_say('pos: '. $pos, 'TYPE_CAT');
 			return "HTTP/1.1 400 bad request\r\n\r\nheader too long";
 		}	
 		else
@@ -353,14 +356,14 @@ class tierds {
 			$cmd = is_array($keycmd) ? array_shift($keycmd) : $keycmd;
 			if ($this->iscmd($cmd))
 			{
-				$this->_say('read key: '. $cmd, 'TYPE_BIRD');
+				$this->_say('read key: '. $cmd, 'TYPE_CAT');
 			
 				if (method_exists($this, $cmd))
 				{	
 					return $this->$cmd($keycmd); //rest of array
 				}	
 				else
-					$this->_say('unknown method for key: '. $cmd, 'TYPE_IRON');
+					$this->_say('unknown method for key: '. $cmd, 'TYPE_DOG');
 			}
 		}
 		//else		
@@ -503,7 +506,7 @@ class tierds {
     public function shutdown($now=false) 
 	{
 		//_say("Shutdown " . $now, 1);
-		$this->cnf->_say('Shutdown ' . $now, 'TYPE_LION');	 
+		$this->cnf->_say('Shutdown ' . $now, 'TYPE_IRON');	 
 		
 		$this->free_tier();
 		

@@ -30,7 +30,7 @@ class agn {
 	public function init_agents() 
 	{    
 	   $f = $this->env->ldscheme . "/tier/tierds.ini";			
-	   $this->env->_say('Init agents file: ' . $f, 'TYPE_LION');
+	   $this->env->_say('Init agents file: ' . $f, 'TYPE_DOG');
 	   
 	   $code = @file_get_contents($f);
 	   if (isset($code))

@@ -1,0 +1,25 @@
+#!/usr/bin/php
+<?php
+chdir(__DIR__);
+
+$page = new pcntl('
+super javascript;
+
+load_extension adodb refby _ADODB_; 
+super database;
+
+use mail.bounce_driver;
+
+public cms.cmsrt;
+public mail.smtpmail;
+public bmail.maildbqueue;
+public bmail.rcbmailbounce;
+
+',1,true);	 
+
+$ret = _m("rcbmailbounce.cleanBounce use +1"); 
+echo $ret;
+
+$time = (microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) / 60;
+echo "<!-- 	$time -->";
+?>

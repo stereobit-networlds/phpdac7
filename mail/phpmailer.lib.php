@@ -169,7 +169,7 @@ public $Host        = "localhost";
 public $Helo        = "";
 /*. DOC Sets the SMTP HELO of the message (Default is <@item ::$Hostname>).  .*/
 
-public $SMTPAuth     = FALSE;
+public $SMTPAuth     = true; //FALSE;
 /*. DOC Sets SMTP authentication.
 	Utilizes the <@item ::$Username> and <@item ::$Password> variables.
 .*/

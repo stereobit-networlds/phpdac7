@@ -824,9 +824,9 @@ class daemon {
 		}
 		
 		
-        function show_connections() {
+        function show_connections($titles=null) {
 		  $ses = array();
-		  
+
 		  //echo "<pre>";
 		  //print_r($this->cpool);
 		  //echo "</pre>";
@@ -837,8 +837,10 @@ class daemon {
 					(isset($conn->session['host']))) 
 				{	
 					$ses[] = (array) $conn->session;
-					if ($i==0)
-						$this->env->_say(implode("\t",array_keys($conn->session)), 'TYPE_IRON');
+					if ($i==0) {
+						$htitles = is_array($titles) ? $titles : array_keys($conn->session);	
+						$this->env->_say(implode("\t", $htitles), 'TYPE_IRON');
+					}	
 					
 					$this->env->_say(implode("\t",$conn->session), 'TYPE_IRON');
 				}	

@@ -367,13 +367,16 @@ class dmnt {
 	public function show_connections($show=null,$dacserver=null) 
 	{
 		if ($dacserver) 
-		{ 	//get sessions from phpdac server's daemon...
+		{ 	
+			//get sessions from phpdac server's daemon...
 			$sret = $this->env->agn->get_agent('resources')->get_resourcec('_sessions',$this->env->phpdac_ip,$this->env->phpdac_port);
 			$ret = unserialize($sret);
 		}
 		else 
-		{ 	//get session from this agentds daemon
-			$ret = $this->dmn->show_connections();
+		{ 	
+			//get session from this agentds daemon
+			$titles = array("Host", "Port", "On\t", "First", "Prompt\t", "Echo", "Silent");
+			$ret = $this->dmn->show_connections($titles);
 	  
 			//save in resources
 			//$this->env->agn->get_agent('resources')->set_resource('_sessions',serialize($ret));		  
@@ -425,13 +428,13 @@ class dmnt {
 		*/
 		//remote file
 		$batchfile = $this->env->ldscheme . "/tier/" . $file;			
-		$this->env->_say('Init batch file: ' . $batchfile, 'TYPE_LION');	
+		$this->env->_say('Init batch file: ' . $batchfile, 'TYPE_DOG');	
 		
 		$fdata = @file_get_contents($batchfile);
 		if (isset($fdata))
 		{
 			//if ($say)
-				//$this->env->_say('Init batch file: ' . $batchfile, 'TYPE_LION');			
+				//$this->env->_say('Init batch file: ' . $batchfile, 'TYPE_DOG');			
 		  
 		    $f = explode(PHP_EOL, $fdata);
 			
