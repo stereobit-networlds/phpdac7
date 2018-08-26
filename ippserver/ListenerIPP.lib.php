@@ -40,7 +40,7 @@ ignore_user_abort(true);
 	$class = str_replace('\\', '/', $class);
 	require_once($class . '.php');
 });*/            
-require_once("ServerIPP.lib.php");
+require_once(_r("ippserver/ServerIPP.lib.php"));
 //pcntl loaded at phpdac7
 //require_once('cp/dpc/system/pcntl.lib.php'); 
 

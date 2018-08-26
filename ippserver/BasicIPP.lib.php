@@ -39,7 +39,7 @@
    TODO: beta tests on other servers than Cups
  */
 // required and included files
-_r("ippserver/http_class.lib.php");
+require_once(_r("ippserver/http_class.lib.php"));
 /*
 // If you want http backend from http://www.phpclasses.org/browse/package/3.html
 require_once("HTTP/http.php");

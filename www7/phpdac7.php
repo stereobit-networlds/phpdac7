@@ -25,10 +25,13 @@ define ("_MACHINENAME", _OS_);//((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 
 define ("_DUMPFILE", 'dumpagn-'. _MACHINENAME . '.log');
 define ("_UMONFILE", '/tier/umon-'. _MACHINENAME . '-');
 
-if ($timezone) //global timezone var
-	date_default_timezone_set($timezone);//'Europe/Athens');
-if (!$nosession) //global nosession var	
-	session_start(); 		
+if (isset($timezone)) //global timezone var
+	date_default_timezone_set($timezone);
+else	
+	date_default_timezone_set('Europe/Athens');
+
+if (isset($nosession)) //global nosession var	
+{;} else session_start(); 		
 		
 $start=microtime(true);
 $env = array(
@@ -79,9 +82,8 @@ if ((_MODE_ == 2) && (substr($st,-5) == $dp))
 	//require_once("$st/tier/sresct.lib.php"); 
 	stream_wrapper_register("phpres5","c_resstream");
 	
-	//if (!$_SESSION['uuid'])
-	//if (!$agnport = @file_get_contents($env['dpcpath'] . _UMONFILE . session_id() . '.log')) 
-	if ($agnport = trim(get('netport-' . session_id())))
+	$__id = getSesId(true);
+	if ($agnport = trim(get('netport-' . $__id)))
 	{
 		//echo $_SESSION['uuid'];
 		//echo '-'. $agnport .'-';
@@ -95,10 +97,11 @@ if ((_MODE_ == 2) && (substr($st,-5) == $dp))
 	else
 	{
 		//create uuid;
-		$_SESSION['uuid'] =  _uuid();
+		if (isset($nosession)) {}
+			else $_SESSION['uuid'] =  _uuid();
 	
 		//kernel open a uuid tier
-		get(session_id()); //$uuid);		
+		get($__id); //$uuid);		
 	}
 }//MODE
 //else 1=default
@@ -175,6 +178,43 @@ function getT($call=null, $port=null) {
     return @file_get_contents("phpres5://$dh:$dpt/" . $call);
 }
 
+//get client ip
+function getIP($encode=false) {
+	$ip = $_SERVER['REMOTE_ADDR'];
+	
+	if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
+		$ip = array_pop(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']));
+	}
+	return ($encode==true) ? md5($ip) : $ip;
+}
+
+//select between global sesID (REMOTE_ADDR or fixed id) and session
+function getSesId($encode=false) {
+	global $sesID, $nosession;
+	
+	if (!isset($sesID)) 
+	{
+		//$id = ((!$nosession) ? session_id() : getIP(true));
+		if (!isset($nosession))
+		{	
+			$username = $_SESSION['UserName']; 
+			$userid = $_SESSION['UserID'];
+			$usersecid = $_SESSION['UserSecID']; 
+			$admin = $_SESSION['ADMIN'];
+			$adminsecid = $_SESSION['ADMINSecID'];
+	
+			$id = isset($username) ? $username : session_id();
+		}
+		else
+			$id = getIP();
+	}
+	else
+		$id = $sesID;	
+	
+	__log('ID:'.$id);
+	return ($encode==true) ? md5($id) : $id;
+}
+
 
 //namespace\c7_dacstream
 class c7_dacstream {
@@ -208,7 +248,7 @@ class c7_dacstream {
 		//exclude '/' from the begining of str
         $this->dpcmem = (substr($this->path,0,1)=='/') ? substr($this->path,1) : $this->path;
 		//client version of getdpcmem
-		$request = "getdpcmemc " . $this->dpcmem . PHP_EOL;//"\r\n";
+		$request = "getdpcmemc " . $this->dpcmem . "\r\n";
         fputs($socket, $request); 
         $ret = ''; 
         while (!feof($socket)) { 

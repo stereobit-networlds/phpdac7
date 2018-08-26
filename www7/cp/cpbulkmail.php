@@ -1,6 +1,6 @@
 <?php
 //define ('SENDMAIL_PHPMAILER',null);
-//define ('SMTP_PHPMAILER','true');
+define ('SMTP_PHPMAILER','true');
 
 $page = new pcntl('
 super javascript;

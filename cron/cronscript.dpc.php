@@ -19,14 +19,26 @@ class cronscript {
 		$ret = null;
 		
 		if (class_exists('pcntl', true)) {
+			/*
+			@file_put_contents($this->prpath . 'cronerr.txt', 
+								date('c') . "\r\nScript:\r\n" . $script ."\r\n");			
+			*/
+			$this->writeLog($script);
 			
 			set_time_limit(120);
 			
-			$ret = eval($script);
-			if (($ret==false) && ($error = error_get_last())) {
+			//$ret = eval($script);
+			//if (($ret==false) && ($error = error_get_last())) 
+			if (!$ret = eval($script))	
+			{  /*
 				@file_put_contents($this->prpath . '/cronerr.txt', 
 									$error . PHP_EOL . $script);
-									
+				*/					
+				/*
+				@file_put_contents($this->prpath . 'cronerr.txt', 
+									date('c') . "\r\nError:". error_get_last());
+				*/
+				$this->writeLog("\r\nError:". error_get_last());		
 				//$ret = true; //bypass					
 			}
 			//test
