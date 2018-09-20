@@ -899,6 +899,21 @@ $(document).ready(function(){
     } 
 	
     protected function cached_mail_size($cahcetime=null) {
+	   /*exec
+	   $out = array();
+	   $ret = exec('du -bs /var/qmail/mailnames/panikidis.gr', $out);
+	   //$ret = exec('du -bs /var/www/vhosts/panikidis.gr', $out);
+	   echo 'Exec:' . explode('/', $ret)[0];
+	   print_r($out);	   	
+	   */
+	   if ($systemcmd = remote_paramload('RCCONTROLPANEL','execmx',$this->prpath)) {
+		   //not owned files !!!!
+		   $mxsize = exec('du -bs '. $systemcmd);
+		   $size = explode('/', $mxsize);
+		   //echo 'mx:' . trim($size[0]);
+		   return $size[0] ? trim($size[0]) : 1;
+	   }
+		
 	   //$path = '/home/'.$this->rootapp_path.'/mail/' . str_replace('www.','',$this->url);
 	   $path = $this->mailapp_path . str_replace('www.','',$this->url); 
        $name = 'a';//strval(date('Ymd'));
@@ -923,6 +938,16 @@ $(document).ready(function(){
   	
 	
     protected function cached_disk_size($cahcetime=null) {
+		
+	   if ($systemcmd = remote_paramload('RCCONTROLPANEL','execfs',$this->prpath)) {
+		   //owned files
+		   $fssize = exec('du -bs '. $systemcmd);
+		   $size = explode('/', $fssize);
+		   //echo 'fs:' . trim($size[0]);
+		   return $size[0] ? trim($size[0]) : 1;
+	   }		
+		
+		
   	   $path = $this->application_path; 
        $name = 'a';//strval(date('Ymd'));
        $tsize = $this->prpath . $name . '-tsize.size';

@@ -5,7 +5,7 @@
 <!-- BEGIN HEAD -->
 <head>
    <meta charset="utf-8" />
-   <title>Collections</title>
+   <title>Group</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta content="" name="description" />
     <meta content="" name="author" />
@@ -94,7 +94,7 @@
 												<label class="control-label">Select db field</label>
 													<div class="controls">
 													<select name="dbfield" class="span6 " multiple="multiple" data-placeholder="Choose db field" tabindex="1">
-														<phpdac>rccollections.viewDBKeys</phpdac>
+														<phpdac>rcgroup.viewDBKeys</phpdac>
 													</select>
 													</div>
 												</div>	
@@ -105,7 +105,7 @@
 												<label class="control-label">Select xml field</label>
 													<div class="controls">
 													<select name="xmlfield" class="span6 " multiple="multiple" data-placeholder="Choose xml field" tabindex="1">
-														<phpdac>rccollections.viewXMLKeys</phpdac>
+														<phpdac>rcgroup.viewXMLKeys</phpdac>
 													</select>
 													</div>
 												</div>
@@ -128,13 +128,13 @@
 									<div class="control-group">
                                         <label class="control-label">Save As:</label>
                                         <div class="controls">
-                                            <input name="xmlfile" type="text" value="<phpdac>fronthtmlpage.echostr use rccollections.xmlfile</phpdac>" class="span6" />
+                                            <input name="xmlfile" type="text" value="<phpdac>fronthtmlpage.echostr use rcgroup.xmlfile</phpdac>" class="span6" />
 											<span>
-												<phpdac>rccollections.viewXMLPresetsSelect</phpdac>
+												<phpdac>rcgroup.viewXMLPresetsSelect</phpdac>
 											</span>
                                         </div>
                                     </div>
-									<phpdac>rccollections.postXMLSubmit use cpsavexml+Ok+btn</phpdac>
+									<phpdac>rcgroup.postXMLSubmit use cpsavexmlgrp+Ok+btn</phpdac>
                                 </div>
                             </form>
                             <!-- END DUAL SELECT-->

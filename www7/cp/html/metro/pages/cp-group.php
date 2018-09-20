@@ -5,7 +5,7 @@
 <!-- BEGIN HEAD -->
 <head>
    <meta charset="utf-8" />
-   <title>Collections</title>
+   <title>Group</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta content="" name="description" />
     <meta content="" name="author" />
@@ -71,7 +71,7 @@
                     <div class="widget orange">
                         <div class="widget-title">
                             <h4>
-                                <i class="icon-reorder"></i> Collect
+                                <i class="icon-reorder"></i> Select Group
                             </h4>
                             <span class="tools">
                             <a href="javascript:;" class="icon-chevron-down"></a>
@@ -95,7 +95,7 @@
                                                 </div>
 
                                                 <select name="tlist[]" id="box1View" multiple="multiple" style="height:300px;width:75%">
-                                                    <phpdac>rccollections.getCurrentList</phpdac>
+                                                    <phpdac>rcgroup.getCurrentList</phpdac>
                                                 </select><br/>
 
                                                 <span id="box1Counter" class="countLabel"></span>
@@ -120,8 +120,8 @@
                                                     <button type="button" class="btn" id="box2Clear">X</button>
                                                 </div>
 
-                                                <select name="mylist[]" id="box2View" multiple="multiple" style="height:300px;width:75%;">
-													<phpdac>rccollections.viewList</phpdac>
+                                                <select name="mygroup[]" id="box2View" multiple="multiple" style="height:300px;width:75%;">
+													<phpdac>rcgroup.viewList</phpdac>
                                                 </select><br/>
 
                                                 <span id="box2Counter" class="countLabel"></span>
@@ -141,7 +141,7 @@
                                             <input name="xmlload" type="text" class="span6" />
                                             <!--span class="help-inline">Input address</span-->
 											<span>
-												<phpdac>rccollections.viewCollectionsSelect</phpdac>
+												<phpdac>rcgroup.viewCollectionsSelect</phpdac>
 											</span>
                                         </div>
                                     </div>
@@ -153,7 +153,7 @@
 										<input name="cname" type="text" class="span6" />
                                     </div>
                                     <!--input type="submit" value="Submit" class="btn"/-->
-									<phpdac>rccollections.postSubmit use cpsavecol+Ok+btn</phpdac>
+									<phpdac>rcgroup.postSubmit use cpsavegrp+Ok+btn</phpdac>
                                 </div>
                             </form>
                             <!-- END DUAL SELECT-->
@@ -234,7 +234,7 @@
         });
       });
     </script>       
-   <!-- END JAVASCRIPTS -->   
+   <!-- END JAVASCRIPTS --> 
 </body>
 <!-- END BODY -->
 </html>

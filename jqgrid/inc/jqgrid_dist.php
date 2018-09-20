@@ -1,14 +1,7 @@
 <?php 
-/**
- * PHP Grid Component
- *
- * @author Abu Ghufran <gridphp@gmail.com> - http://www.phpgrid.org
- * @version 1.4.6
- * @license: see license.txt included in package
- */
-							  
- /*error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED); */                                                                                                                                                                                                                                                                                                                                                                                   
- class jqgrid{ 	
+                                                                                                                                                                                                                                                                                                                                                                                   
+ class jqgrid { 	
+ 
  var $options = array(); 	
  var $select_command; 	
  var $table; 	
@@ -49,3 +42,8 @@
  }
  function pr($V47c80780, $Vf24f62ee=0){	echo "<pre>";print_r($V47c80780);echo "</pre>";	if ($Vf24f62ee) die;} 
  function json_encode_jsfunc($Va43c1b0a=array(), $V4b5bea44=array(), $Vc9e9a848=0){	foreach($Va43c1b0a as $V3c6e0b8a=>$V2063c160)	{ if (is_array($V2063c160)) { $V2cb9df98 = json_encode_jsfunc($V2063c160, $V4b5bea44, 1);$Va43c1b0a[$V3c6e0b8a]=$V2cb9df98[0];$V4b5bea44=$V2cb9df98[1];}else { if (substr($V2063c160,0,8)=='function') { $V19b0bee6="#".uniqid()."#";$V4b5bea44[$V19b0bee6]=$V2063c160;$Va43c1b0a[$V3c6e0b8a]=$V19b0bee6;}}}if ($Vc9e9a848==1)	{ return array($Va43c1b0a, $V4b5bea44);}else	{ $V7648c463 = json_encode($Va43c1b0a);foreach($V4b5bea44 as $V3c6e0b8a=>$V2063c160) { $V7648c463 = str_replace('"'.$V3c6e0b8a.'"', $V2063c160, $V7648c463);}return $V7648c463;}}
+ 
+ 
+ 
+ 
+ ?>

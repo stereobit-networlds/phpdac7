@@ -112,6 +112,8 @@ class cmscharts extends cpflotcharts {
 			foreach ($result as $i=>$rec) 
 				$items[] = $rec[0];
 			
+			if (empty($items)) return ;
+			
 			//transactions
 			$diff = 0;
 			//$timeins = $this->sqlDateRange('timein', true, true, $diff);
