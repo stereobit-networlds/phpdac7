@@ -171,26 +171,26 @@ class rcimgitems {
 		$_wf = $this->whereFilter();
 		$xsSQL = "SELECT * from (select {$this->etlfields}  from etlproducts $_wf) o ";		   
 		   							
-		_m("mygrid.column use grid1+id|".localize('id',getlocal())."|2|0|");
-		_m("mygrid.column use grid1+itmactive|".localize('_active',getlocal())."|boolean|1|1:0");		
-		_m("mygrid.column use grid1+active|".localize('_active',getlocal())."|boolean|1|101:0|");
-		_m("mygrid.column use grid1+datein|".localize('_date',getlocal())."|link|5|cpimgitems.php?flt=datein&val={datein}");	
-		_m("mygrid.column use grid1+code3|".localize('_code',getlocal())."|5|0|");
-		_m("mygrid.column use grid1+code5|".localize('_code',getlocal())."|link|5|cpimgitems.php?flt=code5&val={code5}");	
-		_m("mygrid.column use grid1+itmname|".localize('_title',getlocal())."|10|0|");	
-		_m("mygrid.column use grid1+cat0|".localize('_cat',getlocal())."|link|5|cpimgitems.php?flt=cat0&val={cat0}");	
-		_m("mygrid.column use grid1+cat1|".localize('_cat',getlocal())."|link|5|cpimgitems.php?flt=cat1&val={cat1}");
-		_m("mygrid.column use grid1+cat2|".localize('_cat',getlocal())."|link|5|cpimgitems.php?flt=cat2&val={cat2}");
-		_m("mygrid.column use grid1+cat3|".localize('_cat',getlocal())."|link|5|cpimgitems.php?flt=cat3&val={cat3}");
-		_m("mygrid.column use grid1+cat4|".localize('_cat',getlocal())."|link|5|cpimgitems.php?flt=cat4&val={cat4}");
-		_m("mygrid.column use grid1+uniname1|".localize('_uniname1',getlocal())."|5|0|");		
-		_m("mygrid.column use grid1+ypoloipo1|".localize('_ypoloipo1',getlocal())."|5|0|");			
-		_m("mygrid.column use grid1+price0|".localize('_price0',getlocal())."|5|0|");		
-		_m("mygrid.column use grid1+price1|".localize('_price1',getlocal())."|5|0|");			
-		_m("mygrid.column use grid1+manufacturer|".localize('_manufacturer',getlocal())."|link|5|cpimgitems.php?flt=manufacturer&val={manufacturer}");//."|5|0|");
-		_m("mygrid.column use grid1+size|".localize('_size',getlocal())."|5|0|");
-		_m("mygrid.column use grid1+color|".localize('_color',getlocal())."|5|0|");
-		_m("mygrid.column use grid1+owner|".localize('_owner',getlocal())."|link|5|cpimgitems.php?flt=owner&val={owner}");
+		_m("mygrid.column use grid1+id|".localize('id',$lan)."|2|0|");
+		_m("mygrid.column use grid1+itmactive|".localize('_active',$lan)."|boolean|1|1:0");		
+		_m("mygrid.column use grid1+active|".localize('_active',$lan)."|boolean|1|101:0|");
+		_m("mygrid.column use grid1+datein|".localize('_date',$lan)."|link|5|cpimgitems.php?flt=datein&val={datein}");	
+		_m("mygrid.column use grid1+code3|".localize('_code',$lan)."|5|0|");
+		_m("mygrid.column use grid1+code5|".localize('_code',$lan)."|link|5|cpimgitems.php?flt=code5&val={code5}");	
+		_m("mygrid.column use grid1+itmname|".localize('_title',$lan)."|10|0|");	
+		_m("mygrid.column use grid1+cat0|".localize('_cat',$lan)."|link|5|cpimgitems.php?flt=cat0&val={cat0}");	
+		_m("mygrid.column use grid1+cat1|".localize('_cat',$lan)."|link|5|cpimgitems.php?flt=cat1&val={cat1}");
+		_m("mygrid.column use grid1+cat2|".localize('_cat',$lan)."|link|5|cpimgitems.php?flt=cat2&val={cat2}");
+		_m("mygrid.column use grid1+cat3|".localize('_cat',$lan)."|link|5|cpimgitems.php?flt=cat3&val={cat3}");
+		_m("mygrid.column use grid1+cat4|".localize('_cat',$lan)."|link|5|cpimgitems.php?flt=cat4&val={cat4}");
+		_m("mygrid.column use grid1+uniname1|".localize('_uniname1',$lan)."|5|0|");		
+		_m("mygrid.column use grid1+ypoloipo1|".localize('_ypoloipo1',$lan)."|5|0|");			
+		_m("mygrid.column use grid1+price0|".localize('_price0',$lan)."|5|0|");		
+		_m("mygrid.column use grid1+price1|".localize('_price1',$lan)."|5|0|");			
+		_m("mygrid.column use grid1+manufacturer|".localize('_manufacturer',$lan)."|link|5|cpimgitems.php?flt=manufacturer&val={manufacturer}");//."|5|0|");
+		_m("mygrid.column use grid1+size|".localize('_size',$lan)."|5|0|");
+		_m("mygrid.column use grid1+color|".localize('_color',$lan)."|5|0|");
+		_m("mygrid.column use grid1+owner|".localize('_owner',$lan)."|link|5|cpimgitems.php?flt=owner&val={owner}");
 
 		$out = _m("mygrid.grid use grid1+products+$xsSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1");
 		
@@ -274,7 +274,7 @@ class rcimgitems {
 					return true;
 				}				
 				
-				if ($this->add_photo($rec[$fcode], $_itype)) 
+				if ($this->add_photo($rec[$fcode], $_itype, $rec['owner'])) 
 				{
 					//if (GetParam('dbset'))
 						//$res = $db->Execute($sSQL);
@@ -526,10 +526,11 @@ class rcimgitems {
     }		
 	
 	
-	protected function add_photo($id=null, $phototype=null) {
+	protected function add_photo($id=null, $phototype=null, $dirname=null) {
 		if (!$id) return;
 		
-		$tempFile = $this->prpath . 'uploads/data-media/' . $id . $this->restype;
+		$subdir = $dirname ? "uploads/$dirname/" : 'uploads/images/';
+		$tempFile = $this->prpath . $subdir . $id . $this->restype;
 		//$this->messages[] = 'Load:' . $tempFile;
 		
 		if (is_readable($tempFile)) {	
