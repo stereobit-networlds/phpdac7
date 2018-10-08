@@ -18,7 +18,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-namespace PHPMailer\PHPMailer;
+//namespace PHPMailer\PHPMailer; << DISABLE ns
 
 /**
  * PHPMailer - PHP email creation and transport class.
@@ -28,6 +28,9 @@ namespace PHPMailer\PHPMailer;
  * @author  Andy Prevost (codeworxtech) <codeworxtech@users.sourceforge.net>
  * @author  Brent R. Matzelle (original founder)
  */
+ 
+require_once(_r('mailer/SMTP.lib.php')); 
+ 
 class PHPMailer
 {
     const CHARSET_ISO88591 = 'iso-8859-1';
