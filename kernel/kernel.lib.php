@@ -20,7 +20,7 @@ define ("_MACHINENAME", ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' 
 define ("_DUMPFILE", 'dumpsrv-'. _MACHINENAME . '.log');
 define ("_UMONFILE", '/tier/umon-'. _MACHINENAME . '-');
 define ("_BELL", "\007");
-define ("_MEMEXTRSPC", 1024 * 10); ////10 / 10 kb
+define ("_MEMEXTRSPC", 1024 * 25); ////10 / 10 kb
 define ("_MEMDATASPC", 1024000 * 9); // 9 mb 
 
 define ('_CAT',  1);  //MEM WRITES

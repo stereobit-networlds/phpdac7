@@ -1349,7 +1349,7 @@ function addtocart(id,cartdetails)
 			
 			if ($this->cartPurchase()===true) {
 				
-				$this->analytics();
+				$this->analytics(null, $_trid);
 				$this->logcart();
 				$this->savePoints($this->user ,$_trid);
 			
@@ -4088,7 +4088,7 @@ function addtocart(id,cartdetails)
 	protected function getCartTransactionTokens($referer=null, $tid=null) {
 		$db = GetGlobal('db');
 		
-		if ($tid) { //refund
+		if (($referer=='refund') && ($tid)) {
 			$sSQL1 = "select cid,ref,total,subt,shipc,disc,taxc,trac,payc,roadway,payway,addrway,custway,invway,memo from pcartvalues ";
 			$sSQL1.= "where tid='$tid'";
 			$res = $db->Execute($sSQL1);
@@ -4184,7 +4184,8 @@ function addtocart(id,cartdetails)
 		$tokens = $this->getCartTransactionTokens($referer, $tid);		
 		$ret .= _m("cmsrt._ct use $tmplbody+" . serialize($tokens) . '+1');
 		
-		if ($tid) //when refund do not a line by line items submit
+		//when refund do not a line by line items submit
+		if (($referer=='refund') && ($tid))
 			return ($ret);
 		
 		/*submit cart items line by line */
@@ -4199,7 +4200,7 @@ function addtocart(id,cartdetails)
 				$tokens[8] = number_format(floatval($toks[8]),$this->dec_num); //item net price 
 				$tokens[9] = $toks[9]; //qty
 				//extra order tokens
-				$tokens[19] = $trid; //max combine no
+				$tokens[19] = $tid; //transaction id
 				
 				//$ret .= _m("cmsrt._ct use $tmplline+" . serialize($tokens) . '+1');
 				$ret .= $this->combine_tokens($mytemplate, $tokens, true);

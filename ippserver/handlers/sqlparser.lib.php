@@ -344,7 +344,7 @@ super database;
 							($sc['titles'] ? $sc['titles'] : 0);		 
 		
 			$msg = null;
-			$i = 0;			
+			$i = 1;			
 			$mode = trim($sc['mode']);
 		 
 			$source = explode($line_delimiter, $this->export_data);
@@ -711,7 +711,7 @@ super database;
  
 	protected function istextSQL() {	
 		$data = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $this->import_data))); 
-		$this->export_data = mb_convert_encoding($this->import_data, 'UTF-8', 'ISO-8859-7');		  
+		$this->export_data = mb_convert_encoding($data, 'UTF-8', 'ISO-8859-7');		  
 	   	
 
 		$page = new pcntl('
@@ -763,7 +763,7 @@ super database;
 		$_counter = 0;
 	
 		$data = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $this->import_data))); 
-		$this->export_data = mb_convert_encoding($this->import_data, 'UTF-8', 'ISO-8859-7');		  
+		$this->export_data = mb_convert_encoding($data, 'UTF-8', 'ISO-8859-7');		  
 	   	
 		$page = new pcntl('
 load_extension adodb refby _ADODB_; 
