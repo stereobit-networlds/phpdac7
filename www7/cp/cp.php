@@ -7,6 +7,7 @@ super database;
 /---------------------------------load and create libs
 use i18n.i18n;
 use gui.swfcharts;
+use jqgrid.jqgrid;
 use cms.cmscharts;
 
 /---------------------------------load not create dpc (internal use)
@@ -16,6 +17,7 @@ include mail.smtpmail;
 /load_extension recaptcha refby _RECAPTCHA_;	
 
 /---------------------------------load all and create after dpc objects
+public jqgrid.mygrid;
 public cms.cmsrt;
 
 #ifdef SES_LOGIN
@@ -26,6 +28,7 @@ public crm.rccrmtrace;
 public piwik.siteanalytics;
 public bmail.rculiststats;
 public cp.rcmessages;
+public cp.rccpclick;
 public cp.rcpmenu;
 public cp.cplogin;
 public cp.rccontrolpanel;
@@ -35,8 +38,19 @@ public i18n.i18nL;
 
 $cptemplate = _m('cms.paramload use FRONTHTMLPAGE+cptemplate');
 
-
 	switch ($_GET['t']) {
+		
+		case 'cpctgvisits'  :
+		case 'cpitmvisits'  :
+		case 'cptransact'   :
+		case 'cpitemsactiv' :	
+		case 'cpitemsinact'	:
+		case 'cpmailqueue'	: 
+		case 'cpmailrecs'	:	
+	    case 'cpusersin'	:
+		case 'cpcustin'		:
+		case 'cpmailsent'	: $mc_page = 'cp-iframe-jqgrid'; 
+							  break;			
 		
 		case 'captchaimage' : die(_m('cmsrt.captchaImage'));
 		

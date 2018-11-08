@@ -28,7 +28,8 @@
     <link rel="stylesheet" type="text/css" href="assets/chosen-bootstrap/chosen/chosen.css" />
 	<!--link rel="stylesheet" type="text/css" href="assets/jquery-tags-input/jquery.tagsinput.css" />
     <link rel="stylesheet" type="text/css" href="assets/clockface/css/clockface.css" /-->	
-   
+	
+    <link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">
 </head>
 <!-- END HEAD -->
 
@@ -54,35 +55,35 @@
                 <!--BEGIN METRO STATES-->
                 <div class="metro-nav">
                     <div class="metro-nav-block nav-block-orange">
-                        <a data-original-title="" href="#">
+                        <a data-original-title="" href="#" onclick="<phpdac>rcbmailclick.popupClick use bmaillist+_breg</phpdac>">
                             <i class="icon-user"></i>
                             <div class="info"><phpdac>rculiststats.getStats use totalSubscribers</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _breg</phpdac></div>
                         </a>
                     </div>
                     <div class="metro-nav-block nav-olive double">
-                        <a data-original-title="" href="#">
+                        <a data-original-title="" href="#" onclick="<phpdac>rcbmailclick.popupClick use bmailsent+_mailsent</phpdac>">
                             <i class="icon-envelope"></i>
                             <div class="info"><phpdac>rculiststats.getStats use inactiveQueue</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _mailsent</phpdac></div>
                         </a>
                     </div>
                     <div class="metro-nav-block nav-block-green">
-                        <a data-original-title="" href="#">
+                        <a data-original-title="" href="#" onclick="<phpdac>rcbmailclick.popupClick use bmailview+_success</phpdac>">
                             <i class="icon-comments-alt"></i>
                             <div class="info"><phpdac>rculiststats.getStats use succeed</phpdac></div>
                             <div class="status"></i><phpdac>i18nL.translate use success+RCCONTROLPANEL</phpdac></div>
                         </a>
                     </div>
                     <div class="metro-nav-block nav-block-yellow">
-                        <a data-original-title="" href="#">
+                        <a data-original-title="" href="#" onclick="<phpdac>rcbmailclick.popupClick use bmailrepl+_view</phpdac>">
                             <i class="icon-eye-open"></i>
                             <div class="info"><phpdac>rculiststats.getStats use repliedQueue</phpdac></div>
                             <div class="status"></i><phpdac>i18nL.translate use view+RCCRM</phpdac></div>
                         </a>
                     </div>					
                     <div class="metro-nav-block nav-light-brown">
-                        <a data-original-title="" href="#">
+                        <a data-original-title="" href="#" onclick="<phpdac>rcbmailclick.popupClick use bmailfail+_failed</phpdac>">
                             <i class="icon-remove-sign"></i>
                             <div class="info"><phpdac>rculiststats.getStats use failed</phpdac></div>
                             <div class="status"></i><phpdac>i18nL.translate use failed+RCCRM</phpdac></div>
@@ -91,35 +92,35 @@
                 </div>
                 <div class="metro-nav">
                     <div class="metro-nav-block nav-light-blue">
-                        <a data-original-title="" href="#">
+                        <a data-original-title="" href="#" onclick="<phpdac>rcbmailclick.popupClick use bmailsent+_bqueue</phpdac>">
                             <i class="icon-tasks"></i>
                             <div class="info"><phpdac>rculiststats.getStats use totalQueue</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _bqueue</phpdac></div>
                         </a>
                     </div>
                     <div class="metro-nav-block nav-light-green">
-                        <a data-original-title="" href="#">
+                        <a data-original-title="" href="#" onclick="<phpdac>rcbmailclick.popupClick use bmailreg+_breg</phpdac>">
                             <i class="icon-user"></i>
                             <div class="info"><phpdac>rculiststats.getStats use activeSubscribers</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _breg</phpdac></div>
                         </a>
                     </div>					
                     <div class="metro-nav-block nav-light-purple">
-                        <a data-original-title="" href="#">
+                        <a data-original-title="" href="#" onclick="<phpdac>rcbmailclick.popupClick use bmaildel+_bunreg</phpdac>">
                             <i class="icon-user"></i>
                             <div class="info"><phpdac>rculiststats.getStats use inactiveSubscribers</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _bunreg</phpdac></div>
                         </a>
                     </div>						
                     <div class="metro-nav-block nav-block-red">
-                        <a data-original-title="" href="#">
+                        <a data-original-title="" href="#" onclick="<phpdac>rcbmailclick.popupClick use bmailcamp+_runningcamps</phpdac>">
                             <i class="icon-bar-chart"></i>
                             <div class="info"><phpdac>rculiststats.getStats use runningCampaigns</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _runningcamps</phpdac></div>
                         </a>
                     </div>															
                     <div class="metro-nav-block nav-block-grey double">
-                        <a data-original-title="" href="#">
+                        <a data-original-title="" href="#" onclick="<phpdac>rcbmailclick.popupClick use bmailqueue+_activequeue</phpdac>">
                             <i class="icon-external-link"></i>
                             <div class="info"><phpdac>rculiststats.getStats use activeQueue</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _activequeue</phpdac></div>
@@ -434,6 +435,7 @@
    <script src="js/easy-pie-chart.js"></script>
    <script src="js/sparkline-chart.js"></script>
   
+   <script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
    <!-- END JAVASCRIPTS -->   
 </body>
 <!-- END BODY -->

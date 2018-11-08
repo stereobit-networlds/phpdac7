@@ -391,6 +391,7 @@ class rccontrolpanel {
 	//called by footer html
 	public function javascript() {		
 		$cbpage = 'cpmessages.php';
+		$exiturl = _m('rcpmenu.exiturl');
 		
 		$js = " 		
 function inbox()
@@ -453,9 +454,17 @@ function init(){
 	inbox(); 
 } 
 
-$(document).ready(function(){
+$(document).ready(function(){	
 	inbox();
 	window.setInterval('inbox()',60100);	
+});	
+
+//document.getElementById('container').focus(); /*when 1st time in cp*/
+document.addEventListener('keydown', function(event) {
+	if (event.code == 'KeyZ' && (event.ctrlKey || event.metaKey)) {
+		/*alert('Undo!'); */
+		top.location.href='$exiturl';
+	}
 });	
 ";
 

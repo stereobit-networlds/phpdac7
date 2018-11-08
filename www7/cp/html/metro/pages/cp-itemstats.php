@@ -19,6 +19,8 @@
    
    <link rel="stylesheet" type="text/css" href="assets/bootstrap-datepicker/css/datepicker.css" />
    <link rel="stylesheet" type="text/css" href="assets/bootstrap-daterangepicker/daterangepicker.css" />
+   
+   <link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">
 </head>
 <!-- END HEAD -->
 
@@ -45,7 +47,8 @@
                 <!--BEGIN METRO STATES-->
                 <div class="metro-nav">
                     <div class="metro-nav-block nav-block-orange">
-                        <a data-original-title="" href="cp.php?t=cpitemVisits">
+                        <!--a data-original-title="" href="cp.php?t=cpitemVisits"-->
+						<a data-original-title="" href="#" onclick="<phpdac>rccpclick.popupClick use cpitmvisits+_visits</phpdac>">
                             <i class="icon-user"></i>
                             <div class="info"><phpdac>rccontrolpanel.getStats use Visits</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _visits</phpdac></div>
@@ -358,6 +361,7 @@
 
    </script>    
   
+   <script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
    <!-- END JAVASCRIPTS -->    
 </body>
 <!-- END BODY -->

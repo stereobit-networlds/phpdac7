@@ -56,35 +56,40 @@
                 <!--BEGIN METRO STATES-->
                 <div class="metro-nav">
                     <div class="metro-nav-block nav-block-orange">
-                        <a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=users&statsid='+statsid.value,'cpinfo');">
+                        <!--a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=users&statsid='+statsid.value,'cpinfo');"-->
+						<a data-original-title="" href="#" onclick="<phpdac>rccpclick.popupClick use cpusersin+_users</phpdac>">
                             <i class="icon-user"></i>
                             <div class="info"><phpdac>rccontrolpanel.getStats use Users</phpdac></div>
                             <div class="status"><phpdac>i18nL.translate use users+RCCONTROLPANEL</phpdac></div>
                         </a>
                     </div>
                     <div class="metro-nav-block nav-olive">
-                        <a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=customers&statsid='+statsid.value,'cpinfo');">
+                        <!--a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=customers&statsid='+statsid.value,'cpinfo');"-->
+						<a data-original-title="" href="#" onclick="<phpdac>rccpclick.popupClick use cpcustin+_customers</phpdac>">
                             <i class="icon-tags"></i>
                             <div class="info"><phpdac>rccontrolpanel.getStats use Users+customers</phpdac></div>
                             <div class="status"><phpdac>i18nL.translate use customers+RCCONTROLPANEL</phpdac></div>
                         </a>
                     </div>
                     <div class="metro-nav-block nav-block-yellow">
-                        <a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=ulists&statsid='+statsid.value,'cpinfo');">
+                        <!--a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=ulists&statsid='+statsid.value,'cpinfo');"-->
+						<a data-original-title="" href="#" onclick="<phpdac>rccpclick.popupClick use cpmailrecs+_subscribers</phpdac>">
                             <i class="icon-comments-alt"></i>
                             <div class="info"><phpdac>rccontrolpanel.getStats use Mail+maillist</phpdac></div>
                             <div class="status"><phpdac>i18nL.translate use subscribers+RCCONTROLPANEL</phpdac></div>
                         </a>
                     </div>
                     <div class="metro-nav-block nav-block-green double">
-                        <a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=mails&statsid='+statsid.value,'cpinfo');">
+                        <!--a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=mails&statsid='+statsid.value,'cpinfo');"-->
+						<a data-original-title="" href="#" onclick="<phpdac>rccpclick.popupClick use cpmailsent+_mailsent</phpdac>">
                             <i class="icon-eye-open"></i>
                             <div class="info"><phpdac>rccontrolpanel.getStats use Mail</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _mailsent</phpdac></div>
                         </a>
                     </div>
                     <div class="metro-nav-block nav-block-red">
-                        <a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=mails&statsid='+statsid.value,'cpinfo');">
+                        <!--a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=mails&statsid='+statsid.value,'cpinfo');"-->
+						<a data-original-title="" href="#" onclick="<phpdac>rccpclick.popupClick use cpmailqueue+_mailtosend</phpdac>">
                             <i class="icon-envelope"></i>
                             <div class="info"><phpdac>rccontrolpanel.getStats use Mail+send</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _mailtosend</phpdac></div>
@@ -100,21 +105,24 @@
                         </a>
                     </div>				
                     <div class="metro-nav-block nav-light-blue double">
-                        <a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=items&statsid='+statsid.value,'cpinfo');">
+                        <!--a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=items&statsid='+statsid.value,'cpinfo');"-->
+						<a data-original-title="" href="#" onclick="<phpdac>rccpclick.popupClick use cpitemsactiv+_itmactive</phpdac>">
                             <i class="icon-tasks"></i>
                             <div class="info"><phpdac>rccontrolpanel.getStats use Items+active</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _actives</phpdac></div>
                         </a>
                     </div>
                     <div class="metro-nav-block nav-light-brown">
-                        <a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=items&statsid='+statsid.value,'cpinfo');">
+                        <!--a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=items&statsid='+statsid.value,'cpinfo');"-->
+						<a data-original-title="" href="#" onclick="<phpdac>rccpclick.popupClick use cpitemsinact+_itminactive</phpdac>">
                             <i class="icon-remove-sign"></i>
                             <div class="info"><phpdac>rccontrolpanel.getStats use Items+inactive</phpdac></div>
                             <div class="status"><phpdac>frontpage.slocale use _inactives</phpdac></div>
                         </a>
                     </div>
                     <div class="metro-nav-block nav-light-purple">
-                        <a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=transactions&statsid='+statsid.value,'cpinfo');">
+                        <!--a data-original-title="" href="javascript:sndReqArg('cp.php?t=cpinfo&s=transactions&statsid='+statsid.value,'cpinfo');"-->
+						<a data-original-title="" href="#" onclick="<phpdac>rccpclick.popupClick use cptransact+_transactions</phpdac>">
                             <i class="icon-shopping-cart"></i>
                             <div class="info"><phpdac>rccontrolpanel.getStats use Transactions</phpdac></div>
                             <div class="status"><phpdac>i18nL.translate use transactions+RCCONTROLPANEL</phpdac></div>
