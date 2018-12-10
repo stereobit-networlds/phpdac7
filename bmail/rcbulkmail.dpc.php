@@ -2119,19 +2119,28 @@ EOF;
 	   
 			$smtpm = new smtpmail($this->encoding,$this->mailuser,$this->mailpass,$this->mailname,$this->mailserver);
 		   	   
-			if (('SMTP_PHPMAILER'=='true') || ($method=='SMTP')) {
+			if ((SMTP_PHPMAILER=='true') || ($method=='SMTP')) {
+				
+				echo 'Method SMTP ';
+				
 				$smtpm->from($from,$this->mailname);		   
 				$smtpm->to($to);  
 				$smtpm->subject($subject);
 				$smtpm->body($mail_text,$is_html);		   			   	   
 			}
-			elseif (('SENDMAIL_PHPMAILER'=='true') || ($method=='SENDMAIL')) {	  	   
+			elseif ((SENDMAIL_PHPMAILER=='true') || ($method=='SENDMAIL')) {	  	   
+			
+				echo 'Method SENDMAIL ';
+			
 				$smtpm->from($from,$this->mailname);		   
 				$smtpm->to($to);  			    
 				$smtpm->subject($subject);
 				$smtpm->body($mail_text,$is_html);		  		      
 			} 
 			else {
+				
+				echo 'Method DF ';
+				
 				$smtpm->to($to); 
 				$smtpm->from($from); 
 				$smtpm->subject($subject);

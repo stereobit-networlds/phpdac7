@@ -25,7 +25,7 @@
  *
  * @author  Marcus Bointon <phpmailer@synchromedia.co.uk>
  */
-class Exception extends \Exception
+class mailerException extends Exception
 {
     /**
      * Prettify error message output.

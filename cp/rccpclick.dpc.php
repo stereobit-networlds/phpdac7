@@ -7,8 +7,8 @@ define("RCCPCLICK_DPC",true);
 
 $__DPC['RCCPCLICK_DPC'] = 'rccpclick';
 
-$a = GetGlobal('controller')->require_dpc('jsdialog/jsdialog.dpc.php');
-require_once($a);
+require_once(_r('database/dblocales.lib.php'));
+require_once(_r('jsdialog/jsdialog.dpc.php'));
 
 GetGlobal('controller')->get_parent('JSDIALOG_DPC','JSDIALOGSTREAM_DPC');
 $__EVENTS['RCCPCLICK_DPC'][4]='cpmailsent';
@@ -182,8 +182,9 @@ class rccpclick extends jsdialog {
 											"SELECT * FROM ulists where $datein",
 											null,300,12,'r',0
 											);
-									 break;									 
-			default                : $out = 'xtest';//$out = jsdialog::action($action);
+									 break;		
+									 
+			default                : $out = jsdialog::action($action);
 		}			 
 
 	    return ($out);
@@ -253,6 +254,15 @@ class rccpclick extends jsdialog {
 			$lan = getlocal() ? '1' : '0';	
 		    $title = str_replace(' ','_', localize($gtitle, $lan));
 			
+			$locs = new dblocales;
+			if (method_exists($locs, $table)) {
+				$translations = $locs->$table();
+				//echo $table . ' locales exists!';	
+			}
+			else 
+				$translations = array();
+				//echo $table . ' locales func not exists!';	
+			
 			$query = str_replace('*', implode(',', $fields), $sql);
 			$sSQL = "select * from ($query) as o";
 			
@@ -263,7 +273,9 @@ class rccpclick extends jsdialog {
 				}
 				else
 					$_f = $f;
-				_m("mygrid.column use grid9+$_f|".localize('_'.$_f, $lan).'|10|0');
+				
+				//_m("mygrid.column use grid9+$_f|".localize('_'.$_f, $lan).'|10|0');
+				_m("mygrid.column use grid9+$_f|". $locs->loc($_f, $translations) .'|10|0');
 			}	
 			
 		    $out .= _m("mygrid.grid use grid9+$table+$sSQL+$mode+$title+$id+$noctrl+1+$rows+$height+$width+$nosearch+1+1");

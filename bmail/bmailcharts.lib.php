@@ -80,7 +80,7 @@ class bmailcharts extends cpflotcharts {
 
 			$this->chartGroup = array('Mailqueue', 'Mailreplies', 'Mailbounce');			
         } 
-        return (1);     	
+        return null;//(1);     	
     }	
 	
 	public function jsflotMailcharts($div=null) {

@@ -87,7 +87,7 @@ class rcsubscribers  {
 			_m("mygrid.column use grid1+active|".localize('_ACTIVE',getlocal()).'|boolean|1');	
 			_m("mygrid.column use grid1+failed|".localize('_FAILED',getlocal()).'|5|1');	
 			//_m("mygrid.column use grid1+listname|".localize('_LISTNAME',getlocal()).'|20|1');		
-			$out .= _m("mygrid.grid use grid1+ulists+$sSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width");//+0+1+0");
+			$out .= _m("mygrid.grid use grid1+ulists+$sSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1");
 
 	    }
 		else 

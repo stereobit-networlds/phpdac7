@@ -9,206 +9,155 @@ $__DPC['SMTPMAIL_DPC'] = 'smtpmail';
 
 
 if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) {
-	require_once(_r('mailer/Exceptions.lib.php'));  
-	require_once(_r('mailer/SMTP.lib.php'));
+  
 	require_once(_r('mailer/phpmailer.lib.php'));
+	//require_once(_r('mailer/Exception.lib.php'));	
+	require_once(_r('mailer/SMTP.lib.php'));	
 	//echo 'SMTP';
 }
 elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
-	require_once(_r('mailer/Exceptions.lib.php'));
-	require_once(_r('mailer/POP3.lib.php'));
+
 	require_once(_r('mailer/phpmailer.lib.php'));
-	//echo 'PHPMAILER';
+	require_once(_r('mailer/Exception.lib.php'));
+	require_once(_r('mailer/POP3.lib.php'));
+	//echo 'POP3';
 }
 else {
-	require_once(_r('mailer/Exceptions.lib.php'));
+	
 	require_once(_r('mailer/phpmailer.lib.php'));
+	//require_once(_r('mailer/Exception.lib.php'));
 	//echo 'DEFAULT';
 }
 
 
 class smtpmail {
 
-    var $from,$to,$subject,$body,$smtp;
-	var $recipients;
-	var $cc,$bcc;
-	var $mcharset, $path, $dbgpath;
-	var $mailname;
+    var $smtp, $mcharset, $path;
 
-    function __construct($charset=null,$user=null,$pass=null,$name=null,$server=null) {
-	  $UserSecID = GetGlobal('UserSecID');  
+	/*Enable SMTP debugging
+	// 0 = off (for production use)
+	// 1 = client messages
+	// 2 = client and server messages*/
+    public function __construct($charset=null,$user=null,$pass=null,$name=null,$server=null) {
+		$UserSecID = GetGlobal('UserSecID');  
 	
-      $this->userLevelID = (((decode($UserSecID))) ? (decode($UserSecID)) : 0);	
-	  $this->path = paramload('SHELL','prpath');	
-	  $this->dbgpath = paramload('SHELL','dbgpath');	    
+		$this->userLevelID = (((decode($UserSecID))) ? (decode($UserSecID)) : 0);	
+		$this->path = paramload('SHELL','prpath');	
+
+		$smtp_user = remote_paramload('SMTPMAIL','user',$this->path);	 
+		$smtp_password = remote_paramload('SMTPMAIL','password',$this->path);	  
+		$myuser = $user ? $user : $smtp_user;
+		$mypass = $pass ? $pass : $smtp_password;
 	  
-	  $sitecharset = paramload('SHELL','charset');
+		$smtp_name = remote_paramload('SMTPMAIL','realm',$this->path);
+		$myname = $name ? $name : $smtp_name;
 	  
-	  if (($sitecharset=='utf-8') || ($sitecharset=='utf8'))
-	    $this->mcharset = $charset ? $charset : 'utf-8';
-	  else  
-	    $this->mcharset = $charset ? $charset : $char_set[getlocal()]; 	  
+		$smtp_server = remote_paramload('SMTPMAIL','smtpserver',$this->path);
+		$myserver = $server ? $server : $smtp_server;	     	
 	  
-	  $smtp_user = remote_paramload('SMTPMAIL','user',$this->path);	 
-      $smtp_password = remote_paramload('SMTPMAIL','password',$this->path);	  
-	  $myuser = $user ? $user : $smtp_user;
-	  $mypass = $pass ? $pass : $smtp_password;
-	  
-	  $smtp_name = remote_paramload('SMTPMAIL','realm',$this->path);
-	  $myname = $name ? $name : $smtp_name;	  
-	  $this->mailname = $myname;
-	  
-      $smtp_server = remote_paramload('SMTPMAIL','smtpserver',$this->path);
-	  $myserver = $server ? $server : $smtp_server;	     	
-	  
-      if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) {
-	    //echo 'SMTP_PHPMAILER';
+		define("SMTP_SERVER", $myserver);    //here the SMTP server of your ISP
+		define("MY_EMAIL", $myuser);	//"root@localhost");  # here your email address
+		define("MY_NAME", $myname);   //here your plain name	 
+			  
+		if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) {
+			//echo 'SMTP_PHPMAILER';
 		
-        define("SMTP_SERVER", $myserver);    # here the SMTP server of your ISP
-        define("MY_EMAIL", $myuser);//"root@localhost");  # here your email address
-        define("MY_NAME", $myname);    # here your plain name	 
-		
-        $this->smtp = new PHPMailer();
+			$this->smtp = new PHPMailer(true);   // Passing `true` enables exceptions
+		  
+			//Server settings
+			$this->smtp->SMTPDebug = 2;                                 // Enable verbose debug output
+			$this->smtp->isSMTP();                                      // Set mailer to use SMTP
+			$this->smtp->Host = $myserver;//'smtp1.example.com;smtp2.example.com';  // Specify main and backup SMTP servers
+			$this->smtp->SMTPAuth = true;                               // Enable SMTP authentication
+			$this->smtp->Username = $myuser;//'user@example.com';                 // SMTP username
+			$this->smtp->Password = $mypass;//'secret';                           // SMTP password
+			$this->smtp->SMTPSecure = 'tls';                            // Enable TLS encryption, `ssl` also accepted
+			$this->smtp->Port = 587; //25 or 465 or 587;  		
+		}
+		elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
+			//echo 'SENDMAIL_PHPMAILER';	  
+			
+			//Authenticate via POP3.
+			//After this you should be allowed to submit messages over SMTP for a few minutes.
+			//Only applies if your host supports POP-before-SMTP.
+			//$pop = POP3::popBeforeSmtp('pop3.example.com', 110, 30, 'username', 'password', 1);
+			$pop = POP3::popBeforeSmtp($myserver, 110, 30, $myuser, $mypass, 1);
 
-        # Errors are returned in english language (default):
-        $this->smtp->SetLanguage("en", "../language");
-
-        # Set the SMTP server:
-        $this->smtp->Host = SMTP_SERVER;
-        $this->smtp->IsSMTP();
-
-        # If a login authorization to the SMTP server required, set these too:
-		if ($myuser) {
-          $this->smtp->SMTPAuth = TRUE;
-          $this->smtp->Username = $myuser;//"YourUserName";
-          $this->smtp->Password = $mypass;//"YourPassWord";
+			$this->smtp = new PHPMailer(true);   // Passing `true` enables exceptions
+		  
+			//Server settings
+			$this->smtp->SMTPDebug = 2;                                 // Enable verbose debug output
+			$this->smtp->isSMTP();                                      // Set mailer to use SMTP
+			$this->smtp->Host = $myserver;//'smtp1.example.com;smtp2.example.com';  // Specify main and backup SMTP servers
+			$this->smtp->SMTPAuth = false;                               // Enable SMTP authentication
+			//$this->smtp->Username = $myuser;//'user@example.com';                 // SMTP username
+			//$this->smtp->Password = $mypass;//'secret';                           // SMTP password
+			//$this->smtp->SMTPSecure = 'tls';                            // Enable TLS encryption, `ssl` also accepted
+			$this->smtp->Port = 25; //25 or 465 or 587;  						  
+		}
+		else {
+		    //sending a message using a local sendmail binary.
+			
+			$this->smtp = new PHPMailer();
+			
+			//Server settings
+			$this->smtp->isSendmail(); 
 		}
 
-        $this->smtp->CharSet = $this->mcharset;//"UTF-8"; # Charset used for subject and body		 	  
-	  }
-      elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
-        //echo 'SENDMAIL_PHPMAILER';	  
-        define("SMTP_SERVER", $myserver);    # here the SMTP server of your ISP
-        define("MY_EMAIL", $myuser);//"root@localhost");  # here your email address
-		
-        $this->smtp = new PHPMailer();
-
-        # Errors are returned in english language (default):
-        $this->smtp->SetLanguage("en", "../language"); //FIXED EN)
-
-        $this->smtp->CharSet = $this->mcharset;//"UTF-8"; # Charset used for subject and body
-		
-        $this->smtp->WordWrap = 76;   # Wrap lines longher than that
-        $this->smtp->IsMail();        # Uses PHP internal mail() function
-							  
-      }
-      else {
-	    //test vals
-	    $this->from="root@localhost";
-	    $this->to="root@localhost";
-	    $this->subject = "test smtp mail";
-	    $this->body = "test";	  
-	    $this->cc = null;
-	    $this->bcc = null;	  
-	    $this->recipients = array();	  
-		
-	    $this->smtp=new smtp_class;
-
-	    $this->smtp->host_name = $myserver; /* Change this variable to the address of the SMTP server to relay, like "smtp.myisp.com" */
-	    $this->smtp->localhost = remote_paramload('SMTPMAIL','localhost',$this->path);//"daidalos"; /* Your computer address */	  	  
-	    $this->smtp->direct_delivery = 0;     /* Set to 1 to deliver directly to the recepient SMTP server */
-	    $this->smtp->timeout = 10;            /* Set to the number of seconds wait for a successful connection to the SMTP server */
-	    $this->smtp->data_timeout = 0;        /* Set to the number seconds wait for sending or retrieving data from the SMTP server.
-	                                 Set to 0 to use the same defined in the timeout variable */
-	    $debugpcl = arrayload('SMTPMAIL','debug');			
-	    $cpdebug = GetParam('smtpdebug'); //cp debug
-	    					 
-	    $this->smtp->debug = $debugpcl[$this->userLevelID]?$debugpcl[$this->userLevelID]:$cpdebug; //0;            /* Set to 1 to output the communication with the SMTP server */
-	    $this->smtp->html_debug = 1;          /* Set to 1 to format the debug output as HTML */
-	    $this->smtp->pop3_auth_host = remote_paramload('SMTPMAIL','pop3host',$this->path);     /* Set to the POP3 authentication host if your SMTP server requires prior POP3 authentication */
-	    $this->smtp->user = $myuser; /* Set to the user name if the server requires authetication */
-	    $this->smtp->realm = $myname; /* Set to the authetication realm, usually the authentication user e-mail domain */
-	    $this->smtp->password = $mypass;  /* Set to the authetication password */	  
-	    //$this->smtp->authentication_mechanism="NTLM";
-      }		
+	  /*
+		$sitecharset = paramload('SHELL','charset');
+	  
+		if (($sitecharset=='utf-8') || ($sitecharset=='utf8'))
+			$this->mcharset = $charset ? $charset : 'utf-8';
+		else  
+			$this->mcharset = $charset ? $charset : $char_set[getlocal()]; 	  
+	  */		
+		$this->smtp->CharSet = $charset ? $charset : 'utf-8';	
 	}
 	
-	function addrecipients($r, $name = null) {
+	public function addrecipients($r, $name = null) {
 	
-      if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true'))  {
+		$this->smtp->addAddress($r, $name);
+		
+      /*if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true'))  {
         $this->smtp->AddAddress($r, $name);	  
 	  }
       elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
         $this->smtp->AddAddress($r, $name);	  
 	  }
 	  else 	  	
-	    $this->recipients[] = $r;
+	    $this->recipients[] = $r;*/
 	}
 	
-	function to($to, $name=null) {
-	
-      if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true'))  {
-        $this->smtp->AddAddress($to, $name);	  
-	  }
-      elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
-        $this->smtp->AddAddress($to, $name);	  
-	  }
-	  else {	  
-	    $this->to = $to;
-	  
-	    $this->recipients[] = $to;
-      }		
+	public function to($to, $name=null) {
+		
+		$this->smtp->addAddress($to, $name);
 	}
 	
-	function cc($to, $name=null) {
-	
-      if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true'))  {
-        $this->smtp->AddCC($to, $name);	  
-	  }
-      elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
-        $this->smtp->AddCC($to, $name);	  
-	  }
-	  else {	  
-	    $this->to = $to;
-	  
-	    $this->recipients[] = $to;
-      }		
+	public function cc($to, $name=null) {
+		
+		$this->smtp->addCC($r); //, $name);	
 	}
 	
-	function bcc($to, $name=null) {
+	public function bcc($to, $name=null) {
 	
-      if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true'))  {
-        $this->smtp->AddBCC($to, $name);	  
-	  }
-      elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
-        $this->smtp->AddBCC($to, $name);	  
-	  }
-	  else {	  
-	    $this->to = $to;
-	  
-	    $this->recipients[] = $to;
-      }		
+		$this->smtp->addBCC($r); //, $name);	
 	}		
 	
-	function from($from, $name=null) {
-	
-      if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true'))  {
-        $this->smtp->From = $from;
-        $this->smtp->FromName = $name?$name:$this->mailname;	
-        $this->smtp->Sender = $from;//Sets the Sender email (Return-Path) of the message.		
-	  }
-      elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
-        $this->smtp->From = $from;
-        $this->smtp->FromName = $name?$name:$this->mailname;	  
-		$this->smtp->Sender = $from;//Sets the Sender email (Return-Path) of the message.
-	  }
-	  else 	
-	    $this->from = $from;
+	public function from($from, $name=null) {
+		
+		$this->smtp->setFrom($from, $name);
+	}
 
+	public function replyTo($reply, $name=null) {
+		
+		$this->smtp->addReplyTo($reply, $name);
 	}	
 	
-	function subject($subject) {
-	
+	public function subject($subject) {
+		
+		$this->smtp->Subject = $subject;
+	/*
       if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true'))  {
         $this->smtp->Subject = $subject;	  
 	  }
@@ -216,11 +165,13 @@ class smtpmail {
         $this->smtp->Subject = $subject;	  
 	  }
 	  else	
-	    $this->subject = $subject;
+	    $this->subject = $subject;*/
 	}	
 	
-	function body($body,$ishtml=true) {
-	
+	public function body($body, $ishtml=true) {
+		
+		$this->smtp->Body = $body;
+	/*
       if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true'))  {
         $this->smtp->isHTML($ishtml);	  
         $this->smtp->Body = $body;	  
@@ -230,11 +181,18 @@ class smtpmail {
         $this->smtp->Body = $body;	  
 	  }
 	  else	
-	    $this->body = $body;
+	    $this->body = $body;*/
 	}
 	
-	function attach($filename, $asname=null, $mime=null) {
+	public function altBody($altbody, $ishtml=true) {
+		
+		$this->smtp->AltBody = $altbody;
+	}	
 	
+	public function attach($filename, $asname=null, $mime=null) {
+	
+		$this->smtp->addAttachment($filename, $asname);
+	/*	
       if (((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) || 	
           ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true'))) {
 	    
@@ -244,9 +202,14 @@ class smtpmail {
         # Attached file containing this source code:
         $this->smtp->AddAttachment($filename, $nametoattach, "base64", $mymime);	  	
 	  }
+	  */
 	}	
 	
-	function addimage($imgname, $asname=null, $mime=null, $id=null) {
+	public function addimage($imgname, $asname=null, $mime=null, $id=null) {
+		
+		$this->smtp->addAttachment($filename, $asname);
+		
+		/*
 	  //static imgID = 1;
 	  
 	  $imgID = $id?$id:1;
@@ -262,135 +225,104 @@ class smtpmail {
 		//<img src='cid:1'> replace the image at body
 		$id = "<img src='cid:".$imgID."'>";
 		return ($id);	  	
-	  }
-	}			
+	  }*/
+	}
+
+	//Configure message signing (the actual signing does not occur until sending)
+	public function sign() {
+
+		$this->smtp->(
+    '/path/to/cert.crt', //The location of your certificate file
+    '/path/to/cert.key', //The location of your private key file
+    //The password you protected your private key with (not the Import Password!
+    //May be empty but the parameter must not be omitted!
+    'yourSecretPrivateKeyPassword',
+    '/path/to/certchain.pem' //The location of your chain file
+		);		
+	}	
 	
-	function smtpsend() {
-	 
-      if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) {
-	    //echo 'smtp>>>>>';
-        $this->smtp->Send();		
+	//DKIM sign
+	public function dkimSign($from=null) {
+		$f = MY_USER; //$from ? $from : $this->smtp->From;
+		$_d = explode('@', MY_USER);
+		$d = $_d[1];
 		
-        if ( $error = $this->smtp->IsError() ) {
-	      # Feedback to the user:
-	      //echo "ERROR sending message to " . MY_EMAIL . ", check email.\n";
-
-	      # Log a more complete error message:
-	      error_log("ERROR sending message to " . MY_EMAIL
-		  . " via " . SMTP_SERVER
-		  . ": " . $this->smtp->ErrorInfo . "\n");
-          echo 'error:',$error,':',$this->smtp->ErrorInfo;
-		  $ret = "ERROR sending message to [" . MY_EMAIL . "], " . $this->smtp->ErrorInfo;
-		  return ($ret);
-        } 
-		else {
-	      # Feedback to the user:
-	      //echo "Message succesfully sent to " . MY_EMAIL;
-		  return null;
-        }			  
-	  }
-      elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) { 
-	    
-		/*if ($altbody)
-          $this->smtp->AltBody = $altbody;	*/   //NO NEED HERE
-	    //echo 'sendmail>>>>>';	  
-        $this->smtp->Send();
+		//This should be the same as the domain of your From address
+		$this->smtp->DKIM_domain = $d; //MY_NAME; //$my_name; //'example.com';
 		
-        if ( $error = $this->smtp->IsError() ) {
-	      # Feedback to the user:
-	      //echo "ERROR sending message to " . MY_EMAIL . ", check email.\n";
-
-	      # Log a more complete error message:
-	      error_log("ERROR sending message to " . MY_EMAIL
-		  . " via " . SMTP_SERVER
-		  . ": " . $this->smtp->ErrorInfo . "\n");
-          echo 'error:',$error,':',$this->smtp->ErrorInfo;          
-		  $ret = "ERROR sending message to [" . MY_EMAIL . "], version=[" . PHPMailer::VERSION . "]: " . $this->smtp->ErrorInfo;
-		  return ($ret);
-        } 
-		else {
-	      # Feedback to the user:
-	      //echo "Message succesfully sent to " . MY_EMAIL;
-		  return null;
-        }	  
-	  }
-	  else {	
-
-	  /*
-	   * If you need to use the direct delivery mode and this is running under
-	   * Windows or any other platform that does not have enabled the MX
-	   * resolution function GetMXRR() , you need to include code that emulates
-	   * that function so the class knows which SMTP server it should connect
-	   * to deliver the message directly to the recipient SMTP server.
-	   */
-	  if($this->smtp->direct_delivery) {
-	  
-		if(!function_exists("GetMXRR"))
-		{
-			/*
-			* If possible specify in this array the address of at least on local
-			* DNS that may be queried from your network.
-			*/
-			$_NAMESERVERS=array();
-			include("getmxrr.php");
-		}
-		/*
-		* If GetMXRR function is available but it is not functional, to use
-		* the direct delivery mode, you may use a replacement function.
-		*/
-		/*
-		else
-		{
-			$_NAMESERVERS=array();
-			if(count($_NAMESERVERS)==0)
-				Unset($_NAMESERVERS);
-			include("rrcompat.php");
-			$smtp->getmxrr="_getmxrr";
-		}
-		*/
-	  }
-
-	  /*if ($this->smtp->SendMessage($this->from,array($this->to),array("From: $this->from","To: $this->to","Subject: Testing Manuel Lemos' SMTP class",
-			"Date: ".strftime("%a, %d %b %Y %H:%M:%S %Z")),	
-			"Hello $this->to,\n\nIt is just to let you know that your SMTP class is working just fine.\n\nBye.\n"))
-		echo "Message sent to $to OK.\n";
-	  else
-		echo "Cound not send the message to $to.\nError: ".$this->smtp->error."\n";
-	  */	  
-
-	     
-	  if ($this->smtp->SendMessage($this->from,
-	                               array($this->to),
-								   array("From: $this->mailname <$this->from>",
-								         "Reply-To:$this->from",
-								         "To: $this->to",
-								         "Cc: $this->cc",
-								         "Bcc: $this->bcc",										 										 
-										 "Subject: $this->subject",
-										 "Date: ".strftime("%a, %d %b %Y %H:%M:%S %Z"),
-										 "MIME-Version: 1.0",
-										 "Content-Type: text/html; charset=". $this->mcharset .";",
-										 "Content-Transfer-Encoding: base64"),
-										 chunk_split(base64_encode($this->body)))
-					  			   )	
-		return (null);
-	  else
-		return ($this->smtp->error);
-				
-	  }	
+		//See the DKIM_gen_keys.phps script for making a key pair -
+		//here we assume you've already done that.
+		//Path to your private key: //!!!!!!!!!!!!!
+		$this->smtp->DKIM_private = 'dkim_private.pem';
+		
+		//Set this to your own selector
+		$this->smtp->DKIM_selector = 'phpmailer';
+		
+		//Put your private key's passphrase in here if it has one
+		$this->smtp->DKIM_passphrase = '';
+		
+		//The identity you're signing as - usually your From address
+		$this->smtp->DKIM_identity = $f;
+		
+		//Suppress listing signed header fields in signature, defaults to true for debugging purpose
+		$this->smtp->DKIM_copyHeaderFields = false;
+		
+		//Optionally you can add extra headers for signing to meet special requirements
+		//$this->smtp->DKIM_extraHeaders = ['List-Unsubscribe', 'List-Help'];		
+			
 	}
 	
-	//use mime msg body as headers!!!!
-	function smtpsend_mime() {
-	
-	  if ($this->smtp->SendMessage($this->from,
-	                               array($this->to),
-								   array($this->body),
-								   null)
-					  			   )	
-		return (null);
-	  else
-		return ($this->smtp->error);	
+	public function smtpsend($altbody=null, $dataInFile=false, $path=null) {
+		
+		if ($altbody)
+			$this->smtp->AltBody = $altbody;//'This is a plain-text message body';
+		
+		if ($dataInFile) {
+			//Read an HTML message body from an external file, convert referenced images to embedded,
+			//and convert the HTML into a basic plain-text alternative body
+			$this->smtp->msgHTML(file_get_contents($dataInFile, $path);//, __DIR__);		
+		}	
+		
+		if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) {
+			
+			//send the message, check for errors
+			if (!$this->smtp->send()) {
+				
+				$error = $this->smtp->ErrorInfo;
+				echo 'Mailer Error: ' . $error;
+			} 
+			else {
+				echo 'Message sent!';
+			}
+		}
+		elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) { 
+		
+			try {
+				//Note that we don't need check the response from this because it will throw an exception if it has trouble
+				$this->smtp->send();
+				echo 'Message sent!';	
+			} 
+			catch (mailerException $e) {
+				$error = $e->errorMessage();
+				echo $error; //Pretty error messages from PHPMailer
+			} 
+			catch (Exception $e) {
+				$error = $e->errorMessage();
+				echo $error; //Boring error messages from anything else!
+			}
+		}
+		else {
+			//send the message, check for errors
+			if (!$this->smtp->send()) {
+				$error = $this->smtp->ErrorInfo;
+				echo "Mailer Error: " . $error;
+			} 
+			else {
+				echo "Message sent!";
+			}
+		}
+		
+		return $error ? $error : null;
 	}
 
 };
