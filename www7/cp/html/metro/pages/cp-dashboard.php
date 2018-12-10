@@ -187,14 +187,15 @@
                             <a href="javascript:;" class="icon-chevron-down"></a>
                          </span>
 						 <!--div class="update-btn">
-                            <a href="javascript:sndReqArg('cp.php?t=cpchartshow&group=&ai=2&report=statistics&statsid='+statsid.value,'statistics');" class="btn"><i class="icon-repeat"></i> <phpdac>i18nL.translate use CPFLOTCHARTS_DPC+CPFLOTCHARTS</phpdac></a>
+                            <a href="javascript:sndReqArg('cpcharts.php?t=cpcharts&div=chart-5&jsdiv=chartjs1','chartjs');" class="btn"><i class="icon-repeat"></i> <phpdac>i18nL.translate use CPFLOTCHARTS_DPC+CPFLOTCHARTS</phpdac></a>
                          </div-->
                         </div>
                         <div class="widget-body">	
 							<div class="tabbable ">
 								<ul class="nav nav-tabs">
 									<li class="active"><a href="#tab_1_1" data-toggle="tab"><phpdac>frontpage.slocale use _visits</phpdac></a></li>
-									<li><a href="#tab_1_2" data-toggle="tab">Map</a></li>
+									<li><a href="#tab_1_2" data-toggle="tab"><phpdac>cms.slocale use _bots</phpdac></a></li>
+									<li><a href="#tab_1_3" data-toggle="tab"><phpdac>cms.slocale use _map</phpdac></a></li>
                                 </ul>
 								<div class="tab-content">
 									<div class="tab-pane active" id="tab_1_1">	
@@ -204,6 +205,23 @@
 										</div>											
 									</div>
 									<div class="tab-pane" id="tab_1_2">
+										<div id="chartjs1"></div>
+										<!--div id="chart-5" style="height:350px;"></div>
+										<div class="btn-toolbar">
+											<div class="btn-group stackControls">
+												<input type="button" class="btn btn-info" value="With stacking" />
+												<input type="button" class="btn btn-danger" value="Without stacking" />
+											</div>
+											<div class="space5"></div>
+											<div class="btn-group graphControls">
+												<input type="button" class="btn" value="Bars" />
+												<input type="button" class="btn" value="Lines" />
+												<input type="button" class="btn" value="Lines with steps" />
+											</div>
+										</div-->
+										<div id="graph3" class="chart"></div>
+									</div>
+									<div class="tab-pane" id="tab_1_3">
 										<div id="widgetIframe">
 										<phpdac>siteanalytics.widget use UserCountryMap+visitorMap</phpdac>
 										</div>							
@@ -256,7 +274,7 @@
                 <div class="span6">
                     <div id="alerts" class="widget orange">
                         <div class="widget-title">
-                            <h4><i class="icon-bell-alt"></i> <phpdac><phpdac>cms.slocale use RCMESSAGES_DPC</phpdac></h4>
+                            <h4><i class="icon-bell-alt"></i> <phpdac>cms.slocale use RCMESSAGES_DPC</phpdac></h4>
                             <span class="tools">
                             <a class="icon-chevron-down" href="javascript:;"></a>
                             <!--a class="icon-remove" href="javascript:;"></a-->

@@ -1,5 +1,5 @@
 <?php
-namespace Process;
+/*namespace Process;
 
 class foo {
     static public function test($name) {
@@ -20,6 +20,7 @@ class foo {
 
 ini_set('unserialize_callback_func', 'spl_autoload_call');
 spl_autoload_register(__NAMESPACE__ .'\foo::autoload');
+*/
 
 $__DPCSEC['PROCESS_DPC']='1;1;1;1;1;1;1;1;1;1;1';
 

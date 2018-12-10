@@ -1,5 +1,5 @@
 <?php
-namespace Process;
+//namespace Process;
 
 class pstack {
 	

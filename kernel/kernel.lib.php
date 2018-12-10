@@ -21,7 +21,7 @@ define ("_DUMPFILE", 'dumpsrv-'. _MACHINENAME . '.log');
 define ("_UMONFILE", '/tier/umon-'. _MACHINENAME . '-');
 define ("_BELL", "\007");
 define ("_MEMEXTRSPC", 1024 * 25); ////10 / 10 kb
-define ("_MEMDATASPC", 1024000 * 9); // 9 mb 
+define ("_MEMDATASPC", 1024000 * 19); // 9 mb 
 
 define ('_CAT',  1);  //MEM WRITES
 define ('_DOG',  2);  //SPINLOCKS / READS

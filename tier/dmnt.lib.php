@@ -45,7 +45,7 @@ class dmnt {
 									  "findresource", "findresourcec", "setresource", "delresource",
 									  "checkschedules", "showschedules", "setschedule",
 									  "who", "http", "startgtk", "system", "batch", 
-									  "netport", "heartbeat", "heartbrst", "***"));	  
+									  "netport", "heartbeat", "heartbrst", "zooconf", "***"));	  
 		//list of valid commands that must be accepted by the server	
 	  
 		$this->dmn->CommandAction ("help", array($this,"command_handler")); //add callback
@@ -89,6 +89,7 @@ class dmnt {
 		$this->dmn->CommandAction ("netport", array($this,"command_handler"));
 		$this->dmn->CommandAction ("heartbeat", array($this,"command_handler"));
 		$this->dmn->CommandAction ("heartbrst", array($this,"command_handler"));
+	    $this->dmn->CommandAction ("zooconf", array($this,"command_handler"));
 	  
 		$this->dmn->CommandAction ("***", array($this,"agent_handler"));//handle everyting else...	  
 	  									
@@ -336,6 +337,13 @@ class dmnt {
 		case 'HEARTBRST': 
 				$this->env->setHeartbeat();
 				//$dmn->Println ($ret);
+				return ($this->env->daemon_type=='inetd') ? true : false;
+				break;	
+
+		case 'ZOOCONF': 
+				$conf = implode(' ', $arguments);
+				$ret = $this->env->setZooConf($conf);
+				$dmn->Println ($ret);
 				return ($this->env->daemon_type=='inetd') ? true : false;
 				break;				
         }		

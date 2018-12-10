@@ -19,7 +19,18 @@ define ('_BIRD', 16); //VAR
 define ('_IRON', 32); //MESSAGES
 define ('_ZION', 64); //MESSAGES	
 define ('_ALL', 127); //31;	
+/*
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+	require_once '../vendor/webonyx/graphql-php/vendor/autoload.php';
+else
+	//require_once 'vendor/webonyx/graphql-php/vendor/autoload.php';
+	require_once 'vendor/autoload.php';
 	
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
+use GraphQL\Type\Schema;
+use GraphQL\GraphQL;
+*/	
 class tierds {
 
 	public $env, $dmn, $cnf, $utl, $res, $mem, $agn;
@@ -29,10 +40,12 @@ class tierds {
 	public $gtk, $gtkds_conn, $window, $agentbox;  
 	public $ldscheme, $verboseLevel, $argbatch;
 		
-	public static $ldschemeS, $pdo, $_SIG;
+	public static $ldschemeS, $pdo, $_SIG, $_APPENV, $_APPCONF;
 	
 	private static $timeout_counter;
 	private $timeout, $uuid, $tkeys;
+	
+	protected $app;
 
 	public function __construct() { 
 		global $dh, $dp;
@@ -41,10 +54,14 @@ class tierds {
 		//print_r($argv);
 		
 		$this->verboseLevel = GLEVEL;	  
-		$this->tkeys = array('heartbeat', 'heartbrst', 'netport');
+		$this->tkeys = array('heartbeat', 'heartbrst', 'netport', 'appconf', 'appinfo');
 		
 		//PCNTL SIGNALS
 		$this->installSIG();	
+		
+		//REMOTE APP CONF
+		self::$_APPENV = null;
+		self::$_APPCONF = null;
 		
 		//argv1 is daemon type -param or batchfile .ash
 		$this->argbatch = (substr($argv[1],0,1)!='-') ? $argv[1].'.ash' : '';
@@ -302,20 +319,32 @@ class tierds {
 		return $port ? trim($port) : false; 	
 	}	
 	
-	//reset the heartbeat 
+	//reset the heartbeat (url/cmd)
 	public function heartbrst($args=null)
 	{
 		$h = $this->set_timeout_counter(1);
 		$this->_say('heartbeat reset:'. $h , 'TYPE_BIRD');
-		return $h;
+		return null;//$h; //<<<< not return 1 to browser
 	}
 	
-	//get the heartbeat
+	//reset the heartbeat (daemon cmd reply)
+	public function setHeartbeat() 
+	{
+		return $this->heartbrst();
+	}
+	
+	//get the heartbeat (url/cmd)
 	public function heartbeat($args=null)
 	{
 		$h = self::$timeout_counter;
 		$this->_say('heartbeat reply:'. $h , 'TYPE_BIRD');
-		return ($h);
+		return null;//($h); //<<<< not return 1 to browser
+	}
+
+	//get the heartbeat (daemon cmd reply)
+	public function getHeartbeat() 
+	{
+		return $this->heartbeat();
 	}	
 	
 	//get umon port
@@ -326,15 +355,60 @@ class tierds {
 		return ($port);
 	}	
 	
+	
+	
+	//REMOTE APP
+	
+	//phpdac7 file sends env array 
+	//tier read env and save, read config and save
+	private function appconf($env=null)
+	{
+		if (!$env) return false;
+		if (!empty(self::$_APPENV)) return null;//true;
+		
+		$_env = implode('-', $env);
+		//$this->_say('App env:'. $_env , 'TYPE_IRON');
+		
+		self::$_APPENV = unserialize($_env);
+		//print_r(self::$_APPENV);
+		
+		require($this->ldscheme . '/tier/app.lib.php');
+		$this->app = new app($this, self::$_APPENV);
+		
+		/*
+		if (empty(self::$_APPENV)) 
+		{
+			$this->_say('App environment not found!' , 'TYPE_LION');
+			return false;
+		}	
+		else
+			$this->_say('App environment loaded!' , 'TYPE_IRON');
+		
+		//save app config
+		$this->appIni(self::$_APPENV['cppath']);
+		
+		//re-init connection to db
+		if ($this->reInitPDO()==true)
+			$this->cnf->_say("PDO connection: ok!" , 'TYPE_IRON');
+			
+		return null;//true;*/
+	}
+
+	//cmd tier respond
+	public function appinfo()
+	{
+		if (is_object($this->app))
+			return $this->app->appInfo();
+	}
+	
+	//READS / RESOURCES
+	
 	public function iscmd($k=null)
 	{
 		if (!$k) return false;
 		
 		return in_array($k, $this->tkeys);
-	}
-
-	
-	//READS / RESOURCES	
+	}	
 	
 	//alias - remote read (phpdac7)
 	public function readC($dpc=null) 
@@ -343,11 +417,74 @@ class tierds {
 		
 		//$this->_say('dpc: '. $dpc, 'TYPE_IRON');
 		
-        if ($pos = strpos($dpc, "\r\n\r\n"))
+        /*if ($pos = strpos($dpc, "\r\n\r\n"))
 		//if ($pos = strstr($dpc, 'socket.io'))	
         {
 			$this->_say('pos: '. $pos, 'TYPE_CAT');
 			return "HTTP/1.1 400 bad request\r\n\r\nheader too long";
+		}*/
+		if ($dpc[0]=='{') {
+/*			echo 'graphQL:' . $dpc . PHP_EOL;
+			//$this->_say('GraphQL: '. urldecode($dpc), 'TYPE_CAT');
+			//return "HTTP/1.1 400 bad request\r\n\r\nheader too long";
+			
+try {
+    $queryType = new ObjectType([
+        'name' => 'Query',
+        'fields' => [
+            'echo' => [
+                'type' => Type::string(),
+                'args' => [
+                    'message' => ['type' => Type::string()],
+                ],
+                'resolve' => function ($root, $args) {
+                    return $root['prefix'] . $args['message'];
+                }
+            ],
+        ],
+    ]);
+
+    $mutationType = new ObjectType([
+        'name' => 'Calc',
+        'fields' => [
+            'sum' => [
+                'type' => Type::int(),
+                'args' => [
+                    'x' => ['type' => Type::int()],
+                    'y' => ['type' => Type::int()],
+                ],
+                'resolve' => function ($root, $args) {
+                    return $args['x'] + $args['y'];
+                },
+            ],
+        ],
+    ]);
+
+    // See docs on schema options:
+    // http://webonyx.github.io/graphql-php/type-system/schema/#configuration-options
+    $schema = new Schema([
+        'query' => $queryType,
+        'mutation' => $mutationType,
+    ]);
+
+    $rawInput = $dpc; //'{"query":"mutation{sum(x:2,y:2)}"}'; //file_get_contents('php://input');
+    $input = json_decode($rawInput, true);
+    $query = $input['query'];
+    $variableValues = isset($input['variables']) ? $input['variables'] : null;
+
+    $rootValue = ['prefix' => 'You said: '];
+    $result = GraphQL::executeQuery($schema, $query, $rootValue, null, $variableValues);
+    $output = $result->toArray();
+} catch (\Exception $e) {
+    $output = [
+        'error' => [
+            'message' => $e->getMessage()
+        ]
+    ];
+}
+//header('Content-Type: application/json; charset=UTF-8');
+return json_encode($output);	
+*/
 		}	
 		else
 		{
@@ -363,7 +500,7 @@ class tierds {
 					return $this->$cmd($keycmd); //rest of array
 				}	
 				else
-					$this->_say('unknown method for key: '. $cmd, 'TYPE_DOG');
+					$this->_say('unknown method for key: '. $cmd, 'TYPE_LION');
 			}
 		}
 		//else		
@@ -436,6 +573,7 @@ class tierds {
 		}
 	}
 
+	//init db connection based on a default db
 	public static function initPDO() 
 	{
 		if (!$dbcon = @file_get_contents(self::$ldschemeS . "/kernel/dbcon.db"))
@@ -462,7 +600,37 @@ class tierds {
         }
 		return false;	
 	}	
-	
+	/*
+	//re-init db connection based on app db
+	private function reInitPDO() 
+	{
+		//if (!$dbcon = @file_get_contents(self::$ldschemeS . "/kernel/dbcon.db"))
+		if (empty(self::$_APPCONF))	
+		{
+			$this->cnf->_say("App connection failed!", 'TYPE_LION');
+			return false;
+		}
+		//'mysql:host=localhost:3306;dbname=admin_pangr;charset=utf8<@>panik<@>fxpower77'
+		//$_DBCON = explode('<@>', $dbcon);
+		
+		try 
+		{
+			//self::$pdo = @new PDO('mysql:host=localhost:3306;dbname=admin_pangr;charset=utf8', 'panik', 'fxpower77');
+			$con = trim(self::$_APPCONF['DATABASE']['dbname']);
+			$usr = trim(self::$_APPCONF['DATABASE']['dbuser']);
+			$pas = trim(self::$_APPCONF['DATABASE']['dbpwd']);
+			self::$pdo = @new PDO("mysql:host=localhost:3306;dbname=$con;charset=utf8", $usr, $pas);
+			
+			$this->cnf->_say("App db connection $usr@$con ok!", 'TYPE_IRON');
+			return true;
+	    } 
+		catch (PDOException $e) 
+		{
+			$this->cnf->_say("App failed to get DB handle: " . $e->getMessage(), 'TYPE_LION');
+        }
+		return false;	
+	}	
+	*/
 	public function pdoConn()
 	{
         return self::$pdo;
@@ -495,7 +663,31 @@ class tierds {
 		
 		return file_get_contents($this->ldscheme . "/$dpc");
 		//MUST return true false		
-	}		
+	}	
+    /*
+    private function pdoTest()
+	{
+		$start = microtime(true);
+		
+		$sql = "SELECT * 
+          FROM users
+         WHERE notes = :notes";
+         
+		$notes = 'ACTIVE';
+
+		$statement = self::$pdo->prepare($sql);
+		$statement->bindParam(':notes', $notes, PDO::PARAM_STR);
+		$statement->execute();
+
+		$rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+		$rcount = count($rows);
+		
+		foreach ($rows as $row) {
+			echo $row['email'] . PHP_EOL;
+		}
+		$tm = (microtime(true) - $start);
+		$this->_say("PDO microtime ($rcount) :" . $tm, 'TYPE_LION');
+	}*/
    
 	private function destroy() 
 	{
@@ -556,7 +748,25 @@ class tierds {
 			
 		_tverbose('[----]' . $zconf . PHP_EOL);
 		return new Config(eval("return $zconf;"));
-	}	
+	}
+
+	//save zoo cnf (daemon cmd reply)
+	public function setZooConf($conf=null)
+	{
+		$_zc = getcwd() . "/tier/zoo.conf";
+		if (!$conf) return 'Zoo conf:' . file_get_contents($_zc);
+		
+		if (copy($_zc, $_zc . '.bak')) 
+		{
+			if (file_put_contents($_zc, $conf)) 
+			{
+				$this->_say('Zoo Conf:'. $conf . ' saved!', 'TYPE_IRON');
+				return 'Zoo conf:' . file_get_contents($_zc);
+			}
+		}
+		$this->_say('Zoo Conf:'. $conf . ' NOT saved!', 'TYPE_IRON');
+		return 'Zoo conf:' . file_get_contents($_zc);
+	}
 	
 	
 	//SIGNALS

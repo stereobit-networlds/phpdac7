@@ -14,7 +14,8 @@ $__ACTIONS['SANDBOX_DPC'][1]= "process";
 
 //include process dpc at page
 
-class sandbox extends Process\process {
+//class sandbox extends Process\process {
+class sandbox extends process {	
 
 	var $user, $seclevid, $pid, $status; //test
 
@@ -36,7 +37,8 @@ class sandbox extends Process\process {
 		
 		
 		if ((defined('PROCESS_DPC')) && ($p))	{
-			$this->process = new Process\process($this, $p, GetReq('t'));	
+			//$this->process = new Process\process($this, $p, GetReq('t'));	
+			$this->process = new process($this, $p, GetReq('t'));	
 		}		
 	}
 	
@@ -44,7 +46,8 @@ class sandbox extends Process\process {
 	public function processEvent($event=null) { 
 		//echo 'Event:',$event;
 		if ((defined('PROCESS_DPC')) &&
-		    ($this->process instanceof Process\process)) { 
+			($this->process instanceof process)
+		    /*($this->process instanceof Process\process)*/) { 
 			$this->process->isFinished($event);
 		}	
 	}	

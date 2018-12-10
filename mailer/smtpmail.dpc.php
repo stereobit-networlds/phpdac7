@@ -48,17 +48,21 @@ class smtpmail {
 		$smtp_password = remote_paramload('SMTPMAIL','password',$this->path);	  
 		$myuser = $user ? $user : $smtp_user;
 		$mypass = $pass ? $pass : $smtp_password;
-	  
+		//echo $myuser . '::' . $user . '::' . $smtp_user;
+		
 		$smtp_name = remote_paramload('SMTPMAIL','realm',$this->path);
 		$myname = $name ? $name : $smtp_name;
 	  
 		$smtp_server = remote_paramload('SMTPMAIL','smtpserver',$this->path);
 		$myserver = $server ? $server : $smtp_server;	     	
 	  
-		define("SMTP_SERVER", $myserver);    //here the SMTP server of your ISP
-		define("MY_EMAIL", $myuser);	//"root@localhost");  # here your email address
-		define("MY_NAME", $myname);   //here your plain name	 
+		//define("SMTP_SERVER", $myserver);    //here the SMTP server of your ISP
+		//define("MY_EMAIL", $myuser);	//"root@localhost");  # here your email address
+		//define("MY_NAME", $myname);   //here your plain name	 
 			  
+		//$myserver = 'mail.panikidis.gr';
+		echo '>>>>'. $myserver . '--' . $myuser . '-'. $mypass .'--';
+						    
 		if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) {
 			//echo 'SMTP_PHPMAILER';
 		
@@ -71,8 +75,19 @@ class smtpmail {
 			$this->smtp->SMTPAuth = true;                               // Enable SMTP authentication
 			$this->smtp->Username = $myuser;//'user@example.com';                 // SMTP username
 			$this->smtp->Password = $mypass;//'secret';                           // SMTP password
-			$this->smtp->SMTPSecure = 'tls';                            // Enable TLS encryption, `ssl` also accepted
-			$this->smtp->Port = 587; //25 or 465 or 587;  		
+			$this->smtp->SMTPSecure = 'tls'; //ssl is deprecated        // Enable TLS encryption, `ssl` also accepted
+			$this->smtp->Port = 25;//465; //587; //25 or 465 or 587;  		
+			
+			//$this->smtp->AuthType = 'PLAIN'; //def CRAM-MD5
+			//$this->smtp->SMTPAutoTLS = true; 
+			/*$mail->SMTPOptions = array (
+					'ssl' => array(
+					'verify_peer'  => true,
+					'verify_depth' => 3,
+					'allow_self_signed' => true,
+					'peer_name' => 'Plesk',
+					)
+			);		*/	
 		}
 		elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
 			//echo 'SENDMAIL_PHPMAILER';	  
@@ -101,7 +116,8 @@ class smtpmail {
 			$this->smtp = new PHPMailer();
 			
 			//Server settings
-			$this->smtp->isSendmail(); 
+			//$this->smtp->isSendmail(); //Send messages using $Sendmail.
+			$this->smtp->isMail(); //Send messages using PHP's mail() function.
 		}
 
 	  /*
@@ -170,18 +186,15 @@ class smtpmail {
 	
 	public function body($body, $ishtml=true) {
 		
+		/*if ($ishtml) {
+			//$this->smtp->AltBody = "To view the message, please use an HTML compatible email viewer!"; // optional, comment out and test
+			//$this->smtp->MsgHTML($body);
+		}
+		else*/
+			
+		$this->smtp->isHTML($ishtml);
 		$this->smtp->Body = $body;
-	/*
-      if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true'))  {
-        $this->smtp->isHTML($ishtml);	  
-        $this->smtp->Body = $body;	  
-	  }
-      elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
-        $this->smtp->isHTML($ishtml);	  
-        $this->smtp->Body = $body;	  
-	  }
-	  else	
-	    $this->body = $body;*/
+
 	}
 	
 	public function altBody($altbody, $ishtml=true) {
@@ -192,17 +205,6 @@ class smtpmail {
 	public function attach($filename, $asname=null, $mime=null) {
 	
 		$this->smtp->addAttachment($filename, $asname);
-	/*	
-      if (((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) || 	
-          ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true'))) {
-	    
-	    $nametoattach = $asname?$asname:$filename;
-		$mymime = $mime?$mime:"text/plain";
-	   
-        # Attached file containing this source code:
-        $this->smtp->AddAttachment($filename, $nametoattach, "base64", $mymime);	  	
-	  }
-	  */
 	}	
 	
 	public function addimage($imgname, $asname=null, $mime=null, $id=null) {
@@ -231,7 +233,7 @@ class smtpmail {
 	//Configure message signing (the actual signing does not occur until sending)
 	public function sign() {
 
-		$this->smtp->(
+		$this->smtp->sign(
     '/path/to/cert.crt', //The location of your certificate file
     '/path/to/cert.key', //The location of your private key file
     //The password you protected your private key with (not the Import Password!
@@ -270,6 +272,9 @@ class smtpmail {
 		//Optionally you can add extra headers for signing to meet special requirements
 		//$this->smtp->DKIM_extraHeaders = ['List-Unsubscribe', 'List-Help'];		
 			
+		//https://support.google.com/mail/answer/81126?hl=en	
+		//List-Unsubscribe-Post: List-Unsubscribe=One-Click
+		//List-Unsubscribe: <https://example.com/unsubscribe/opaquepart>
 	}
 	
 	public function smtpsend($altbody=null, $dataInFile=false, $path=null) {
@@ -280,7 +285,7 @@ class smtpmail {
 		if ($dataInFile) {
 			//Read an HTML message body from an external file, convert referenced images to embedded,
 			//and convert the HTML into a basic plain-text alternative body
-			$this->smtp->msgHTML(file_get_contents($dataInFile, $path);//, __DIR__);		
+			$this->smtp->msgHTML(file_get_contents($dataInFile, $path));//, __DIR__);		
 		}	
 		
 		if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) {
