@@ -13,10 +13,12 @@ $__DPC['RCEDITABLES_DPC'] = 'rceditables';
 $__EVENTS['RCEDITABLES_DPC'][0]='cpeditables';
 $__EVENTS['RCEDITABLES_DPC'][1]='cpediexec';
 $__EVENTS['RCEDITABLES_DPC'][2]='cpedilog';
+$__EVENTS['RCEDITABLES_DPC'][3]='cpeditrunc';
 
 $__ACTIONS['RCEDITABLES_DPC'][0]='cpeditables';
 $__ACTIONS['RCEDITABLES_DPC'][1]='cpediexec';
 $__ACTIONS['RCEDITABLES_DPC'][2]='cpedilog';
+$__ACTIONS['RCEDITABLES_DPC'][3]='cpeditrunc';
 
 $__DPCATTR['RCEDITABLES_DPC']['cpeditables'] = 'cpeditables,1,0,0,0,0,0,0,0,0,0,0,1';
 
@@ -29,12 +31,17 @@ $__LOCALE['RCEDITABLES_DPC'][5]='_makeimg;Sync img;Ενημέρωση εικόν
 $__LOCALE['RCEDITABLES_DPC'][6]='_filter;Filter;Φίλτρο';
 $__LOCALE['RCEDITABLES_DPC'][7]='_out;Exports;Εξαγωγές';
 $__LOCALE['RCEDITABLES_DPC'][8]='_log;Log;Log';
+$__LOCALE['RCEDITABLES_DPC'][9]='_truncate;Erase EDI data;Διαγραφή EDI';
+$__LOCALE['RCEDITABLES_DPC'][10]='xml;Exports XML;Εξαγωγές XML';
+$__LOCALE['RCEDITABLES_DPC'][11]='csv;Exports CSV;Εξαγωγές CSV';
+$__LOCALE['RCEDITABLES_DPC'][12]='sql;Exports SQL;Εξαγωγές SQL';
+$__LOCALE['RCEDITABLES_DPC'][13]='log;Exports LOG;Εξαγωγές LOG';
 
 class rceditables  {
 
 	var $title, $prpath, $urlpath, $url;
 	var $ediT, $etlproducts;
-	var $etlT, $etlCMD, $etlCNF, $etlLOG, $etlPath;
+	var $etlT, $etlCMD, $etlCNF, $etlOWN, $etlLOG, $etlPath;
 	var $messages;
 
 	public function __construct() {
@@ -47,10 +54,11 @@ class rceditables  {
 		//EDI CONF
 		$this->etlproducts = array('id','datein','code3','code5','owner','itmactive','active','itmname','uniname1','ypoloipo1','price0','price1','manufacturer','size','color','cat0','cat1','cat2','cat3','cat4');	
 		$this->ediT = array('etlproducts'=>$this->etlproducts,
-							'editest'=>array('a','b'),
+							/*'editest'=>array('a','b'),*/
 							 );	
 		//ETL CONF
-		$this->etlCNF = array('kaisidis', 'aidonitsa', 'logicom');					 
+		$this->etlCNF = array('kaisidis', 'aidonitsa', 'logicom');	
+		$this->etlOWN = array('kaisidis'=>'data-media', 'aidonitsa'=>'aidonitsa', 'logicom'=>'logicom'); //owner title		
 		$this->etlCMD = array('_makecsv'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/',
 							  '_makesql'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/sqlnodepattach/|async/sql/[confname]/sqlread/',	
 							  '_makeimg'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgread/',
@@ -59,10 +67,13 @@ class rceditables  {
 		
 		//LOG CONF
 		$this->etlPath = $this->prpath . 'uploads/';
-		$this->etlLOG = array('kaisidis'=>array('xml'=>'datamedia-out.xml','csv'=>'datamedia-out.csv','log'=>'datamedia-out.log'),
-							  'aidonitsa'=>array('xml'=>'aidonitsa-out.xml','csv'=>'aidonitsa-out.csv','log'=>'aidonitsa-out.log'),	
-							  'logicom'=>array('xml'=>'logicom-out.xml','csv'=>'logicom-out.csv','log'=>'logicom-out.log'),
+		$this->etlLOG = array('kaisidis'=>array('xml'=>'datamedia-out.xml','csv'=>'datamedia-out.csv','sql'=>'datamedia-out.sql','log'=>'datamedia-out.log'),
+							  'aidonitsa'=>array('xml'=>'aidonitsa-out.xml','csv'=>'aidonitsa-out.csv','sql'=>'aidonitsa-out.sql','log'=>'aidonitsa-out.log'),	
+							  'logicom'=>array('xml'=>'logicom-out.xml','csv'=>'logicom-out.csv','sql'=>'logicom-out.sql','log'=>'logicom-out.log'),
 						);
+		/*				
+		$this->etlLOG2 = array('etlproducts'=>array('xml'=>'etlproducts.xml','csv'=>'etlproducts.csv','log'=>'etlproducts.log'),
+						);*/				
 		
 		$this->messages = array(); 
 	}
@@ -92,7 +103,16 @@ class rceditables  {
 										$this->messages[] = 'EDI failed!';
 										$this->messages[] = 'ETL command missing!';
 									  }	
-									  break;			
+									  break;
+
+			case 'cpeditrunc'       : if ($edi = GetReq('editable')) {
+				
+										$this->truncateEDI($edi, GetReq('owner'));
+										$this->messages[] = "EDI data ($edi) truncated!";		
+									  }
+									  else
+										$this->messages[] = 'Missing EDI table name';
+									  break;	
 
 			case 'cpeditables'      :
 			default                 :                    
@@ -113,6 +133,7 @@ class rceditables  {
 									  $out .= $this->messageBlock();
 									  break;			
 			
+			case 'cpeditrunc'    	:
 			case 'cpeditables'    	:
 			default             	: $out .= $this->selectEDI();
 									  $out .= "<hr/>"; //"<div id='cmsvars'></div>";	
@@ -137,21 +158,53 @@ class rceditables  {
 		
 		return ($out);
 	}
+	
+	protected function truncateEDI($editable=null, $dataowner=null) {
+		$db = GetGlobal('db'); 
+		if (!$editable) return false;
+		
+		$sSQL = "delete from " . $editable;
+		if ($dataowner)
+			$sSQL .= " where owner = " . $db->qstr($dataownder);
+		
+		//$this->messages[] = $sSQL;
+		
+		$ret = $db->Execute($sSQL);
+		return $ret;
+	}	
 
 	protected function selectEDI() {
 		if (empty($this->ediT)) return null;		
 		$lan = getlocal();
+		$menu = array();
+		$menuTrunc = array();		
 		
 		//EDI select table
-		$menu = array();
-		foreach ($this->ediT as $title => $f) 
+		foreach ($this->ediT as $title => $f) { 
 			$menu[$title] = 'cpeditables.php?edi='. $title;
+			$menuTrunc[$title] = 'cpeditables.php?t=cpeditrunc&editable='. $title;
+		}	
 		
-		$EDIselectButton = $this->createButton(localize('RCEDITABLES_DPC', $lan), $menu); 
-
 		if ($table = GetReq('edi')) { 
+			//sep
+			$menu[0] = '';
+			//EDI data export home
+			$menu[localize('_out', $lan)] = "cpeditables.php";
+		
+			$EDIselectButton = $this->createButton(localize('RCEDITABLES_DPC', $lan), $menu); 
+		
 			//ETL select command
 			$EDIselectButton .= $this->selectETL();
+		}
+		else {
+			$EDIselectButton = $this->createButton(localize('RCEDITABLES_DPC', $lan), $menu); 
+						
+			//ETL truncate table command
+			$EDItruncButton = $this->createButton(localize('_truncate', $lan), $menuTrunc, 'warning');
+			$EDIselectButton .= $EDItruncButton;
+			
+			//ETL (etlproducts conf) log files
+			//$EDIselectButton .= $this->selectLOGETL();
 		}	
 													
 		return ($EDIselectButton);											
@@ -173,7 +226,13 @@ class rceditables  {
 					$menu[$_title] = "cpeditables.php?t=cpediexec&edi=$table&cmd=". str_replace('[confname]', $cnf, $cmd);
 				}
 				//test menu item
-				$menu['Test'] = "cpeditables.php?t=cpediexec&edi=$table&cmd=hello/howru";
+				//$menu['Test'] = "cpeditables.php?t=cpediexec&edi=$table&cmd=hello/howru";
+				
+				//sep
+				$menu[0] = '';
+				
+				$dataowner = $this->etlOWN[$cnf];
+				$menu[localize('_truncate', $lan)] = "cpeditables.php?t=cpeditrunc&editable=$table&owner=$dataowner";
 				
 				$btitle = localize('_etl', $lan) .' '. ucfirst($cnf);	
 				$ETLselectButton .= $this->createButton($btitle, $menu, 'danger');	
@@ -184,6 +243,7 @@ class rceditables  {
 		return $ETLselectButton;		
 	}
 	
+	//log export files
 	protected function selectLOG() {
 		//if (!$table = GetReq('edi')) return null;
 		$table = GetReq('edi');
@@ -206,7 +266,31 @@ class rceditables  {
 				  
 		return $LOGselectButton;		
 	}
-
+	/*
+	//etlproducts named export files
+	protected function selectLOGETL() {
+		//if (!$table = GetReq('edi')) return null;
+		$table = GetReq('edi');
+		$lan = getlocal();
+		$LOGselectButton = null;
+		
+		if (!empty($this->etlLOG2)) {
+			
+			foreach ($this->etlLOG2 as $cnf=>$logfiles) { 
+				$menu = array();
+				foreach ($logfiles as $title=>$log) {
+				
+					$_title = localize($title, $lan);
+					$menu[$_title] = "cpeditables.php?t=cpedilog&edi=$table&log=". $log;
+				}	
+				$btitle = localize('_out', $lan) .' '. ucfirst($cnf);	
+				$LOGselectButton .= $this->createButton($btitle, $menu, 'info');				
+			}
+		}		  
+				  
+		return $LOGselectButton;		
+	}	
+	*/
 	protected function readLOG() {
 		$log = GetReq('log');
 		
@@ -306,7 +390,7 @@ class rceditables  {
 		
 		if (!empty($urls)) {
 			foreach ($urls as $n=>$url)
-				$links .= '<li><a href="'.$url.'">'.$n.'</a></li>';
+				$links .= $url ? '<li><a href="'.$url.'">'.$n.'</a></li>' : '<li class="divider"></li>';
 			$lnk = '<ul class="dropdown-menu">'.$links.'</ul>';
 		} 
 		
@@ -351,12 +435,14 @@ class rceditables  {
 	}	
 
 	protected function messageBlock() {
-		
-		$log = GetReq('log') ? '('. GetReq('log') .')' : null;
+		$log = GetReq('log');
+		$logTitle = GetReq('log') ? '('. $log .')' : null;
 		$messages = $this->viewMessages(); 
+		$importButton = isset($messages) ? 
+						"<a href='cpediimport.php?imp=$log'>Import</a>" : null;
 		
 		return "
-		<h3>Messages $log</h3>
+		<h3>Messages $logTitle</h3>
 			<div class=\"control-group\">
 				<!--label class=\"control-label\">Messages</label-->
 				<div class=\"controls\">
@@ -364,6 +450,9 @@ class rceditables  {
 						$messages
 					</select>
 				</div>
+				<ul class=\"pager wizard\">
+					<li class=\"next\">$importButton</li>
+                </ul>
 			</div>
 		";
 	}	

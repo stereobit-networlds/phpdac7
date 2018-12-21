@@ -364,7 +364,7 @@ class rcimgitems {
 					//if (GetParam('logset'))
 						//file_put_contents($this->prpath . 'edi-images.log', $sSQL . ";\r\n", FILE_APPEND | LOCK_EX);
 				
-					$this->messages[] = $x ." ($_itype) Delete image:". $rec[$fcode] . $this->restype . ' inserted ';					
+					$this->messages[] = $x ." ($_itype) Delete image:". $rec[$fcode] . $this->restype . ' deleted ';					
 				}
 				else
 					$this->messages[] = $x . " ($_itype) Delete image:" . $rec[$fcode] . $this->restype . ' not exists ';

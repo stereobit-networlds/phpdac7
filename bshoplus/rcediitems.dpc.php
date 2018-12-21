@@ -178,7 +178,7 @@ class rcediitems {
 		_m("mygrid.column use grid1+color|".localize('_color',$lan)."|5|0|");
 		_m("mygrid.column use grid1+owner|".localize('_owner',$lan)."|link|5|cpediitems.php?flt=owner&val={owner}");
 
-		$out = _m("mygrid.grid use grid1+products+$xsSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1");
+		$out = _m("mygrid.grid use grid1+etlproducts+$xsSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1");
 		
 		return ($out);  	
 	}	
@@ -467,8 +467,14 @@ class rcediitems {
 					$sSQL = "delete from products";
 					$sSQL.= " where $fcode = " . $db->qstr($rec[$fcode]);
 					
-					if (GetParam('dbset'))
+					if (GetParam('dbset')) {
 						$res = $db->Execute($sSQL);
+						
+						//delete attachments
+						$sSQL2 = "delete from pattachments";
+						$sSQL2.= " where code = " . $db->qstr($rec[$fcode]);
+						$res = $db->Execute($sSQL2);
+					}	
 					if (GetParam('logset'))
 						file_put_contents($this->prpath . 'edi-delete.log', $sSQL . ";\r\n", FILE_APPEND | LOCK_EX);
 				
