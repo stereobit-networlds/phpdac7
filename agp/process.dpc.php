@@ -119,7 +119,10 @@ class process extends pstack {
 									if ($cl = file_get_contents($dac5 .'/setvar-' . $chainData . '-srvProcessStack-' . $callback))
 										//echo 'Sync data!' . PHP_EOL;// . $cl;
 										$this->env->_say('Sync data!', 'TYPE_IRON');
-									//die('Exit'); //..and close async terminal !!!!!
+										
+										//echo 'PRPATH:' . $this->env->appenv['cppath'];
+									    //die('Exit'); //..and close async terminal !!!!! NOT when uMon
+										//$this->env->texit(); //uMon
 								}	
 								break;				
 				

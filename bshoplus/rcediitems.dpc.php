@@ -53,6 +53,7 @@ class rcediitems {
 	
 	var $title, $prpath, $urlpath, $url;
 	var $fields, $etlfields, $messages;
+	var $iLimit;
 		
     public function __construct() {
 	  
@@ -64,6 +65,8 @@ class rcediitems {
 		$this->messages = array(); 
 		$this->fields = array('id','datein','code3','code5','owner','itmactive','active','itmname','uniname1','ypoloipo1','price0','price1','manufacturer','size','color','cat0','cat1','cat2','cat3','cat4');	
 		$this->etlfields = implode(',', $this->fields);
+		
+		$this->iLimit = 200; //insert,update,delete loop limit
 	}
 	
     public function event($event=null) {
@@ -262,7 +265,7 @@ class rcediitems {
 			$x = $_x ? $_x : 1;
 			foreach ($items as $zi=>$rec) {
 				if (($_x) && ($zi < $_x)) continue;
-				if ($x == $_x + 500) {
+				if ($x == $_x + $this->iLimit) {
 					file_put_contents($this->prpath . 'edi-ins-counter.log', $x);
 					$this->messages[] = '(' . $x . ') Press submit to continue...';
 					//break;
@@ -359,7 +362,7 @@ class rcediitems {
 			$x = $_x ? $_x : 1;
 			foreach ($items as $zi=>$rec) {
 				if (($_x) && ($zi < $_x)) continue;
-				if ($x == $_x + 500) {
+				if ($x == $_x + $this->iLimit) {
 					file_put_contents($this->prpath . 'edi-upd-counter.log', $x);
 					$this->messages[] = '(' . $x . ') Press submit to continue...';
 					//break;
@@ -449,7 +452,7 @@ class rcediitems {
 			$x = $_x ? $_x : 1;
 			foreach ($items as $zi=>$rec) {
 				if (($_x) && ($zi < $_x)) continue;
-				if ($x == $_x + 500) {
+				if ($x == $_x + $this->iLimit) {
 					file_put_contents($this->prpath . 'edi-del-counter.log', $x);
 					$this->messages[] = '(' . $x . ') Press submit to continue...';
 					//break;

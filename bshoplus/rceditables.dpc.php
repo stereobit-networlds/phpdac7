@@ -90,8 +90,8 @@ class rceditables  {
 
 			case 'cpediexec'        : if ($cmd = GetReq('cmd')) {
 				
-										phpdac7\getT($cmd);
-										$this->jsDialog('Start', localize('_edi', getlocal()));
+										phpdac7\getT($cmd); //exec cmd and close tier
+										$this->jsDialog('Start', localize('_edi', getlocal()), 3000, 'cdact.php?t=texit');
 
 										$_cmd = explode('|', $cmd);
 										foreach ($_cmd as $i=>$c)
@@ -115,7 +115,7 @@ class rceditables  {
 									  break;	
 
 			case 'cpeditables'      :
-			default                 :                    
+			default                 :  //phpdac7\getT('texit'); //close tier before exe a cmd                  
 		}
     }
 
@@ -127,7 +127,7 @@ class rceditables  {
 		switch ($action) {
 			
 			case 'cpedilog'         : 			
-			case 'cpediexec'        : $out .= $this->selectEDI();
+			case 'cpediexec'        : $out .= $this->selectEDI(true);
 									  $out .= "<hr/>";			
 									  $out .= $this->selectLOG();
 									  $out .= $this->messageBlock();
@@ -165,7 +165,7 @@ class rceditables  {
 		
 		$sSQL = "delete from " . $editable;
 		if ($dataowner)
-			$sSQL .= " where owner = " . $db->qstr($dataownder);
+			$sSQL .= " where owner = " . $db->qstr($dataowner);
 		
 		//$this->messages[] = $sSQL;
 		
@@ -173,7 +173,7 @@ class rceditables  {
 		return $ret;
 	}	
 
-	protected function selectEDI() {
+	protected function selectEDI($noETL=false) {
 		if (empty($this->ediT)) return null;		
 		$lan = getlocal();
 		$menu = array();
@@ -193,8 +193,8 @@ class rceditables  {
 		
 			$EDIselectButton = $this->createButton(localize('RCEDITABLES_DPC', $lan), $menu); 
 		
-			//ETL select command
-			$EDIselectButton .= $this->selectETL();
+			if ($noETL==false)
+				$EDIselectButton .= $this->selectETL();
 		}
 		else {
 			$EDIselectButton = $this->createButton(localize('RCEDITABLES_DPC', $lan), $menu); 
@@ -455,6 +455,20 @@ class rceditables  {
                 </ul>
 			</div>
 		";
+	}	
+	
+	//replace on page call
+	public function streamDialog() {
+		
+		/*if ($cmd = GetReq('çmd')) {
+			
+			$sd = new jsdialogStreamSrv();
+			$ret = $sd->say($cmd, 'EDIS', 'cdact.php?t=texit', 5000);
+		
+			return ($ret);
+		}
+		else*/
+			return _m('rcpmenu.streamDialog');
 	}	
 
 };

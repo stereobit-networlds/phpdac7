@@ -5,7 +5,7 @@
 <!-- BEGIN HEAD -->
 <head>
     <meta charset="utf-8" />
-    <title>Handle group items</title>
+    <title>EDI items</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta content="" name="description" />
     <meta content="" name="author" />
@@ -70,6 +70,9 @@
                             <form id="tForm" method="post" action="cpediitems.php?t=cpsaveediitems" class="form-horizontal">
 								<input type="hidden" name="FormName" value="saveediitems" />
 								<input type="hidden" name="FormAction" value="cpsaveediitems" />
+								
+								<input type="hidden" name="flt" value="<phpdac>rcimgitems.getFilter use 1</phpdac>" />
+								<input type="hidden" name="val" value="<phpdac>rcimgitems.getFilter</phpdac>" />
 								
                                 <div id="tabsleft" class="tabbable tabs-left">
                                 <ul>
@@ -160,7 +163,9 @@
                                                     <input name="logclear" type="checkbox" /> <phpdac>cmsrt.slocale use _logclear</phpdac>
                                                 </label>
 											</div>
-										</div>										
+										</div>	
+
+										<h3><phpdac>rcediitems.showFilter</phpdac></h3>		
                                     </div>	
 									<div class="tab-pane" id="tabsleft-tab2">
                                     	<h3>Messages</h3>

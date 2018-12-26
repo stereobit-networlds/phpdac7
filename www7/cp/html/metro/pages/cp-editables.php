@@ -96,8 +96,7 @@
    <!-- stream dialog -->
    <script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
    <script language="JavaScript">		
-		/*setInterval(function() {<phpdac>jsdialogstream.streamDialog use jsdtime</phpdac>}, 30000);*/
-		setInterval(function() {<phpdac>rcpmenu.streamDialog</phpdac>}, 30000);	
+		setInterval(function() {<phpdac>rceditables.streamDialog</phpdac>}, 30000);	
    </script>
    <!-- end stream dialog -->    
    <!-- END JAVASCRIPTS -->  

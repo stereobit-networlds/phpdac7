@@ -280,18 +280,17 @@ class kernel {
 	//call from mem when variable asked async
 	public function openProcess($batch=false, $var=false)
 	{
+		//new monitor 	
+		$uuid = $batch . '-' . strval(time());
+		$port = $this->umon->go($uuid, $batch);
+		if (!is_numeric($port))
+			$this->cnf->_say("uMonitor ($uuid) $batch:" . $port, 'TYPE_LION');
+			
+		return true;
+		
+		/////////////////////////////////////////////////////////// old method
 		$cwd = getcwd();
 		//echo 'working dir:' . $cwd;
-		
-		//exec("start /D d:\github\phpdac7\bin agentds $batch"); //process
-		
-		//exec("start /D $cwd\\tier tier $batch"); //...
-		//exec("start /D $cwd tier $batch"); //...
-		
-		//echo $cwd . "\bin\createprocess.exe php tier/tier.dpc.php $batch";
-		//exec($cwd . "\bin\createprocess.exe php tier/tier.dpc.php $batch");
-		//exec("start /D $cwd\\tier tierp.bat $batch"); //createprocess.exe in phpdac7/ptier
-		//exec("$cwd\\tier\\tierp.bat pdo"); //!!! insilenent, createprocess.exe in phpdac7
 		
 		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 			exec("start /D $cwd\\tier tierp.bat $batch"); //createprocess.exe in phpdac7/ptier

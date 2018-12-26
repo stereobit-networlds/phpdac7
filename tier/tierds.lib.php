@@ -54,7 +54,7 @@ class tierds {
 		//print_r($argv);
 		
 		$this->verboseLevel = GLEVEL;	  
-		$this->tkeys = array('heartbeat', 'heartbrst', 'netport', 'appconf', 'appinfo');
+		$this->tkeys = array('heartbeat', 'heartbrst', 'netport', 'appconf', 'appinfo', 'process', 'texit');
 		
 		//PCNTL SIGNALS
 		$this->installSIG();	
@@ -401,6 +401,33 @@ class tierds {
 			return $this->app->appInfo();
 	}
 	
+	private function process($batch=null)
+	{
+		$cwd = getcwd();
+		//echo 'working dir:' . $cwd;
+		
+		$batch = null;//serialize(self::$_APPENV); //null; //$env
+		//echo $batch . PHP_EOL;
+		//if (defined('_BELL')) _tverbose(_BELL); //"\007"; //beep
+		_tverbose("\007");
+		
+		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+			//exec("start /D $cwd\\tier tierp.bat $batch");
+			exec("start /D $cwd tierp.bat $batch"); 	//{$this->daemon_ip} $port $uuid");		
+		}
+		else {//require screen gnu package
+			exec("screen $cwd/tier.sh $batch");	
+		}
+
+		return null;//$cwd;
+	}
+	
+	public function texit()
+	{
+		$this->umonDestroy();
+		die('Exit'); 
+	}
+	
 	//READS / RESOURCES
 	
 	public function iscmd($k=null)
@@ -600,37 +627,7 @@ return json_encode($output);
         }
 		return false;	
 	}	
-	/*
-	//re-init db connection based on app db
-	private function reInitPDO() 
-	{
-		//if (!$dbcon = @file_get_contents(self::$ldschemeS . "/kernel/dbcon.db"))
-		if (empty(self::$_APPCONF))	
-		{
-			$this->cnf->_say("App connection failed!", 'TYPE_LION');
-			return false;
-		}
-		//'mysql:host=localhost:3306;dbname=admin_pangr;charset=utf8<@>panik<@>fxpower77'
-		//$_DBCON = explode('<@>', $dbcon);
-		
-		try 
-		{
-			//self::$pdo = @new PDO('mysql:host=localhost:3306;dbname=admin_pangr;charset=utf8', 'panik', 'fxpower77');
-			$con = trim(self::$_APPCONF['DATABASE']['dbname']);
-			$usr = trim(self::$_APPCONF['DATABASE']['dbuser']);
-			$pas = trim(self::$_APPCONF['DATABASE']['dbpwd']);
-			self::$pdo = @new PDO("mysql:host=localhost:3306;dbname=$con;charset=utf8", $usr, $pas);
-			
-			$this->cnf->_say("App db connection $usr@$con ok!", 'TYPE_IRON');
-			return true;
-	    } 
-		catch (PDOException $e) 
-		{
-			$this->cnf->_say("App failed to get DB handle: " . $e->getMessage(), 'TYPE_LION');
-        }
-		return false;	
-	}	
-	*/
+
 	public function pdoConn()
 	{
         return self::$pdo;
@@ -664,30 +661,6 @@ return json_encode($output);
 		return file_get_contents($this->ldscheme . "/$dpc");
 		//MUST return true false		
 	}	
-    /*
-    private function pdoTest()
-	{
-		$start = microtime(true);
-		
-		$sql = "SELECT * 
-          FROM users
-         WHERE notes = :notes";
-         
-		$notes = 'ACTIVE';
-
-		$statement = self::$pdo->prepare($sql);
-		$statement->bindParam(':notes', $notes, PDO::PARAM_STR);
-		$statement->execute();
-
-		$rows = $statement->fetchAll(PDO::FETCH_ASSOC);
-		$rcount = count($rows);
-		
-		foreach ($rows as $row) {
-			echo $row['email'] . PHP_EOL;
-		}
-		$tm = (microtime(true) - $start);
-		$this->_say("PDO microtime ($rcount) :" . $tm, 'TYPE_LION');
-	}*/
    
 	private function destroy() 
 	{

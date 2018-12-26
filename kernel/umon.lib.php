@@ -27,10 +27,12 @@ class umon
 		$this->ukeys = array('netport', 'uuid');
 	}
 
-	public function go($uuid=null) 
+	public function go($uuid=null, $batch=null) 
 	{
 		if (!$uuid) return 'undefined uuid'; //when no uuid port err at return
 		//$this->env->cnf->_say('uuid: ' . $uuid, 'TYPE_CAT');		
+		
+		$_batch = $batch ? $batch : '-x'; //-x dummy var
 		$cwd = getcwd();
 		
 		//generate port...		
@@ -47,10 +49,10 @@ class umon
 			if (defined('_BELL')) _verbose(_BELL); //"\007"; //beep
 			
 			if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-				exec("start /D $cwd\\tier tierp.bat -x {$this->ip} $port $uuid"); 
+				exec("start /D $cwd\\tier tierp.bat $_batch {$this->ip} $port $uuid"); 
 			}
 			else {//require screen gnu package
-				exec("screen $cwd/tier.sh -x {$this->ip} $port $uuid");	
+				exec("screen $cwd/tier.sh $_batch {$this->ip} $port $uuid");	
 			}
 			
 			$this->portTableView();			

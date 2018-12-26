@@ -71,6 +71,9 @@
 								<input type="hidden" name="FormName" value="saveimgitems" />
 								<input type="hidden" name="FormAction" value="cpsaveimgitems" />
 								
+								<input type="hidden" name="flt" value="<phpdac>rcimgitems.getFilter use 1</phpdac>" />
+								<input type="hidden" name="val" value="<phpdac>rcimgitems.getFilter</phpdac>" />
+								
                                 <div id="tabsleft" class="tabbable tabs-left">
                                 <ul>
                                     <li><a href="#tabsleft-tab1" data-toggle="tab"><span class="strong">Options</span> <span class="muted">Options</span></a></li>
@@ -82,13 +85,25 @@
 										<h3><phpdac>cmsrt.slocale use _insupd</phpdac></h3>	
 										<div class="control-group">
 											<label class="control-label">
-												<phpdac>cmsrt.slocale use _moveincategory</phpdac>
+												<phpdac>cmsrt.slocale use _addimages</phpdac>
 											</label>
 											<div class="controls">
 												<div id="normal-toggle-button">
-													<input name="moveincat" type="checkbox">
+													<input name="imgincat" type="checkbox">
 													<phpdac>rcimgitems.currCategory</phpdac>
 												</div>
+                                                <label class="checkbox">
+                                                    <input name="large" type="checkbox" /> Large
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="medium" type="checkbox" /> Medium
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="small" type="checkbox" /> Small
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="photodb" type="checkbox" /> <phpdac>cmsrt.slocale use _photodb</phpdac>
+                                                </label>												
 											</div>
 										</div>	
 										<div class="control-group">
@@ -97,31 +112,26 @@
 											</label>
 											<div class="controls">
 												<div id="normal-toggle-button">
-													<input name="updincat" type="checkbox">
+													<input name="imgupdcat" type="checkbox">
 													<phpdac>rcimgitems.currCategory</phpdac>
 												</div>
+												<label class="checkbox">
+                                                    <input name="overw" type="checkbox" /> <phpdac>cmsrt.slocale use _overwrite</phpdac>
+                                                </label>
+                                                <label class="checkbox">
+                                                    <input name="large" type="checkbox" /> Large
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="medium" type="checkbox" /> Medium
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="small" type="checkbox" /> Small
+                                                </label>												
+												<label class="checkbox">
+                                                    <input name="photodb" type="checkbox" /> <phpdac>cmsrt.slocale use _photodb</phpdac>
+                                                </label>
 											</div>
 										</div>										
-                                        <div class="control-group">
-                                            <label class="control-label">
-												<phpdac>cmsrt.slocale use _createcategory</phpdac>
-											</label>
-                                            <div class="controls">
-												<div id="normal-toggle-button">
-													<input name="createcat" type="checkbox">
-													<phpdac>rcimgitems.currCategory</phpdac>
-												</div>
-                                                <label class="checkbox">
-                                                    <input name="catact" type="checkbox" /> Active
-                                                </label>
-												<label class="checkbox">
-                                                    <input name="catview" type="checkbox" /> View
-                                                </label>
-												<label class="checkbox">
-                                                    <input name="catsearch" type="checkbox" /> Search
-                                                </label>
-                                            </div>
-                                        </div>
 										
 										<h3><phpdac>cmsrt.slocale use _remove</phpdac></h3>	
 										<div class="control-group">
@@ -130,37 +140,40 @@
 											</label>
 											<div class="controls">
 												<div id="normal-toggle-button">
-													<input name="delincat" type="checkbox">
+													<input name="imgdelcat" type="checkbox">
 													<phpdac>rcimgitems.currCategory</phpdac>
 												</div>
+                                                <label class="checkbox">
+                                                    <input name="large" type="checkbox" /> Large
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="medium" type="checkbox" /> Medium
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="small" type="checkbox" /> Small
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="photodbrem" type="checkbox" /> <phpdac>cmsrt.slocale use _photodbrem</phpdac>
+                                                </label>												
 											</div>
-										</div>										
-										<div class="control-group">
-                                            <label class="control-label">
-												<phpdac>cmsrt.slocale use _deletecategory</phpdac>
-											</label>
-                                            <div class="controls">
-												<div id="normal-toggle-button">
-													<input name="deletecat" type="checkbox">
-													<phpdac>rcimgitems.currCategory</phpdac>
-												</div>
-                                            </div>
-                                        </div>
+										</div>
 										
 										<h3><phpdac>cmsrt.slocale use _dblog</phpdac></h3>	
 										<div class="control-group">
 											<div class="controls">
-												<label class="checkbox">
+												<!--label class="checkbox">
                                                     <input name="dbset" type="checkbox" /> <phpdac>cmsrt.slocale use _dbset</phpdac>
                                                 </label>
 												<label class="checkbox">
                                                     <input name="logset" type="checkbox" /> <phpdac>cmsrt.slocale use _logset</phpdac>
-                                                </label>
+                                                </label-->
 												<label class="checkbox">
                                                     <input name="logclear" type="checkbox" /> <phpdac>cmsrt.slocale use _logclear</phpdac>
                                                 </label>
 											</div>
-										</div>										
+										</div>
+
+										<h3><phpdac>rcimgitems.showFilter</phpdac></h3>			
                                     </div>	
 									<div class="tab-pane" id="tabsleft-tab2">
                                     	<h3>Messages</h3>
