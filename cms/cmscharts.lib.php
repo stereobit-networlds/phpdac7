@@ -18,6 +18,8 @@ $__LOCALE['CMSCHARTS_DPC'][4]='_uclicks;Unique;Unique';
 $__LOCALE['CMSCHARTS_DPC'][5]='_mailqueue;Mails sent;Αποστολές e-mail';
 $__LOCALE['CMSCHARTS_DPC'][6]='_mailreply;Mails viewed;Προβολές e-mail';
 $__LOCALE['CMSCHARTS_DPC'][7]='_mailbounce;Mails bounced;Αποτυχημένα e-mail';
+$__LOCALE['CMSCHARTS_DPC'][8]='_bots;Bots;Bots';
+$__LOCALE['CMSCHARTS_DPC'][9]='_map;Map;Χάρτης';
 
 class cmscharts extends cpflotcharts {
 
@@ -32,10 +34,11 @@ class cmscharts extends cpflotcharts {
 	    $month = GetParam('month') ? GetParam('month') : date('m');	
 
 		$cpGet = _v('rcpmenu.cpGet');	
-		$noBots = _m('rccontrolpanel.avoidBotsSQL use HTTP_USER_AGENT+1');		
-			
+	
         if ($id = _m("cmsrt.getRealItemCode use " . $cpGet['id'])) {
-			
+			//check performance issue
+			$noBots = _m('rccontrolpanel.avoidBotsSQL use HTTP_USER_AGENT+1');		
+					
 			$item = _m('rccontrolpanel.getItemName use '.$id);		
 			
 			$diff = 0;
@@ -43,7 +46,6 @@ class cmscharts extends cpflotcharts {
 			
 			//stats (item)
 			//$sSQL = "select count(id) as hits,year,month from stats where tid='$id' " . $timeins . " group by year, month order by year, month";
-			$noBots = _m('rccontrolpanel.avoidBotsSQL use HTTP_USER_AGENT+1');
 			$sSQL = "select count(id) as hits, DAY(date) as day from stats where $noBots tid='$id' " . $timeins . " group by DAY(date) order by DAY(date)";
 			$res = $db->Execute($sSQL,2);
 			//echo $sSQL;
@@ -80,7 +82,9 @@ class cmscharts extends cpflotcharts {
 			//echo '<br/>' . $this->callChart('Transactions');
 		}
 		elseif ($cat = $cpGet['cat']) {
-			
+			//check performance issue
+			$noBots = _m('rccontrolpanel.avoidBotsSQL use HTTP_USER_AGENT+1');		
+		
 			$diff = 0;
 			$timeins = $this->sqlDateRange('date', true, true, $diff);			
 			
@@ -95,8 +99,7 @@ class cmscharts extends cpflotcharts {
 			  $res = $db->Execute($sSQL,2);
 			  
 			  $this->make_chart_data('Visits'.$i, $res, array('day','hits'), _m("cmsrt.replace_spchars use $cat+1"), array('day',$diff));	
-			}
-			
+			}			
 			$this->chartGroup = array('Visits0','Visits1','Visits2','Visits3','Visits4');			
 			
 			//return (0); //test bypass
@@ -125,25 +128,38 @@ class cmscharts extends cpflotcharts {
 		
 		}		
 		else {
-			
 			//return (0); //test bypass			
 			
-			//stats (items)
+			//DISABLED due to performance issue at index/cp
+			$noBots = null;//_m('rccontrolpanel.avoidBotsSQL use HTTP_USER_AGENT+1');		
+
+			//stats visists
 			$diff = 0;
-			$timeins = $this->sqlDateRange('date', true, false, $diff);			
+			$timeins = $this->sqlDateRange('date', true, false, $diff);						
 			
-			//where tid IS NOT NULL 
 			$sSQL = "select count(id) as hits, DAY(date) as day from stats where $noBots $timeins group by DAY(date) order by DAY(date)";
 			$res = $db->Execute($sSQL,2);
 			//echo $sSQL;
             $this->make_chart_data('Visits0', $res, array('day','hits'), localize('_hits',getlocal()), array('day',$diff));
-
 			$this->chartGroup = array('Visits0');
 			
+			//stats visits (bots)
+			/*$bots = _m("cms.arrayload use CMS+httpUserAgentsToAvoid");
+			foreach ($bots as $i=>$bot) {
+		
+			  $sSQL = "select count(id) as hits, DAY(date) as day from stats where HTTP_USER_AGENT like '%$bot%' ". $timeins ." group by DAY(date) order by DAY(date)";
+			  $res = $db->Execute($sSQL,2);
+			  
+			  $this->make_chart_data('Bot'.$i, $res, array('day','hits'), _m("cmsrt.replace_spchars use $cat+1"), array('day',$diff));	
+			  $this->chartGroup[] = 'Bot'.$i; 
+			}	
+			//$this->chartGroup = array();
+			//foreach ($bots as $i=>$bot) 
+			//$this->chartGroup = array('Visits0','Visits1','Visits2','Visits3','Visits4');	
+			*/			
 			//transactions
 			$diff = 0;
 			$timeins = $this->sqlDateRange('timein', true, false, $diff);
-			
 			$sSQL = "select count(recid) as hits, DAY(timein) as day from transactions where " . $timeins . " group by DAY(timein) order by DAY(timein)";
 			$res = $db->Execute($sSQL,2);
             $this->make_chart_data('Transactions', $res, array('day','hits'), localize('_transactions',getlocal()), array('day',$diff));				
@@ -168,10 +184,6 @@ class cmscharts extends cpflotcharts {
 		
 		$this->flot_stats();
 		
-		/*
-		<script src="js/flot-chart.js"></script>
-        <script src="js/custom-flot-chart.js"></script>  
-		*/
 		$js = <<<FLOT
 		
 var Script = function () {
@@ -453,7 +465,7 @@ var Script = function () {
 
 
     $(function () {
-        // data
+		// data
         /*var data = [
          { label: "Series1",  data: 10},
          { label: "Series2",  data: 30},
@@ -470,6 +482,7 @@ var Script = function () {
          { label: "Series5",  data: [[1,80]]},
          { label: "Series6",  data: [[1,0]]}
          ];*/
+	
         var data = [];
         var series = Math.floor(Math.random()*10)+1;
         for( var i = 0; i<series; i++)
@@ -645,8 +658,6 @@ var Script = function () {
     }
 
 }();
-
-
 		
 		
 FLOT;

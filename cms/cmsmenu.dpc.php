@@ -201,7 +201,8 @@ class cmsmenu {
 
 		//db based menu items (1 level)
 		$sSQL = "select relation,locale,notes from relatives where ";
-		$sSQL.= "type='$lan' and active=1 and ismenu=1 and ";
+		//$sSQL.= "type='$lan' and active=1 and ismenu=1 and "; //DISABLE LAN when read relations (shkatalogmedia.show_menu_items)
+		$sSQL.= "active=1 and ismenu=1 and ";
 		if ($submenu) 
 			$sSQL.= "relative=" . $db->qstr($submenu) . " and locale=" . $db->qstr($menu);		
 		else
