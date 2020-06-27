@@ -1446,7 +1446,10 @@ function addtocart(id,cartdetails)
  		$err2 = $this->cart_mailto($this->user, $mailSubject, $mailout);		    			  
 		  
 		//null for true  
-		return ($err1 ? $err1 : ($err2 ? $err2 : null));
+		//return ($err1 ? $err1 : ($err2 ? $err2 : null));
+		//IN CASE OF EUROBANK RETURN err2 = 454 4.7.1 : Relay access denied for mail ($this->user)
+		//TEMPORARY DISABLE err2
+		return ($err1 ? $err1 : null);
 	}	
 	
     public function printorder() {
