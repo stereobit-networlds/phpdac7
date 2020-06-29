@@ -1511,13 +1511,13 @@ FORM;
 	    //google
 		if ($gtoken = GetSessionParam('gtoken')) {	
 		
-			$gclient = new Google_Client();
+			$gclient = new Google_Client(); //DISABLE PARAMS
 			$gclient->setApplicationName('Google Contacts Sample');
-			$gclient->setScopes("https://www.google.com/m8/feeds/");			
-			$gclient->setClientId('111972355706-5i4gdd3d8ci401rp2umro3itonorg6tq.apps.googleusercontent.com');
-			$gclient->setClientSecret('axlYm5fpYspb3TW_zckzNNtd');
-			$gclient->setRedirectUri('http://www.xix.gr/oauth2callback');
-			$gclient->setDeveloperKey('AIzaSyDgNfkKVLswLHyY4tpCT7oJQjIBDVLpoYs');	
+			$gclient->setScopes("XXXXXXXXXXXXXXXXXXXXXXXXX");			
+			$gclient->setClientId('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx');
+			$gclient->setClientSecret('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+			$gclient->setRedirectUri('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+			$gclient->setDeveloperKey('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');	
 						
 			if  (!is_object($gclient)) 
 				return false;
