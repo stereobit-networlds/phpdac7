@@ -13,12 +13,14 @@ $__EVENTS['RCTREEMAP_DPC'][1]='cpsavetree';
 $__EVENTS['RCTREEMAP_DPC'][2]='cploadtree';
 $__EVENTS['RCTREEMAP_DPC'][3]='cptreeframe';
 $__EVENTS['RCTREEMAP_DPC'][4]='cptreeitems';
+$__EVENTS['RCTREEMAP_DPC'][5]='cptreeopts';
 
 $__ACTIONS['RCTREEMAP_DPC'][0]='cptreemap';
 $__ACTIONS['RCTREEMAP_DPC'][1]='cpsavetree';
 $__ACTIONS['RCTREEMAP_DPC'][2]='cploadtree';
 $__ACTIONS['RCTREEMAP_DPC'][3]='cptreeframe';
 $__ACTIONS['RCTREEMAP_DPC'][4]='cptreeitems';
+$__ACTIONS['RCTREEMAP_DPC'][5]='cptreeopts';
 
 $__LOCALE['RCTREEMAP_DPC'][0]='RCTREEMAP_DPC;Tree map;Αντιστοίχιση';
 $__LOCALE['RCTREEMAP_DPC'][1]='_date;Date;Ημερ.';
@@ -75,6 +77,8 @@ $__LOCALE['RCTREEMAP_DPC'][51]='_title0;Title L1;Τίτλος L1';
 $__LOCALE['RCTREEMAP_DPC'][52]='_title1;Title L2;Τίτλος L2';
 $__LOCALE['RCTREEMAP_DPC'][53]='_title2;Title L3;Τίτλος L3';
 $__LOCALE['RCTREEMAP_DPC'][54]='_fields;Identifier;Πρόθεμα';
+$__LOCALE['RCTREEMAP_DPC'][55]='_runopts;Run Οpts;Εκτέλεση Οpts';
+$__LOCALE['RCTREEMAP_DPC'][56]='_opts;Οpts;Οpts';
 
 class rctreemap {
 	
@@ -147,6 +151,9 @@ class rctreemap {
 	    if ($login!='yes') return null;				
 
 	    switch ($event) {
+			
+		    case 'cptreeopts'     : $this->runTreeOpts();
+			                        break;			
 			 
 			case 'cptreeframe'    : echo $this->loadframe();
 		                            die();  
@@ -169,12 +176,15 @@ class rctreemap {
 	    if ($login!='yes') return null;		
 
 	    switch ($action) {
+			
+			case 'cptreeopts'     :  $out = $this->gridMode('opts');
+									 break;	
 			 
 			case 'cptreeframe'    :  break;	 
 			case 'cptreeitems'    :  break;			 	 
 			case 'cploadtree'     :  break;		   
 			case 'cpsavetree'     :  break;
-								   
+								   				   
 			case 'cptreemap'      :						   
 			default               :  $out = $this->gridMode();
 		}			 
@@ -198,22 +208,29 @@ class rctreemap {
 		$frame = "<iframe src =\"$bodyurl\" width=\"100%\" height=\"500px\"><p>Your browser does not support iframes</p></iframe>";    
 
 		return ($frame); 
-	}		
+	}			
 		
-	protected function gridMode() {
-		$mode = GetReq('mode') ? GetReq('mode') : 'tree';
+	protected function gridMode($mode=null) {
+		$mode = GetReq('mode') ? GetReq('mode') : ($mode ? $mode : 'tree');
         
 		$turl0 = seturl('t=cptreemap&mode=items');		
 		$turl1 = seturl('t=cptreemap&mode=cats');
 		$turl2 = seturl('t=cptreemap&mode=tree');
+		$turl3 = seturl('t=cptreemap&mode=opts');
+		$turl4 = seturl('t=cptreeopts&mode=opts');
+		
 		$button = $this->createButton(localize('_mode', getlocal()), 
 										array(localize('_items', getlocal())=>$turl0,
-											  localize('_cats', getlocal())=>$turl1,
+											  localize('_cats', getlocal())=>$turl1,											  
 											  0=>'',
 											  localize('_tree', getlocal())=>$turl2,
+											  localize('_opts', getlocal())=>$turl3,											  
+											  1=>'',
+											  localize('_runopts', getlocal())=>$turl4,
 		                                ),'success');		
 																	
 		switch ($mode) {
+			case 'opts'     : $content = $this->opts_grid(null,140,5,'r', true); break; 
 	        case 'tree'     : $content = $this->tree_grid(null,140,5,'r', true); break;
 	        case 'cats'     : $content = $this->categories_grid(null,140,5,'r', true); break;
 			case 'items'    : $content = $this->items_grid(null,140,5,'r', true); break;  
@@ -223,6 +240,35 @@ class rctreemap {
 		$ret = $this->window(localize('_treemap', getlocal()).': '.localize('_'.$mode, getlocal()), $button, $content);
 		
 		return ($ret);
+	}	
+	
+	protected function opts_grid($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
+	    $height = $height ? $height : 800;
+        $rows = $rows ? $rows : 36;
+        $width = $width ? $width : null; //wide	
+		$mode = $mode ? $mode : 'd';
+		$noctrl = $noctrl ? 0 : 1;				   
+		$title = localize('_opts',getlocal()); 
+		
+		for ($i=0;$i<4;$i++) {
+			$in = $i ? strval($i) : '0';
+			$opts[] = 'opt'.$in;
+		}	
+		$_opts = empty($opts) ? null : ',' . implode(',', $opts);
+
+        $xsSQL = "SELECT * from (select id,dateins,activ,code$_opts from ctreeopt) o ";		   
+					
+		GetGlobal('controller')->calldpc_method("mygrid.column use grid1+id|".localize('id',getlocal())."|5|0|");//."|link|2|"."javascript:treerel(\"{tid}\");".'||');		
+		GetGlobal('controller')->calldpc_method("mygrid.column use grid1+activ|".localize('_active',getlocal())."|boolean|1|1:0|");
+		GetGlobal('controller')->calldpc_method("mygrid.column use grid1+dateins|".localize('_date',getlocal())."|5|0|"); //"|link|8|"."javascript:treerel(\"{tid}\");".'||');;//."|5|0|");		
+		GetGlobal('controller')->calldpc_method("mygrid.column use grid1+code|".localize('_code',getlocal())."|5|0|");	
+		
+		foreach ($opts as $o)
+			GetGlobal('controller')->calldpc_method("mygrid.column use grid1+$o|".localize($o,getlocal())."|5|0|");	
+
+		$out = GetGlobal('controller')->calldpc_method("mygrid.grid use grid1+ctreeopt+$xsSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1");
+		
+		return ($out);  	
 	}	
 
 	protected function tree_grid($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
@@ -897,8 +943,88 @@ class rctreemap {
 		}	
 		  
 		return ($list);
+	}	
+
+	
+	
+	//OPTS ////////////////////////////////////////////////////////////////////
+	
+	protected function _sqlReplace($code, $optid, $optval=null) {
+		
+		return "REPLACE ctreeopt set activ=1, id='$code', code='$code', opt$optid='$optval';";
 	}		
+	
+	//truncate table
+	protected function _sqlx() {
+		$db = GetGlobal('db');		
+		//$sSQL = 'insert into ctreemap (tid, code) values';
+		//$sSQL .= ' ('. $db->qstr($tid) . ',' . $db->qstr($item) . ')';	
+		
+		$sSQL = "TRUNCATE TABLE ctreeopt";
+		$db->Execute($sSQL);
+	}	
+
+	protected function runTreeOpts() {
+		$db = GetGlobal('db');
+	    $itmname = _v("cmsrt.itmname");
+	    $itmdescr = _v("cmsrt.itmdescr");		
+		$code = $this->fid ? $this->fid : _m("cmsrt.getmapf use code");		
+		
+		//$saveSQL = $this->_sqlReplace('test', 1, 'xxx');
+		$this->_sqlx();
+		
+		$sSQL = 'select id,tid,code from ctreemap'; //no where = all
+		//if ($this->echoSQL)
+			//echo $sSQL . '<br/>';	
+		
+		$resultset = $db->Execute($sSQL,2);			
+		
+		$i=0;
+		foreach ($resultset as $n=>$rec) {
+			
+			$id = $rec['id'];
+			$tid = $rec['tid'];
+			$code = $rec['code'];
+			if ($tid)
+				$ret[$code] .= $tid . ',';
+			
+			$i++;
+		}		
+		//print_r($ret);	
+		//echo $i;
+		if (empty($ret)) return false;	
+		
+		$j=0;		
+		$z=0;
+		foreach ($ret as $id=>$optlist) {
+			
+			$olist = explode(',', $optlist);
+			//print_r($olist);
+			
+			foreach ($olist as $optID=>$o) {
+				if ($o!='') {
+					//echo '<br>' . $this->_sqlReplace($id, $optID+1, $o);
+					//$db->Execute($this->_sqlReplace($id, $optID+1, $o));					
 					
+					if ($optID>0) {
+						$sSQL = "UPDATE ctreeopt set activ=1, opt$optID='$o' where code='$id';";
+						$z++;
+					}	
+					else	
+						$sSQL = "INSERT INTO ctreeopt (activ,code,opt0) values (1, '$id', '$o');";
+					
+					//echo '<br>' . $sSQL;
+					
+					$db->Execute($sSQL);
+					$j++;
+				}	
+			}
+		}
+		$sum = $j - $z;
+		//echo $j . "($sum)" . $z;		
+		return $j;		
+	}	
+		
 };
 }
 ?>

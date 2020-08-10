@@ -1,4 +1,5 @@
 <!-- ========================================= NAVIGATION ========================================= -->
+<phpdac>cms.nvlparam use CMS.stickymenu+<div id="stick-position"></div><div id="stick-element">++1</phpdac>
 <nav id="top-megamenu-nav" class="megamenu-vertical animate-dropdown">
     <div class="container">
         <div class="yamm navbar">
@@ -19,4 +20,5 @@
         </div><!-- /.navbar -->
     </div><!-- /.container -->
 </nav><!-- /.megamenu-vertical -->
+<phpdac>cms.nvlparam use CMS.stickymenu+</div>++1</phpdac>
 <!-- ========================================= NAVIGATION : END ========================================= -->

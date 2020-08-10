@@ -8,18 +8,42 @@
 </div>
 
 <div class="widget">
-    <h1><phpdac>cmsrt.slocale use _FILTERS</phpdac></h1>
+    <!--h1><phpdac>cmsrt.slocale use _FILTERS</phpdac></h1-->
     <div class="body bordered">
-        
-        <div class="category-filter">
-            <h2><phpdac>cmsrt.slocale use _brands</phpdac></h2>
-			<!--h2><phpdac>cmsrt.slocale use _SEARCH</phpdac></h2-->
-            <hr>
+	
+		<div class="category-filter">		
+			<ul>
+				<phpdac>shkatalogmedia.filterDel</phpdac>
+            </ul>	
+        </div>	
+
+		<phpdac>shkatalogmedia.filterExtAll use 1++1</phpdac>
+		<!--hpdac>shkatalogmedia.filterExt use Colors++1</phpda-->
+		<!--hpdac>shkatalogmedia.filterExt use Size++1</phpda-->					
+		
+        <h2><phpdac>cmsrt.slocale use _brands</phpdac></h2>
+        <hr>        
+        <div class="category-filter" style="overflow-y:auto; height:<phpdac>cmsrt.echostr use shkatalogmedia.fpx</phpdac>;">
             <ul>
-				<!--hpdac>shnsearch.filter use manufacturer+searchfilter.htm+1+filter</phpda-->
 				<phpdac>shkatalogmedia.filter use manufacturer+searchfilter+1+kfilter+1</phpdac>
             </ul>
         </div><!-- /.category-filter -->
+		
+        <h2><phpdac>cmsrt.slocale use _COLOR</phpdac></h2>
+        <hr>		
+		<div class="category-filter" style="overflow-y:auto; height:<phpdac>cmsrt.echostr use shkatalogmedia.fpx</phpdac>;">					
+            <ul>
+				<phpdac>shkatalogmedia.filter use color+searchfilter+1+kfilter+1</phpdac>
+            </ul>			
+        </div>		
+		
+        <h2><phpdac>cmsrt.slocale use _SIZE</phpdac></h2>
+        <hr>		
+		<div class="category-filter" style="overflow-y:auto; height:<phpdac>cmsrt.echostr use shkatalogmedia.fpx</phpdac>;">					
+            <ul>
+				<phpdac>shkatalogmedia.filter use size+searchfilter+1+kfilter+1</phpdac>
+            </ul>			
+        </div>			
 		
         <div class="price-filter">
             <h2><phpdac>cmsrt.slocale use _price</phpdac></h2>
@@ -42,14 +66,10 @@
 					</phpdac> 
                 </span>
                 <span class="filter-button">
-                    <a href="klist/<phpdac>cmsrt.echostr use cat</phpdac>/"><phpdac>cmsrt.slocale use _filter</phpdac></a>
+                    <a href="klist/<phpdac>cmsrt.echostr use cat</phpdac>/"><del><phpdac>cmsrt.slocale use _filter</phpdac></del></a>
                 </span>
             </div>
-        </div><!-- /.price-filter -->
-		
-		<phpdac>shkatalogmedia.filterExtAll use 1</phpdac>
-		<!--hpdac>shkatalogmedia.filterExt use Colors</phpda-->
-		<!--hpdac>shkatalogmedia.filterExt use Size</phpda-->		
+        </div><!-- /.price-filter -->		
 
     </div><!-- /.body -->
 </div><!-- /.widget -->

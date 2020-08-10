@@ -3,7 +3,7 @@
     <div class="container">
         <div class="col-xs-12 col-sm-6 no-margin">
             <ul>
-                <li><a href="<phpdac>rcserver.paramload use SHELL+urlbase</phpdac>"><phpdac>frontpage.slocale use _HOME</phpdac></a></li>
+                <li><a href="<phpdac>cms.paramload use SHELL+urlbase</phpdac>"><phpdac>frontpage.slocale use _HOME</phpdac></a></li>
                 <li><a href="company.php">Η εταιρία</a></li>
                 <li><a href="contact.php">Επικοινωνία</a></li>
             </ul>

@@ -1,0 +1,157 @@
+#<IfModule mod_security.c>
+#   SecFilterEngine Off
+#   SecFilterScanPOST Off
+#</IfModule>
+
+<FilesMatch "\.(ttf|otf|eot|woff)$">
+      <IfModule mod_headers.c>
+        Header set Access-Control-Allow-Origin "*"
+      </IfModule>
+</FilesMatch>
+
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/text text/html text/plain text/xml text/css         application/x-javascript application/javascript
+</IfModule>
+
+
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^\.]+)/([^\.]+).html$ katalog.php?t=kshow&cat=$1&id=$2 [L]
+RewriteRule ^([^\.]+).html$ katalog.php?t=klist&cat=$1 [NC,L]
+
+RewriteRule ^/([^/]*)/([^/]*)/([^/]*)/([^/]*)/([^/]*).filter$ katalog.php?t=kfilter&cat=$1&input=$2,$3,$4,$5 [L]
+RewriteRule ^/([^/]*)/([^/]*)/([^/]*)/([^/]*).filter$ katalog.php?t=kfilter&cat=$1&input=$2,$3,$4 [L]
+RewriteRule ^/([^/]*)/([^/]*)/([^/]*).filter$ katalog.php?t=kfilter&cat=$1&input=$2,$3 [L]
+
+RewriteRule ^addtocart/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=addtocart&a=$1&cat=$2&page=$3&qty=$4 [L]
+RewriteRule ^addtocart/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=addtocart&a=$1&cat=$2&page=$3 [L]
+RewriteRule ^removefromcart/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=removefromcart&a=$1&cat=$2&page=$3 [L]
+
+RewriteRule ^/product/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=product&cat=$1&page=$2&id=$3 [L]
+RewriteRule ^/product/([^/]*)/([^/]*)/$ /katalog.php?t=product&cat=$1&id=$2 [L]
+RewriteRule ^/products/([^/]*)/([^/]*)/$ /katalog.php?t=products&cat=$1&page=$2 [L]
+RewriteRule ^/products/([^/]*)/$ /katalog.php?t=products&cat=$1 [L]
+
+RewriteRule ^kshow/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=kshow&cat=$1&page=$2&id=$3 [L]
+RewriteRule ^kshow/([^/]*)/([^/]*)/$ /katalog.php?t=kshow&cat=$1&id=$2 [L]
+RewriteRule ^klist/([^/]*)/([^/]*)/$ /katalog.php?t=klist&cat=$1&page=$2 [L]
+RewriteRule ^klist/([^/]*)/$ /katalog.php?t=klist&cat=$1 [L]
+RewriteRule ^lan/([^/]*)/$ /katalog.php?t=lang&langsel=$1 [L]
+
+RewriteRule ^search/([^/]*)/([^/]*)/([^/]*)/$ /search.php?t=search&input=$1&cat=$2&page=$3 [L]
+#RewriteRule ^search/([^/]*)/([^/]*)/([^/]*)/$ /search.php?t=search&input=$1&stype=$2&page=$3 [L]
+#RewriteRule ^search/([^/]*)/([^/]*)/$ /search.php?t=search&input=$1&stype=$2 [L]
+RewriteRule ^search/([^/]*)/([^/]*)/$ /search.php?t=search&input=$1&page=$2 [L]
+RewriteRule ^search/([^/]*)/$ /search.php?t=search&input=$1 [L]
+
+RewriteRule ^filter/([^/]*)/([^/]*)/([^/]*)/$ /search.php?t=filter&input=$1&cat=$2&page=$3 [L]
+RewriteRule ^filter/([^/]*)/([^/]*)/$ /search.php?t=filter&input=$1&page=$2 [L]
+RewriteRule ^filter/([^/]*)/$ /search.php?t=filter&input=$1 [L]
+
+RewriteRule ^kfilter/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=kfilter&cat=$1&input=$2&page=$3 [L]
+RewriteRule ^kfilter/([^/]*)/([^/]*)/$ /katalog.php?t=kfilter&cat=$1&input=$2 [L]
+RewriteRule ^kfilter/([^/]*)/$ /katalog.php?t=kfilter&cat=$1 [L]
+
+RewriteRule ^ktree/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=ktree&cat=$1&treeid=$2&page=$3 [L]
+RewriteRule ^ktree/([^/]*)/([^/]*)/$ /katalog.php?t=ktree&cat=$1&treeid=$2 [L]
+RewriteRule ^ktree/([^/]*)/$ /katalog.php?t=ktree&treeid=$1 [L]
+
+RewriteRule ^feed/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=feed&cat=$1&page=$2&id=$3&format=$4 [L]
+RewriteRule ^feed/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=feed&cat=$1&page=$2&format=$3 [L]
+RewriteRule ^feed/([^/]*)/([^/]*)/$ /katalog.php?t=feed&cat=$1&format=$2 [L]
+
+RewriteRule ^xml/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=xmlout&cat=$1&xml=$2&id=$3&format=$4 [L]
+RewriteRule ^xml/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=xmlout&cat=$1&xml=$2&format=$3 [L]
+RewriteRule ^xml/([^/]*)/([^/]*)/$ /katalog.php?t=xmlout&xml=$1&format=$2 [L]
+
+RewriteRule ^addnewdeliv/$ /katalog.php?t=addnewdeliv [L]
+RewriteRule ^savenewdeliv/$ /katalog.php?t=savenewdeliv [L]
+
+RewriteRule ^(viewcart|cart)/?$ katalog.php?t=viewcart    [NC,L] 
+RewriteRule ^(shlogin|login)/?$ katalog.php?t=shlogin     [NC,L] 
+RewriteRule ^(shlogout|logout)/?$ katalog.php?t=shlogout  [NC,L] 
+RewriteRule ^(shlogin|rempwd|clearcart|transview|fastpick|wslist|printcart)/?$ katalog.php?t=$1    [NC,L] 
+RewriteRule ^(cart-checkout|cart-cancel|cart-order|cart-submit)/?$ katalog.php?t=$1    [NC,L]
+
+RewriteRule ^cart-submit/paypal/?$ paypal.php?p=$1     [NC,L]
+RewriteRule ^cart-submit/eurobank/?$ eurobank.php?p=$1 [NC,L]
+RewriteRule ^cart-submit/piraeus/?$ piraeus.php?p=$1   [NC,L]
+
+RewriteRule ^addcart/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=addtocart&a=$1&cat=$2&page=$3&qty=$4 [L]
+RewriteRule ^addcart/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=addtocart&a=$1&cat=$2&page=$3 [L]
+RewriteRule ^remcart/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=removefromcart&a=$1&cat=$2&page=$3&qty=$4 [L]
+RewriteRule ^remcart/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=removefromcart&a=$1&cat=$2&page=$3 [L]
+
+RewriteRule ^calc/([^/]*)/([^/]*)/$ /katalog.php?t=calc&$1=$2 [L]
+RewriteRule ^(calc|recalc)/?$ katalog.php?t=calc  [NC,L] 
+
+RewriteRule ^signup/([^/]*)/$ /katalog.php?t=signup&invtype=$1 [L]
+RewriteRule ^signup/$ /katalog.php?t=signup&invtype=0 [L]
+
+RewriteRule ^editcus/([^/]*)/$ /katalog.php?t=signup2&a=$1 [L]
+RewriteRule ^editcus/$ /katalog.php?t=signup2 [L]
+
+RewriteRule ^selectcus/([^/]*)/$ /katalog.php?t=selcus&id=$1 [L]
+RewriteRule ^removecus/([^/]*)/$ /katalog.php?t=removecus&id=$1 [L]
+RewriteRule ^contact/([^/]*)/$ /contact.php?t=contact&branch=$1 [L]
+RewriteRule ^contact/$ /contact.php [L]
+RewriteRule ^search/$ /search.php [L]
+
+RewriteRule ^transviewhtml/([^/]*)/$ /katalog.php?t=transviewhtml&tid=$1 [L]
+RewriteRule ^trcancel/([^/]*)/$ /katalog.php?t=cancelorder&tid=$1 [L]
+
+RewriteRule ^trload/([^/]*)/([^/]*)/$ /katalog.php?t=loadcart&tid=$1&ajax=$2 [L]
+RewriteRule ^trload/([^/]*)/$ /katalog.php?t=loadcart&tid=$1 [L]
+
+RewriteRule ^trview/([^/]*)/$ /katalog.php?t=transviewhtml&tid=$1 [L]
+RewriteRule ^trview/$ /katalog.php?t=transview [L]
+
+RewriteRule ^wishadd/([^/]*)/$ /katalog.php?t=wsadditem&id=$1 [L]
+RewriteRule ^wishrem/([^/]*)/$ /katalog.php?t=wsdelitem&id=$1 [L]
+RewriteRule ^wishlist/$ /katalog.php?t=wslist [L]
+
+RewriteRule ^cmpadd/([^/]*)/$ /katalog.php?t=cmpadditem&id=$1 [L]
+RewriteRule ^cmprem/([^/]*)/$ /katalog.php?t=cmpdelitem&id=$1 [L]
+RewriteRule ^cmplist/$ /katalog.php?t=cmplist [L]
+
+RewriteRule ^transport/([^/]*)/$ /transport.php?t=transport&id=$1 [L]
+RewriteRule ^transport/$ /transport.php?t=transport [L]
+
+RewriteRule ^subscribe/([^/]*)/$ /subscribe.php?t=subscribe&m=$1 [L]
+RewriteRule ^subscribe/$ /subscribe.php?t=subscribe [L]
+
+RewriteRule ^unsubscribe/([^/]*)/$ /subscribe.php?t=unsubscribe&m=$1 [L]
+RewriteRule ^unsubscribe/$ /subscribe.php?t=unsubscribe [L]
+
+RewriteRule ^mtrackurl/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /mtrackurl.php?t=mt&a=$1&u=$2&cid=$3&r=$4 [L]
+RewriteRule ^mtrackurl/([^/]*)/([^/]*)/([^/]*)/$ /mtrackurl.php?t=mt&u=$1&cid=$2&r=$3 [L]
+
+RewriteRule ^mtrack/([^/]*)/([^/]*)/$ /mtrack.php?i=$1&r=$2 [L]
+RewriteRule ^mtrack/([^/]*)/$ /mtrack.php?i=$1 [L]
+RewriteRule ^ns/([^/]*)/$ /ns.php?a=$1 [L]
+
+RewriteRule ^tools/([^/]*)/([^/]*)/$ /gdprtools.php?t=$1&submail=$2 [L]
+RewriteRule ^tools/([^/]*)/$ /gdprtools.php?t=$1 [L]
+RewriteRule ^tools/$ /gdprtools.php [L]
+
+RewriteRule ^process/([^/]*)/([^/]*)/$ /process.php?t=process&pid=$1&clp=$2 [L]
+RewriteRule ^process/([^/]*)/$ /process.php?t=process&pid=$1 [L]
+RewriteRule ^process/$ /process.php?t=process [L]
+
+RewriteRule ^p/([^/]*)/([^/]*)/([^/]*)/$ /process_$1.php??t=process&pid=$2&clp=$3 [L]
+RewriteRule ^p/([^/]*)/([^/]*)/$ /process_$1.php?t=process&pid=$2 [L]
+RewriteRule ^p/([^/]*)/$ /process_$1.php?t=process [L]
+RewriteRule ^p/$ /process.php?t=process [L]
+
+RewriteRule ^([^/]*)/$ /index.php?t=$1 [L]
+
+RewriteRule ^(.*)\.printer$ $1.php [L] 
+
+RewriteRule .* - [E=DEVMD_AUTHORIZATION:%{HTTP:Authorization}]
+
+#RewriteCond %{HTTP_HOST} !^www\.
+#RewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=302,L]
+#RewriteCond %{REQUEST_URI} !^/e-Enterprise.php$
+#RewriteCond %{HTTPS} off
+#RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=302]

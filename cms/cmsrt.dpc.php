@@ -27,6 +27,8 @@ $__ACTIONS['CMSRT_DPC'][3]='katalog';
 $__ACTIONS['CMSRT_DPC'][4]='klist';
 $__ACTIONS['CMSRT_DPC'][5]='kshow';
 $__ACTIONS['CMSRT_DPC'][9]= 'captchaimage';
+$__ACTIONS['CMSRT_DPC'][10]='products';
+$__ACTIONS['CMSRT_DPC'][11]='product';
 
 $__DPCATTR['CMSRT_DPC']['shlangs'] = 'shlangs,1,0,0,0,0,0,0,0,0,0,0,1';
 $__DPCATTR['CMSRT_DPC']['lang'] = 'lang,0,0,0,0,0,0,0,0,0,0,1';
@@ -35,8 +37,8 @@ $__DPCATTR['CMSRT_DPC']['setlanguage'] = 'setlanguage,0,0,0,0,0,0,0,0,0,0,0';
 $__LOCALE['CMSRT_DPC'][0]='SHLANGS_DPC;Languanges;Γλώσσα';
 $__LOCALE['CMSRT_DPC'][1]='_HOME;Home;Αρχική';
 
-$a = GetGlobal('controller')->require_dpc('cms/cms.dpc.php');
-require_once($a);//_r('cms/cms.dpc.php')); 
+//$a = GetGlobal('controller')->require_dpc('cms/cms.dpc.php');
+require_once(_r('cms/cms.dpc.php')); 
 
 class cmsrt extends cms  {
 	
@@ -51,6 +53,7 @@ class cmsrt extends cms  {
 	var $picbg, $picmd, $picsm, $home, $cat_result, $isCAttach;
 	var $ogTags, $twigTags, $siteTitle, $siteTwiter, $siteFb, $httpurl;	
 	var $mtrack, $mbody, $scrollid, $load_mode;
+	var $klistcmd, $kshowcmd, $itemID, $catID;
 	
 	public function __construct() {
 	
@@ -135,6 +138,12 @@ class cmsrt extends cms  {
 				
 	    $this->scrollid = 0;//javascript scroll call meter
 		$this->load_mode = 1;	
+			
+		$this->klistcmd = $this->paramload('ESHOP', 'klistcmd') ?: 'klist'; //products
+		$this->kshowcmd = $this->paramload('ESHOP', 'kshowcmd') ?: 'kshow'; //product	
+
+		$this->itemID = GetReq('id') ?: 0;
+		$this->catID = GetReq('cat') ?: 0;	
 
 		$this->javascript();		
 	}
@@ -172,14 +181,16 @@ class cmsrt extends cms  {
 								  break;
 			case "setlanguage"  : //echo "Current language:",$this->lan_set[$this->selected_lan],"\n";  						
 			                      break; 
-								  
+				
+            case 'product'     :				
 			case 'kshow'        : if ((!defined('SHKATALOGMEDIA_DPC')) && ($this->userLevelID < 5)) 
 									_m("cmsvstats.update_item_statistics use ".GetReq('id'), 1);
 			
 			                      if (defined('SHKATALOGMEDIA_DPC')) break; else $this->read_item();
 			                      $out = (defined('SHKATALOGMEDIA_DPC')) ? null : $this->show_item(); 
 								  break;
-								  
+								
+            case 'products'     :								
 			case 'klist'        : if ((!defined('SHKATALOGMEDIA_DPC')) &&($this->userLevelID < 5))  
 			                         _m("cmsvstats.update_category_statistics use ".GetReq('cat'), 1);
 			
@@ -335,7 +346,7 @@ goBack();
 	}		
 	
 	protected function list_katalog($linemax=null,$cmd=null,$template=null,$photosize=null,$nopager=null) {
-	    $cmd = $cmd ? $cmd : 'klist';
+	    $cmd = $cmd ? $cmd : $this->klistcmd;
 	    $pz = $photosize ? $photosize : 2;	//3	   
 	    $xdist = $this->imagex ? $this->imagex:100;
 	    $ydist = $this->imagey ? $this->imagey:null;	
@@ -374,9 +385,9 @@ goBack();
 				}			 
 		   	
 
-				$itemlink = $this->httpurl . '/' . $this->url('t=kshow&cat='.$cat.'&id='.$itemcode);
-				$itemlinkname = $this->url('t=kshow&cat='.$cat.'&id='.$itemcode, $rec[$this->itmname]);		   
-				$detailink = $this->httpurl . '/' . $this->url("t=kshow&cat=$cat&id=".$itemcode) . '#details';				
+				$itemlink = $this->httpurl . '/' . $this->url('t='.$this->kshowcmd.'&cat='.$cat.'&id='.$itemcode);
+				$itemlinkname = $this->url('t='.$this->kshowcmd.'&cat='.$cat.'&id='.$itemcode, $rec[$this->itmname]);		   
+				$detailink = $this->httpurl . '/' . $this->url("t={$this->kshowcmd}&cat=$cat&id=".$itemcode) . '#details';				
 		   		$details = null;
 		  											 
 				$tokens[] = $itemlinkname;
@@ -430,7 +441,7 @@ goBack();
 			$this->ogTags = $this->openGraphTags(array(0=>$this->siteTitle,
 		                                           1=>$this->getcurrentkategory(), 
 												   2=>str_replace($this->sep(),' ',$this->replace_spchars($cat,1)),														
-												   3=>$this->httpurl .'/klist/'. $cat . '/',
+												   3=>$this->httpurl .'/'.$this->klistcmd.'/'. $cat . '/',
 												   4=>$ogimage, /*$ogimage array of images (with no httpurl)!!*/
 												  ));			
 
@@ -447,12 +458,12 @@ goBack();
 	/*homepage call*/
 	/*public function frontpage() {
 		$this->read_list();
-		return $this->list_katalog(0,'klist','fpkatalog',3);
+		return $this->list_katalog(0,$this->klistcmd,'fpkatalog',3);
 	}*/
 	
 	/*ajax loading call after first loading*/
 	public function frontpage($page=null, $enable_ajax=false, $divargs=null, $divname=null) {	
-		$param = $page ? $page : $_GET['param'];
+		$param = $page ? $page : GetReq('param');
 		
 		if ($enable_ajax) {
 			$out = $this->get_scrollid(get_class($this),'frontpage', "$param", $divargs, $divname, false); 		
@@ -460,7 +471,7 @@ goBack();
 		}
 
 		$this->read_list($param);
-		$out = $this->list_katalog(0,'klist','fpkatalog',3);
+		$out = $this->list_katalog(0,$this->klistcmd,'fpkatalog',3);
 		
 		return ($out);		
 	}	
@@ -468,14 +479,14 @@ goBack();
 	public function nextpage() {
 		$cat = GetReq('cat') ? GetReq('cat') : '0'; //dummy numeric		
 		$page = ($this->itmeter < $this->pager) ? intval(GetReq('page')) : + intval(GetReq('page')) + 1;
-		$next = $this->url('t=klist&cat='.$cat.'&page='.$page);
+		$next = $this->url('t='.$this->klistcmd.'&cat='.$cat.'&page='.$page);
 		return ($next);
 	}
 	
 	public function prevpage() {
 		$cat = GetReq('cat') ? GetReq('cat') : '0'; //dummy numeric	
 		$page = (GetReq('page')>0) ? intval(GetReq('page')) - 1 : 0;
-		$prev = $this->url('t=klist&cat='.$cat.'&page='.$page);
+		$prev = $this->url('t='.$this->klistcmd.'&cat='.$cat.'&page='.$page);
 		return ($prev);
 	}	
 	
@@ -541,9 +552,9 @@ goBack();
 					$array_cart = _m("shkatalogmedia.read_array_policy use " . $itemcode . '+'. $itemprice . "+$itemcode;$itemtitle;;;$cat;$page;;$itemphoto;$itemprice;$itemqty",1);	   										
 				}	
 				
-				$itemlink = $this->url('t=kshow&cat='.$cat.'&page='.$page.'&id='.$itemcode); 	 	   
+				$itemlink = $this->url('t='.$this->kshowcmd.'&cat='.$cat.'&page='.$page.'&id='.$itemcode); 	 	   
 				$linkphoto = $this->list_photo($itemcode,null,null,$lnktype,$cat,2,3,$rec[$this->itmname]);	
-				$detailink = $this->url("t=kshow&cat=$cat&page=$page&id=".$itemcode) . '#details';							 
+				$detailink = $this->url("t='.$this->kshowcmd.'&cat=$cat&page=$page&id=".$itemcode) . '#details';							 
 				$details = null;
 		 		   
 				//// tokens method												 
@@ -821,7 +832,7 @@ goBack();
           case 1  : //toplevel
 		  default :if ($url) {
 			          $title = array_pop($mycattree);
-		              $ret = $this->url('t=klist&cat='. GetReq('cat'), $title);
+		              $ret = $this->url('t='.$this->klistcmd.'&cat='. GetReq('cat'), $title);
 				   }	  
                    else 
 		              $ret = array_pop(array_reverse($mycattree));	  
@@ -830,7 +841,7 @@ goBack();
 	  else {//actual
 	    if ($url) {
 		  $title = array_pop($mycattree);	
-		  $ret = $this->url('t=klist&cat='. GetReq('cat'),$title);
+		  $ret = $this->url('t='.$this->klistcmd.'&cat='. GetReq('cat'),$title);
 		}  
         else	  
 	      $ret = array_pop($mycattree);	  	
@@ -909,7 +920,7 @@ goBack();
 				$myresource = "<img src=\"" . $photo . "\"";
 				$myresource.= "alt=\"$a_name". localize('_IMAGE',$this->lan) . "\">";
 		  
-				$purl = $this->url("t=kshow"."&cat=".$cat."&id=".$code); 
+				$purl = $this->url("t=".$this->kshowcmd."&cat=".$cat."&id=".$code); 
 				$plink = "<a href=\"$purl\">";
 				$ret = $plink . $myresource . "</a>";           
 			}
@@ -917,13 +928,13 @@ goBack();
 		  
 				$myresource = "<img src=\"" . $photo . "\"";
 				$myresource.= "alt=\"$a_name". localize('_IMAGE',$this->lan) . "\">";
-				$ret = $this->url('t=kshow&cat='.$cat.'&page='.$page.'&id='.$code,$myresource);
+				$ret = $this->url('t='.$this->kshowcmd.'&cat='.$cat.'&page='.$page.'&id='.$code,$myresource);
 			} 
 			else {//item link
 		  
 				$myresource = "<img src=\"" . $photo . "\"";
 				$myresource.= "alt=\"$a_name". localize('_IMAGE',$this->lan) . "\">";		  
-				$ret = $this->url('t=kshow&cat='.$cat.'&page='.$page.'&id='.$code,$myresource);
+				$ret = $this->url('t='.$this->kshowcmd.'&cat='.$cat.'&page='.$page.'&id='.$code,$myresource);
 			} 
 		}
 		else {
@@ -1365,8 +1376,8 @@ EOF;
 			$cat .= $rec['cat4'] ? $this->cseparator . $this->replace_spchars($rec['cat4']) : null;
 			
 			$item_url = ($aliasID) ? $this->httpurl ."/$cat/$id2" . $this->aliasExt :
-									 $this->httpurl . '/' . $this->url('t=kshow&cat='.$cat.'&id='.$itemcode);
-			$item_name_url = $this->url('t=kshow&cat='.$cat.'&id='.$itemcode, $rec[$this->itmname]);			   
+									 $this->httpurl . '/' . $this->url('t='.$this->kshowcmd.'&cat='.$cat.'&id='.$itemcode);
+			$item_name_url = $this->url('t='.$this->kshowcmd.'&cat='.$cat.'&id='.$itemcode, $rec[$this->itmname]);			   
 		    $item_name_url_base = "<a href='$item_url'>".$rec[$this->itmname]."</a>";
 			
 			$imgfile = $this->urlpath . $this->image_size_path . '/' . $itemcode . $this->restype;
@@ -1647,7 +1658,7 @@ EOF;
 
 		if ($aliasID = $this->useUrlAlias()) {
 			
-			if ($id = $_GET['id'])  {
+			if ($id = GetReq('id'))  {
 				
 				$cat = GetReq('cat');
 				
@@ -1656,15 +1667,15 @@ EOF;
 				
 					//fetch real (canonical) code
 					$c = $this->getRealItemCode($id, $aliasID);	
-					$ret = $this->httpurl . "/kshow/$cat/$c/";
+					$ret = $this->httpurl . "/{$this->kshowcmd}/$cat/$c/";
 				}
 				else //as is
-					$ret = $this->httpurl . "/kshow/$cat/$id/";
+					$ret = $this->httpurl . "/{$this->kshowcmd}/$cat/$id/";
 						
 			}	
 			elseif ($cat = GetReq('cat')) {
 				//when url is "domain.ext/cat.html;
-				$ret = $this->httpurl . "/klist/$cat/";
+				$ret = $this->httpurl . "/".$this->klistcmd."/$cat/";
 			}
 			else
 				$ret = $this->httpurl . $this->php_self(); 			
@@ -1893,6 +1904,16 @@ EOF;
 		return false;
 	}	
 	
+	//escape filter strings
+	//set public used in shnsearch
+	public function escapeORDie($str) {
+		if (preg_match_all('~\b(select|update|delete|insert|union|from|hex|1=1|and)\b~i', $str, $matches)) {
+			die('Preg panik! Exit.');//print_r($matches));
+		}
+
+		return addslashes($str);
+	}	
+	
 	/* db based include part */
 	public function include_partDb($fname=null, $args=null, $uselans=null, $tmplname=null) {	
 		$db = GetGlobal('db'); 	
@@ -1936,7 +1957,8 @@ EOF;
 			$mobilefname = implode('/', $fparts);
 			$mobilefname.= '/'. $lastpart;
 
-			$ret = parent::include_part($mobilefname,$args,$uselans,$tmplname);
+			if (is_readable($mobilefname))
+				$ret = parent::include_part($mobilefname,$args,$uselans,$tmplname);
 			//if ($ret) echo $mobilefname . '<br/>';
 		} 
 
@@ -1953,7 +1975,8 @@ EOF;
 			$mobilefname = implode('/', $fparts);
 			$mobilefname.= '/'. $lastpart;
 
-			$ret = parent::include_part_arg($mobilefname,$args,$uselans,$tmplname);
+			if (is_readable($mobilefname))
+				$ret = parent::include_part_arg($mobilefname,$args,$uselans,$tmplname);
 			//if ($ret) echo $mobilefname . '<br/>';
 		} 
 
@@ -1964,7 +1987,7 @@ EOF;
     //overrite
 	public function included($fname=null, $enable_ajax=false, $divargs=null, $divname=null) {
 
-		$p = $_GET['param'] ? $_GET['param'] : $fname;
+		$p = GetReq('param') ? GetReq('param') : $fname;
 		$param = ($this->mobile) ? 'mob@' . $p : $p;
 	
 		if ($enable_ajax) {
@@ -1973,11 +1996,12 @@ EOF;
 		}
 
 		$pathname = $this->prpath . $this->htmlpage . "/" . $this->MC_TEMPLATE . "/" . $param . '.php';
+		$loadfile = (is_readable($pathname)) ? $pathname : str_replace('mob@', '', $pathname);
 		//echo $pathname;
 		
 		//self::stackTemplate($pathname);
 				
-		$contents = @file_get_contents($pathname);
+		$contents = @file_get_contents($loadfile); //$pathname);
 		$out = $this->process_commands($contents);
 		
 		return ($out);		

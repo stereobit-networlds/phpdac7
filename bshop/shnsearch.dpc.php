@@ -46,26 +46,27 @@ class shnsearch {
 	var $post, $result, $meter, $pager, $text2find;
 	var $path, $urlpath, $inpath;
     var $imageclick, $attachsearch;
+	var $httpurl, $_catAllFilter;
 
 	public function __construct() {
 
 		$this->title = localize('SHNSEARCH_DPC',getlocal());
 		$this->path = paramload('SHELL','prpath');
 		$this->urlpath = paramload('SHELL','urlpath');
-		$this->inpath = paramload('ID','hostinpath');			  
-		
+		$this->inpath = paramload('ID','hostinpath');		
+		$this->httpurl = _v('cmsrt.httpurl');		
 		$this->title = localize('SHNSEARCH_DPC',getlocal()); 
-	  
 		$this->imageclick = remote_paramload('SHNSEARCH','imageclick',$this->path);	  
 		$this->attachsearch = remote_paramload('SHNSEARCH','attachsearch',$this->path);		  	
-
 		$this->post = false;
 		$this->msg = null;		  	 
-	  
 		$this->meter = 0; 
 		$this->pager = 10;
 
-		$this->text2find = GetParam('Input') ? GetParam('Input') : GetReq('input');			
+		$this->text2find = GetParam('Input') ? GetParam('Input') : GetReq('input');		
+		
+		//default phrase, a character when click for a category search without a phrase
+		$this->_catAllSearch = _m('cmsrt.paramload use ESHOP+searchallkeyword') ?: 'all'; //'*' 	
 		
 		//on all pages
 		$this->javascript();			
@@ -84,8 +85,9 @@ class shnsearch {
 			case 'removefromcart':		break;  
 	  
 			case 'search' 		 :	  
-			default 			 : 		$this->search_javascript();
-										$this->do_quick_search($this->text2find);
+			default 			 : 		$this->do_quick_search($this->text2find);
+										$this->search_javascript();
+										
 										//$this->do_search();//not used
 		} 
 	}
@@ -112,7 +114,7 @@ class shnsearch {
 			case 'removefromcart':	break;	 
 	  
 			case 'search' 		 :		
-			default       		 : 	if ((GetReq('page'))  || (GetReq('asc')) || 
+			default       		 : 	/*if ((GetReq('page'))  || (GetReq('asc')) || 
 										(GetReq('order')) || (GetReq('pager'))) { //ajax
 										if (_v('shkatalogmedia.filterajax') && (!_v('shkatalogmedia.mobile')))
 											die($this->form_search());
@@ -120,7 +122,13 @@ class shnsearch {
 											$out = $this->form_search();
 									}
 									else 	
+										$out = $this->form_search();*/
+									
+									if (_m('shkatalogmedia.insideAjaxClick') && _v('shkatalogmedia.filterajax') && (!_v('shkatalogmedia.mobile')))
+										die($this->form_search());
+									else
 										$out = $this->form_search();
+									
 		}	
 	  
 		return ($out);
@@ -140,15 +148,16 @@ class shnsearch {
 	}	
 	
 	protected function js_search_onclick($buttonId=null, $inputId=null) {
-	    $felement= $inputId ? $inputId : 'input';
-		$belement= $buttonId ? $buttonId : 'search-button';
+	    $felement = $inputId ? $inputId : 'input';
+		$belement = $buttonId ? $buttonId : 'search-button';
+		$_all = (defined("SHKATEGORIES_DPC")) ? _v('shkategories._catAllSearch') : $this->_catAllSearch;
 //$(document).ready(function () {		
 //});
 		$code = "
 	$('#$belement').on('click',function(){
-		var url = 'search/*/';
+		var url = 'search/$_all/';
 		var inp = document.getElementById('$felement').value;
-		var ret = inp ? url.replace('*', inp) : url.replace('*/', '*/');
+		var ret = inp ? url.replace('$_all', inp) : url.replace('$_all/', '$_all/');
 		//alert('search:'+ret);
 		window.location.href = ret;
 	});
@@ -166,11 +175,63 @@ class shnsearch {
 			$js->load_js($code2,"",1);			   
 			unset ($js);
 		}			   	   	     
-	}
+	}	
 	
 	protected function js_make_search_url() {
 		$mobileDevices = _m('cmsrt.mobileMatchDev');		
-		$searchincat = _m('shkategories.getcurrentkategory');		
+		$searchincat = _m('shkategories.getcurrentkategory');
+		$_section = 'page-section'; //$searchincat ? 'section-' . _m('shkategories.replace_spchars use '. $searchincat) : 'page-section';
+		$_rooturl = $this->httpurl;
+		
+		$_allS = (defined("SHKATEGORIES_DPC")) ? _v('shkategories._catAllSearch') : $this->_catAllSearch; 
+	
+		$cat = (GetReq('cat')=='all') ? null : GetReq('cat'); //<<< all keyword means no ca
+		$min = intval(_v('shkatalogmedia.min_price'));// ? round($this->min_price, 0, PHP_ROUND_HALF_DOWN) : 0; //100;
+		$_mx = _v('shkatalogmedia.max_price');
+		$max =  $_mx ? ceil($_mx) : 10; //700;
+		$diff = ($max - $min);
+		$step = ($diff<=100) ? 1 : 10;//($max-$min) / 10;	
+
+		$inp = $_GET['input'];//_m('shkatalogmedia.escapeORDie use ' . $_GET['input']); //GetParam('input');
+		if (strstr($inp, ',')) {
+			//multiple values
+			$fl = explode(',', $inp);
+			foreach ($fl as $feaf) {
+				if (strstr($feaf, '.')) {//if (is_numeric($feaf)) { //get the last element numeric of array (DO NOT SAVE AS ARRAY)
+					$input = explode('.', $feaf);				
+				}
+				else //if ($feaf) 
+					$reset_input[] = $feaf;
+			}
+		}
+		elseif (strstr($input, '.')) {//if (is_numeric($inp)) { //single numeric
+			$input = explode('.', $inp);			 
+		}		
+		elseif (($inp) && ($inp!=$_allS))// not * single value
+		    $reset_input[] = $inp;
+			
+		if (!$input) $input = array('0','0');			
+		//$input = is_numeric($inp) ? explode('.', $inp) : array('0','0');
+		//echo 'Input:'. GetParam('input') .' '.$input[0] .' '.$input[1];		
+
+		$_cat = $cat ? $cat : $this->_catAllSearch; //<<< all keyword means no cat
+		$purl = _v('shkatalogmedia.httpurl') . '/' . _m("cmsrt.url use t=kfilter&cat=$_cat"); 
+		$purl.= empty($reset_input) ? null : implode(',', $reset_input) . ',';		
+
+		$onPrice = (($div = _v('shkatalogmedia.filterajax')) && (!_v('shkatalogmedia.mobile'))) ?		
+"$('.price-slider').on('slideStop', function(slideEvt) {
+	var p = $('.price-slider').val();
+	var value = p.replace(',', '.');
+	//console.log(value);
+	ajaxCall('$purl'+value+'/','$div',1);
+});" :			
+"$('.price-slider').on('slideStop', function(slideEvt) {
+	var p = $('.price-slider').val();
+	var value = p.replace(',', '.');
+	//console.log(value);
+	window.location='$purl'+value+'/';
+});
+";			
 		
 		$out = "
 function get_sinput()
@@ -189,11 +250,37 @@ function get_stype()
   return ret;
 }
 
+$onPrice
+
+/* replace shkatalogmedia remFilter */
+function remFilter(f, div) {
+	var finp = '$inp';
+	
+	/*if (f==finp)
+		window.location = '$_rooturl';	
+	else { */
+		window.location = '$_rooturl';
+	//}
+	//if (div) gotoTop(div);
+}	
+
 $(document).ready(function () {
+	if ($('.price-slider').length > 0) {
+		var v0 = parseInt('{$input[0]}') ? {$input[0]} : {$min};
+		var v1 = parseInt('{$input[1]}') ? {$input[1]} : {$max};
+        $('.price-slider').slider({
+            min: {$min},
+            max: {$max},
+            step: {$step},
+            value: [v0, v1],
+            handle: 'square'
+        });
+    }	
+	
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#section-{$searchincat}').offset().top, 10));
+		window.scrollTo(0,parseInt($('#{$_section}').offset().top, 10));
 	else {
-		gotoTop('section-{$searchincat}');
+		gotoTop('{$_section}');
 
 		$(window).scroll(function() { 
 		

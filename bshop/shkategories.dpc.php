@@ -12,6 +12,8 @@ $__EVENTS['SHKATEGORIES_DPC'][2]='openf';
 $__EVENTS['SHKATEGORIES_DPC'][3]='kshow';
 $__EVENTS['SHKATEGORIES_DPC'][4]='klist';
 $__EVENTS['SHKATEGORIES_DPC'][5]='catfetch';
+$__EVENTS['SHKATEGORIES_DPC'][6]='product';
+$__EVENTS['SHKATEGORIES_DPC'][7]='products';
 
 $__ACTIONS['SHKATEGORIES_DPC'][0]='shkategories';
 $__ACTIONS['SHKATEGORIES_DPC'][1]='category';
@@ -19,6 +21,8 @@ $__ACTIONS['SHKATEGORIES_DPC'][2]='openf';
 $__ACTIONS['SHKATEGORIES_DPC'][3]='kshow';
 $__ACTIONS['SHKATEGORIES_DPC'][4]='klist';
 $__ACTIONS['SHKATEGORIES_DPC'][5]='catfetch';
+$__ACTIONS['SHKATEGORIES_DPC'][6]='product';
+$__ACTIONS['SHKATEGORIES_DPC'][7]='products';
 
 $__LOCALE['SHKATEGORIES_DPC'][0]='SHKATEGORIES_DPC;Categories;Κατηγορίες';
 $__LOCALE['SHKATEGORIES_DPC'][1]='SHSUBKATEGORIES_;Subcategories;Υποκατηγορίες';
@@ -32,6 +36,8 @@ class shkategories {
 	var $max_selection, $rewrite, $notencodeurl, $result_in_table;
 	var $cseparator, $cat_result, $replacepolicy, $encodeimageid;
 	var $imagex, $imagey, $wordlength, $aliasID, $aliasExt,$userLevelID;
+	var $mobile, $pageName, $phpName, $treeajax, $klistcmd, $kshowcmd;
+	var $_catAllSearch;
 
 	public function __construct() {	
 		$UserSecID = GetGlobal('UserSecID');	
@@ -46,7 +52,7 @@ class shkategories {
 		
 		$this->path = paramload('SHELL','prpath');		  
 		$this->urlpath = paramload('SHELL','urlpath');
-		$this->inpath = paramload('ID','hostinpath');			  
+		$this->inpath = paramload('ID','hostinpath');			
 
 		$this->outpoint = '&gt;';
 		$this->bullet = '&gt;';
@@ -89,6 +95,16 @@ class shkategories {
 		
 		$this->cat_result = null; //save as var for tags
 		$this->wordlength = 60;  // max word chars
+			
+		$this->treeajax = _m('cmsrt.paramload use ESHOP+ajaxtree') ?: 0; //ajax fetch tree
+		$this->phpName = _v('cmsrt.phpName'); 
+		$this->mobile = _v('cmsrt.mobile');		
+		
+		$this->klistcmd = _m('cmsrt.paramload use ESHOP+klistcmd') ?: 'klist'; //products
+		$this->kshowcmd = _m('cmsrt.paramload use ESHOP+kshowcmd') ?: 'kshow'; //product	
+
+		//default phrase, a character when click fopr a category search without a phrase
+		$this->_catAllSearch = _m('cmsrt.paramload use ESHOP+searchallkeyword') ?: 'all'; //'*' 		
 		
 		//on all pages
 		$this->search_javascript();		  
@@ -393,7 +409,7 @@ class shkategories {
 	/*using accordion template version 2*/
 	public function show_tree2($group=null,$mode=0,$template=null) {		
 		$cat = GetReq('cat');    
-		$t = 'klist';			
+		$t = $this->klistcmd;			
 	   
 	   	static $cd = -1;
 	   
@@ -459,7 +475,7 @@ class shkategories {
 	/*using accordion template*/
 	public function show_tree1($group=null,$mode=0,$template=null,$ajaxcall=false) {		
 		$cat = GetReq('cat');    
-		$t = 'klist';			
+		$t = $this->klistcmd;			
 	   
 	   	static $cd = -1;
 	   
@@ -513,7 +529,8 @@ class shkategories {
 								$out .= $this->combine_tokens($line_data, $tokens, true);
 							}
 							else { //parent cat
-								$accordion_group = _m('cmsrt.select_template use fpkatnav-accordion-group');
+							    $accGroup = $this->treeajax ? 'fpkatnav-accordion-group-ajax' : 'fpkatnav-accordion-group';
+								$accordion_group = _m('cmsrt.select_template use ' . $accGroup);
 								$out .= $this->combine_tokens($accordion_group, $tokens, true);
 							}
 						}	
@@ -534,16 +551,18 @@ class shkategories {
 		}
 		else 
 			return ($out);		      
-	}			
-	
-    public function show_menu($group=null,$template=null) { 
+	}		
+
+    public function show_menu($group=null, $template=null, $viewtype=null) { 
 		$group = $group ? $group : GetReq('cat');	 
 		
 		if ($group) {
 			
-			$mytemplate = ($template) ? _m('cmsrt.select_template use ' . str_replace('.htm', '', $template)) :
+			$mytemplate = ($template) ? _m('cmsrt.select_template use ' . $template) :
 										_m('cmsrt.select_template use fpkatnav-accordion');
-			$subtemplate = _m('cmsrt.select_template use fpkatnav-accordion-group-selected');			
+										
+			$accGroupSelected = $this->treeajax ? 'fpkatnav-accordion-group-selected-ajax' : 'fpkatnav-accordion-group-selected';							
+			$subtemplate = _m('cmsrt.select_template use ' . $accGroupSelected);			
 			
 			switch ($viewtype) {  
                 case 2  : /*safe copy showtree*/
@@ -599,7 +618,7 @@ class shkategories {
 
 		static $cd = -1;
 		$wordlength = 19;//for calldpc purposes
-		$t = $cmd ? $cmd : 'klist';
+		$t = $cmd ? $cmd : $this->klistcmd;
 
 		$ptree = explode($this->cseparator,$myselcat); 
 			  
@@ -745,10 +764,11 @@ class shkategories {
 			}
 		}
         else {
+			if (!$splitx = @explode($this->cseparator, $group)) 
+				return $adir;  
+			
 		    if ($startup) 
-				$adir[] = $this->home; //set home
-	  
-			$splitx = explode ($this->cseparator, $group);   
+				$adir[] = $this->home; //set home 
 		
 		    $sSQL = "select distinct cat2,cat{$f}2,cat3,cat{$f}3,cat4,cat{$f}4,cat5,cat{$f}5 from categories where ";
 			$depth = count($splitx)-1;
@@ -854,7 +874,7 @@ class shkategories {
 	
 	public function getcurrentkategory($toplevel=null, $url=null, $urlname=false) {
 		$cat = GetReq('cat');
-		if ($urlname) {
+		if (($urlname) && ($cat)) {
 			$urlcats = explode ($this->cseparator, $cat);  	
 			return (array_pop($urlcats)); 		
 		}	
@@ -872,7 +892,7 @@ class shkategories {
 						break;
 				case 1  : //toplevel
 				default :if ($url) { 
-							//$ret = _m("cmsrt.url use t=klist&cat=" . GetReq('cat') . "+" . array_pop($mycattree)); 
+							//$ret = _m("cmsrt.url use t={$this->klistcmd}&cat=" . GetReq('cat') . "+" . array_pop($mycattree)); 
 							$_t = array_pop($mycattree);
 							$ret = "<a href=\"" . $this->catUrl($cat) . "\">" . $_t . "</a>";
 						 }	
@@ -882,7 +902,7 @@ class shkategories {
 		}	
 		else {//actual
 			if ($url) { 
-				//$ret = _m("cmsrt.url use t=klist&cat=" . GetReq('cat') . "+" . array_pop($mycattree));
+				//$ret = _m("cmsrt.url use t={$this->klistcmd}&cat=" . GetReq('cat') . "+" . array_pop($mycattree));
 				$_t = array_pop($mycattree);
 				$ret = "<a href=\"" . $this->catUrl($cat) . "\">" . $_t . "</a>";	
 			}	
@@ -985,7 +1005,7 @@ class shkategories {
 	//to be disabled ?
     public function getkategories($rec=null,$links=null,$lan=null,$cmd=null, $debug=false) {
 		$db = GetGlobal('db');
-		$cmd = $cmd ? $cmd : 'klist';
+		$cmd = $cmd ? $cmd : $this->klistcmd;
 		$lang = $lan ? $lan : getlocal();
 		$f = $lang ? $lang : '0';
 	   
@@ -1160,10 +1180,11 @@ class shkategories {
 	protected function js_make_search_url() { //$id=null) {
 		$fid = _m('cmsrt.paramload use CMS+search-id');	
 	    $id_element= $fid ? $fid : 'input';
+		$_allS = $this->_catAllSearch ; //'*';	
 		
 		$out = "function gocatsearch(url) {
 	var inp = document.getElementById('$id_element').value;
-	var ret = inp ? url.replace('*', inp) : url.replace('*/', '*/');
+	var ret = inp ? url.replace('$_allS', inp) : url.replace('$_allS/', '$_allS/');
 	window.location.href = ret;
 }
 ";
@@ -1172,10 +1193,11 @@ class shkategories {
 
 	/*rewrite url ver*/
 	protected function getCombo($cid,$name,$cat=null,$style="",$size=10,$multiple="",$values=null,$selection='',$cmd=null,$tmpl=null,$noselect=null) {
-		$mycmd = $cmd ? $cmd : 'klist';
+		$mycmd = $cmd ? $cmd : $this->klistcmd;
 		$goto = $this->httpurl . '/'; 
 		$selected_cat = $cat ? $cat : GetReq('cat');
 		$cats = explode($this->cseparator,$selected_cat);
+		$_allS = $this->_catAllSearch;
 		
 		$template = $this->select_template($tmpl);
 		
@@ -1207,7 +1229,7 @@ class shkategories {
 				$loctitle = localize($title, getlocal());
 			
 			    //rewrite url by adding $ as input  and 0 as page ( replace * in js )
-			    $rewrite_value = str_replace($mycmd.'/', $mycmd.'/*/', $myvalue) . '0/'; 
+			    $rewrite_value = str_replace($mycmd.'/', $mycmd."/$_allS/", $myvalue) . '0/'; // replace *
 				
 				$option_tokens[] = ($noselect) ? "javascript:gocatsearch('$rewrite_value')" : $rewrite_value; 
 				$option_tokens[] = $loctitle;
@@ -1253,7 +1275,7 @@ class shkategories {
 	
 	public function show_combo_results($title=null,$preselcat=null,$isleaf=null,$scmd=null) {
 		$db = GetGlobal('db');	
-		$cmd = $scmd ? $scmd : 'klist';
+		$cmd = $scmd ? $scmd : $this->klistcmd;
 		$loctitle = localize($title,getlocal());
 		$mytitle = $loctitle ? $loctitle : $this->title;
 		$mytitle2 = ($isleaf) ? ($loctitle ? $loctitle : $this->title2) : $this->title2;		   
@@ -1318,7 +1340,7 @@ class shkategories {
 	}
   	
 	public function getKategoryCombo($root,$name,$preselcat=null,$style="",$size=10,$multiple="",$values=null,$selection='',$cmd=null,$tmpl=null,$noselect=null) {
-		$search_cmd = $cmd ? $cmd : 'klist';
+		$search_cmd = $cmd ? $cmd : $this->klistcmd;
 		$mytitle = $name ? $name : $this->title;	   
 		$cat = $preselcat ? $preselcat : GetReq('cat');
 	   
@@ -1371,7 +1393,7 @@ class shkategories {
 				if ($rec['cat4']) $icat[] = $rec['cat4'];
 				if ($rec['cat5']) $icat[] = $rec['cat5'];
 				$id = str_replace(' ', '_', implode($this->cseparator, $icat));
-				$link = 'klist/' . $id .'/';
+				$link = $this->klistcmd . '/' . $id .'/';
 				$tcat = array();
 				if ($rec["cat{$f}2"]) $tcat[] = $rec["cat{$f}2"];
 				if ($rec["cat{$f}3"]) $tcat[] = $rec["cat{$f}3"];
@@ -1402,7 +1424,7 @@ class shkategories {
 	}
 	
 	protected function catUrl($cat=null, $action=null) {
-		$t = $action ? $action : 'klist';
+		$t = $action ? $action : $this->klistcmd;
 		if ($cat) { 
 		
 		    $nextList = $this->isCatalogNextClick() ? '#list' : null;
@@ -1459,7 +1481,7 @@ class shkategories {
         return ($toprint); 		
     }
 	
-	protected function replace_spchars($string, $reverse=false) {
+	public function replace_spchars($string, $reverse=false) {
 		
 		switch ($this->replacepolicy) {	
 			case '_' : 	$ret = $reverse ?  str_replace('_',' ',$string) : str_replace(' ','_',$string); break;

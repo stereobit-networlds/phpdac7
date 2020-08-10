@@ -1,28 +1,5 @@
 <?php
 $__DPCSEC['CMS_DPC']='1;1;1;1;1;1;1;1;1;1;1';
-/* move to pcntl 
-function _l($value=null) {
-	return (localize($value, getlocal()));
-}
-
-function _r($r=null) {
-	return $r ? GetGlobal('controller')->require_dpc($r) : null;
-}
-
-function _v($v=null,$val=null) {
-	return $v ? GetGlobal('controller')->calldpc_var($v, $val) : null;
-}
-
-function _m($m=null, $noerr=null) {
-	return $m ? GetGlobal('controller')->calldpc_method($m, $noerr) : null;
-}
-
-function _m2($m=null, $params=array()) {
-	$mf = $m ? explode('.', $m) : null;
-	return empty($mf) ? null : call_user_func_array(array($mf[0], $mf[1]), $params);
-	//call_user_func_array(array(__NAMESPACE__ . "\\" . $mf[0], $mf[1]), $params); //5.3.0 namespace
-}
-*/
 
 if ((!defined("CMS_DPC")) && (seclevel('CMS_DPC',decode(GetSessionParam('UserSecID')))) ) {
 define("CMS_DPC",true);
@@ -38,7 +15,7 @@ require_once(_r('cms/fronthtmlpage.dpc.php'));
 class cms extends fronthtmlpage {
 
     var $app, $appname, $httpurl, $tpath;
-	var $user, $seclevid, $userDemoIds, $useragent, $mobile;
+	var $user, $seclevid, $userDemoIds, $useragent, $mobile, $phpName;
 	var $session_use_cookie, $protocol, $secprotocol, $sslpath;
 	var $activeSSL, $encURLparam, $shellfn, $aliasExt, $aliasID, $aliasUrl;
 	var $cmsSdkLoc;
@@ -65,7 +42,8 @@ class cms extends fronthtmlpage {
 		$this->httpurl.= $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];				
 		
 		$this->useragent = $_SERVER['HTTP_USER_AGENT'];	
-		$this->mobile = $this->isMobile();		
+		$this->mobile = $this->isMobile();
+		$this->phpName = basename($_SERVER["SCRIPT_FILENAME"], '.php'); 	
 		
 		$this->session_use_cookie = paramload('SHELL','sessionusecookie');
 		$this->protocol = paramload('SHELL','protocol');
@@ -455,6 +433,59 @@ class cms extends fronthtmlpage {
 		//echo $varvalue . '>';
 		return $this->exVar($varvalue);
 	}
+	
+	/* nvl func edition with conf read support - CMS.param db params */
+	public function nvlparam($param=null,$state1=null,$state2=null,$value=null) {
+	    global ${$param};
+		if (stristr($param,'.')) $p = explode('.', $param);
+		
+	    $var = (stristr($param,'.')) ? $this->paramload($p[0], $p[1]) :
+					(GetGlobal($param) ? GetGlobal($param) : (GetParam($param) ? GetParam($param) : $_SESSION[$param]));				
+		
+        if ($value) { 
+			if (strstr($value, '?>'))
+				$ret = ($this->phpcode($value)==$var) ? $this->phpcode($state1) : $this->phpcode($state2);		
+			elseif (strstr($value, '|')) {
+			    $nvalues = explode('|',$value); 
+				$ret = (in_array($var, $nvalues)) ? $this->phpcode($state1) : $this->phpcode($state2); 
+			}
+			elseif (strstr($value, '.'))
+				$ret = (_v($value)==$var) ? $this->phpcode($state1) : $this->phpcode($state2);
+			else	
+				$ret = ($value==$var) ? $this->phpcode($state1) : $this->phpcode($state2);  		
+		}   
+        else
+			$ret = $var ? $this->phpcode($state1) : $this->phpcode($state2);
+		   
+		return ($ret);
+    }
+	
+	/* nvldac2 func edition with conf read support - multiple dac cmds per state*/
+	public function nvldac2param($param=null,$states1=null,$states2=null,$value=null) {
+		if (stristr($param,'.')) $p = explode('.', $param);
+		
+	    $var = (stristr($param,'.')) ? $this->paramload($p[0], $p[1]) : 
+		                (GetGlobal($param) ? GetGlobal($param) : (GetParam($param) ? GetParam($param) : $this->{$param}));
+
+        if ($value) {    
+			if (strstr($value, '?>'))
+				$ret = ($this->phpcode($value)==$var) ? $this->dacexec($states1) : $this->dacexec($states2);			
+			elseif (strstr($value, '|')) {
+			    $nvalues = explode('|',$value); 
+				$ret = (in_array($var, $nvalues)) ? $this->dacexec($states1) : $this->dacexec($states2) ; 
+			}
+			elseif (strstr($value, '.'))
+				$ret = (_v($value)==$var) ? $this->dacexec($states1) : $this->dacexec($states2) ;
+			else		
+				$ret = ($value==$var) ? $this->dacexec($states1) : $this->dacexec($states2) ;
+		}						   
+        else      
+            $ret = $var ? $this->dacexec($states1) : $this->dacexec($states2) ;				  
+
+		return ($ret);
+
+    }	
+	
 };
 }
 ?>

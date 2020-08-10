@@ -24,6 +24,9 @@ $__EVENTS['SHKATALOGMEDIA_DPC'][13]='shkatalogmedia';
 $__EVENTS['SHKATALOGMEDIA_DPC'][14]='kfilter';
 $__EVENTS['SHKATALOGMEDIA_DPC'][15]='xmlout';
 $__EVENTS['SHKATALOGMEDIA_DPC'][16]='ktree';
+$__EVENTS['SHKATALOGMEDIA_DPC'][17]='products';
+$__EVENTS['SHKATALOGMEDIA_DPC'][18]='product';
+$__EVENTS['SHKATALOGMEDIA_DPC'][19]='page';
 
 $__ACTIONS['SHKATALOGMEDIA_DPC'][0]='katalog';
 $__ACTIONS['SHKATALOGMEDIA_DPC'][1]='klist';
@@ -42,6 +45,9 @@ $__ACTIONS['SHKATALOGMEDIA_DPC'][13]='shkatalogmedia';
 $__ACTIONS['SHKATALOGMEDIA_DPC'][14]='kfilter';
 $__ACTIONS['SHKATALOGMEDIA_DPC'][15]='xmlout';
 $__ACTIONS['SHKATALOGMEDIA_DPC'][16]='ktree';
+$__ACTIONS['SHKATALOGMEDIA_DPC'][17]='products';
+$__ACTIONS['SHKATALOGMEDIA_DPC'][18]='product';
+$__ACTIONS['SHKATALOGMEDIA_DPC'][19]='page';
 
 $__LOCALE['SHKATALOGMEDIA_DPC'][0]='SHKATALOGMEDIA_DPC;Catalogue;Καταλογος';
 $__LOCALE['SHKATALOGMEDIA_DPC'][1]='pcs;pcs;τμχ';
@@ -90,6 +96,9 @@ $__LOCALE['SHKATALOGMEDIA_DPC'][43]='_price;Price;Τιμή';
 $__LOCALE['SHKATALOGMEDIA_DPC'][44]='_filter;Filter;Φίλτρο';
 $__LOCALE['SHKATALOGMEDIA_DPC'][45]='_incart;Already in cart %d items;Έχετε στο καλάθι %d τεμάχια;';
 $__LOCALE['SHKATALOGMEDIA_DPC'][46]='_cartmsg;Cart message;Ενημέρωση;';
+$__LOCALE['SHKATALOGMEDIA_DPC'][47]='_pricerange;Price range;Εύρος τιμής;';
+$__LOCALE['SHKATALOGMEDIA_DPC'][48]='_ORDERID;Favorites;Δημοφιλέστερα;';
+$__LOCALE['SHKATALOGMEDIA_DPC'][49]='_NEWEST;Newest;Νεότερα;';
 
 class shkatalogmedia {
 	
@@ -129,6 +138,9 @@ class shkatalogmedia {
 	var $ogTags, $siteTitle, $httpurl, $mobile;
 	var $selectSQL, $fcode, $lastprice, $itmname, $itmdescr, $lan, $itmplpath;
 	var $realID, $max_price, $min_price, $loyalty;
+	var $filterajax, $pageName, $phpName, $klistcmd, $kshowcmd;
+	var $fpx, $rtl, $_catAllFilter, $filter_records_in_products_table, $max_result_price;	
+	var $gotoJS, $gridORlist;
 
 	public function __construct() {	
 		$UserSecID = GetGlobal('UserSecID');	
@@ -136,14 +148,7 @@ class shkatalogmedia {
 		
 		$this->path = paramload('SHELL','prpath');	//echo $this->path;
 		$this->urlpath = paramload('SHELL','urlpath');
-		$this->inpath = paramload('ID','hostinpath');
-		
-		//$murl = arrayload('SHELL','ip');
-		//$this->url = $murl[0];
-		//$this->httpurl = paramload('SHELL','urlbase'); 
-		
-		//$this->httpurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		//$this->httpurl.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];						
+		$this->inpath = paramload('ID','hostinpath');			
 		$this->httpurl = _v('cmsrt.httpurl');
 		
 		$languange = getlocal();
@@ -271,7 +276,16 @@ class shkatalogmedia {
 		$this->imgMediumDB = remote_paramload('SHKATALOGMEDIA','photomdDB',$this->path);
 		$this->imgSmallDB = remote_paramload('SHKATALOGMEDIA','photosmDB',$this->path);
 
+		//grid or list selection
+		$this->gridORlist = _m('cmsrt.paramload use ESHOP+gridorlist') ?: null; //grid or list pageview 	
+		if ($this->gridORlist) {
+			//set cookie only at init (when null)
+			if (!$_COOKIE['viewmode'])
+				$_COOKIE['viewmode'] = 'list';
+		}	
+
 		$this->isListView = $_COOKIE['viewmode']=='list' ? 1 : 0;
+		//echo '-', $this->gridORlist , '+' , $this->isListView;
       
 		$this->siteTitle = remote_paramload('SHELL','urltitle',$this->path);	
 		$this->siteTwitter = remote_paramload('INDEX','twitter', $this->path);	  
@@ -285,14 +299,35 @@ class shkatalogmedia {
 		$this->loyalty = _m('cmsrt.paramload use ESHOP+loyalty');
 		$this->itmplpath = _m('cmsrt.paramload use ESHOP+templates'); //'templates/'; //item page templates dir	
 		
-		$ajax = _m('cmsrt.paramload use ESHOP+ajax'); //div name		
-		$this->filterajax = $ajax ? 'page-' . _m('shkategories.getcurrentkategory use ++1') : false; 
+		$this->phpName = _v('cmsrt.phpName');
+		$ajax = _m('cmsrt.paramload use ESHOP+ajax'); //ajax mode	
+		$catName = _m('shkategories.getcurrentkategory use ++1'); //category name
+        $this->pageName = $catName ? 'page-' . $catName : 'page-' . $this->phpName; //'page'; //div name		
+		$this->filterajax = $ajax ? $this->pageName : false; 
 		$this->mobile = _v('cmsrt.mobile');
-	  
+		
+		$this->klistcmd = _m('cmsrt.paramload use ESHOP+klistcmd') ?: 'klist'; //products
+		$this->kshowcmd = _m('cmsrt.paramload use ESHOP+kshowcmd') ?: 'kshow'; //product
+		
+		$this->_catAllFilter = _m('cmsrt.paramload use ESHOP+searchallkeyword') ?: 'all'; //'*'		
+		$this->max_result_price = _m('cmsrt.paramload use ESHOP+maxresultprice') ?: 999.9; //max result price 
+		$this->fpx = _m('cmsrt.paramload use ESHOP+filterheightpx') ?: '100px'; //filter height	
+		$this->rtl = _m('cmsrt.paramload use ESHOP+RTL') ?: '100px'; //RTL navigation 	
+		
+		//values: 0 or header/stick-position/stick-element/..other div id (default the cat/item div id)
+		$this->gotoJS = _m('cmsrt.paramload use ESHOP+gotojskatalog') ?: $this->pageName;
+
 		$this->selectSQL = "select id,sysins,code1,pricepc,price2,sysins,itmname,itmfname,uniname1,uniname2,active,code4," .
 							"price0,price1,cat0,cat1,cat2,cat3,cat4,itmdescr,itmfdescr,itmremark,ypoloipo1,resources,".
 							$this->fcode. $this->lastprice . ",weight,volume,dimensions,size,color,manufacturer,orderid,YEAR(sysins) as year,MONTH(sysins) as month,DAY(sysins) as day, DATE_FORMAT(sysins, '%h:%i') as time, DATE_FORMAT(sysins, '%b') as monthname," .
-							"template,owner,itmactive,p1,p2,p3,p4,p5,code2,code3,datein from products ";					
+							"template,owner,itmactive,p1,p2,p3,p4,p5,code2,code3,datein from products ";	
+
+		//matching filter fields that exists at products table
+		$this->filter_records_in_products_table = array('manufacturer'=>'manufacturer', 
+														'color'=>'color',
+														'size'=>'size',
+														'dimensions'=>'dimensions',
+														);							
 							
 		$this->javascript();					
     }
@@ -359,6 +394,7 @@ class shkatalogmedia {
 									$this->jsBrowser();
 									break;			
 									
+			case 'products'     :						
 			case 'klist'        :   $this->my_one_item = $this->read_list(); 
 									if ($this->userLevelID < 5) 
 										_m("cmsvstats.update_category_statistics use ".GetReq('cat'));		  
@@ -366,6 +402,7 @@ class shkatalogmedia {
 									$this->jsBrowser();
 									break;	
 
+			case 'product'      :						
 			case 'kshow'        :	$this->realID = $this->read_item(); 
 			
 									$incart = _m("shcart.getCartItemQty use " . $this->realID);
@@ -380,7 +417,9 @@ class shkatalogmedia {
 									$this->jsBrowser();
 									break;
 								
-			default             : 	
+			//case $this->phpName :	//echo '>>>>' . $this->phpName;				
+			case 'page'         :					
+			default             : 	$this->jsBrowser();
 		}			
     }	
 	
@@ -409,25 +448,26 @@ class shkatalogmedia {
 										$out = _m("shcart.cartview");   
 									break;								
 		
-			case 'kfilter'      :	if (($this->filterajax) && (!$this->mobile)) {
+			case 'kfilter'      :	if (($this->insideClick()===true) && ($this->filterajax) && (!$this->mobile)) {
 										die($this->list_katalog(0,'kfilter'));
 									}	
 									else	
 										$out .= $this->list_katalog(0,'kfilter');																 
 									break;
 									
-			case 'ktree'      	:	if (($this->filterajax) && (!$this->mobile)) {
+			case 'ktree'      	:	if (($this->insideClick()===true) && ($this->filterajax) && (!$this->mobile)) {
 										die($this->list_katalog(0,'ktree'));
 									}	
 									else
-										$out = $this->list_katalog(0,'klist');	
+										$out = $this->list_katalog(0, $this->klistcmd);	
 									break;
 								
+			case 'products'     :					
 			case 'klist'        : 	/*if (((GetReq('page')) || (GetReq('asc')) || 
 										(GetReq('order')) || (GetReq('pager'))) &&*/
 									if (($this->insideAjaxClick()===true) &&	
 										(($this->filterajax ) && (!$this->mobile))) { //ajax
-										die($this->list_katalog(0,'klist'));
+										die($this->list_katalog(0, $this->klistcmd));
 									}
 									else { //click from categories (no ajax)
 										if (in_array('beforeitemslist',$this->catbanner))//before
@@ -441,6 +481,7 @@ class shkatalogmedia {
 									}	
 									break;
 
+			case 'product'      :						  
 			case 'kshow'        : 	if (in_array('beforeitem',$this->catbanner))
 										$out .= _m('shkategories.show_category_banner');	
 								  
@@ -458,9 +499,41 @@ class shkatalogmedia {
 		return ($out);
     }
 	
+	//h1 seo header
+	public function showH1($text=null) {
+		if (!$text) return null;
+		$ret = '<h1>' . $tet . '</h1>';
+		return ($ret);
+	}		
+	
+	//pagination results (called by fppager template)
+	public function dataSetValue($max=null, $_end=false) {
+		$page = GetReq('page') ? GetReq('page') : 0;
+		$pmax = $this->pager;
+		
+		if ($max)
+			return strval($this->max_selection);
+		
+		$start = $page ? ($page*$pmax)+1 : 1;
+		$end = $page ? $start + $pmax : $pmax;	
+		
+		return $_end ? strval($end) : strval($start);
+	}		
+	
+	protected function insideClick() {
+		$host = $_SERVER['HTTP_HOST'];
+		$referer = $_SERVER['HTTP_REFERER'];
+		
+		if (preg_match("/$host/i", $referer))
+			return true;		
+			
+		return false;	
+	}	
+	
 	/* clicked from inside */
 	/* when a url come from search engines indexing */
-	protected function insideAjaxClick() {
+	//set public used by shnsearch
+	public function insideAjaxClick() {
 		$host = $_SERVER['HTTP_HOST'];
 		$referer = $_SERVER['HTTP_REFERER'];
 		
@@ -470,43 +543,95 @@ class shkatalogmedia {
 			return true;		
 			
 		return false;	
-	}
+	}	
 	
 	//js called when in catalog page
 	protected function jsCatalog() {
-		//echo $this->max_selection;
-		//if ($this->max_selection<=1) return null;			
-		$cat = GetReq('cat');
-		$min = ($this->min_price) ? round($this->min_price, 0, PHP_ROUND_HALF_DOWN) : 0; //100;
+		$mobileDevices = _m('cmsrt.mobileMatchDev');	
+		$_goto = $this->gotoJS ;//$this->pageName;
+		
+		$cat = GetReq('cat');		
+		$_nofilterurl = $this->httpurl . '/'. _m("cmsrt.url use t={$this->klistcmd}&cat=$cat"); 			
+		
+		$min = intval($this->min_price);// ? round($this->min_price, 0, PHP_ROUND_HALF_DOWN) : 0; //100;
 		$max = ($this->max_price) ? ceil($this->max_price) : 10; //700;
 		$diff = ($max - $min);
 		$step = ($diff<=100) ? 1 : 10;//($max-$min) / 10;
+		$inp = _m('cmsrt.escapeordie use ' . GetReq('input'));
 		
-		$inp = $_GET['input']; //GetParam('input');
-		$input = is_numeric($inp) ? explode('.', $inp) : array('0','0');				
+		if (strstr($inp, ',')) {
+			//multiple values
+			$fl = explode(',', $inp);
+			foreach ($fl as $feaf) {
+				if (is_numeric($feaf)) { //get the last element numeric of array (DO NOT SAVE AS ARRAY)
+					$input = explode('.', $feaf);				
+				}
+				else //if ($feaf) 
+					$reset_input[] = $feaf;
+			}
+		}
+		elseif (is_numeric($inp)) { //single numeric
+			$input = explode('.', $inp);			 
+		}		
+		elseif (($inp) && ($inp!=$this->_catAllFilter))// not * single value
+		    $reset_input[] = $inp;
+			
+		if (!$input) $input = array('0','0');	
+		
+		//$input = is_numeric($inp) ? explode('.', $inp) : array('0','0');
 		//echo 'Input:'. GetParam('input') .' '.$input[0] .' '.$input[1]; 
-		$purl = $this->httpurl . '/' . _m("cmsrt.url use t=kfilter&cat=$cat"); 
-		//echo $this->min_price.'-'.$this->max_price.'-'.$min.'-'.$max.'-'.$diff.'-'.$step;
 		
-		$mobileDevices = _m('cmsrt.mobileMatchDev');
+		$_cat = $cat ? $cat : $this->_catAllFilter; //<<< all keyword means no cat
+		$_filterurl = $this->httpurl . '/' .  _m("cmsrt.url use t=kfilter&cat=$_cat");		
+		
+		$purl = $_filterurl; 
+		$purl.= empty($reset_input) ? null : implode(',', $reset_input) . ',';
+
+		//echo $this->min_price.'-'.$this->max_price.'-'.$min.'-'.$max.'-'.$diff.'-'.$step;		
 					
-		$onPrice = (($div = $this->filterajax) && (!$this->mobile)) ?		
+		$onPrice = /*(($div = $this->filterajax) && (!$this->mobile)) ?		
 "$('.price-slider').on('slideStop', function(slideEvt) {
 	var p = $('.price-slider').val();
 	var value = p.replace(',', '.');
 	//console.log(value);
 	ajaxCall('$purl'+value+'/','$div',1);
-});" :			
+});" :	*/		
 "$('.price-slider').on('slideStop', function(slideEvt) {
 	var p = $('.price-slider').val();
 	var value = p.replace(',', '.');
 	//console.log(value);
-	window.location='$purl'+value+'/';
+	if (value)
+		window.location = '$purl'+value+'/';
+	else
+		window.location = '$_nofilterurl';
 });
 ";					
-								
+		
+		
 		$js = "
 $onPrice
+
+function remFilter(f, div) {
+	var nfurl = '$_nofilterurl'; 
+	var furl = '$_filterurl';
+	var finp = '$inp';
+	var url = window.location.toString();
+	
+	if (f==finp) /* single filter value */
+		window.location = nfurl;	
+	else { 
+		var nf = new Array;
+		var ff = finp.split(',');
+		var i=0;
+		for (var j=0; j<ff.length; j++) {
+			if (ff[j].match(f)) {} else {nf[i] = ff[j]; i+=1;}
+		}
+		//alert(nf.length + '>' + nf.join(','));
+		window.location = furl + nf.join(',') + '/';
+
+	}
+	if (div) gotoTop(div);
+}	
 
 $(document).ready(function () {
 	if ($('.price-slider').length > 0) {
@@ -522,13 +647,13 @@ $(document).ready(function () {
     }
 	
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#{$this->filterajax}').offset().top, 10));
+		window.scrollTo(0,parseInt($('#{$_goto}').offset().top, 10));
 	else {	
-		gotoTop('{$this->filterajax}');	
+		gotoTop('{$_goto}');	
 		$(window).scroll(function() { 
 	
-			if (agentDiv('{$this->filterajax}',200)) {	
-				$.ajax({ url: 'jsdialog.php?t=jsdcode&cat={$cat}&div={$this->filterajax}', cache: false, success: function(jsdialog){
+			if (agentDiv('{$this->pageName}',200)) {	
+				$.ajax({ url: 'jsdialog.php?t=jsdcode&cat={$cat}&div={$this->pageName}', cache: false, success: function(jsdialog){
 					eval(jsdialog);		
 				}})	
 			}	
@@ -542,6 +667,7 @@ $(document).ready(function () {
 	//js called when in item page
 	protected function jsItem() {
 		$mobileDevices = _m('cmsrt.mobileMatchDev');
+		$_goto = ($this->gotoJS==$this->pageName) ? $this->realID : $this->gotoJS;		
 
 		$js = "
 function jsShowPhoto(name) {	
@@ -569,9 +695,9 @@ function jsShowPhotoAdd(name,pic) {
 		
 $(document).ready(function () {
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#{$this->realID}').offset().top, 10));
+		window.scrollTo(0,parseInt($('#{$_goto}').offset().top, 10));
 	else {
-		gotoTop('{$this->realID}');
+		gotoTop('{$_goto}');
 
 		$(window).scroll(function() { 
 		
@@ -587,10 +713,36 @@ $(document).ready(function () {
 		return ($js);	
 	}		
 	
+	//js called when no item/category page
+	protected function jsPage() {
+		$mobileDevices = _m('cmsrt.mobileMatchDev');
+		$_goto = $this->gotoJS; //$this->pageName;		
+
+		$js = "
+$(document).ready(function () {
+	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
+		window.scrollTo(0,parseInt($('#{$_goto}').offset().top, 10));
+	else {
+		gotoTop('{$_goto}');
+
+		$(window).scroll(function() { 
+		
+			if (agentDiv('{$this->pageName}',300)) {	
+				$.ajax({ url: 'jsdialog.php?t=jsdcode&id={$this->pageName}&div={$this->pageName}-details', cache: false, success: function(jsdialog){
+					eval(jsdialog);		
+				}})	
+			}
+		});
+	}		
+});	
+		";
+		return ($js);		
+	}
+	
 	protected function jsBrowser() {
 		
 		$code = ($id = GetReq('id')) ? $this->jsItem() : 
-				(($cat = GetReq('cat')) ? $this->jsCatalog() : null);
+				(($cat = GetReq('cat')) ? $this->jsCatalog() : $this->jsPage());
 		   
 		if ($code) {
 			$js = new jscript;	
@@ -669,15 +821,20 @@ JSFILTER;
 		    case 1  : $o = $this->bypass_order_list ? null : $this->itmname; break;
 			case 2  : $o = $this->bypass_order_list ? null : $ppolicy; break;  
 		    case 3  : $o = $this->bypass_order_list ? null : $this->fcode; break;
-			case 4  : $o = $this->bypass_order_list ? null : 'cat0';break;			
-			case 5  : $o = $this->bypass_order_list ? null : 'cat1';break;
-			case 6  : $o = $this->bypass_order_list ? null : 'cat2';break;			
-			case 9  : $o = $this->bypass_order_list ? null : 'cat3';break;						
+			case 4  : $o = $this->bypass_order_list ? null : 'orderid,' . $this->itmname; break;			
+			case 5  : $o = $this->bypass_order_list ? null : 'manufacturer'; break;
+			case 6  : $o = $this->bypass_order_list ? null : 'datein'; break;	
+
+			case 7  : $o = $this->bypass_order_list ? null : 'cat1'; break;				
+			case 8  : $o = $this->bypass_order_list ? null : 'cat2'; break;				
+			case 9  : $o = $this->bypass_order_list ? null : 'cat3'; break;		
+			
 		    default : $o = $this->bypass_order_list ? null : $this->itmname;
 		}  
 
 		$sSQL = " ORDER BY ";	
 		$sSQL .= $o .' '. $this->sortdef ;	
+		//echo $sSQL;
 		
 		return ($sSQL);
 	}	
@@ -706,9 +863,11 @@ JSFILTER;
 		$page = GetReq('page') ? GetReq('page') : 0;	
 		$stype = GetParam('searchtype'); 
 		$scase = GetParam('searchcase'); 
-		$incategory = GetReq('cat');								
+		$incategory = GetReq('cat');	
 
-		if (($text2find) && ($text2find!='*')) {
+		$_allS = (defined("SHKATEGORIES_DPC")) ? _v('shkategories._catAllSearch') : $this->_catAllFilter;	
+
+		if (($text2find) && ($text2find!=$_allS)) {
 			$ut = urldecode($text2find);
 			$parts = explode(" ",$text2find);//get special words in text like code:  			
 			
@@ -773,7 +932,7 @@ JSFILTER;
 		$this->get_max_result($ut);		
 	}		
 	
-	
+	//called from shnsearch !!!!
 	public function do_filter_search($text2find) {
         $db = GetGlobal('db');	
 		$page = GetReq('page') ? GetReq('page') : 0;	
@@ -791,8 +950,14 @@ JSFILTER;
 						 $_f . ">=" . $this->spt($_prices[0]) . " and " .
 						 $_f . "<=" . $this->spt($_prices[1]) . ") ";
 			}
-			else			
-				$sSQL .= " where manufacturer=" . $db->qstr($text2find);
+			else {//single value
+				if (strstr($text2find, ':')) {
+					$_hv = explode(':', $text2find);
+					$sSQL .= $_WHERE . $_hv[0]."=". $db->qstr($_hv[1]);
+				}
+				else//) if ($text2find)	&& ($text2find!=$this->_catAllFilter)) 
+					$sSQL .= " where manufacturer=" . $db->qstr($text2find);
+			}	
 		  
 			if ($incategory) {	
 				$cats = explode($this->sep(),$incategory);
@@ -817,16 +982,121 @@ JSFILTER;
 	   	}
 	}	
 	
+	
+	protected function _sqlFindOption($v, $maxo=4) {
+		$ret = null;
+		for ($i=0;$i<$maxo;$i++) {
+			$f = ($i>0) ? 'ctreeopt.opt'. strval($i) : 'ctreeopt.opt0';
+			$_s[] = "$f='". $this->replace_spchars($v,1) ."'";
+		}	
+		
+		//"( ctreeopt.opt0='{$this->replace_spchars($_hv[1],1)}' OR ctreeopt.opt1='{$this->replace_spchars($_hv[1],1)}' OR ctreeopt.opt2='{$this->replace_spchars($_hv[1],1)}' )";
+		$ret = '(' . implode(' OR ', $_s) . ')';
+		return $ret;
+	}	
+	
+	protected function _sqlFilter($filter, $whereClause=null, &$_SQLJOIN) {
+        $db = GetGlobal('db');			
+		$stype = GetParam('searchtype');
+		$scase = GetParam('searchcase');
+		$flf = array();
+		$sSQL = null;
+		
+		$_allF = (defined("SHKATEGORIES_DPC")) ? _v('shkategories._catAllSearch') : $this->_catAllFilter;
+		
+			if (defined("SHNSEARCH_DPC")) {
+				$sfields = array(0=>$this->fcode,
+							 1=>$this->itmname,
+							 2=>$this->itmdescr,
+							 3=>'itmremark',
+							 //4=>'manufacturer',
+							);
+				$serialf = serialize($sfields);	
+			}	
+			
+			$_WHERE = $whereClause ? ' AND ' : null;	
+			//$_AND = ' OR ';
+			
+			if (strstr($filter, ',')) {
+				//multiple values
+				$fl = explode(',', $filter);
+				foreach ($fl as $feaf) {
+					if (strstr($feaf, ':')) {
+						$_hv = explode(':', $feaf);
+						//$flf[] = $_hv[0]."=". $db->qstr($this->replace_spchars($_hv[1],1));
+						if (array_key_exists($_hv[0], $this->filter_records_in_products_table)) {							
+							//field that included in products table
+							$_filterField = $this->filter_records_in_products_table[$_hv[0]];
+							$flf[] = $_filterField ."=". $db->qstr($this->replace_spchars($_hv[1],1));
+						}	
+						else {
+							//filter ktree table join (reset sSQL param)
+							//$flf[] = "ctreeopt.opt0='{$this->replace_spchars($_hv[1],1)}'"; //ctreemap.tid = ctreeopt.opt0,1,2,3
+							$flf[] = $this->_sqlFindOption($_hv[1]);
+							$_SQLJOIN = true;
+						}							
+						//$_AND = ' AND ';
+					}
+					elseif (is_numeric($feaf)) {
+						$_f = $this->read_policy();
+						$_prices = explode('.', $feaf);
+						$flf[] = " (" . 
+								 $_f . ">=" . $this->spt($_prices[0]) . " AND " .
+								 $_f . "<=" . $this->spt($_prices[1]) . ") ";
+					}							
+					elseif (($feaf) && ($feaf!=$_allF)) // *
+						if (defined("SHNSEARCH_DPC")) 
+							$flf[] = _m("shnsearch.findsql use $feaf+$serialf+$stype+$scase");
+				}	
+				$sSQL .= $_WHERE . ' (' . implode(' AND ', $flf) . ')'; //$_AND
+			}	
+			elseif ($filter)  {//single value
+				if (strstr($filter, ':')) {
+					$_hv = explode(':', $filter);
+					//$sSQL .= $_WHERE . $_hv[0]."=". $db->qstr($this->replace_spchars($_hv[1],1));
+					if (array_key_exists($_hv[0], $this->filter_records_in_products_table)) {							
+						//field that included in products table	
+						$_filterField = $this->filter_records_in_products_table[$_hv[0]];
+						$sSQL .= $_WHERE . $_filterField ."=". $db->qstr($this->replace_spchars($_hv[1],1));
+					}
+					else {
+						//filter ktree table join (reset sSQL param)
+						//$sSQL .= $_WHERE . "ctreeopt.opt0='{$this->replace_spchars($_hv[1],1)}'"; //ctreemap.tid = ctreeopt.opt0,1,2,3
+						$sSQL .= $_WHERE . $this->_sqlFindOption($_hv[1]);
+						$_SQLJOIN = true;
+					}						
+				}
+				elseif (is_numeric($filter)) { //single numeric value
+					$_f = $this->read_policy();
+					$_prices = explode('.', $filter);
+					$sSQL .= $_WHERE . " (" . 
+							$_f . ">=" . $this->spt($_prices[0]) . " and " .
+							$_f . "<=" . $this->spt($_prices[1]) . ") ";
+				}				
+				elseif ($filter!=$_allF) {	
+					if (defined("SHNSEARCH_DPC")) 	
+						$sSQL .= _m("shnsearch.findsql use $filter+$serialf+$stype+$scase");
+				}
+				else
+					$sSQL .= null;	
+			}
+			else
+				$sSQL .=\null;			
+
+		return $sSQL;		
+	}	
+	
 	protected function get_max_result($text2find=null,$filter=null) {
         $db = GetGlobal('db');
-		$cat = GetReq('cat');	  		
+		$cat = (GetReq('cat')==$this->_catAllFilter) ? null : GetReq('cat'); //<<< all keyword means no cat	  		
 		$cat_tree = explode($this->sep(), $cat);		
 		$stype = GetParam('searchtype');
 		$scase = GetParam('searchcase');
-
+		$whereClause = null;			
+		$_SQLJOIN = false;		
+		
 		$price = $this->read_policy();	
-				
-		$sSQL = "select count(id),min($price),max($price) from products where ";
+		//$sSQL = "select count(id),min($price),max($price) from products where ";		
 		
 		if ($text2find) {
 		
@@ -838,9 +1108,9 @@ JSFILTER;
 								 1=>$this->itmname,
 								 2=>$this->itmdescr,
 								 3=>'itmremark',
-								 4=>'manufacturer',
+								 /*4=>'manufacturer',
 								 5=>'code4',
-								 6=>'code3',
+								 6=>'code3',*/
 								);
 				$serialf = serialize($sfields);
 				$whereClause = _m("shnsearch.findsql use $mytext+$serialf+$stype+$scase");						  
@@ -884,42 +1154,48 @@ JSFILTER;
 			elseif ($this->onlyincategory)
 			 	$whereClause .= ' and cat3=\'\' ';				   		
 		}
-		    
-		$sSQL .= $whereClause;		
+		//GET HERE min/max prices (before applied filter)   
+		/*min max prices (select without price filter) NOT RE-FILTERING*/
+		//if ($whereClause==null) {
+			//SOS in case of search and then filter the statement has no where (cant find on all products) 
+			
+			$sSQL = "select count(id),min($price),max($price) from products ";
+			$sSQL .= $whereClause ? " where " . $whereClause : " where ";	
+			$sSQL .= $whereClause ? " and itmactive>0 and active>0" : " itmactive>0 and active>0";	
+			$resultset = $db->Execute($sSQL);
+			
+			$this->min_price = $resultset->fields[1] ? $resultset->fields[1] : 0;
+			$this->max_price = $resultset->fields[2] ? $resultset->fields[2] : $this->max_result_price;
+			$this->max_selection = $resultset->fields[0];
+			//echo '<br>('. $this->max_selection .')-(' . $this->min_price . ')-(' . $this->max_price .')'. $sSQL;
+		/*}
+		else {
+			//SOS in case of search and then filter the statement has no where
+			$this->min_price = 0.1; //fix min
+			$this->max_price = $this->max_result_price; //fix mx
+		}	*/		
 		
 		if ($filter) {
-			if (is_numeric($filter)) {
-				//DISABLE TO NOT RE-FILTER	
-				$_f = $this->read_policy();
-				$_prices = explode('.', $filter);
-				$sSQL .= " and (" . 
-						 $_f . ">=" . $this->spt($_prices[0]) . " and " .
-						 $_f . "<=" . $this->spt($_prices[1]) . ") "; 
-			}
-			else {		
-				if (strstr($filter, ',')) {
-					//multiple values
-					$fl = explode(',', $filter);
-					foreach ($fl as $feaf)
-						$flf[] = "manufacturer=" . $db->qstr($this->replace_spchars($feaf,1));
-					$sSQL .= ' and (' . implode(' OR ', $flf) . ')';	
-				}
-				else //single value
-					$sSQL .= " and manufacturer=" . $db->qstr($this->replace_spchars($filter,1));		
-			}	
-		}	
-		$sSQL .= " and itmactive>0 and active>0";
-	    $resultset = $db->Execute($sSQL);	
-        $this->max_selection = $resultset->fields[0] ? $resultset->fields[0] : 0;
+			$whereClause .= $this->_sqlFilter($filter, $whereClause, $_SQLJOIN);
 		
-		/*min max prices (select without price filter) NOT RE-FILTERING*/
-		$sSQL = "select count(id),min($price),max($price) from products where " . $whereClause;
-		$sSQL .= " and itmactive>0 and active>0";	
-	    $resultset = $db->Execute($sSQL);
-		$this->min_price = $resultset->fields[1] ? $resultset->fields[1] : 0;
-		$this->max_price = $resultset->fields[2] ? $resultset->fields[2] : 5000;
-		//echo $sSQL;
-		//echo $this->max_selection .'-' . $this->min_price . '-' . $this->max_price;
+			//$sSQL = "select count(id),min($price),max($price) from products ";
+			$sSQL = ($_SQLJOIN==true) ? //sql tree join (spcace-id, for secure id, convertion)
+								str_replace(array('id', 'orderid'), array(' products.id','products.orderid'), 
+								"select count(id),min($price),max($price) from products ") . ',ctreeopt' :
+								"select count(id),min($price),max($price) from products ";
+			$sSQL .= " WHERE " . $whereClause;
+			$sSQL .= ($_SQLJOIN==true) ? 
+						" AND itmactive>0 AND active>0 AND ctreeopt.code=products.id" : 
+						" AND itmactive>0 AND active>0"; 
+						
+			$resultset = $db->Execute($sSQL);
+
+			//!!! remark to not apply filter on price range
+			//$this->min_price = $resultset->fields[1] ? $resultset->fields[1] : 0;
+			//$this->max_price = $resultset->fields[2] ? $resultset->fields[2] :$this->max_result_price;
+			$this->max_selection = $resultset->fields[0];
+			//echo "<br>(". $this->max_selection .')-(' . $resultset->fields[1] . ')-(' . $resultset->fields[2] .')'. $sSQL;
+		}
 		
 		return ($this->max_selection);
 	}	
@@ -1010,19 +1286,19 @@ JSFILTER;
 				$myresource = "<img src=\"" . $photo . "\"";
 				$myresource.= "alt=\"$a_name". localize('_IMAGE',$this->lan) . "\">";
 		  
-				$purl = _m("cmsrt.url use t=kshow&cat=$cat&id=$code"); 
+				$purl = _m("cmsrt.url use t={$this->kshowcmd}&cat=$cat&id=$code"); 
 				$plink = "<a href=\"$purl\">";
 				$ret = $plink . $myresource . "</a>";           
 			}
 			elseif ($imageclick==0) {//item link
 				$myresource = "<img src=\"" . $photo . "\"";
 				$myresource.= "alt=\"$a_name". localize('_IMAGE',$this->lan) . "\">";
-				$ret = _m("cmsrt.url use t=kshow&cat=$cat&page=$page&id=$code+" . $myresource); 
+				$ret = _m("cmsrt.url use t={$this->kshowcmd}&cat=$cat&page=$page&id=$code+" . $myresource); 
 			} 
 			else {//item link
 				$myresource = "<img src=\"" . $photo . "\"";
 				$myresource.= "alt=\"$a_name". localize('_IMAGE',$this->lan) . "\">";		  
-				$ret = _m("cmsrt.url use t=kshow&cat=$cat&page=$page&id=$code+" . $myresource); 
+				$ret = _m("cmsrt.url use t={$this->kshowcmd}&cat=$cat&page=$page&id=$code+" . $myresource); 
 			} 
 		}
 		else {
@@ -1086,14 +1362,20 @@ JSFILTER;
 	/* filter */
 	protected function fread_list() {
         $db = GetGlobal('db');	
+		$stype = GetParam('searchtype');
+		$scase = GetParam('searchcase');		
 		$page = GetReq('page') ? GetReq('page') : 0;			
-		$cat = GetReq('cat');	
-		$filter = GetParam('input');	
+		$cat = (GetReq('cat')==$this->_catAllFilter) ? null : GetReq('cat'); //<<< all keyword means no cat	
+		
+		$filter = _m('cmsrt.escapeordie use ' . GetReq('input'));
+		$whereClause = null;
+		$_SQLJOIN = false;		
+		
+		//$sSQL = $this->selectSQL;
+		//$sSQL .= " WHERE ";			
 		
 		if ($cat!=null) {		   
-			$cat_tree = explode($this->sep(),$cat); 
-			$sSQL = $this->selectSQL;
-			$sSQL .= " WHERE ";		   
+			$cat_tree = explode($this->sep(),$cat);    
 		      	  
 			if ($cat_tree[0])
 				$whereClause = ' cat0=' . $db->qstr($this->replace_spchars($cat_tree[0],1));		
@@ -1112,29 +1394,21 @@ JSFILTER;
 			elseif ($this->onlyincategory)
 				$whereClause .= ' and (cat3 IS NULL OR cat3=\'\') ';
 		   		
-			$sSQL .= $whereClause;
-		  
-			if ($filter) {
-				if (is_numeric($filter)) {
-					$_f = $this->read_policy();
-					$_prices = explode('.', $filter);
-					$sSQL .= " and (" . 
-							 $_f . ">=" . $this->spt($_prices[0]) . " and " .
-							 $_f . "<=" . $this->spt($_prices[1]) . ") ";
-				}
-				else { 
-					if (strstr($filter, ',')) {
-						//multiple values
-						$fl = explode(',', $filter);
-						foreach ($fl as $feaf)
-							$flf[] = "manufacturer=" . $db->qstr($this->replace_spchars($feaf,1));
-						$sSQL .= ' and (' . implode(' OR ', $flf) . ')';	
-					}
-					else //single value
-						$sSQL .= " and manufacturer=" . $db->qstr($this->replace_spchars($filter,1));
-				}	
-			}
-			$sSQL .= " and itmactive>0 and active>0";	
+			//$sSQL .= $whereClause;
+		}  
+		
+		if ($filter) {
+			$whereClause .= $this->_sqlFilter($filter, $whereClause, $_SQLJOIN);
+			
+			//$sSQL = $this->selectSQL;
+			$sSQL = ($_SQLJOIN==true) ? //sql tree join (spcace-id, for secure id, convertion)
+						str_replace(array(' id,', 'orderid,'), array(' products.id,','products.orderid,'), 
+						$this->selectSQL) . ',ctreeopt' :
+						$this->selectSQL;
+		    $sSQL .= " WHERE " . $whereClause;		
+			$sSQL .= ($_SQLJOIN==true) ? 
+						" AND itmactive>0 AND active>0 AND ctreeopt.code=products.id" : 
+						" and itmactive>0 and active>0"; 
 			$sSQL .= $this->orderSQL();
 		  
 			if ($this->pager) {
@@ -1146,9 +1420,9 @@ JSFILTER;
 			$this->result = $resultset; 
 			$this->max_items = $db->Affected_Rows();//count($this->result);
 			
-		    $this->get_max_result(null, $filter);		
-			//$this->max_selection = $db->Affected_Rows();
-	      
+		    $x = $this->get_max_result(null, $filter);		
+	        //echo '<br>('. $x .')-(' . $this->max_items . ')-(' . $filter .  ')-->' . $sSQL;
+			
 			if ($this->max_items==1) 
 				return ($this->result->fields[$this->fcode]); //to view the item without click on dir			
 		}
@@ -1276,12 +1550,12 @@ JSFILTER;
 		$aliasID = _m("cmsrt.useUrlAlias");		
 		
 	    $sSQL = $this->selectSQL;	
-		$sSQL .= " WHERE " . $this->fcode . "=" . $db->qstr($item);
+		$sSQL .= " WHERE (" . $this->fcode . "=" . $db->qstr($item);
 		//$sSQL .= ($this->codetype=='string') ? $db->qstr($item) : $item; //DISABLED
 		//extra code (url alias)
 		$sSQL .= ($aliasID) ? " OR {$aliasID}=" . $db->qstr($this->stralias($item)) : null;
 		 
-		$sSQL .= " and itmactive>0 and active>0";
+		$sSQL .= ") and itmactive>0 and active>0";
 		
 		if (($lock = $this->itemlockparam) && (!GetGlobal('UserID')))
 		    $sSQL .=  ' and ' . $lock . ' is null';		  	  
@@ -1306,29 +1580,39 @@ JSFILTER;
 
 	protected function pPage($p, $label, $cmd, $inp=null, $div=null) {
 	    $cat = GetReq('cat');
-	    $pcmd = $cmd ? $cmd : 'klist';
+	    $pcmd = $cmd ? $cmd : $this->klistcmd;
 		
 		switch ($pcmd) {
 			case 'ktree'  : $treeid = GetParam('treeid');
 			                if ($div = $this->filterajax) {
 								$url = ($treeid) ? $this->httpurl . "/ktree/$cat/$treeid/$p/" :
-												   _m("cmsrt.url use t=klist&cat=$cat&page=$p");
+												   _m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
 								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','$div',1)\">" . strval($label) . "</a>";
 							}	
-							else
-								$ret = ($treeid) ? _m("cmsrt.url use t=$pcmd&cat=$cat&treeid=$treeid&page=$p+" . strval($label)) :
-												   _m("cmsrt.url use t=klist&cat=$cat&page=$p");
+							else {
+								//$ret = ($treeid) ? _m("cmsrt.url use t=$pcmd&cat=$cat&treeid=$treeid&page=$p+" . strval($label)) :
+								//				   _m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
+								$url = ($treeid) ? $this->httpurl . "/ktree/$cat/$treeid/$p/" :
+													_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
+								$ret = "<a href=\"$url\" onClick=\"gotoTop('$div')\">" . strval($label) . "</a>";
+							}					   
 			                break;
 							
 			case 'kfilter': if ($div = $this->filterajax) {
 								$url = $this->httpurl .'/';
 								$url.= ($inp) ? _m("cmsrt.url use t=$pcmd&cat=$cat&input=$inp&page=$p") :
-												_m("cmsrt.url use t=klist&cat=$cat&page=$p");
+												_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
 								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','$div',1)\">" . strval($label) . "</a>";
 							}
-							else
-								$ret = ($inp) ? _m("cmsrt.url use t=$pcmd&cat=$cat&input=$inp&page=$p+" . strval($label)) :
-												_m("cmsrt.url use t=klist&cat=$cat&page=$p");
+							else {
+								//$ret = ($inp) ? _m("cmsrt.url use t=$pcmd&cat=$cat&input=$inp&page=$p+" . strval($label)) :
+								//				_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
+												
+								$url = $this->httpurl .'/';
+								$url.= ($inp) ? _m("cmsrt.url use t=$pcmd&cat=$cat&input=$inp&page=$p") :
+												_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
+								$ret = "<a href=\"$url\" onClick=\"gotoTop('$div')\">" . strval($label) . "</a>";					
+							}					
 							break;
 							
 			case 'filter' : 
@@ -1336,12 +1620,18 @@ JSFILTER;
 								//ajax paging
 								$url = $this->httpurl .'/';
 								$url.= ($inp) ? _m("cmsrt.url use t=$pcmd&input=$inp&cat=$cat&page=$p") :
-												_m("cmsrt.url use t=klist&cat=$cat&page=$p");
+												_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
 								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','$div',1)\">" . strval($label) . "</a>";
 							}
-							else
-								$ret =  ($inp) ? _m("cmsrt.url use t=$pcmd&input=$inp&cat=$cat&page=$p+" . strval($label)) :
-												 _m("cmsrt.url use t=klist&cat=$cat&page=$p");
+							else {
+								//$ret =  ($inp) ? _m("cmsrt.url use t=$pcmd&input=$inp&cat=$cat&page=$p+" . strval($label)) :
+								//				 _m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
+												 
+								$url = $this->httpurl .'/';
+								$url.= ($inp) ? _m("cmsrt.url use t=$pcmd&input=$inp&cat=$cat&page=$p") :
+												_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
+								$ret = "<a href=\"$url\" onClick=\"gotoTop('$div')\">" . strval($label) . "</a>";												 
+							}					 
 			                break;
 			default       : if (($p>0) && ($div = $this->filterajax) && (!$this->mobile)) {
 								//ajax paging
@@ -1349,8 +1639,13 @@ JSFILTER;
 								$url.= _m("cmsrt.url use t=$pcmd&cat=$cat&page=$p");
 								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','$div',1)\">" . strval($label) . "</a>";
 							}
-							else
-								$ret = _m("cmsrt.url use t=$pcmd&cat=$cat&page=$p+" . strval($label));
+							else {
+								//$ret = _m("cmsrt.url use t=$pcmd&cat=$cat&page=$p+" . strval($label));
+								
+								$url = $this->httpurl .'/';
+								$url.= _m("cmsrt.url use t=$pcmd&cat=$cat&page=$p");
+								$ret = "<a href=\"$url\" onClick=\"gotoTop('$div')\">" . strval($label) . "</a>";
+							}	
 		}
 		
 		return ($ret);
@@ -1364,7 +1659,7 @@ JSFILTER;
 	    $t = $inp ? 'search' : GetReq('t'); 	
 	    $page = GetReq('page') ? GetReq('page') : 0;
 	    $pager = GetReq('pager') ? GetReq('pager') : $this->pager;
-	    $pcmd = $pagecmd ? $pagecmd : 'klist';
+	    $pcmd = $pagecmd ? $pagecmd : $this->klistcmd;
 		
 	    //echo '|paging>',$this->max_items,':',$this->max_selection;
 	    $mp = $this->max_selection;
@@ -1434,7 +1729,7 @@ JSFILTER;
 			$cmd = GetReq('t');	
 		
 		//$cmd = GetParam('input') ? 'search' : GetReq('t');
-		$pcmd = $cmd ? $cmd : 'klist';		
+		$pcmd = $cmd ? $cmd : $this->klistcmd;		
 		
 		switch ($pcmd) {	
 		
@@ -1449,6 +1744,7 @@ JSFILTER;
 			                $ret = _m("cmsrt.seturl use t=$pcmd&input=$inp&cat=$cat&$pOrder=#+++1");
 							break;	
 			
+			case 'products':
 			case 'klist' :
 		    default      : 	$ret = _m("cmsrt.seturl use t=$pcmd&cat=$cat&$pOrder=#+++1");		
 		}
@@ -1461,7 +1757,7 @@ JSFILTER;
 		$cat = GetReq('cat');
 		$inp = GetParam('input');
 		$t = $inp ? 'search' : GetReq('t');   
-		$cmd = $t ? $t : ($cmd ? $cmd : 'klist');
+		$cmd = $t ? $t : ($cmd ? $cmd : $this->klistcmd);
 		$pager = GetReq('pager') ? SetSessionParam('pager',GetReq('pager')) : GetSessionParam('pager');
 		$asc = GetReq('asc') ? SetSessionParam('asc',GetReq('asc')) : GetSessionParam('asc');
 		$order = GetReq('order') ? SetSessionParam('order',GetReq('order') ) : GetSessionParam('order');				
@@ -1469,8 +1765,12 @@ JSFILTER;
 		$a = localize('_title', $this->lan);
 		$b = localize('_axia', $this->lan);
 		$c = localize('_code', $this->lan);	   
-		$data = array(1=>$a,2=>$b,3=>$c);
-		$do = ($this->deforder) ? 3 : 1;
+		$d = localize('_ORDERID', $this->lan);	
+		$e = localize('_MANUFACTURER', $this->lan);	
+		$f = localize('_NEWEST', $this->lan);			
+		
+		$data = array(1=>$a,2=>$b,3=>$c,4=>$d,5=>$e,6=>$f);
+		$do = $this->deforder ? $this->deforder : 1; //3 : 1
 
 		$url = $this->pSortUrl('order');	
 		$selected_order = GetReq('order') ? GetReq('order') : 
@@ -1505,10 +1805,86 @@ JSFILTER;
 	    $out = $this->combine_tokens($contents, $tokens, true);	     
 	   
 	   return ($out);	      
-	}		
+	}	
+
+	public function show_filtering($pagecmd=null,$mytemplate=null) {	
+	    $pcmd = $pagecmd ? $pagecmd : $this->klistcmd;
+		$_searchphrase = localize('_SEARCH', $this->lan);
+		$_pricephrase = localize('_pricerange', $this->lan);	
+		$cat = (GetReq('cat')==$this->_catAllFilter) ? null : GetReq('cat'); 
+		$_allF = (defined("SHKATEGORIES_DPC")) ? _v('shkategories._catAllSearch') : $this->_catAllFilter;
+		
+		$input = GetReq('input');		
+		if (!$input) return null; //exit when no filter (search is of type search/xx/ 2nd elemend !!!!
+		
+		$tmplcontents = _m('cmsrt.select_template use fpfilter-button');	
+		
+		if (strstr($input, ',')) {
+			//multiple values
+			$fltvalue = null;
+			$fl = explode(',', $input);
+			foreach ($fl as $feaf) {
+				if (strstr($feaf, ':')) {
+					$_hv = explode(':', $feaf);
+					$fltname = $_hv[0];
+					$fbutton = "<a href=\"javascript:void(0)\" onClick=\"remFilter('{$feaf}','{$this->pageName}')\">{$_hv[1]}</a>";						
+					$filters .= $this->combine_tokens($tmplcontents, array(0=>"class='{$this->pager_current_class}'" ,1=>$fbutton)); 
+				}
+				elseif (strstr($feaf, '.')) {// if (is_numeric($feaf)) { //get the last element numeric of array (DO NOT SAVE AS ARRAY)
+					$_f = $this->read_policy();
+					$_prices = explode('.', $feaf);
+					$x = $this->spt($_prices[0]);
+					$y = $this->spt($_prices[1]);
+					$title = $_pricephrase . ': ' . $x .'..'. $y .' &euro;';					
+					$fbutton = "<a href=\"javascript:void(0)\" onClick=\"remFilter('{$feaf}','{$this->pageName}')\">{$title}</a>";						
+					$filters .= $this->combine_tokens($tmplcontents, array(0=>"class='{$this->pager_current_class}'" ,1=>$fbutton));					
+				}
+				else {//if ($feaf) 
+				    $title = $_searchphrase . ': ' . $feaf;
+					$fbutton = "<a href=\"javascript:void(0)\" onClick=\"remFilter('{$feaf}','{$this->pageName}')\">{$title}</a>";		
+					$filters .= $this->combine_tokens($tmplcontents, array(0=>"class='{$this->pager_current_class}'" ,1=>$fbutton));
+				}	
+			}
+		}
+		else {//if ($input) {//single value
+			if (strstr($input, ':')) { //single pair value
+				$_hv = explode(':', $input);
+				$fltname = $_hv[0];
+				$fbutton = "<a href=\"javascript:void(0)\" onClick=\"remFilter('{$input}','{$this->pageName}')\">{$_hv[1]}</a>";	
+				$filters .= $this->combine_tokens($tmplcontents, array(0=>"class='{$this->pager_current_class}'" ,1=>$fbutton));					
+			}
+			elseif (strstr($input, '.')) {////if (is_numeric($input)) { //single numeric value (slider values)
+				$_f = $this->read_policy();
+				$_prices = explode('.', $input);
+				$x = $this->spt($_prices[0]);
+				$y = $this->spt($_prices[1]);
+				$title = $_pricephrase . ': ' . $x .'..'. $y .' &euro;';
+				$fbutton = "<a href=\"javascript:void(0)\" onClick=\"remFilter('{$input}','{$this->pageName}')\">{$title}</a>";					
+				$filters .= $this->combine_tokens($tmplcontents, array(0=>"class='{$this->pager_current_class}'" ,1=>$fbutton));		 
+			}			
+			elseif ($input!=$_allF) {//non * single searchable value (save-reset except * from categories)
+				$title = $_searchphrase . ': ' . $input;
+				$fbutton = "<a href=\"javascript:void(0)\" onClick=\"remFilter('{$input}','{$this->pageName}')\">{$title}</a>";		
+				$filters .= $this->combine_tokens($tmplcontents, array(0=>"class='{$this->pager_current_class}'" ,1=>$fbutton));
+			}
+			else {
+				$title = null;
+				$fbutton = null;
+			}				
+        }			    	
+
+		if ($filters) {
+			$contents = _m('cmsrt.select_template use fpfiltering');	
+			$ret = $this->combine_tokens($contents, array(0=>$filters),true);	
+			
+			return ($ret);
+		}
+		
+		return null;
+	}	
 	
 	public function list_katalog($linemax=null,$cmd=null,$template=null,$photosize=null,$nopager=null) {
-	    $cmd = $cmd ? $cmd : 'klist';
+	    $cmd = $cmd ? $cmd : $this->klistcmd;
 	    $pz = $photosize ? $photosize : 1;		   	
         $cat = GetReq('cat');   
 	    $custom_template = false;
@@ -1560,6 +1936,7 @@ JSFILTER;
 					$toprint .= $this->make_table($items, $mylinemax, 'fpkatalogtable', $cat);	  
 			  
 				$toprint .= $this->show_paging($cmd,$mytemplate,$nopager);
+				$toprint .= $this->show_filtering($cmd,$mytemplate);
 	
 				$caturl = $aliasID ? $this->httpurl .'/' . $cat . $aliasExt : $this->httpurl .'/klist/'. $cat . '/';
 				$catarray = explode($this->sep(), $tokens[17]);
@@ -1570,8 +1947,8 @@ JSFILTER;
 														4=>$ogimage, /*array of images*/
 													));	
 				/* js ref analytics */ 
-				$cmdtype = ($cmd=='klist') ? 'category' : 'searchresults';
-				$this->analytics('klist', array(0=>$this->siteTitle,
+				$cmdtype = ($cmd==$this->klistcmd) ? 'category' : 'searchresults';
+				$this->analytics(/*$this->klistcmd*/ 'klist' , array(0=>$this->siteTitle,
 														1=>array_pop($catarray),
 														2=>$tokens[17],														
 														3=>$caturl,
@@ -1585,7 +1962,10 @@ JSFILTER;
 		else {
 			if ($template = _m('cmsrt.select_template use emptyrecs')) {
 				
-				$tokens = array(0=>localize('_norec',$this->lan));
+				$filters = $this->show_filtering();
+				$msg = localize('_norec',$this->lan);
+				
+				$tokens = array(0=>$msg, 1=>$filters);
 				$toprint .= $this->combine_tokens($template, $tokens, true);
 			}
 			//else
@@ -1598,7 +1978,7 @@ JSFILTER;
 	}	
 	
     protected function list_katalog_table($linemax=2,$cmd=null,$template=null,$photosize=null,$nopager=null) {
-		$cmd = $cmd ? $cmd : 'klist';	   
+		$cmd = $cmd ? $cmd : $this->klistcmd;	   
 		$pz = $photosize ? $photosize : 1;
 		$cat = GetReq('cat');	   
 		$mylinemax = ($linemax>0) ? $linemax : $this->linemax; 	
@@ -1667,7 +2047,7 @@ JSFILTER;
 													4=>$tokens[18], 
 													));				 
 			/* js ref analytics */ 
-			$this->analytics('kshow', $tokens);
+			$this->analytics(/*$this->kshowcmd*/ 'kshow', $tokens);
 			
 			unset($tokens);	 
 		 }//foreach	   
@@ -1722,7 +2102,7 @@ JSFILTER;
 
 				switch ($restype) {
                 
-					default:$addtional_photo_link = _m("cmsrt.seturl use t=kshow&cat=$cat&id=" . $this->realID . "&thub=" . $i . "#photo+++1"); 
+					default:$addtional_photo_link = _m("cmsrt.seturl use t={$this->kshowcmd}&cat=$cat&id=" . $this->realID . "&thub=" . $i . "#photo+++1"); 
 			                $plink = "<a href=\"$addtional_photo_link\">";				  
 			                $lo = "<img src=\"" . $ad_photo_big . "\" border=\"0\" alt=\"". localize('_IMAGE',$this->lan) . "\">" . "</a>"; 
 			                $adnphoto = $plink . $lo;
@@ -2579,7 +2959,7 @@ JSFILTER;
 				if (!empty($rec)) {
 		   
 					$meter+=1;
-					$cat = $this->getkategories($rec,1,$this->lan,'klist');		 
+					$cat = $this->getkategories($rec, 1, $this->lan, $this->klistcmd);		 
 					$linkcat = $this->getkategoriesS(array(0=>$rec['cat0'],1=>$rec['cat1'],2=>$rec['cat2'],3=>$rec['cat3'],4=>$rec['cat4']));	      			      		   
 			 		   
 					if (strtolower($headcat)!=strtolower($cat)) {//paging start
@@ -2592,7 +2972,7 @@ JSFILTER;
 					}
 					$title = $rec[$this->fcode] . "&nbsp;" . $rec[$this->itmname];
 			 
-					$itemlinkname = _m("cmsrt.url use t=kshow&cat=$linkcat&id=".$rec[$this->fcode]."+".$title); 		   
+					$itemlinkname = _m("cmsrt.url use t={$this->kshowcmd}&cat=$linkcat&id=".$rec[$this->fcode]."+".$title); 		   
 			 
 					if ($mytemplate) {
 						$tokens = array(); //reset 
@@ -2631,7 +3011,7 @@ JSFILTER;
 	    foreach ($result as $n=>$rec) {
 			if ($islink) {
 				$cat = $this->getkategoriesS(array(0=>$rec['cat0'],1=>$rec['cat1'],2=>$rec['cat2'],3=>$rec['cat3'],4=>$rec['cat4']));	      			      		   
-				$itemlink = _m("cmsrt.url use t=kshow&cat=$cat&id=". $rec[$this->fcode] ."+". $rec[$attr]); 
+				$itemlink = _m("cmsrt.url use t={$this->kshowcmd}&cat=$cat&id=". $rec[$this->fcode] ."+". $rec[$attr]); 
 				return ($itemlink);
 			}
 			else
@@ -2907,9 +3287,9 @@ JSFILTER;
 		$price = ($rec[$pp]>0) ? $this->spt($rec[$pp]) : $this->zeroprice_msg;
 		$availability = $this->show_availability($rec['ypoloipo1']);	
 		$details = null;
-        $detailink = $this->httpurl . '/' . _m("cmsrt.url use t=kshow&cat=$cat&id=".$rec[$this->fcode]) . '#details';
-		$itemlink = $this->httpurl . '/' . _m("cmsrt.url use t=kshow&cat=$cat&id=".$rec[$this->fcode]); 
-		$itemlinkname = _m("cmsrt.url use t=kshow&cat=$cat&id=" . $rec[$this->fcode] . "+". $rec[$this->itmname]);
+        $detailink = $this->httpurl . '/' . _m("cmsrt.url use t={$this->kshowcmd}&cat=$cat&id=".$rec[$this->fcode]) . '#details';
+		$itemlink = $this->httpurl . '/' . _m("cmsrt.url use t={$this->kshowcmd}&cat=$cat&id=".$rec[$this->fcode]); 
+		$itemlinkname = _m("cmsrt.url use t={$this->kshowcmd}&cat=$cat&id=" . $rec[$this->fcode] . "+". $rec[$this->itmname]);
 			
 		//tokens
 		$tokens[] = $itemlinkname; //use href token 11 / name token 16
@@ -3022,10 +3402,10 @@ JSFILTER;
 		$detailink = ($this->mobile) ? 
 						"javascript:window.scrollTo(0,parseInt($('#{$rec[$this->fcode]}-details').offset().top, 10))" :
 						//"javascript:gotoTop('{$rec[$this->fcode]}-details')"; //href mozilla err		
-						$this->httpurl . '/' . _m("cmsrt.url use t=kshow&cat=$cat&id=".$rec[$this->fcode]) . "#{$rec[$this->fcode]}-details";
+						$this->httpurl . '/' . _m("cmsrt.url use t={$this->kshowcmd}&cat=$cat&id=".$rec[$this->fcode]) . "#{$rec[$this->fcode]}-details";
 		
-		$itemlink = $this->httpurl . '/' . _m("cmsrt.url use t=kshow&cat=$cat&id=".$rec[$this->fcode]); 
-		$itemlinkname = _m("cmsrt.url use t=kshow&cat=$cat&id=" . $rec[$this->fcode] . "+". $rec[$this->itmname]);
+		$itemlink = $this->httpurl . '/' . _m("cmsrt.url use t={$this->kshowcmd}&cat=$cat&id=".$rec[$this->fcode]); 
+		$itemlinkname = _m("cmsrt.url use t={$this->kshowcmd}&cat=$cat&id=" . $rec[$this->fcode] . "+". $rec[$this->itmname]);
 			
 		//tokens		
 		$tokens[] = $rec[$this->itmname];
@@ -3171,6 +3551,65 @@ JSFILTER;
 	
 	
 	//FILTERS
+	
+	//filter read (field selector !)
+	protected function readfilter($_field=null, $inp=null) {
+		$input = $inp ? $inp : GetReq('input');
+		$reset_input = array();
+		$priceSQL = null;
+		$_allS = (defined("SHKATEGORIES_DPC")) ? _v('shkategories._catAllSearch') : $this->_catAllFilter;		
+		
+		if (strstr($input, ',')) {
+			//multiple values
+			$fltvalue = null;
+			$fl = explode(',', $input);
+			foreach ($fl as $feaf) {
+				if (strstr($feaf, ':')) {
+					$_hv = explode(':', $feaf);
+					$fltname = $_hv[0];
+					if ($fltname==$_field) 
+						$fltvalue = $this->replace_spchars($_hv[1],1);
+					else					
+						$reset_input[] = $feaf;  
+				}
+				elseif (strstr($feaf, '.')) {//if (is_numeric($feaf)) { //get the last element numeric of array (DO NOT SAVE AS ARRAY)
+					$_f = $this->read_policy();
+					$_prices = explode('.', $feaf);
+					$priceSQL = " (" . 
+								$_f . ">=" . $this->spt($_prices[0]) . " AND " .
+								$_f . "<=" . $this->spt($_prices[1]) . ") ";
+								
+					$reset_input[] = $feaf;			
+				}
+				else//if ($feaf) 
+					$reset_input[] = $feaf;
+			}
+		}
+		elseif ($input) {//single value
+			if (strstr($input, ':')) { //single pair value
+				$_hv = explode(':', $input);
+				$fltname = $_hv[0];
+				if ($fltname==$_field) 
+					$fltvalue = $this->replace_spchars($_hv[1],1);
+				else
+					$reset_input[] = $input;
+			}
+			elseif (strstr($input, '.')) {//if (is_numeric($input)) { //single numeric value (slider values)
+				$_f = $this->read_policy();
+				$_prices = explode('.', $input);
+				$priceSQL = " (" . 
+							$_f . ">=" . $this->spt($_prices[0]) . " AND " .
+							$_f . "<=" . $this->spt($_prices[1]) . ") ";
+						 
+				$reset_input[] = $input;			 
+			}			
+			elseif ($input!=$_allS) //non * single searchable value (save-reset except * from categories)
+				$reset_input[] = $input;
+        }		
+
+		return array(0=>$fltname, 1=>$fltvalue, 2=>$reset_input, 3=>$priceSQL, 4=>$input);	
+	}	
+	
 	//manufacturer standart item field
 	public function filter($field=null, $template=null, $incategory=null, $cmd=null, $header=null) {	
 		if (!$field) return;
@@ -3180,30 +3619,18 @@ JSFILTER;
 		$command = $cmd ? $cmd : 'search';
 		$stype = GetParam('searchtype');
 		$scase = GetParam('searchcase');
-		$cat = GetParam('cat');	
-		$input = GetReq('input');
+		$priceSQL = null;	
+		$selected = null;	
+		$_sel = null;		
+		$cat = (GetReq('cat')==$this->_catAllFilter) ? null : GetReq('cat'); //<<< all keyword means no cat
 		
-		if (!$cat) {
-			
-			return null;
-			
-			//no filter results when no cat, select cat
-			/*$combo = _m('shkategories.getKategoryCombo use 1++++++++search+search-combo+1');
-			return '<ul class="categories-filter animate-dropdown">
-                <li class="dropdown">
-                    <a class="dropdown-toggle"  data-toggle="dropdown" href="#">'.localize('SHKATEGORIES_DPC', $this->lan).'</a>
-                    <ul class="dropdown-menu" role="menu" >'.
-					$combo.'
-					</ul>
-                </li>
-            </ul>';*/
-		}	
-	  
-		$contents = (($this->filterajax) && (!$this->mobile)) ? 
-					_m('cmsrt.select_template use searchfilter-ajax') : 
-					_m('cmsrt.select_template use searchfilter');
+		$input = GetReq('input'); //search param or pair: val or comma sep vals
+		$reset_input = array();
 		
-	    $sSQL = "SELECT DISTINCT ".$field.",count(id) from products WHERE ";			
+        list($fltname, $fltvalue, $reset_input, $priceSQL, $input) = $this->readfilter($field);		
+		//print_r($reset_input);
+		
+	    $sSQL = "SELECT DISTINCT ".$field.",count(id) from products WHERE "; 	
         if ($incategory) {	
 		
 			$s = array();
@@ -3212,49 +3639,57 @@ JSFILTER;
 				foreach ($cats as $c=>$mycat)
 					$s[] = 'cat'.$c ." ='" . $this->replace_spchars($mycat,1) . "'";		  	  
 			}  
-		}		
-		$where = (!empty($s)) ? implode(" AND ", $s) : null;		
+		}	
+		if ($priceSQL)		
+			$s[] = $priceSQL;	
 		
-		if ((defined("SHNSEARCH_DPC")) && ($input)) {
-			
-		   	$where .= $where ? ' AND ' : null;
-			
-			$sfields = array(0=>$this->fcode,
-							 1=>$this->itmname,
-							 2=>$this->itmdescr,
-							 3=>'itmremark',
-							 /*4=>'manufacturer',*/
-							);
-			$serialf = serialize($sfields);			
-			$where .= _m("shnsearch.findsql use $input+$serialf+$stype+$scase");		  
-        }		
+		$where = (!empty($s)) ? implode(" AND ", $s) : null;			
 
 		$sSQL .= $where ? $where . ' AND ' : null;
 		$sSQL .= " itmactive>0 and active>0";
 		$sSQL .= " group by " . $field;
-		//echo $sSQL;	  
+		//echo '<br>(' . $input . ')' . $sSQL;	  
 	  
 		$result = $db->Execute($sSQL,2); 
 	  
 		if (!empty($result)) {
+			
+			$contents = (($this->filterajax) && (!$this->mobile)) ? 
+					_m('cmsrt.select_template use searchfilter-ajax') : 
+					_m('cmsrt.select_template use searchfilter');
+			$contents_selected = _m('cmsrt.select_template use searchfilter-selected');						
 
 			$tokens = array(); 
-			$r = array();	
+			$r = array();				
+			$_cat = $cat ? $cat : $this->_catAllFilter; //when no cat cat=all ('all' special key means no cat)!! (url // act as /)
 			
 			foreach ($result as $n=>$t) {
+				
 				if (trim($t[0])!='') {
-			        $f = $this->replace_spchars($t[0]);
-					$url = $this->httpurl . "/$command/$cat/"; 
+					$selected = null; //reset
+					
+			        $f = $this->replace_spchars($field .':'. $t[0]); //<--- add field descr: before value
+					if ($t[0] == $this->replace_spchars($fltvalue,1)) { 
+						$selected = $f;
+						$_sel = $f;
+					}	
+					//if ($field.':'.$t[0] == $this->replace_spchars($fltname.':'.$fltvalue,1)) $selected = $f;
+										
+					$ff = !empty($reset_input) ? implode(',', $reset_input) .",". $f : $f; //<---- reset input and set comma sep values (search input, manufacturer, price etc)
+					$url = $this->httpurl . "/$command/$_cat/"; //_cat!!!
 					$theurl = (($div = $this->filterajax) && (!$this->mobile)) ? 
 								"filter('$url','$div','filter0')" : 
-								$baseurl . _m("cmsrt.url use t=$command&cat=$cat&input=$f");
+								( $selected ? "remFilter('$selected','{$this->pageName}')" : $baseurl . _m("cmsrt.url use t=$command&cat=$_cat&input=$ff")); //$cat=_cat $f=$ff !!
 										
 					$tokens[] = $t[0];
 					$tokens[] = $t[1];
 					$tokens[] = $theurl;
-					$tokens[] = ($t[0] == $this->replace_spchars($input,1)) ? 'checked="checked"' : null;
-					$r[] = $this->combine_tokens($contents,$tokens);	
-					unset($tokens);		
+					$tokens[] = ($t[0] == $this->replace_spchars($fltvalue,1)) ? 'checked="checked"' : null; //$input = field:value, get the value (fltvalue)
+					$tokens[] = $field; 
+					
+					$_c = $selected ? $contents_selected : $contents;
+					$r[] = $this->combine_tokens($_c, $tokens);	
+					unset($tokens);			
                 }				
 			}	   
 			
@@ -3264,11 +3699,18 @@ JSFILTER;
 				//nothing
 			}	
 			elseif (($header) || ($this->mobile)) {
+
+				$theurl = ($_sel) ? "remFilter('$_sel','{$this->pageName}')" :
+									$baseurl . _m("cmsrt.url use t={$this->klistcmd}&cat=$cat"); 
+				
 				$tokens[] = localize('_ALL',$this->lan);
 				$tokens[] = $input ? '*' : $this->max_selection;
-				$tokens[] = $baseurl . _m("cmsrt.url use t=klist&cat=$cat");
+				$tokens[] = $theurl;
 				$tokens[] = (!$input) ? 'checked="checked"' : null;
-				$r[] = $this->combine_tokens($contents,$tokens);
+				$tokens[] = $field; 
+				
+				$_c = $_sel ? $contents_selected : $contents;
+				$r[] = $this->combine_tokens($_c,$tokens);
 				unset($tokens);
 			}				
 		}		
@@ -3278,17 +3720,27 @@ JSFILTER;
 	}	
 	
 	//view on current item selection and tree groups
-	public function filterExt($treename=null) {	
+	public function filterExt($treename=null, $cmd=null, $header=null) {	
 	    $db = GetGlobal('db');	
-        if (!$treename) return null;			
-		$seltreeid = GetReq('treeid');		
-		if (!$cat = GetParam('cat'))
-			return null;
+        if (!$treename) return null;	
+		$treecmd = $cmd ? $cmd : 'kfilter';// 'ktree'; //redirect to kfilter			
+		//if (!$cat = GetParam('cat')) return null;
+		
+		$cat = (GetReq('cat')==$this->_catAllFilter) ? null : GetReq('cat'); //<<< all keyword means no cat		
+		$priceSQL = null;	
+		$selected = null;
+		$_sel = null;
+		$r = array();		
+		$input = GetReq('input');
+
+        list($fltname, $fltvalue, $reset_input, $priceSQL, $input) = $this->readfilter($treename);		
+		//print_r($reset_input);
 
 		$content = _m('cmsrt.select_template use extfilter');			
 		$linecontent = (($this->filterajax) && (!$this->mobile)) ? 
 						_m('cmsrt.select_template use extfilterline-ajax') :
 					    _m('cmsrt.select_template use extfilterline');
+		$linecontent_selected = _m('cmsrt.select_template use extfilterline-selected');					
 
 		$sSQL = "select tname,tname{$this->lan},active,tid from ctree where active=1 and tname='$treename'";
 		$res = $db->Execute($sSQL);
@@ -3318,27 +3770,60 @@ JSFILTER;
 
 		if (!empty($res)) {
 			
+			$_cat = $cat ? $cat : $this->_catAllFilter; //<<< all keyword means no cat
+			
 			//single name for one filter applied url
 			//or common name for all filters applied url			
 			$treename = 'filter1';		
+			$tokens = array(); 
 			
-			$tokens = array(); 			
-			$r = array();			
 			foreach ($res as $n=>$rec) {
-				$treeid = $treename . ':' . $rec[0]; //0
-				$url = $this->httpurl . "/ktree/$cat/$treename:";
-				$theurl = (($div = $this->filterajax) && (!$this->mobile)) ? 
-							"filter('$url','$div','$treename')" : 
-							$this->httpurl . '/' . _m("cmsrt.url use t=ktree&cat=$cat&treeid=$treeid");
+				$selected = null; //reset
+				
+				$title = $rec[2] ? $rec[2] : $rec[1];
+				$treeid = $this->replace_spchars($treename .':'. $title); //$rec[0]; //0
+				if ($title == $this->replace_spchars($fltvalue,1)) {
+					$selected = $treeid;
+					$_sel = $treeid;
+				}						
+				
+				$ff = !empty($reset_input) ? implode(',', $reset_input) .",". $treeid : $treeid; //<---- reset input and set comma sep values (search input, manufacturer, price etc)
+				$url = $this->httpurl . "/$treecmd/$_cat/$treename:";
+				$theurl = (($this->filterajax) && (!$this->mobile)) ? 
+							"filter('$url','{$this->pageName}','$treename')" : 
+							( $selected ? "remFilter('$selected','{$this->pageName}')" : $this->httpurl . '/' . _m("cmsrt.url use t=$treecmd&cat=$_cat&treeid=$ff")); //=treeid
 							
-				$tokens[0] = $rec[2] ? $rec[2] : $rec[1]; //title
+				$tokens[0] = $title; //$rec[2] ? $rec[2] : $rec[1]; //title
 				$tokens[1] = $rec[0]; //value
 				$tokens[2] = $theurl; //ajax url
-				$tokens[3] = ($rec[1] == $seltreeid) ? 'checked="checked"' : null;
+				$tokens[3] = ($title == $this->replace_spchars($fltvalue,1)) ? 'checked="checked"' : null; //rec[0]=
 				$tokens[4] = $treename; 
-				$r[] = $this->combine_tokens($linecontent,$tokens);	
-				unset($tokens);					
+				
+				$_c = $selected ? $linecontent_selected : $linecontent;				
+				$r[] = $this->combine_tokens($_c,$tokens);	
+				unset($tokens);		
 			}	
+			
+			//header or mobile and not ajax
+			//if ((!$this->filterajax) && ($header)) {	
+			if (($this->filterajax) && (!$this->mobile)) {
+				//nothing
+			}	
+			elseif (($header) || ($this->mobile)) {
+				
+				$theurl = ($_sel) ? "remFilter('$_sel','{$this->pageName}')" :
+									$baseurl . _m("cmsrt.url use t={$this->klistcmd}&cat=$cat"); 
+									  
+				$tokens[] = localize('_ALL',$this->lan);
+				$tokens[] = $input ? '*' : $this->max_selection;
+				$tokens[] = theurl; 
+				$tokens[] = (!$input) ? 'checked="checked"' : null;
+				$tokens[] = $treename; 
+				
+				$_c = $_sel ? $linecontent_selected : $linecontent;
+				$r[] = $this->combine_tokens($_c,$tokens);				
+				unset($tokens);
+			}			
 
 			if (!empty($r)) {
 				$toks[] = implode('',$r);	
@@ -3351,41 +3836,56 @@ JSFILTER;
     }
 	
 	//all tree groups, view in any category
-	public function filterExtAll($usedescr=false) {
-	    $db = GetGlobal('db');			
-		if (!$cat = GetParam('cat'))
-			return null;
+	public function filterExtAll($usedescr=false, $cmd=null, $header=null) {
+	    $db = GetGlobal('db');		
+		$treecmd = $cmd ? $cmd : 'kfilter'; // 'ktree'; //redirect to kfilter
 		
-		$content = _m('cmsrt.select_template use extfilter');			
-		$linecontent = (($this->filterajax) && (!$this->mobile)) ? 
-						_m('cmsrt.select_template use extfilterline-ajax') :
-					    _m('cmsrt.select_template use extfilterline');	
+		$cat = (GetReq('cat')==$this->_catAllFilter) ? null : GetReq('cat'); //<<< all keyword means no cat		
+		$priceSQL = null;	
+		$selected = null;
+		$_sel = null;
+		$r = array();	
+		$ret = null;	
+		
+		$input = GetReq('input');		
+		$reset_input = array();						
 		
 		$sSQL = "select tid,tname,tname{$this->lan} from ctree where";
 		$sSQL.= " active=1 and pid='0' and items=1";
 		if ($usedescr) { 
-				//cat based tree filters show
-				$fsQL = "select tid from ctreedescr where attr=" . $db->qstr($cat);
-				$resf = $db->Execute($fsQL);
-				foreach ($resf as $m=>$rem) 
-					$fshow[] = $rem[0];
-                //echo $fsQL; print_r($fshow);
-				if (!empty($fshow)) 
-					$sSQL .= " and tid in ('" . implode("','", array_unique($fshow)) . "')";		
-				else
-					return null;		
+			//cat based tree filters show
+			$fsQL = "select tid from ctreedescr where attr=" . $db->qstr($cat);
+			$resf = $db->Execute($fsQL);
+			foreach ($resf as $m=>$rem) 
+				$fshow[] = $rem[0];
+            //echo $fsQL; print_r($fshow);
+			if (!empty($fshow)) 
+				$sSQL .= " and tid in ('" . implode("','", array_unique($fshow)) . "')";		
+			else
+				return null; //no filter view, exit		
 		}		
 		$sSQL.= " order by orderid";
 		//echo $sSQL;
 		$res = $db->Execute($sSQL); 
 		if (!empty($res)) {
 			
+			$content = _m('cmsrt.select_template use extfilter');			
+			$linecontent = (($this->filterajax) && (!$this->mobile)) ? 
+						_m('cmsrt.select_template use extfilterline-ajax') :
+					    _m('cmsrt.select_template use extfilterline');	
+			$linecontent_selected = _m('cmsrt.select_template use extfilterline-selected');				
+			
+			$_cat = $cat ? $cat : $this->_catAllFilter; //<<< all keyword means no cat
+			
 			//single name for one filter applied url
 			//or common name for all filters applied url			
-			$treename = 'filter1'; //or ..				
+			//$treename = 'filter1'; //or ..DISABLE to get the name of tree				
 			
-			foreach ($res as $n=>$rec) {			
-				$groupname = $treename ? $treename : $rec[1]; //..filter name
+			foreach ($res as $n=>$rec) {
+				$groupname = $rec[1]; //$treename ? $treename : $rec[1]; //..filter name //<<<<<
+				list($fltname, $fltvalue, $reset_input, $priceSQL, $input) = $this->readfilter($groupname);
+				//print_r($reset_input);
+				
 				$toks[] = $rec[2] ? $rec[2] : $rec[1];
 				
 				$sSQL = "select tid,tname,tname{$this->lan} from ctree where ";
@@ -3395,31 +3895,143 @@ JSFILTER;
 				$res = $db->Execute($sSQL);
 				if (!empty($res)) {
 					
-					$r = array();
+					$r = array(); //reset
 					foreach ($res as $n=>$rec) {
-						$treeid = $groupname . ':' . $rec[0]; 
-						$url = $this->httpurl . "/ktree/$cat/$groupname:";
-						$theurl = (($div = $this->filterajax) && (!$this->mobile)) ? 
-									"filter('$url','$div','$groupname')" : 
-									$this->httpurl . '/' . _m("cmsrt.url use t=ktree&cat=$cat&treeid=$treeid");
+						$selected = null; //reset
+						
+						$title = $rec[2] ? $rec[2] : $rec[1];
+						$code = $rec[0]; //$title;
+						$treeid = $this->replace_spchars($groupname .':'. $code);//$title); //$rec[0]; //!!!! set title to use the string not the id 
+						//if ($title == $this->replace_spchars($fltvalue,1)) {
+						if ($code == $this->replace_spchars($fltvalue,1)) {	
+							$selected = $treeid;
+							$_sel = $treeid;
+						}							
+												
+						$ff = !empty($reset_input) ? implode(',', $reset_input) .",". $treeid : $treeid; //<---- reset input and set comma sep values (search input, manufacturer, price etc)
+						$url = $this->httpurl . "/$treecmd/$_cat/$groupname:";
+						$theurl = (($this->filterajax) && (!$this->mobile)) ? 
+									"filter('$url','{$this->pageName}','$groupname')" : 
+									( $selected ? "remFilter('$selected','{$this->pageName}')" : $this->httpurl . '/' . _m("cmsrt.url use t=$treecmd&cat=$_cat&treeid=$ff")); //= treeid
 										
-						$tokens[0] = $rec[2] ? $rec[2] : $rec[1];
-						$tokens[1] = $rec[0];
+						$tokens[0] = $title; //$rec[2] ? $rec[2] : $rec[1];
+						$tokens[1] = $rec[0]; //id
 						$tokens[2] = $theurl;	
-						$tokens[3] = ($rec[1] == $seltreeid) ? 'checked="checked"' : null;
+						//$tokens[3] = ($title == $this->replace_spchars($fltvalue,1)) ? 'checked="checked"' : null; //rec[0]=
+						$tokens[3] = ($code == $this->replace_spchars($fltvalue,1)) ? 'checked="checked"' : null; //rec[0]=
 						$tokens[4] = $groupname;
-						$r[] = $this->combine_tokens($linecontent,$tokens);	
-						unset($tokens);							
+						
+						$_c = $selected ? $linecontent_selected : $linecontent;							
+						$r[] = $this->combine_tokens($_c,$tokens);	
+						unset($tokens);						
+					}
+					
+					//header or mobile and not ajax
+					//if ((!$this->filterajax) && ($header)) {	
+					if (($this->filterajax) && (!$this->mobile)) {
+						//nothing
+					}	
+					elseif (($header) || ($this->mobile)) {
+						
+						$theurl = ($_sel) ? "remFilter('$_sel','{$this->pageName}')" :
+												$baseurl . _m("cmsrt.url use t={$this->klistcmd}&cat=$cat"); 					
+						
+						$tokens[] = localize('_ALL',$this->lan);
+						$tokens[] = $input ? '*' : $this->max_selection;
+						$tokens[] = $theurl;
+						$tokens[] = (!$input) ? 'checked="checked"' : null;
+						
+						$_c = $_sel ? $linecontent_selected : $linecontent;
+						$r[] = $this->combine_tokens($_c,$tokens);							
+						unset($tokens);
 					}
 					
 					$toks[] = (empty($r)) ? null : implode('',$r);	
-					$ret .= $this->combine_tokens($content,$toks);					
+					$ret .= $this->combine_tokens($content,$toks);	
 					unset($toks);
 				}		
 			}			
 		}
 		
 		return ($ret);	
+	}
+	
+	//delete filters
+	public function filterDel() {	
+		$_searchphrase = localize('_SEARCH', $this->lan);
+		$_pricephrase = localize('_pricerange', $this->lan);	
+		$baseurl = $this->httpurl . '/'; 	
+		$command = 'kfilter';
+		$cat = (GetReq('cat')==$this->_catAllFilter) ? null : GetReq('cat'); 
+		$_allS = (defined("SHKATEGORIES_DPC")) ? _v('shkategories._catAllSearch') : $this->_catAllFilter;	
+		
+		$input = GetReq('input'); 
+		if (!$input) return null;
+		$reset_input = explode(',', $input);
+		$reset_counter = count($reset_input);
+	  
+		$r = array();	  
+		if (!empty($reset_input)) {
+			$contents = _m('cmsrt.select_template use searchfilter');
+			$contents_selected = _m('cmsrt.select_template use searchfilter-selected');
+			$tokens = array(); 	
+			
+			$_cat = $cat ? $cat : $this->_catAllFilter;
+			foreach ($reset_input as $n=>$t) {
+				if (trim($t[0])!='') {
+					
+					if (strstr($t, ':')) { //single pair value
+						$_hv = explode(':', $t);
+						$hvtitle = localize('_'. strtoupper($_hv[0]), $this->lan);
+						$fltname = ($hvtitle[0]!='_') ? $hvtitle : $_hv[0];
+						$fltvalue = $this->replace_spchars($_hv[1],1);
+						$title = localize('_'. strtoupper($fltname), $this->lan);
+					}
+					elseif (strstr($t, '.')) {//if (is_numeric($t)) { //single numeric value (slider values)
+						$fltname = $_pricephrase;
+						$fltvalue = str_replace('.', '..', strval($t));		 
+					}			
+					elseif ($t!=$_allS) {//non * single searchable value (save-reset except * from categories)
+						$fltname = $_searchphrase;
+						$fltvalue = $t;				
+					}
+					else {
+						$fltname = null;
+						$fltvalue = null;
+					}		
+					
+					if ($fltname) {
+						$url = $this->httpurl . "/$command/$_cat/"; //_cat!!!
+						$div = $this->pageName;
+						$theurl = "remFilter('$t','$div')";
+							
+						$tokens[] = $fltname;
+						$tokens[] = '<del>'.$fltvalue .'</del>';
+						$tokens[] = $theurl;
+						$tokens[] = null;
+						$tokens[] = 'delFilter';
+						$r[] = $this->combine_tokens($contents_selected,$tokens);	
+						unset($tokens);	
+					}					
+                }				
+			}
+
+					
+			//remove all link
+			if ($reset_counter > 1) {
+				$tokens[] = localize('_ALL',$this->lan);
+				$tokens[] = $this->max_selection ? '<del>selected ' . $this->max_selection . '</del>' : '<del>selected</del>';
+				$tokens[] = $baseurl . _m("cmsrt.url use t={$this->klistcmd}&cat=$cat"); 
+				$tokens[] = (!$input) ? 'checked="checked"' : null;
+				$tokens[] = 'delFilter';
+				
+				$r[] = $this->combine_tokens($contents,$tokens);
+				unset($tokens);				
+			}
+		}		
+       
+		$ret = (empty($r)) ? null : implode('',$r);	
+		return ($ret);  
 	}
 
 	
@@ -3957,16 +4569,15 @@ EOF;
 		
         if ($mytemplate_tablelist) { 
 		
+			//grid 
 			$table_token[] = (!empty($items_table)) ? implode('',$items_table) : null; 
-
 			$tokens[] = $this->combine_tokens($mytemplate_table, $table_token);
-
+            //list
 			$list_token[] = (!empty($items_list)) ? implode('',$items_list) : null; 
-
 			$tokens[] = $this->combine_tokens($mytemplate_list, $list_token);
-
+			
 			$toprint = $this->combine_tokens($mytemplate_tablelist, $tokens);
-
+			
 			unset ($tokens);
 			unset ($table_token);
 			unset ($list_token);

@@ -1,0 +1,117 @@
+#fastcgi_intercept_errors on;
+#error_page 404 /httpddocs/404.php;
+#location = /httpdocs/404.php {root /var/www/vhosts/panikidis.gr/httpdocs/404.php;}
+error_page 404 /not_found.html;
+location = /not_found.html {root /var/www/vhosts/panikidis.gr/error_docs;}
+
+if (!-f $request_filename){
+	set $rule_0 1$rule_0;
+}
+if ($rule_0 = "1"){
+	rewrite ^/([^\.]+)/([^\.]+).html$ /katalog.php?t=kshow&cat=$1&id=$2 last;
+}
+
+if (!-f $request_filename){
+	set $rule_1 1$rule_1;
+}
+if ($rule_1 = "1"){
+	rewrite ^/([^\.]+).html$ /katalog.php?t=klist&cat=$1 last;
+}
+
+rewrite ^/([^/]*)/([^/]*)/([^/]*)/([^/]*)/([^/]*).filter$ /katalog.php?t=kfilter&cat=$1&input=$2,$3,$4,$5 last;
+rewrite ^/([^/]*)/([^/]*)/([^/]*)/([^/]*).filter$ /katalog.php?t=kfilter&cat=$1&input=$2,$3,$4 last;
+rewrite ^/([^/]*)/([^/]*)/([^/]*).filter$ /katalog.php?t=kfilter&cat=$1&input=$2,$3 last;
+
+rewrite ^/addtocart/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=addtocart&a=$1&cat=$2&page=$3&qty=$4 last;
+rewrite ^/addtocart/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=addtocart&a=$1&cat=$2&page=$3 last;
+rewrite ^/removefromcart/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=removefromcart&a=$1&cat=$2&page=$3 last;
+
+rewrite ^/product/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=product&cat=$1&page=$2&id=$3 last;
+rewrite ^/product/([^/]*)/([^/]*)/$ /katalog.php?t=product&cat=$1&id=$2 last;
+rewrite ^/products/([^/]*)/([^/]*)/$ /katalog.php?t=products&cat=$1&page=$2 last;
+rewrite ^/products/([^/]*)/$ /katalog.php?t=products&cat=$1 last;
+
+rewrite ^/kshow/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=kshow&cat=$1&page=$2&id=$3 last;
+rewrite ^/kshow/([^/]*)/([^/]*)/$ /katalog.php?t=kshow&cat=$1&id=$2 last;
+rewrite ^/klist/([^/]*)/([^/]*)/$ /katalog.php?t=klist&cat=$1&page=$2 last;
+rewrite ^/klist/([^/]*)/$ /katalog.php?t=klist&cat=$1 last;
+rewrite ^/lan/([^/]*)/$ /katalog.php?t=lang&langsel=$1 last;
+rewrite ^/search/([^/]*)/([^/]*)/([^/]*)/$ /search.php?t=search&input=$1&cat=$2&page=$3 last;
+rewrite ^/search/([^/]*)/([^/]*)/$ /search.php?t=search&input=$1&page=$2 last;
+rewrite ^/search/([^/]*)/$ /search.php?t=search&input=$1 last;
+rewrite ^/filter/([^/]*)/([^/]*)/([^/]*)/$ /search.php?t=filter&input=$1&cat=$2&page=$3 last;
+rewrite ^/filter/([^/]*)/([^/]*)/$ /search.php?t=filter&input=$1&page=$2 last;
+rewrite ^/filter/([^/]*)/$ /search.php?t=filter&input=$1 last;
+rewrite ^/kfilter/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=kfilter&cat=$1&input=$2&page=$3 last;
+rewrite ^/kfilter/([^/]*)/([^/]*)/$ /katalog.php?t=kfilter&cat=$1&input=$2 last;
+rewrite ^/kfilter/([^/]*)/$ /katalog.php?t=kfilter&cat=$1 last;
+rewrite ^/ktree/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=ktree&cat=$1&treeid=$2&page=$3 last;
+rewrite ^/ktree/([^/]*)/([^/]*)/$ /katalog.php?t=ktree&cat=$1&treeid=$2 last;
+rewrite ^/ktree/([^/]*)/$ /katalog.php?t=ktree&treeid=$1 last;
+rewrite ^/feed/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=feed&cat=$1&page=$2&id=$3&format=$4 last;
+rewrite ^/feed/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=feed&cat=$1&page=$2&format=$3 last;
+rewrite ^/feed/([^/]*)/([^/]*)/$ /katalog.php?t=feed&cat=$1&format=$2 last;
+rewrite ^/xml/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=xmlout&cat=$1&xml=$2&id=$3&format=$4 last;
+rewrite ^/xml/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=xmlout&cat=$1&xml=$2&format=$3 last;
+rewrite ^/xml/([^/]*)/([^/]*)/$ /katalog.php?t=xmlout&xml=$1&format=$2 last;
+rewrite ^/addnewdeliv/$ /katalog.php?t=addnewdeliv last;
+rewrite ^/savenewdeliv/$ /katalog.php?t=savenewdeliv last;
+rewrite ^/(viewcart|cart)/?$ /katalog.php?t=viewcart;
+rewrite ^/(shlogin|login)/?$ /katalog.php?t=shlogin;
+rewrite ^/(shlogout|logout)/?$ /katalog.php?t=shlogout;
+rewrite ^/(shlogin|rempwd|clearcart|transview|fastpick|wslist|printcart)/?$ /katalog.php?t=$1;
+rewrite ^/(cart-checkout|cart-cancel|cart-order|cart-submit)/?$ /katalog.php?t=$1;
+rewrite ^/cart-submit/paypal/?$ /paypal.php?p=$1;
+rewrite ^/cart-submit/eurobank/?$ /eurobank.php?p=$1 last;
+rewrite ^/cart-submit/piraeus/?$ /piraeus.php?p=$1;
+rewrite ^/addcart/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=addtocart&a=$1&cat=$2&page=$3&qty=$4 last;
+rewrite ^/addcart/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=addtocart&a=$1&cat=$2&page=$3 last;
+rewrite ^/remcart/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=removefromcart&a=$1&cat=$2&page=$3&qty=$4 last;
+rewrite ^/remcart/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=removefromcart&a=$1&cat=$2&page=$3 last;
+rewrite ^/calc/([^/]*)/([^/]*)/$ /katalog.php?t=calc&$1=$2 last;
+rewrite ^/(calc|recalc)/?$ /katalog.php?t=calc;
+rewrite ^/signup/([^/]*)/$ /katalog.php?t=signup&invtype=$1 last;
+rewrite ^/signup/$ /katalog.php?t=signup&invtype=0 last;
+rewrite ^/editcus/([^/]*)/$ /katalog.php?t=signup2&a=$1 last;
+rewrite ^/editcus/$ /katalog.php?t=signup2 last;
+rewrite ^/selectcus/([^/]*)/$ /katalog.php?t=selcus&id=$1 last;
+rewrite ^/removecus/([^/]*)/$ /katalog.php?t=removecus&id=$1 last;
+rewrite ^/contact/([^/]*)/$ /contact.php?t=contact&branch=$1 last;
+rewrite ^/contact/$ /contact.php last;
+rewrite ^/search/$ /search.php last;
+rewrite ^/transviewhtml/([^/]*)/$ /katalog.php?t=transviewhtml&tid=$1 last;
+rewrite ^/trcancel/([^/]*)/$ /katalog.php?t=cancelorder&tid=$1 last;
+rewrite ^/trload/([^/]*)/([^/]*)/$ /katalog.php?t=loadcart&tid=$1&ajax=$2 last;
+rewrite ^/trload/([^/]*)/$ /katalog.php?t=loadcart&tid=$1 last;
+rewrite ^/trview/([^/]*)/$ /katalog.php?t=transviewhtml&tid=$1 last;
+rewrite ^/trview/$ /katalog.php?t=transview last;
+rewrite ^/wishadd/([^/]*)/$ /katalog.php?t=wsadditem&id=$1 last;
+rewrite ^/wishrem/([^/]*)/$ /katalog.php?t=wsdelitem&id=$1 last;
+rewrite ^/wishlist/$ /katalog.php?t=wslist last;
+rewrite ^/cmpadd/([^/]*)/$ /katalog.php?t=cmpadditem&id=$1 last;
+rewrite ^/cmprem/([^/]*)/$ /katalog.php?t=cmpdelitem&id=$1 last;
+rewrite ^/cmplist/$ /katalog.php?t=cmplist last;
+rewrite ^/transport/([^/]*)/$ /transport.php?t=transport&id=$1 last;
+rewrite ^/transport/$ /transport.php?t=transport last;
+rewrite ^/subscribe/([^/]*)/$ /subscribe.php?t=subscribe&m=$1 last;
+rewrite ^/subscribe/$ /subscribe.php?t=subscribe last;
+rewrite ^/unsubscribe/([^/]*)/$ /subscribe.php?t=unsubscribe&m=$1 last;
+rewrite ^/unsubscribe/$ /subscribe.php?t=unsubscribe last;
+rewrite ^/mtrackurl/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /mtrackurl.php?t=mt&a=$1&u=$2&cid=$3&r=$4 last;
+rewrite ^/mtrackurl/([^/]*)/([^/]*)/([^/]*)/$ /mtrackurl.php?t=mt&u=$1&cid=$2&r=$3 last;
+rewrite ^/mtrack/([^/]*)/([^/]*)/$ /mtrack.php?i=$1&r=$2 last;
+rewrite ^/mtrack/([^/]*)/$ /mtrack.php?i=$1 last;
+rewrite ^/ns/([^/]*)/$ /ns.php?a=$1 last;
+rewrite ^/tools/([^/]*)/([^/]*)/$ /gdprtools.php?t=$1&submail=$2 last;
+rewrite ^/tools/([^/]*)/$ /gdprtools.php?t=$1 last;
+rewrite ^/tools/$ /gdprtools.php last;
+rewrite ^/process/([^/]*)/([^/]*)/$ /process.php?t=process&pid=$1&clp=$2 last;
+rewrite ^/process/([^/]*)/$ /process.php?t=process&pid=$1 last;
+rewrite ^/process/$ /process.php?t=process last;
+rewrite ^/p/([^/]*)/([^/]*)/([^/]*)/$ /process_$1.php??t=process&pid=$2&clp=$3 last;
+rewrite ^/p/([^/]*)/([^/]*)/$ /process_$1.php?t=process&pid=$2 last;
+rewrite ^/p/([^/]*)/$ /process_$1.php?t=process last;
+rewrite ^/p/$ /process.php?t=process last;
+rewrite ^/([^/]*)/$ /index.php?t=$1 last;
+rewrite ^/(.*)\.xml$ /katalog.php?t=xmlout&xml=1&format=$1 last;
+rewrite ^/(.*)\.printer$ /$1.php last;

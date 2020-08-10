@@ -18,6 +18,7 @@
 	<phpdac>cms.nvldac2 use cmsrt.mobile+cmsrt.include_part:/parts/navigation/horizontal-menu.php|||media-center++</phpdac>
 
 	<phpdac>cms.nvldac2 use cmsrt.mobile+cmsrt.include_part:/parts/breadcrumb/breadcrumb.php|||media-center++</phpdac>
-		
 </header>
+
+<phpdac>cmsrt.included use /parts/message-header</phpdac>	
 <!-- ============================================================= HEADER : END ============================================================= -->

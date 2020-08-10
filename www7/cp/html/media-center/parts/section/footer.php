@@ -20,6 +20,8 @@
 
 	<!-- when global nosubform disable subscribe form -->
     <phpdac>frontpage.nvldac2 use nosubform++frontpage.include_part:/parts/widgets/footer/subscribe-form.php|||media-center</phpdac>
+	
+	<phpdac>cmsrt.included use /parts/message-footer</phpdac>
 
     <div class="link-list-row">
         <div class="container no-padding">
@@ -37,6 +39,7 @@
         <div class="container">
             <div class="col-xs-12 col-sm-6 no-margin">
                 <div class="copyright"> 
+				    <!-- <phpdac>shtags.pageTags use 2</phpdac>&nbsp; -->
 					&copy; 2016 <a href="<phpdac>cmsrt.get_admin_link use 1</phpdac>"><img alt="e-Enterprise" src="images/icon_cp.png"/></a>
 					<!--hpdac>fronthtmlpage.get_copyright</phpda--> 
 					<!--a href="sitemap.php"><img src="images/sitemap.png" border="0" /></a--> 
