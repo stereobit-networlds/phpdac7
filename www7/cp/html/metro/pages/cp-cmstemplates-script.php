@@ -57,7 +57,8 @@
    <!--common script for all pages-->
    <script src="js/common-scripts.js"></script> 
    
-	<script language="Javascript" type="text/javascript" src="http://www.stereobit.gr/javascripts/edit_area/edit_area_full.js"></script>
+	<!--script language="Javascript" type="text/javascript" src="js/edit_area/edit_area_full.js"></script-->
+	<phpdac>rccmstemplates.editorjs</phpdac>
 	<script language="Javascript" type="text/javascript">
 		// initialisation
 		editAreaLoader.init({

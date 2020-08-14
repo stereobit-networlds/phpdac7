@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="assets/bootstrap-toggle-buttons/static/stylesheets/bootstrap-toggle-buttons.css" />
     <link rel="stylesheet" type="text/css" href="assets/bootstrap-daterangepicker/daterangepicker.css" />
 
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="httpσ://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
 
 
 </head>
@@ -1210,9 +1210,6 @@
        });
 
    </script>
-
-   <phpdac>frontpage.include_part use /parts/google-analytics.php+++meteor</phpdac>
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
 
 </body>
 <!-- END BODY -->

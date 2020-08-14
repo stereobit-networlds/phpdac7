@@ -17,7 +17,6 @@
    <link href="css/style-responsive.css" rel="stylesheet" />
    <link href="css/style-default.css" rel="stylesheet" id="style_color" /> 
 
-   <!--hpdac>fronthtmlpage.nvl use rccrmforms.ckeditver+<script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script>+<script type="text/javascript" src="assets/ckeditor/ckeditor.js">+3</phpda-->    
    <phpdac>rccrmforms.ckjavascript</phpdac>
    
    <meta name="sessionkey" content="<phpdac>pcntl.getmyRSAPublicKey</phpdac>">

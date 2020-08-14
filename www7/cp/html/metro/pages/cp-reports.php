@@ -26,7 +26,6 @@
 	<script src="../javascripts/jqgrid/js/jquery.jqGrid.min.js"></script>
 	<script src="../javascripts/themes/jquery-ui.custom.min.js"></script>    
    	
-	<!--script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script-->
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->

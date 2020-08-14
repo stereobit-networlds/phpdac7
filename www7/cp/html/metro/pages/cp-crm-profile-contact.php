@@ -272,10 +272,7 @@
    <!-- END JAVASCRIPTS --> 
    <script>
 	function vdetails() {var str = arguments[0]; if (str) $('#crmdetails').load("cpcrmtrace.php?t=cpcrmdataprofile&id="+str);}
-   </script>      
-   
-   <phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
+   </script>          
 </body>
 <!-- END BODY -->
 </html>

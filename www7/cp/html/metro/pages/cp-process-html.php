@@ -55,7 +55,7 @@
    <!--common script for all pages-->
    <script src="js/common-scripts.js"></script>
    
-	<script language="Javascript" type="text/javascript" src="https://www.stereobit.gr/javascripts/edit_area/edit_area_full.js"></script>
+	<script language="Javascript" type="text/javascript" src="js/edit_area/edit_area_full.js"></script>
 	<script language="Javascript" type="text/javascript">
 		// initialisation
 		editAreaLoader.init({

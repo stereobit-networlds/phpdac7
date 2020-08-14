@@ -96,9 +96,7 @@
    <script>
    function viewform() { var str = arguments[0];  sndReqArg('cpform.php?t=cpviewframe&id='+str,'vform');}
    </script>
-   <!-- END JAVASCRIPTS --> 
-	<phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
+   <!-- END JAVASCRIPTS -->  
 </body>
 <!-- END BODY -->
 </html>

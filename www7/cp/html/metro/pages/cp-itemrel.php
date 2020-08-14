@@ -26,7 +26,7 @@
 	<script src="../javascripts/jqgrid/js/jquery.jqGrid.min.js"></script>
 	<script src="../javascripts/themes/jquery-ui.custom.min.js"></script>    
    	
-	<script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script>
+	<script src="https://www.stereobit.gr/ckeditor/ckeditor.js"></script>
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
@@ -101,8 +101,6 @@
 	function relatecat() {var str = arguments[0]; $('#relcat').load("cpitemrel.php?t=cploadrelf&item="+str);}
 	function relateitm() {var str = arguments[0]; $('#relcat').load("cpitemrel.php?t=cploadrelf&id="+str);}
    </script>
-	<phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
 </body>
 <!-- END BODY -->
 </html>

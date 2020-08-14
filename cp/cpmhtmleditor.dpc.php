@@ -1222,9 +1222,11 @@ class cpmhtmleditor {
 			$lcat = $rec[7] ? $rec[6].'-&gt'.$rec[7] : ($rec[6] ? $rec[5].'-&gt'.$rec[6] : ($rec[5] ? $rec[4].'-&gt'.$rec[5] :($rec[4] ? $rec[4] : null)));	
 			
 			$aret[] = "<option value='$cat'>$lcat</option>";
+			
+		    $ret = array_unique($aret); 
+			return (implode('',$ret));	
 		}	
-        $ret = array_unique($aret); 
-		return (implode('',$ret));	
+		return null;
 	}	
 	
 	public function getCategories() {

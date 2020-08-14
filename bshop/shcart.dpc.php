@@ -215,12 +215,15 @@ class shcart extends storebuffer {
 	static $staticpath, $myf_button_class, $myf_button_submit_class;	
 	
 	var $process, $_NOTAVAL;
+	var $shclass;
 	
     public function __construct($p=null) {
 		$UserName = GetGlobal('UserName');
 		$UserSecID = GetGlobal('UserSecID');	
 		$this->userLevelID = (((decode($UserSecID))) ? (decode($UserSecID)) : 0);		
 		$this->user = decode($UserName);
+		
+		$this->shclass = defined('SHKATALOGMEDIA_DPC') ? 'shkatalogmedia' : 'shkatalog';		
 		
 		//cookie store id
 	    $this->cusrid = md5($_SERVER['REMOTE_ADDR']); //$this->user ? md5($this->user) : md5($_SERVER['REMOTE_ADDR']);	
@@ -391,6 +394,7 @@ class shcart extends storebuffer {
 	}	
 
     public function event($event) {
+		global $pushTokens;
 
 		switch ($event) {
 			case "cartguestreg"  :  die($this->guestRegistration()); 
@@ -423,9 +427,20 @@ class shcart extends storebuffer {
 									$this->jsBrowser();
 			                        break;									
 			
-			case "addtocart"     : 	$p = $this->addtocart();
+			case "addtocart"     : 	if ($pushTokens) {
+										
+										$this->apiCartAdd(GetReq('id'));
+										
+										//$tokens[0] = array('itmname'=>'default page','itmurl'=>'.','itmdescr'=>'default description','price'=>'0');
+										$tokens = array();
+										$this->loopcartTokens($tokens);
+										_m('cmsrt.pushTokens use ' . bin2hex(bzcompress(json_encode($tokens, 9))));
+										break;
+									}
+									//else
+									$p = $this->addtocart();
 			
-									$this->jsDialog($this->replace_cartchars($p[1],true), localize('_BLN1', $this->lan));
+									$this->jsDialog($p, localize('_BLN1', $this->lan));
 									$this->js_storeCart();
 									
 									$this->jsBrowser();
@@ -433,11 +448,24 @@ class shcart extends storebuffer {
 									//$this->analytics('cartadd'); //moved to shkatalog
 									break;					 	
 									
-			case "removefromcart": 	$p = $this->remove(); 
+			case "removefromcart": 	if ($pushTokens) {
+										
+										$this->apiCartRemove(GetReq('id'));
+										SetSessionParam('cartstatus',0); 
+										$this->status = 0;
+										
+										//$tokens[0] = array('itmname'=>'default page','itmurl'=>'.','itmdescr'=>'default description','price'=>'0');
+										$tokens = array();
+										$this->loopcartTokens($tokens);
+										_m('cmsrt.pushTokens use ' . bin2hex(bzcompress(json_encode($tokens, 9))));
+										break;
+									}
+									//else
+									$p = $this->remove(); 
 									SetSessionParam('cartstatus',0); 
 									$this->status = 0;
-
-									$this->jsDialog($this->replace_cartchars($p[1],true), localize('_BLN2', $this->lan));	
+									
+									$this->jsDialog($p, localize('_BLN2', $this->lan));	
 									$this->js_storeCart();
 									
 									$this->jsBrowser();
@@ -445,9 +473,23 @@ class shcart extends storebuffer {
 									//$this->analytics('cartrem'); //moved to shkatalog
 									break;
 									
-			case "clearcart"     : 	$this->clear(); 
+			case "clearcart"     : 	if ($pushTokens) {
+										
+										$this->apiCartClear();
+										SetSessionParam('cartstatus',0); 
+										$this->status = 0;	
+										
+										//$tokens[0] = array('itmname'=>'default page','itmurl'=>'.','itmdescr'=>'default description','price'=>'0');
+										$tokens = array();
+										$this->loopcartTokens($tokens);
+										_m('cmsrt.pushTokens use ' . bin2hex(bzcompress(json_encode($tokens, 9))));
+										break;
+									}
+									//else
+										
+									$this->clear(); 
 									SetSessionParam('cartstatus',0); 
-									$this->status = 0;
+									$this->status = 0;			
 
 									$this->jsDialog(localize('_BLN3', $this->lan), localize('_CART', $this->lan));	
 									//$this->js_cleanCart(); //moved to clear()
@@ -584,7 +626,15 @@ class shcart extends storebuffer {
 									$this->jsBrowser();
 									$this->fbjs();
 			case 'viewcart'      :						  
-			default              : 	$this->loopcartdata = $this->loopcart();
+			default              : 	if ($pushTokens) {
+										//$tokens[0] = array('itmname'=>'default page','itmurl'=>'.','itmdescr'=>'default description','price'=>'0');
+										$tokens = array();
+										$this->loopcartTokens($tokens);
+										_m('cmsrt.pushTokens use ' . bin2hex(bzcompress(json_encode($tokens, 9))));
+										break;
+									}
+			
+									$this->loopcartdata = $this->loopcart();
 									$this->looptotals = $this->foot();
 									
 									$this->jsBrowser();
@@ -594,6 +644,7 @@ class shcart extends storebuffer {
     }
 
     public function action($act=null) {	
+		global $pushTokens, $_tokens;
 
 		switch ($act) {
 			case "cartguestreg" :   break;
@@ -612,20 +663,25 @@ class shcart extends storebuffer {
 			case 'searchtopic'	:	//handler from shkatalog
 									break;
 			case 'addtocart'  	:   
-			case 'removefromcart': 	break;							
+			case 'removefromcart': 	
+									if ($pushTokens) return json_encode($_tokens);
+									break;							
 		 
 			case "cartcustselect": 
 			case "fastpick" 	:	//$out = $this->fastpick ? localize('_FASTPICKON',$this->lan) : localize('_FASTPICKOFF',$this->lan);
 									$out .= $this->cartview();
 									break;
 		    case 'viewcart'     :      
-			default          	:	$out = $this->todo ? $this->todolist() : $this->cartview();
+			default          	:	if ($pushTokens) return json_encode($_tokens);
+			
+									$out = $this->todo ? $this->todolist() : $this->cartview();
         }
 
 	    return ($out);
     }
 	
 	protected function fbjs() {
+		if (!defined('JAVASCRIPT_DPC')) return ;
 		
 		if (_m('cms.paramload use CMS+fbLogMode')==1) {
 			
@@ -644,6 +700,7 @@ class shcart extends storebuffer {
 	
 	//called by shusers.dologin
 	public function jsBrowser() {
+		if (!defined('JAVASCRIPT_DPC')) return ;
 
 		switch ($this->status) {
 			case 3      :   $code = $this->jsStatus3(); break;
@@ -909,7 +966,7 @@ function addtocart(id,cartdetails)
 	
 	protected function javascript() {
 
-		if (iniload('JAVASCRIPT')) {
+		if (defined('JAVASCRIPT_DPC')) {
 			
 			$code = $this->js_addtocart();	
 			
@@ -941,6 +998,8 @@ function addtocart(id,cartdetails)
 				$out .= "cc('pcart','',-1);"; //remove
 			}	
 		
+			if (!defined('JAVASCRIPT_DPC')) return false;		
+			
 			$js = new jscript;	
 			$js->load_js($out,"",1);			   
 			unset ($js);
@@ -962,6 +1021,8 @@ function addtocart(id,cartdetails)
 			$out = "	
 	cc('pcart','',-1);
 ";	
+			if (!defined('JAVASCRIPT_DPC')) return false;
+			
 			$js = new jscript;	
 			$js->load_js($out,"",1);			   
 			unset ($js);
@@ -972,9 +1033,11 @@ function addtocart(id,cartdetails)
 	}	
 	
 	public function jsDialog($text=null, $title=null, $time=null, $source=null) {
-	   $stay = $time ? $time : 3000;//2000;
+		if (!defined('JAVASCRIPT_DPC')) return ;
+		
+	    $stay = $time ? $time : 3000;//2000;
 	   
-       if (defined('JSDIALOGSTREAM_DPC')) {
+        if (defined('JSDIALOGSTREAM_DPC')) {
 	   
 			if ($text)	
 				$code = _m("jsdialogstream.say use $text+$title+$source+$stay");
@@ -984,7 +1047,7 @@ function addtocart(id,cartdetails)
 			$js = new jscript;	
 			$js->load_js($code,null,1);		
 			unset ($js);
-	   }	
+	    }	
 	}
 
 	//redirection when blank spaces exist when redir (headers sent)
@@ -1090,13 +1153,50 @@ function addtocart(id,cartdetails)
 
 	public function addtocart($item=null,$qty=null) {
 		$a = $item ? $item : GetReq('a');
-		$params = explode(";",$a);	
+		//$params = explode(";",$a);	
+
+		//make params
+		$_qty = $qty ? $qty : GetReq('qty'); 
+		$cat = GetReq('cat');
+		$page = 0;
+	
+		$db = GetGlobal('db');
+		$_code = _v($this->shclass . '.fcode');
+		
+		$sSQL = "select itmname,price0,price1 from products  WHERE $_code ='" . $a . "'";	  
+		$result = $db->Execute($sSQL,2);		
+		//echo $sSQL,'>', $result->fields['itmname'];
+		if ($title = $result->fields['itmname']) {	
+			//echo $title;
+			$pp = _m($this->shclass . '.read_policy'); 	
+		    $price = $result->fields[$pp];
+			$priceqty = _m($this->shclass . ".read_qty_policy use ". $a.'+'.$price."++".$_qty);
+			
+			//$aparam = "{$item};{$title};;;{$cat};{$page};;{$item};{$price};1";
+			//$params = explode(";", $aparam);
+			$params = array(0=>$a, 
+							1=>$this->replace_cartchars($title),
+							2=>'',
+							3=>'',
+							4=>$cat,
+							5=>$page,
+							6=>'',
+							7=>$a,
+							8=>$priceqty,
+							9=>1,
+							10=>'',
+							11=>'',							
+							12=>'',
+							13=>'',								
+							14=>'',							
+							);	
+							
 	   
 		//in case of browsing pages after addtocart procedure
 		//url continues to execute addtocart (as friend cmd) without $a
 		//..poping allways javascript alert(stock_message)
 		//so check if param a exist to proceed.
-		if ($a!='') {//echo $a,'>';
+		//if ($a!='') {//echo $a,'>';
 			if ($this->getcartCount() < $this->maxcart) { //check cart maximum items
 
 				$this->qty_total+=1;
@@ -1115,7 +1215,7 @@ function addtocart(id,cartdetails)
 				//$preqty=$qty?$qty:(GetReq('qty')?GetReq('qty'):1);//1; //default qty when qty form not show
 			  
 				//preqty filed takes place when exist  
-				$preqty = GetParam("PRESELQTY") ? GetParam("PRESELQTY") : ($qty ? $qty : (GetReq('qty')?GetReq('qty'):1));  
+				$preqty = GetParam("PRESELQTY") ? GetParam("PRESELQTY") : ($_qty ? $_qty : 1);  
               
 				if ((is_number($preqty)) && ($preqty>0)) {
 					//echo $a;
@@ -1170,25 +1270,34 @@ function addtocart(id,cartdetails)
 
 				if ($user = $this->user)
 					$this->update_statistics('cart-add', $user);
+				
+				$this->quick_recalculate();//re-update prices and totals 
+			
+				return ($title); //js baloon				
 			}
 			else
-				setInfo(localize('_MSG15',$this->lan));
+				return localize('_MSG15',$this->lan);
+			
 		}//if $a
 		 
-		$this->quick_recalculate();//re-update prices and totals
-		 
-		return ($params); 
+		return false; 
 	}
 	
-	public function remove($id=null) {
-        $myid = $id ? explode(';', $id) : explode(';', GetReq('a'));
+	public function remove($id=null,$qty=null) {
+        //$myid = $id ? explode(';', $id) : explode(';', GetReq('a'));
+		$myid = $id ? $id : GetReq('a');
+		$_qty = $qty ? $qty : GetReq('qty'); //todo qty param -
+		$ret = null;
 
+		//print_r($this->buffer);
         reset ($this->buffer);           
         foreach ($this->buffer as $buffer_num => $buffer_data) {		
 			
-		   $param = explode(";",$buffer_data);
-		   
-           if ($param[0] == $myid[0]) {
+		    $param = explode(";",$buffer_data);
+			$title = $this->replace_cartchars($param[1], true);
+			
+            //if ($param[0] == $myid[0]) {
+			if ($param[0] == $myid) {   
 	             $this->qty_total-=$param[9];
 			     SetSessionParam('qty_total',$this->qty_total);	
 				 
@@ -1196,17 +1305,23 @@ function addtocart(id,cartdetails)
 			     SetSessionParam('total',$this->total);					 	   
 		    
                  $this->buffer[$buffer_num] = "x";  
+				 $ret = $title; //js baloon
                  break;
-           }                                   
-        }                    
-		$this->setStore();
+            }                                   
+        }
+
+		if ($ret) {	
+			$this->setStore();
 		
-		if ($user = $this->user)
-			$this->update_statistics('cart-remove', $user);
+			if ($user = $this->user)
+				$this->update_statistics('cart-remove', $user);
 		
- 	    $this->quick_recalculate();	//re-update prices and totals	
+			$this->quick_recalculate();	//re-update prices and totals	
 		
-		return ($myid);
+			return ($ret);
+		}
+		
+		return false;
 	}
 
     public function isin($id) {
@@ -1532,7 +1647,7 @@ function addtocart(id,cartdetails)
 		$this->overitem = null;
 		$jcode = null;
 	   
-		$p_returned = _m('shkatalogmedia.update_prices use '.serialize($this->buffer));
+		$p_returned = _m($this->shclass . '.update_prices use '.serialize($this->buffer));
 	   
 		$this->read_policy();	   
 	   
@@ -1561,7 +1676,7 @@ function addtocart(id,cartdetails)
 				//new prices when updated from db (live)
 				if (is_array($p_returned) && isset($p_returned[$param[0]])) {
 					
-					$ap_price = _m("shkatalogmedia.read_qty_policy use ". $param[0].'+'.$p_returned[$param[0]]."++".$selectedqty);			 		   			 
+					$ap_price = _m($this->shclass . ".read_qty_policy use ". $param[0].'+'.$p_returned[$param[0]]."++".$selectedqty);			 		   			 
 					$param[8] = $ap_price?$ap_price:$p_returned[$param[0]];		 
 				}
 				$p = floatval(str_replace(',','.',$param[8]));
@@ -1668,8 +1783,8 @@ function addtocart(id,cartdetails)
 		$param = explode(";",$id);
 
 		$page = $param[5];
-		$gr = $param[4]; //$group;
-		$ar = $id;
+		$gr = $param[4]; 
+		$ar = $param[0]; //$id;
 
 		$price = $param[8]; 
 		$ypoA = $param[14];
@@ -1679,10 +1794,13 @@ function addtocart(id,cartdetails)
 			if (!($this->isin($param[0]))) {
 
 				if ($this->bypass_qty) { //echo 'bypass_qty';
-					$myaction = "addcart/$ar/$gr/$page/";
+					$ml = "addcart/$ar/";
+					$ml.= $gr ? "$gr/" : null;
+					$ml.= $page ? "$page/" : null;
+					$ml.= $myqty ? "$myqty/" : null;					
 
 					$out = "<form method=\"POST\" action=\"";
-					$out .= "$myaction";
+					$out .= $ml;
 					$out .= "\" name=\"PreSelectQty\">";
 					$out .= $this->setquantity('PRESELQTY',1);
 
@@ -1692,19 +1810,29 @@ function addtocart(id,cartdetails)
 					$out .= $this->submit_qty_button;
 					$out .= "</form>";
 				}
-				else
-					$ml = "addcart/$ar/$gr/$page/$myqty/";
+				else {
+					$ml = "addcart/$ar/";
+					$ml.= $gr ? "$gr/" : null;
+					$ml.= $page ? "$page/" : null;
+					$ml.= $myqty ? "$myqty/" : null;						
+				}	
 				
 				$out = $this->myf_button(localize('_INCART',$this->lan),$ml,'_INCART');
 			}
 			else {
 		   
 				if (($this->notallowremove)&&(!$allowremove)) {//add again 		   	 		   
-					$ml = "addcart/$ar/$gr/$page/$myqty/";			 
+					$ml = "addcart/$ar/";
+					$ml.= $gr ? "$gr/" : null;
+					$ml.= $page ? "$page/" : null;
+					$ml.= $myqty ? "$myqty/" : null;			 
 					$out = $this->myf_button(localize('_INCART',$this->lan),$ml,'_INCART');
 				}	 
 				else {//remove 		   	 		   
-					$mr = "remcart/$ar/$gr/$page/";
+					$mr = "remcart/$ar/";
+					$mr.= $gr ? "$gr/" : null;
+					$mr.= $page ? "$page/" : null;
+					$mr.= $myqty ? "$myqty/" : null;						
 
 					$out = $this->removeitemclass ? 
 							"<a class='{$this->removeitemclass}' href='$mr'></a>" :
@@ -1719,7 +1847,10 @@ function addtocart(id,cartdetails)
 				$out = $this->myf_button($this->_NOTAVAL,_m('cmsrt.php_self use 1') . '#notavailable','_NOTAVAL');
 			
 			if ($allowremove) {
-				$mr = "remcart/$ar/$gr/$page/";
+				$mr = "remcart/$ar/";
+				$mr.= $gr ? "$gr/" : null;
+				$mr.= $page ? "$page/" : null;
+				$mr.= $myqty ? "$myqty/" : null;				
 
 				$out .= $this->removeitemclass ? 
 						"<a class='{$this->removeitemclass}' href='$mr'></a>" :
@@ -1912,7 +2043,7 @@ function addtocart(id,cartdetails)
 				$utitle = $this->replace_cartchars($item, true);				
 				$link = _m("cmsrt.url use t=$command&cat=$cat&id=" . $param[0] ."+" . $utitle); 
 			   
-				$itemphoto = _m("shkatalogmedia.get_photo_url use ".$param[7].'+1');
+				$itemphoto = _m($this->shclass . ".get_photo_url use ".$param[7].'+1');
 				$linkimage = seturl("t=$command&cat=$cat&id=".$param[0], "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);
 				
 				$data[] = ($this->status==0) ? $linkimage : $aa; // . "&nbsp;" . $param[0];
@@ -1960,6 +2091,84 @@ function addtocart(id,cartdetails)
 	   	   
 	    return ($loopout);  	 	
 	}
+	
+	//tokens-api version / return tokens as var
+	protected function loopcartTokens(&$tokens) {
+	    if (empty($this->buffer)) return;
+		/*
+		$command = $this->itemclick ? $this->itemclick : GetReq('t');
+		$status = $this->status ? strval($this->status) : '0';
+		$ix = $this->imagex ? $this->imagex : 100;
+	    $iy = $this->imagey ? $this->imagey : null; 
+	    $ixw = $ix ? "width=".$ix : "width=".$ix;
+	    $iyh = $iy ? "height=".$iy :null; //empty y=free dim	   
+	   
+		$myloopcarttemplate = _m('cmsrt.select_template use shcartline'); //.php file, code inside
+	    */
+        reset ($this->buffer);
+		
+		$this->cartsumitems = 0;
+	    $this->qty_total = 0;
+	    $this->total = 0;	
+	
+        foreach ($this->buffer as $prod_id => $product) {
+
+		    if (($product) && ($product!='x')) {
+				$aa+=1;
+				$param = explode(";",$product); 
+				$cat = $param[4];
+				$item = $param[1];
+				$utitle = $this->replace_cartchars($item, true);				
+				$link = _m("cmsrt.url use t=$command&cat=$cat&id=" . $param[0] ."+" . $utitle); 
+			   
+				$itemphoto = _m($this->shclass . ".get_photo_url use ".$param[7].'+1');
+				$linkimage = seturl("t=$command&cat=$cat&id=".$param[0], "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);
+				
+				$data['cartstatus'] = ($this->status==0) ? '0' : $this->status; //$linkimage : $aa; 
+
+				$details = null;//$this->cartlinedetails ? ($param[6] ? '&nbsp;' . $this->replace_cartchars($param[6], true) : null) : null;	 
+				
+				switch ($this->status) {
+					case 3  :  
+					case 2  : 
+					case 1  :	 //$data['itmcarturldetails'] = $utitle . $details; break; //$param[0] . "&nbsp;" . 				   
+					case 0  : 
+					default :	 $data['itmcarturldetails'] = $link . $details;  break; //$param[0] . "<br/>" . 					
+				}
+
+				$data['itmcartremove'] = ($this->status) ? null : $this->showsymbol($product,1);//<<allow remove here
+
+				$price = floatval(str_replace(",",".",$param[8]));
+				$sumtotal = ($param[9] * $price);
+				$this->qty_total += $param[9];	 
+				$this->total += $sumtotal;
+			   
+				$data['itmcartprice'] = number_format($price,$this->dec_num,',','.');// . $this->moneysymbol;
+
+				$options = $this->setquantity("Product$aa",$param[9]);
+				if (($this->uniname2) && ($param[11]))
+					$options .= $this->setuniname("Uniname$aa",$param[10],$param[10],$param[11]);
+				$data['itmcartuni'] = $options;
+
+				$data['itmcarttotal'] = $this->settotal("Product$aa",$price,$param[9]);// . $this->moneysymbol;
+				
+				$data['itmcarturl'] = _m("cmsrt.url use t=$command&cat=$cat&id=" . $param[0]);
+				$data['itmcartname'] = $utitle;
+				$data['itmcartphoto'] = $itemphoto;
+				$data['itmcartcode'] = $param[0];
+				$data['itmcartcode'] = $aa;
+               
+			    //$loopout .= $this->combine_tokens($myloopcarttemplate,$data,true);
+				$tokens[] = $data;
+				  
+	            unset ($data);
+		        unset ($param);
+		    }
+			$this->cartsumitems = $aa; //sum of cart items
+	    }
+	   	   
+	    //return ($loopout);  	 	
+	}	
 	
     protected function setuniname($id,$uni,$uA=null,$uB=null) {
 		$uniname = $id ;
@@ -2111,20 +2320,21 @@ function addtocart(id,cartdetails)
 					$param = explode(";",$product); 
 					$cat = $param[4];
 					$item = $param[1];
+					$qty = $param[9];
 					$utitle = $this->replace_cartchars($item, true);
 					
 					//$addButton = $this->showsymbol($product,$param[4],$param[5],1);//<<allow remove here
-					$addButton = $this->showsymbol($product,1);//<<allow remove here
+					$addButton = $this->showsymbol($product,0,$qty);
 					$link = _m("cmsrt.url use t=$pview&cat=$cat&id=" . $param[0] ."+" . $utitle); 
 			   
-					$itemphoto = _m("shkatalogmedia.get_photo_url use ".$param[7].'+1');
+					$itemphoto = _m($this->shclass . ".get_photo_url use ".$param[7].'+1');
 					$linkimage = seturl("t=$pview&cat=$cat&id=".$param[0], "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);	   
 					$data[] = $linkimage;
 
 					$details = $this->cartlinedetails ? ($param[6] ? '&nbsp;' . $this->replace_cartchars($param[6], true) : null) : null;					
 					$data[] = $link . $details; //$param[0] . "<br/>" . 
 					$data[] = $addButton;
-                    $data[] = $param[9]; //qty
+                    $data[] = $qty;
 					
 					$price = floatval(str_replace(",",".",$param[8]));
 					$data[] = number_format($price,$this->dec_num,',','.') . $this->moneysymbol;					
@@ -3029,7 +3239,7 @@ function addtocart(id,cartdetails)
 					$sum = floatval($param[8])*floatval($param[9]);//$param[11];
 					$toks[] = number_format($sum,$this->dec_num,',','.') . $this->moneysymbol;
 					
-					$toks[] = _m("shkatalogmedia.get_photo_url use ".$id.'+1');
+					$toks[] = _m($this->shclass . ".get_photo_url use ".$id.'+1');
 			   
 					if ($ret_tokens) 
 						return $toks;	 
@@ -3046,7 +3256,7 @@ function addtocart(id,cartdetails)
 
     protected function quick_recalculate() {
 
-		$p_returned = _m('shkatalogmedia.update_prices use '.serialize($this->buffer));	
+		$p_returned = _m($this->shclass . '.update_prices use '.serialize($this->buffer));	
 	   
 	    $this->read_policy();		   
 	   
@@ -3069,7 +3279,7 @@ function addtocart(id,cartdetails)
 				//new prices when updated from db (live)
 				if (is_array($p_returned) && isset($p_returned[$param[0]])) {
 
-					$ap_price = _m("shkatalogmedia.read_qty_policy use ". $param[0].'+'.$p_returned[$param[0]]."++".$selectedqty);			 		   			 			 		   
+					$ap_price = _m($this->shclass . ".read_qty_policy use ". $param[0].'+'.$p_returned[$param[0]]."++".$selectedqty);			 		   			 			 		   
 					$param[8] = $ap_price ? $ap_price : $p_returned[$param[0]];
 				}		   
 		   
@@ -3552,7 +3762,7 @@ function addtocart(id,cartdetails)
 					$itemdescr = $this->replace_cartchars($param[1], true);
 					$id = $param[0];
 
-					$points = _m("shkatalogmedia.read_point_policy use ". $id); 
+					$points = _m($this->shclass . ".read_point_policy use ". $id); 
 		            if (!$points) continue;					
 					
 					$sSQL = "insert into custpoints (active,ccode,item,source,notes,points) values (1,'$user','$id','$trid','$itemdescr',$points)";					
@@ -3609,7 +3819,7 @@ function addtocart(id,cartdetails)
 					$itemdescr = $this->replace_cartchars($param[1], true);
 					$id = $param[0];
 
-					$points = _m("shkatalogmedia.read_point_policy use ". $id); 
+					$points = _m($this->shclass . ".read_point_policy use ". $id); 
 		            if (!$points) continue;					
 					
 					$toks[] = $prod_id+1;
@@ -3621,7 +3831,7 @@ function addtocart(id,cartdetails)
 					$sum = ($points * $param[9]);
 					$toks[] = $sum;
 					
-					$toks[] = _m("shkatalogmedia.get_photo_url use ".$id.'+1');
+					$toks[] = _m($this->shclass . ".get_photo_url use ".$id.'+1');
 			   
 					if ($ret_tokens) 
 						return $toks;	 
@@ -3977,7 +4187,7 @@ function addtocart(id,cartdetails)
 	  
 		if (!empty($itemscodes)) {
 	   
-			$weights = _m('shkatalogmedia.read_item_weight use '.implode(';',$itemscodes));	
+			$weights = _m($this->shclass . '.read_item_weight use '.implode(';',$itemscodes));	
 
 			//print_r($tempbuffer); print_r($weights);
 			foreach ($tempbuffer as $code=>$qty) {
@@ -4029,7 +4239,7 @@ function addtocart(id,cartdetails)
 			foreach ($res as $n=>$rec) {
 				
 				$prodID = $rec['pid'];
-				$tokens = (array) _m('shkatalogmedia.fetchProductTokens use '. $prodID);
+				$tokens = (array) _m($this->shclass . '.fetchProductTokens use '. $prodID);
 				
 				//override tokens
 				$tokens[13] = $rec['qty']; //qty
@@ -4048,7 +4258,7 @@ function addtocart(id,cartdetails)
 				
 					$toks = explode(';', $product);
 					$prodID = $toks[0]; //item code
-					$tokens = (array) _m('shkatalogmedia.fetchProductTokens use '. $prodID);
+					$tokens = (array) _m($this->shclass . '.fetchProductTokens use '. $prodID);
 					
 					$items[] = $this->combine_tokens($mytemplate, $tokens, true);
 					unset($tokens);
@@ -4071,7 +4281,7 @@ function addtocart(id,cartdetails)
 
 			foreach ($res as $n=>$rec) {
 				$prodID = $rec['pid'];
-				$tokens[] = (array) _m('shkatalogmedia.fetchProductTokens use '. $prodID);
+				$tokens[] = (array) _m($this->shclass . '.fetchProductTokens use '. $prodID);
 			}	
 		}		
 		else { // current cart data
@@ -4080,7 +4290,7 @@ function addtocart(id,cartdetails)
 				
 					$toks = explode(';', $product);
 					$prodID = $toks[0]; //item code
-					$tokens[] = (array) _m('shkatalogmedia.fetchProductTokens use '. $prodID);
+					$tokens[] = (array) _m($this->shclass . '.fetchProductTokens use '. $prodID);
 				}	
 			}
 		}
@@ -4597,6 +4807,207 @@ function addtocart(id,cartdetails)
 		
 		return ($ret);
 	}		
+	
+	
+	/*********************** API *********************************/
+	
+	public function apiCartClear() {
+		$this->clear();
+		
+		return true;
+	}	
+	
+	public function apiCartAdd($item,$qty=null) {
+		if (!$item) return false;	
+		
+		//make params
+		$_qty = $qty ? $qty : GetReq('qty');
+		$cat = GetReq('cat');
+		$page = 0;
+		
+		$db = GetGlobal('db');
+		$_code = _v($this->shclass . '.fcode');
+	  	  
+		$sSQL = "select itmname,price0,price1 from products  WHERE $_code ='" . $item . "'";	  
+		$result = $db->Execute($sSQL,2);		
+		//echo $sSQL,'>', $result->fields['itmname'];
+		if ($title = $result->fields['itmname']) {	
+			//echo $title;
+			$pp = _m($this->shclass . '.read_policy'); 	
+		    $price = $result->fields[$pp];
+			$priceqty = _m($this->shclass . ".read_qty_policy use ". $a.'+'.$price."++".$_qty);
+			
+			$params = array(0=>$item,
+							1=>$this->replace_cartchars($title),
+							2=>'',
+							3=>'',
+							4=>$cat,
+							5=>$page,
+							6=>'',
+							7=>$item,
+							8=>$priceqty,
+							9=>1,
+							10=>'',
+							11=>'',							
+							12=>'',
+							13=>'',								
+							14=>'',								
+							);
+	   
+			if ($this->getcartCount() < $this->maxcart) { //check cart maximum items
+
+				$this->qty_total+=1;
+				SetSessionParam('qty_total',$this->qty_total);
+			
+				$val = floatval(str_replace(',','.',$params[8]));
+				$this->total = $this->total + $val;
+				//echo '>',strval($params[8]),'+',$this->total;//,'+';print_r($params);//[8];
+				SetSessionParam('total',$this->total);			
+	   
+				//get selected quantity number
+				$preqty = GetParam("PRESELQTY");
+				$preuni = GetParam("PRESELUNI");
+
+				//preqty filed takes place when exist  
+				$preqty = GetParam("PRESELQTY") ? GetParam("PRESELQTY") : ($_qty ? $_qty : 1);  
+              
+				if ((is_number($preqty)) && ($preqty>0)) {
+					//echo $a;
+					//$params = explode(";",$a); //moved up
+
+					//if isset 2nd mm convert...
+					if (($this->uniname2) && ($preuni==$params[11])) {
+						if ($params[12])
+							$preqty = ($preqty * $params[12]); //2nd mm
+					}
+
+					//check storage
+					if ((!$this->ignoreqtyzero) && ($preqty>$params[14]) && ($this->allowqtyover)) {
+						/*
+						$stockout = ($params[14]-$preqty);
+						$stock_message = $params[0].",".$params[1] . localize('_STOCKOUT',$this->lan) . "(" . $stockout . ")";
+						*/
+						$preqty = $params[14];//set qty= max storage
+					}
+
+					if ($preqty) {
+						$params[9]= $preqty;
+						$b = implode(";",$params);
+						//echo $b;
+						$this->addto($b);
+					}
+				}
+
+				SetSessionParam('cartstatus',0);
+				$this->status = 0;
+				
+				if ($user = $this->user)
+					$this->update_statistics('cart-api-add', $user);
+				
+				return true;
+			}
+
+		}//if itmname
+		 
+		return false; 
+	}
+	
+	public function apiCartRemove($id) {
+        //$myid = $id ? explode(';', $id) : explode(';', GetReq('a'));
+		if (!$id) return null;		
+
+        reset ($this->buffer);           
+        foreach ($this->buffer as $buffer_num => $buffer_data) {		
+			
+		   $param = explode(";",$buffer_data);
+		   
+           if ($param[0] == $id) {
+	             $this->qty_total-=$param[9];
+			     SetSessionParam('qty_total',$this->qty_total);	
+				 
+	             $this->total-=($param[8]*$param[9]);//price * qty
+			     SetSessionParam('total',$this->total);					 	   
+		    
+                 $this->buffer[$buffer_num] = "x";  
+                 break;
+           }                                   
+        }                    
+		$this->setStore();
+		
+		if ($user = $this->user)
+			$this->update_statistics('cart-api-remove', $user);
+		
+ 	    $this->quick_recalculate();	//re-update prices and totals	
+		
+		return ($id);
+	}	
+	
+	public function apiCartRead() {
+	    if (empty($this->buffer)) return;
+
+        reset ($this->buffer);
+		
+		$cartsumitems = 0;
+	    $qty_total = 0;
+	    $total = 0;	
+	
+        foreach ($this->buffer as $prod_id => $product) {
+
+		    if (($product) && ($product!='x')) {
+				$aa+=1;
+				$param = explode(";",$product); 
+				$cat = $param[4];
+				$item = $param[1];
+				$utitle = $this->replace_cartchars($item, true);				
+				$link = _m("cmsrt.url use t=$command&cat=$cat&id=" . $param[0] ."+" . $utitle); 
+			   
+				$itemphoto = _m($this->shclass . ".get_photo_url use ".$param[7].'+1');
+				$linkimage = seturl("t=$command&cat=$cat&id=".$param[0], "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);
+				
+				$data['cartstatus'] = ($this->status==0) ? 0 : $this->status;//$linkimage : $aa; // . "&nbsp;" . $param[0];
+
+				$details = null; //$this->cartlinedetails ? ($param[6] ? '&nbsp;' . $this->replace_cartchars($param[6], true) : null) : null;	 
+				
+				switch ($this->status) {
+					case 3  :  
+					case 2  : 
+					case 1  :	 //$data['itmcarturldetails'] = $utitle . $details; break; //$param[0] . "&nbsp;" . 				   
+					case 0  : 
+					default :	 $data['itmcarturldetails'] = $link . $details;  break; //$param[0] . "<br/>" . 					
+				}
+
+				$data['itmcartremove'] = ($this->status) ? null : $this->showsymbol($product,1);//<<allow remove here
+
+				$price = floatval(str_replace(",",".",$param[8]));
+				$sumtotal = ($param[9] * $price);
+				$qty_total += $param[9];	 
+				$total += $sumtotal;
+			   
+				$data['itmcartprice'] = number_format($price,$this->dec_num,',','.') . $this->moneysymbol;
+
+				$options = $this->setquantity("Product$aa",$param[9]);
+				if (($this->uniname2) && ($param[11]))
+					$options .= $this->setuniname("Uniname$aa",$param[10],$param[10],$param[11]);
+				$data['itmcartuni'] = $options;
+
+				$data['itmcarttotal'] = $this->settotal("Product$aa",$price,$param[9]) . $this->moneysymbol;
+				
+				$data['itmcarturl'] = _m("cmsrt.url use t=$command&cat=$cat&id=" . $param[0]);
+				$data['itmcarttitle'] = $utitle;
+				$data['itmcartphoto'] = $itemphoto;
+				$data['itmcartcode'] = $param[0];
+				$data['itmcartcode'] = $aa;
+               
+			    $loopout[] = $data; //$this->combine_tokens($myloopcarttemplate,$data,true);
+				  
+	            unset ($data);
+		        unset ($param);
+		    }
+			$cartsumitems = $aa; //sum of cart items
+	    }
+	   	   
+	    return (json_encode($loopout));  	 	
+	}	
 
 };
 }

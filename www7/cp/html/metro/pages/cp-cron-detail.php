@@ -28,7 +28,7 @@
 		function jobcode() {var str = arguments[0]; $('#jobcode').load("cpcron.php?t=cpjobcode&id="+str);}	
     </script>  
    
- 	<script language="Javascript" type="text/javascript" src="http://www.stereobit.gr/javascripts/edit_area/edit_area_full.js"></script>
+ 	<script language="Javascript" type="text/javascript" src="js/edit_area/edit_area_full.js"></script>
 	<script language="Javascript" type="text/javascript">
 		// initialisation
 		editAreaLoader.init({

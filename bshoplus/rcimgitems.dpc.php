@@ -51,6 +51,10 @@ $__LOCALE['RCIMGITEMS_DPC'][32]='_logset;Affect logs;Ενημέρωση αρχε
 $__LOCALE['RCIMGITEMS_DPC'][33]='_logclear;Clear logs;Άδειασμα αρχείων καταγραφής';
 $__LOCALE['RCIMGITEMS_DPC'][34]='_photodb;Add photo in DB;Εισαγωγή εικόνας στη ΒΔ.';
 $__LOCALE['RCIMGITEMS_DPC'][35]='_filter;Filter;Φίλτρο';
+$__LOCALE['RCIMGITEMS_DPC'][36]='_large;Large;Μεγάλες';
+$__LOCALE['RCIMGITEMS_DPC'][37]='_medium;Medium;Μεσαίες';
+$__LOCALE['RCIMGITEMS_DPC'][38]='_small;Small;Μικρές';
+$__LOCALE['RCIMGITEMS_DPC'][39]='_options;Options;Ρυθμίσεις';
 
 class rcimgitems {
 	
@@ -59,6 +63,7 @@ class rcimgitems {
 	
 	var $encodeimageid, $restype, $photodb;
 	var $photoquality, $mixphoto, $erase2db;
+	var $iLimit;
 		
     public function __construct() {
 	  
@@ -77,7 +82,9 @@ class rcimgitems {
 		
 		$this->erase2db = remote_paramload('RCITEMS','erase2db',$this->path);	  
 		$this->mixphoto = remote_paramload('RCITEMS','mixphoto',$this->path);	 
-		$this->photoquality = remote_paramload('RCITEMS','photoquality',$this->path);		
+		$this->photoquality = remote_paramload('RCITEMS','photoquality',$this->path);
+
+		$this->iLimit = 500;	
 	}
 	
     public function event($event=null) {
@@ -267,7 +274,7 @@ class rcimgitems {
 			$x = $_x ? $_x : 1;
 			foreach ($items as $zi=>$rec) {
 				if (($_x) && ($zi < $_x)) continue;
-				if ($x == $_x + 300) {
+				if ($x == $_x + $this->iLimit) { //300
 					file_put_contents($this->prpath . 'edi-img-counter.log', $x);
 					$this->messages[] = '(' . $x . ') Press submit to continue...';
 					//break;
@@ -331,7 +338,7 @@ class rcimgitems {
 			$x = $_x ? $_x : 1;
 			foreach ($items as $zi=>$rec) {
 				if (($_x) && ($zi < $_x)) continue;
-				if ($x == $_x + 300) {
+				if ($x == $_x + $this->iLimit) { //300
 					file_put_contents($this->prpath . 'edi-img-counter.log', $x);
 					$this->messages[] = '(' . $x . ') Press submit to continue...';
 					//break;
@@ -458,13 +465,13 @@ class rcimgitems {
 								 if (GetParam('photodb'))
 									$this->add_photo2db($file,$this->restype,'MEDIUM');
 							   }							   
-							   if ($dim_small = $autoresize[0]) {
+							   /*if ($dim_small = $autoresize[0]) {
                                  $image->resizeToWidth($dim_small);
                                  $image->save($img_small . $myfilename);
 								 //auto add to db
 								 if (GetParam('photodb'))
 									$this->add_photo2db($file,$this->restype,'SMALL');
-                               }
+                               }*/
                                return 1;							   
 							 }
 			                 break;
@@ -481,7 +488,7 @@ class rcimgitems {
 								 if (GetParam('photodb'))
 									$this->add_photo2db($file,$this->restype,'LARGE');
 							   }								   
-							   if ($dim_medium = $autoresize[1]) {
+							   /*if ($dim_medium = $autoresize[1]) {
                                  $image->resizeToWidth($dim_medium);
                                  $image->save($img_medium . $f);	
 								 //auto add to db
@@ -494,7 +501,7 @@ class rcimgitems {
 								 //auto add to db
 								 if (GetParam('photodb'))
 									$this->add_photo2db($file,$this->restype,'SMALL');
-							   }
+							   }*/
                                return 1; 							   
 							 }
 			                 break;

@@ -434,6 +434,8 @@ class rcgroup {
 		//echo $sSQL;	
 	    $resultset = $db->Execute($sSQL,2);	
 		//print_r($resultset);
+		if (empty($resultset)) return null;
+		
 		foreach ($resultset as $n=>$rec) {
 			$ret[] = "<option value='".$rec['id']."'>". $rec[$code].'-'.$rec[$itmname]."</option>" ;
         }		
@@ -464,8 +466,9 @@ class rcgroup {
 
 		//echo $sSQL;	
 	    $resultset = $db->Execute($sSQL,2);	
-		
 		//print_r($resultset);
+		if (empty($resultset)) return null;
+		
 		foreach ($resultset as $n=>$rec) {
 			$ret[] = "<option value='".$rec['id']."'>". $rec[$code].'-'.$rec[$itmname]."</option>" ;
         }		

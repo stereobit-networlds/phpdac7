@@ -144,7 +144,7 @@ class shkategories {
 	
 	public function search_javascript() {
 	
-		if (iniload('JAVASCRIPT')) {
+		if (defined('JAVASCRIPT_DPC')) {
 
 			//$id = remote_paramload('SHKATEGORIES','idsearch',$this->path);	  
 			$code = $this->js_make_search_url();//$id);	
@@ -1482,8 +1482,9 @@ class shkategories {
     }
 	
 	public function replace_spchars($string, $reverse=false) {
+		$pc = null; //$this->replacepolicy; DISABLE POLICY
 		
-		switch ($this->replacepolicy) {	
+		switch ($pc) {	
 			case '_' : 	$ret = $reverse ?  str_replace('_',' ',$string) : str_replace(' ','_',$string); break;
 			case '-' :	 $ret = $reverse ?  str_replace('-',' ',$string) : str_replace(' ','-',$string);break;
 			default  :
@@ -1570,6 +1571,96 @@ class shkategories {
 	    }
 		return ($nret);
 	} 	
+	
+	
+	/*********************** API *********************************/	
+	
+	public function apiCatTree() {
+		
+		//return true;
+		return $this->api_selected_tree($cmd,null,1);
+	}	
+	
+	
+	public function apiCatList($cmd,$group=null) {
+		
+		//return true;
+		return $this->api_selected_tree($cmd,$group,0);	
+	}		
+	
+	//  SHOW SELECTED TREE FUNCTIONS
+	protected function api_selected_branch($id,$line,$t=null,$myselcat=null,$expand=null,$stylesheet=null,$outpoint=null,$br=1,$template=null,$linkclass=null,$linksonly=null,$titlesonly=null,$idsonly=null) {
+		if (!$id) return null;		
+  
+		if (trim($myselcat)!=null) {
+		    $folder = $myselcat . $this->cseparator . $id; 
+		    $gr = $this->replace_spchars($myselcat . $this->cseparator . $id);			   
+		}	
+		else {
+		    $folder = $id;
+		    $gr = $this->replace_spchars($id);
+		}	
+
+		//$out[$id] =  $this->catUrl($gr, $t);
+		//return $this->catUrl($gr, $t); 	 
+		
+		return array('id'=>$this->replace_spchars($id),
+					'title'=>$line,
+					'url'=>$this->catUrl($gr, $t),
+					'urlx'=>$gr,
+					);
+	}
+	
+    public function api_selected_tree($cmd=null,$group=null,$showroot=null,$expand=null,$viewlevel=null,$stylesheet=null,$outpoint=null,$br=1,$template=null,$linkclass=null,$linksonly=null,$titlesonly=null,$idsonly=null) {
+		$mystylesheet = $stylesheet ? $stylesheet : 'group_category_title';	
+		$myselcat = $group ? $group : GetReq('cat'); 	  
+
+		static $cd = -1;
+		$wordlength = 19;//for calldpc purposes
+		$t = $cmd ? $cmd : $this->klistcmd;
+
+		$ptree = explode($this->cseparator,$myselcat); 
+			  
+		if ($viewlevel) {
+			$depth = count($ptree);//-1 echo 'DEPTH:',$depth;
+			//echo $cat;    
+			if ($depth>$viewlevel) {
+				foreach ($ptree as $p=>$pt) {
+					if ($p<$viewlevel) 
+						$pv[] = $pt;
+				}	
+				$myselcat = implode($this->cseparator,$pv);
+			}
+		}
+		    
+		if ($showroot) 
+			$ddir = $this->read_tree(null,null,1);
+		elseif ($myselcat) 	
+			$ddir = $this->read_tree($myselcat,null,1);	
+		
+		$i=0;	 
+		if ($ddir)  {	   
+			reset($ddir);
+			//print_r($ddir);
+			foreach ($ddir as $id => $line) {		  
+				
+				$out[$i] = ($showroot) ? 
+						$this->api_selected_branch($id,$line,$t,null,$expand,$mystylesheet,$outpoint,$br,$template,$linkclass,$linksonly,$titlesonly,$idsonly):
+						$this->api_selected_branch($id,$line,$t,$myselcat,$expand,$mystylesheet,$outpoint,$br,$template,$linkclass,$linksonly,$titlesonly,$idsonly);
+				
+				
+				//$out[$line] = $this->api_selected_branch($id,$line,$t,$myselcat,$expand,$mystylesheet,$outpoint,$br,$template,$linkclass,$linksonly,$titlesonly,$idsonly);
+				$i+=1; 
+			}//foreach				
+		}//if ddir
+	    //print_r($out);
+		return ($out);
+		
+		//$ret['categories'] = $out;
+		//print_r($ret);
+		//return ($ret);
+    }
+	//.....  SHOW SELECTED TREE FUNCTIONS		
 };
 }
 ?>

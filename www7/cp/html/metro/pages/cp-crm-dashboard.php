@@ -228,8 +228,6 @@
    <script src="js/home-chartjs.js"></script-->
 	
    <!-- END JAVASCRIPTS --> 
-   
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
 </body>
 <!-- END BODY -->
 </html>

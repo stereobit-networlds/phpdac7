@@ -5,7 +5,7 @@ load_extension adodb refby _ADODB_;
 super database;
 use i18n.i18n;
 include mail.smtpmail;
-include process;
+/include process;
 
 public twig.twigengine;
 public cms.cmsrt;
@@ -21,8 +21,8 @@ public bshop.shwishcmp;
 public bshop.shtags;
 public bshop.shusers;
 public bshop.shcustomers;
-public bshop.shcart->processcart_bcstep0->processcart_bcstep1->processcart_bcstep2->processcart_bcstep3;
-/public bshop.shcart;
+/public bshop.shcart->processcart_bcstep0->processcart_bcstep1->processcart_bcstep2->processcart_bcstep3;
+public bshop.shcart;
 public bshop.shtransactions;
 public jsdialog.jsdialogStream;
 public i18n.i18nL;
@@ -46,7 +46,7 @@ public i18n.i18nL;
 	  
     $mc_page = _m('cmsrt.mcSelectPage use +klist');	
     $headerStyle = ($mc_page=='home') ? 1 : 2;
-    echo $htmlpage->render(null,getlocal(),null,'media-center/index.php');	
+    echo $htmlpage->render(null,getlocal(),true,'media-center/index.php');	
 
 $time = (microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) / 60;
 echo "<!-- local $time -->";

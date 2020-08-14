@@ -84,8 +84,7 @@
    <!--common script for all pages-->
    <script src="js/common-scripts.js"></script>
 
-   <!-- END JAVASCRIPTS --> 
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
+   <!-- END JAVASCRIPTS -->  
 </body>
 <!-- END BODY -->
 </html>

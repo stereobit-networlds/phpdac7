@@ -59,7 +59,7 @@ class rcediimport {
 	
 	var $title, $prpath, $urlpath, $url;
 	var $fields, $etlfields, $messages;
-	var $etlPath, $etlLOG, $i, $now;
+	var $etlPath, $etlLOG, $i, $now, $maxLines;
 		
     public function __construct() {
 	  
@@ -76,10 +76,14 @@ class rcediimport {
 		$this->etlLOG = array('kaisidis'=>array('xml'=>'datamedia-out.xml','csv'=>'datamedia-out.csv','sql'=>'datamedia-out.sql','log'=>'datamedia-out.log'),
 							  'aidonitsa'=>array('xml'=>'aidonitsa-out.xml','csv'=>'aidonitsa-out.csv','sql'=>'aidonitsa-out.sql','log'=>'aidonitsa-out.log'),	
 							  'logicom'=>array('xml'=>'logicom-out.xml','csv'=>'logicom-out.csv','sql'=>'logicom-out.sql','log'=>'logicom-out.log'),
+							  'agc'=>array('xml'=>'agc-out.xml','csv'=>'agc-out.csv','sql'=>'agc-out.sql','log'=>'agc-out.log'),
+							  'tradesor'=>array('xml'=>'tradesor-out.xml','csv'=>'tradesor-out.csv','sql'=>'tradesor-out.sql','log'=>'tradesor-out.log'),
 						);		
 		
 		$this->i = 0;
 		$this->now = date("Y-m-d H:m:s");
+		
+		$this->maxLines = 5000;
 	}
 	
     public function event($event=null) {
@@ -349,36 +353,18 @@ class rcediimport {
 			@unlink($logfile);
 			@unlink($errfile);
 		}	
-        /*
-		$name = $this->currFile(); 
-		$scenario = 'import_' . $name . '.ini';
-		if (file_exists($this->etlPath . $scenario)) {
-			
-			$sc = parse_ini_file($this->etlPath .  $scenario, false, INI_SCANNER_RAW);
-			$delimiter = $sc['delimiter'] ? $sc['delimiter'] : ';';
-			$eol = $sc['eol']; //for raw csv printing last in line  = .
-			$line_delimiter =  $delimiter . $eol; //"\n"; //"\r\n"; 
-			//$getrec = explode(',',$sc['getrec']);
-			//$attrrec = explode(',',$sc['attrrec']);			
-		}//SCENARIO
-		else
-			$line_delimiter =  ';' . PHP_EOL;
 		
-		$data = @file_get_contents($this->currFile(true));
-	    if (!$data) {
-			$this->messages[] = "File ($name) is empty!";
-			return false;
-		}						
-		$sqlarray = explode($line_delimiter, $data);
-		*/
-		$sqlarray = file($this->currFile(true));
-
+		//$sqlarray = file($this->currFile(true));
+		
+		$line_delimiter =  ');' . PHP_EOL;		
+		$sqlarray = explode($line_delimiter, file_get_contents( $this->currFile(true)));
+		
 		$errmsg = 0;
 		if (!empty($sqlarray))
 		{	
 			$start = microtime(true);
 			$_max = count($sqlarray);
-			if ($_max <= 2000) {
+			if ($_max <= $this->maxLines) { //$this->maxLines not include <Br/><13> 
 		
 			$i=1;
 			$ix=0;
@@ -402,7 +388,7 @@ class rcediimport {
 
 				if ($sqlstatement) 
 				{
-					$runSQL = trim(str_replace("\r\n", "", $sqlstatement));
+					$runSQL = trim(str_replace("\r\n", "", $sqlstatement)) . $line_delimiter; //add delimiter trail
 					//$ix=0;
 					
 					if ((stristr($runSQL,'insert')) || (stristr($runSQL,'update')) ||
@@ -496,7 +482,7 @@ class rcediimport {
 				$this->messages[] = "Start : $start, mode: $mode";
 				
 				$_max = count($source);
-				if ($_max <= 2000) { //max lines to check
+				if ($_max <= $this->maxLines) { //max lines to check
 				$this->messages[] = "Max : $_max";
 				
 				//for ($_i = $titlelines; $_i <= $_max ; $_i++) {	
@@ -626,8 +612,13 @@ class rcediimport {
 		{
 		    if ($attrrec[$fr]=='s')
 				$datasqltype[] = "'" . $this->make_replaces($fd) ."'";
-			elseif ($attrrec[$fr]=='n')
+			elseif ($attrrec[$fr]=='n') {
+				//$datasqltype[] = 0 + str_replace($sc['sdecimal'],$sc['tdecimal'],trim($fd));//casting to num  
+			  if (is_numeric($fd))
 				$datasqltype[] = 0 + str_replace($sc['sdecimal'],$sc['tdecimal'],trim($fd));//casting to num  
+			  else
+				$datasqltype[] = 0;	
+			}				
 			elseif ($attrrec[$fr]=='d') //date
 				$datasqltype[] = '"' . $datetime .'"';									  
 			else   
@@ -661,8 +652,13 @@ class rcediimport {
 		{
 		    if ($attrrec[$fr]=='s')
 				$datasqltype[] = "'" . $this->make_replaces($fd) ."'";
-			elseif ($attrrec[$fr]=='n')
+			elseif ($attrrec[$fr]=='n') {
+			  //$datasqltype[] = 0 + str_replace($sc['sdecimal'],$sc['tdecimal'],trim($fd));//casting to num  WARNINGS when no num
+			  if (is_numeric($fd))
 				$datasqltype[] = 0 + str_replace($sc['sdecimal'],$sc['tdecimal'],trim($fd));//casting to num  
+			  else
+				$datasqltype[] = 0;	
+			}
 			elseif ($attrrec[$fr]=='d') //date
 				$datasqltype[] = "'" . $datetime . "'";									  
 			else   
@@ -712,8 +708,13 @@ class rcediimport {
 		 foreach ($datasql as $fr=>$fd) {
 		    if ($attrrec[$fr]=='s')
 			  $datasqltype[] = "'" . $this->make_replaces($fd) ."'";
-			elseif ($attrrec[$fr]=='n')
-			  $datasqltype[] = 0 + str_replace($sc['sdecimal'],$sc['tdecimal'],trim($fd));//casting to num  
+			elseif ($attrrec[$fr]=='n') {
+			  //$datasqltype[] = 0 + str_replace($sc['sdecimal'],$sc['tdecimal'],trim($fd));//casting to num  WARNINGS when no num  
+			  if (is_numeric($fd))
+				$datasqltype[] = 0 + str_replace($sc['sdecimal'],$sc['tdecimal'],trim($fd));//casting to num  
+			  else
+				$datasqltype[] = 0;		
+			}
 			elseif ($attrrec[$fr]=='d') //date
 			  $datasqltype[] = "'" . $datetime . "'";									  
 			else   
@@ -751,8 +752,13 @@ class rcediimport {
 		 foreach ($datasql as $fr=>$fd) {
 		    if ($attrrec[$fr]=='s')
 			  $datasqltype[] = "'" . $this->make_replaces($fd) ."'";
-			elseif ($attrrec[$fr]=='n')
-			  $datasqltype[] = 0 + str_replace($sc['sdecimal'],$sc['tdecimal'],trim($fd));//casting to num  
+			elseif ($attrrec[$fr]=='n') {
+			  //$datasqltype[] = 0 + str_replace($sc['sdecimal'],$sc['tdecimal'],trim($fd));//casting to num  WARNINGS when no num				
+			  if (is_numeric($fd))
+				$datasqltype[] = 0 + str_replace($sc['sdecimal'],$sc['tdecimal'],trim($fd));//casting to num  
+			  else
+				$datasqltype[] = 0;		
+			} 
 			elseif ($attrrec[$fr]=='d') //date
 			  $datasqltype[] = "'" . $datetime . "'";									  
 			else   

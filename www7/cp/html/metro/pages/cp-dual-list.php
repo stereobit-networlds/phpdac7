@@ -210,7 +210,7 @@
    <script type="text/javascript" src="assets/jquery-tags-input/jquery.tagsinput.min.js"></script>
    <script type="text/javascript" src="assets/bootstrap-inputmask/bootstrap-inputmask.min.js"></script>
 
-   <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+   <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
    <script src="js/jQuery.dualListBox-1.3.js" language="javascript" type="text/javascript"></script>
 
 
@@ -230,10 +230,7 @@
        });
 
    </script>
-   <!-- END JAVASCRIPTS --> 
-
-	<phpdac>frontpage.include_part use /parts/google-analytics.php+++meteor</phpdac>
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
+   <!-- END JAVASCRIPTS -->  
 </body>
 <!-- END BODY -->
 </html>

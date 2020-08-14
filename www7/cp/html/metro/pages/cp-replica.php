@@ -26,7 +26,7 @@
 	<script src="../javascripts/jqgrid/js/jquery.jqGrid.min.js"></script>
 	<script src="../javascripts/themes/jquery-ui.custom.min.js"></script>    
    	
-	<!--script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script-->
+	<!--script src="https://www.stereobit.gr/ckeditor/ckeditor.js"></script-->
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
@@ -86,9 +86,7 @@
    <script>
 	function filedetails() {var str = arguments[0]; var str1 = arguments[1]; $('#rdetails').load("cpreplica.php?t=cpreplfile&date="+str+"&acct="+str1);}
 	function sqldetails() {var str = arguments[0]; $('#rdetails').load("cpreplica.php?t=cpreplsql&date="+str);}
-   </script>
-	<phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
+   </script> 
 </body>
 <!-- END BODY -->
 </html>

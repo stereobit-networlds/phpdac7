@@ -47,6 +47,8 @@ class shnsearch {
 	var $path, $urlpath, $inpath;
     var $imageclick, $attachsearch;
 	var $httpurl, $_catAllFilter;
+	
+	var $shclass;
 
 	public function __construct() {
 
@@ -67,6 +69,8 @@ class shnsearch {
 		
 		//default phrase, a character when click for a category search without a phrase
 		$this->_catAllSearch = _m('cmsrt.paramload use ESHOP+searchallkeyword') ?: 'all'; //'*' 	
+		
+		$this->shclass = defined('SHKATALOGMEDIA_DPC') ? 'shkatalogmedia' : 'shkatalog';
 		
 		//on all pages
 		$this->javascript();			
@@ -99,7 +103,7 @@ class shnsearch {
 		  
 			case 'filter'        : 	if ((GetReq('page'))  || (GetReq('asc')) || 
 										(GetReq('order')) || (GetReq('pager'))) { //ajax
-										if (_v('shkatalogmedia.filterajax'))
+										if (_v($this->shclass . '.filterajax'))
 											die($this->form_search());
 										else
 											$out = $this->form_search();
@@ -114,17 +118,9 @@ class shnsearch {
 			case 'removefromcart':	break;	 
 	  
 			case 'search' 		 :		
-			default       		 : 	/*if ((GetReq('page'))  || (GetReq('asc')) || 
-										(GetReq('order')) || (GetReq('pager'))) { //ajax
-										if (_v('shkatalogmedia.filterajax') && (!_v('shkatalogmedia.mobile')))
-											die($this->form_search());
-										else
-											$out = $this->form_search();
-									}
-									else 	
-										$out = $this->form_search();*/
-									
-									if (_m('shkatalogmedia.insideAjaxClick') && _v('shkatalogmedia.filterajax') && (!_v('shkatalogmedia.mobile')))
+			default       		 : 							
+									if (_m($this->shclass . '.insideAjaxClick') && 
+										_v($this->shclass . '.filterajax') && (!_v($this->shclass . '.mobile')))
 										die($this->form_search());
 									else
 										$out = $this->form_search();
@@ -135,7 +131,7 @@ class shnsearch {
 	}
 	
 	public function javascript() {
-		//$id = remote_paramload('SHKATEGORIES','idsearch',$this->path);	  
+		if (!defined('JAVASCRIPT_DPC')) return ;	  
 			
 		$fid = _m('cmsrt.paramload use CMS+search-id');	
 		$bid = _m('cmsrt.paramload use CMS+search-button-id');
@@ -186,13 +182,13 @@ class shnsearch {
 		$_allS = (defined("SHKATEGORIES_DPC")) ? _v('shkategories._catAllSearch') : $this->_catAllSearch; 
 	
 		$cat = (GetReq('cat')=='all') ? null : GetReq('cat'); //<<< all keyword means no ca
-		$min = intval(_v('shkatalogmedia.min_price'));// ? round($this->min_price, 0, PHP_ROUND_HALF_DOWN) : 0; //100;
-		$_mx = _v('shkatalogmedia.max_price');
+		$min = intval(_v($this->shclass . '.min_price'));
+		$_mx = _v($this->shclass . '.max_price');
 		$max =  $_mx ? ceil($_mx) : 10; //700;
 		$diff = ($max - $min);
 		$step = ($diff<=100) ? 1 : 10;//($max-$min) / 10;	
 
-		$inp = $_GET['input'];//_m('shkatalogmedia.escapeORDie use ' . $_GET['input']); //GetParam('input');
+		$inp = $_GET['input'];
 		if (strstr($inp, ',')) {
 			//multiple values
 			$fl = explode(',', $inp);
@@ -215,10 +211,10 @@ class shnsearch {
 		//echo 'Input:'. GetParam('input') .' '.$input[0] .' '.$input[1];		
 
 		$_cat = $cat ? $cat : $this->_catAllSearch; //<<< all keyword means no cat
-		$purl = _v('shkatalogmedia.httpurl') . '/' . _m("cmsrt.url use t=kfilter&cat=$_cat"); 
+		$purl = _v($this->shclass . '.httpurl') . '/' . _m("cmsrt.url use t=kfilter&cat=$_cat"); 
 		$purl.= empty($reset_input) ? null : implode(',', $reset_input) . ',';		
 
-		$onPrice = (($div = _v('shkatalogmedia.filterajax')) && (!_v('shkatalogmedia.mobile'))) ?		
+		$onPrice = (($div = _v($this->shclass . '.filterajax')) && (!_v($this->shclass . '.mobile'))) ?		
 "$('.price-slider').on('slideStop', function(slideEvt) {
 	var p = $('.price-slider').val();
 	var value = p.replace(',', '.');
@@ -350,7 +346,7 @@ $(document).ready(function () {
 		
 		$out .= $this->list_katalog(0,'search&input='.$this->text2find);//,'searchres'); //use fpkatalog default
 	  
-	    $f1 = _v('shkatalogmedia.max_selection');	    
+	    $f1 = _v($this->shclass . '.max_selection');	    
 	    $f2 = _v('shkategories.max_selection');	   	
 		$f = $f1+$f2;	  
 		
@@ -377,8 +373,8 @@ $(document).ready(function () {
 		if (isset($cat) || isset($marka) || isset($typos) || 
 			isset($color) || isset($pdate) || isset($extras) || isset($price) || isset($price2)) {
 				
-			$code = _m('shkatalogmedia.getmapf use code');
-			$sSQL = _v('shkatalogmedia.selectSQL');
+			$code = _m($this->shclass . '.getmapf use code');
+			$sSQL = _v($this->shclass . '.selectSQL');
 		  
 			if ($id_cat>=0) {
 				$sSQL .= " WHERE ";		
@@ -405,7 +401,7 @@ $(document).ready(function () {
 			switch ($order) {
 				case 1  : $sSQL .=  ' '.$itmname.','.$itmdescr; break;
 				case 2  : $sSQL .= ' price0';break;  
-				case 3  : $sSQL .= ' '. _m('shkatalogmedia.getmapf use code'); break;//must be converted to the text equal????
+				case 3  : $sSQL .= ' '. _m($this->shclass . '.getmapf use code'); break;//must be converted to the text equal????
 				case 4  : $sSQL .= ' cat1';break;			
 				case 5  : $sSQL .= ' cat2';break;
 				case 6  : $sSQL .= ' cat3';break;			
@@ -447,13 +443,13 @@ $(document).ready(function () {
 	
 	protected function do_quick_search($text2find) {
 	
-		_m('shkatalogmedia.do_quick_search use '.$text2find);
-		_m('shkatalogmedia.javascript');		  
+		_m($this->shclass . '.do_quick_search use '.$text2find);
+		_m($this->shclass . '.javascript');		  
 	}
 	
 	protected function do_filter_search($filter) {
 	
-		 _m('shkatalogmedia.do_filter_search use '.$filter);
+		 _m($this->shclass . '.do_filter_search use '.$filter);
 	}	
 	
 	protected function search_categories($text2find=null,$template=null) {
@@ -465,7 +461,7 @@ $(document).ready(function () {
 	
 	protected function list_katalog($imageclick=null,$cmd=null,$template=null) {
 		
-		$ret = _m('shkatalogmedia.list_katalog use '.$imageclick.'+'.$cmd.'+'.$template);
+		$ret = _m($this->shclass . '.list_katalog use '.$imageclick.'+'.$cmd.'+'.$template);
 
 		return ($ret);	  
 	}		

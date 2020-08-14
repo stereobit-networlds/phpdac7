@@ -14,6 +14,7 @@ include networlds.clientdpc;
 /---------------------------------load all and create after dpc objects
 public cms.cmsrt;
 #ifdef SES_LOGIN
+public bshop.rckategories;
 public cms.rcmenu;
 public cp.rcpmenu;
 #endif

@@ -53,23 +53,39 @@ class rceditables  {
 		
 		//EDI CONF
 		$this->etlproducts = array('id','datein','code3','code5','owner','itmactive','active','itmname','uniname1','ypoloipo1','price0','price1','manufacturer','size','color','cat0','cat1','cat2','cat3','cat4');	
+		$this->difproducts = array('id','datein','code3','code5','owner','itmactive','active','itmname','uniname1','ypoloipo1','price0','price1','manufacturer','size','color','cat0','cat1','cat2','cat3','cat4');	
 		$this->ediT = array('etlproducts'=>$this->etlproducts,
+							'difproducts'=>$this->difproducts,
 							/*'editest'=>array('a','b'),*/
 							 );	
 		//ETL CONF
-		$this->etlCNF = array('kaisidis', 'aidonitsa', 'logicom');	
-		$this->etlOWN = array('kaisidis'=>'data-media', 'aidonitsa'=>'aidonitsa', 'logicom'=>'logicom'); //owner title		
+		$this->etlCNF = array('kaisidis', 'aidonitsa', 'logicom', 'agc', 'tradesor');	
+		$this->etlOWN = array('kaisidis'=>'data-media', 'aidonitsa'=>'aidonitsa', 'logicom'=>'logicom', 'agc'=>'agc', 'tradesor'=>'tradesor'); //owner title		
 		$this->etlCMD = array('_makecsv'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/',
 							  '_makesql'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/sqlnodepattach/|async/sql/[confname]/sqlread/',	
 							  '_makeimg'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgread/',
+							  //'_makeimg'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgread/',
+							  //'_makeimg'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgread/',
+							);
+		$this->difCMD = array('_dbo1'=>'async/dbo/_products/dbofilter01/dbofilter02/imgnode/|async/img/_products/imgread/',
+							  '_bit77'=>'async/pcntl/bit77/imgnode/|async/dbo/_products/dbofilter01/dbofilter02/imgnode/|async/img/_products/imgread/',	
+							  '_kshow'=>'async/pcntl/kshow/imgnode/p5node/|async/img/_products/imgread/',	
+							  '_klist'=>'async/pcntl/klist/imgnode/p5node/|async/img/_products/imgread/',	
+							  '_pcmd'=>'async/pcmd/env1/envnode/',
+							  '_devenv'=>'async/pcmd/devenv/envnode/|async/img/_products/imgread/',			
+							  '_ampcache'=>'async/pcntl/ampcache/imgnode/',
 							);						
-		$this->etlT = array('etlproducts'=>$this->etlCMD);						
+		$this->etlT = array('etlproducts'=>$this->etlCMD,
+							'difproducts'=>$this->difCMD,
+							);						
 		
 		//LOG CONF
 		$this->etlPath = $this->prpath . 'uploads/';
 		$this->etlLOG = array('kaisidis'=>array('xml'=>'datamedia-out.xml','csv'=>'datamedia-out.csv','sql'=>'datamedia-out.sql','log'=>'datamedia-out.log'),
 							  'aidonitsa'=>array('xml'=>'aidonitsa-out.xml','csv'=>'aidonitsa-out.csv','sql'=>'aidonitsa-out.sql','log'=>'aidonitsa-out.log'),	
 							  'logicom'=>array('xml'=>'logicom-out.xml','csv'=>'logicom-out.csv','sql'=>'logicom-out.sql','log'=>'logicom-out.log'),
+							  'agc'=>array('xml'=>'agc-out.xml','csv'=>'agc-out.csv','sql'=>'agc-out.sql','log'=>'agc-out.log'),
+							  'tradesor'=>array('xml'=>'tradesor-out.xml','csv'=>'tradesor-out.csv','sql'=>'tradesor-out.sql','log'=>'tradesor-out.log'),
 						);
 		/*				
 		$this->etlLOG2 = array('etlproducts'=>array('xml'=>'etlproducts.xml','csv'=>'etlproducts.csv','log'=>'etlproducts.log'),
@@ -215,19 +231,32 @@ class rceditables  {
 		$lan = getlocal();
 		$ETLselectButton = null;
 		
+		//fetch cp params
+		$cpGet = _v('rcpmenu.cpGet');
+		$cat = $cpGet['cat'];
+		$id = $cpGet['id'];  	
+		$csep = _m('cmsrt.sep');
+		
 		if (!empty($this->etlCNF)) {
 			
 			foreach ($this->etlCNF as $i=>$cnf) {
 				
 				$menu = array(); //reset
-				foreach ($this->etlCMD as $title=>$cmd) 
-				{
-					$_title = localize($title, $lan);
-					$menu[$_title] = "cpeditables.php?t=cpediexec&edi=$table&cmd=". str_replace('[confname]', $cnf, $cmd);
+				//foreach ($this->etlCMD as $title=>$cmd) 
+				if (!empty($this->etlT[$table])) {
+					foreach ($this->etlT[$table] as $title=>$cmd) 
+					{
+						$_title = localize($title, $lan);
+						
+						//save params for dac-7 cmd
+						$reqparams = "&cat=" . $cat . "&id=" . $id;
+						file_put_contents($this->prpath . '/_cookie.txt', $reqparams, LOCK_EX);
+						
+						$menu[$_title] = "cpeditables.php?t=cpediexec&edi=$table&cmd=". str_replace('[confname]', $cnf, $cmd);
+					}
+					//test menu item
+					//$menu['Test'] = "cpeditables.php?t=cpediexec&edi=$table&cmd=hello/howru";
 				}
-				//test menu item
-				//$menu['Test'] = "cpeditables.php?t=cpediexec&edi=$table&cmd=hello/howru";
-				
 				//sep
 				$menu[0] = '';
 				

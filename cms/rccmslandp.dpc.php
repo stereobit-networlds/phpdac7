@@ -772,6 +772,8 @@ class rccmslandp {
 	    $resultset = $db->Execute($sSQL,2);	
 		
 		$objarr = explode(',',$objects);
+		if (empty($ojarr)) return null;
+		
 		foreach ($resultset as $n=>$rec) {
 			$ret[] = ((!empty($objarr)) && (in_array($rec[0], $objarr))) ? 
 			            "<option value='".$rec['id']."'>". $rec[$code].'-'.$rec[$itmname]."</option>" :

@@ -76,8 +76,8 @@
 								
                                 <div id="tabsleft" class="tabbable tabs-left">
                                 <ul>
-                                    <li><a href="#tabsleft-tab1" data-toggle="tab"><span class="strong">Options</span> <span class="muted">Options</span></a></li>
-									<li><a href="#tabsleft-tab2" data-toggle="tab"><span class="strong">Messages</span> <span class="muted">Messages</span></a></li>
+                                    <li><a href="#tabsleft-tab1" data-toggle="tab"><span class="strong"><phpdac>cmsrt.slocale use _options</phpdac></span></a></li>
+									<li><a href="#tabsleft-tab2" data-toggle="tab"><span class="strong"><phpdac>cmsrt.slocale use _messages</phpdac></span></a></li>
                                 </ul>
 
                                 <div class="tab-content">
@@ -89,20 +89,24 @@
 											</label>
 											<div class="controls">
 												<div id="normal-toggle-button">
-													<input name="imgincat" type="checkbox">
+													<input name="imgincat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use imgincat+checked</phpdac> >
 													<phpdac>rcimgitems.currCategory</phpdac>
 												</div>
                                                 <label class="checkbox">
-                                                    <input name="large" type="checkbox" /> Large
+                                                    <input name="large" type="checkbox" <phpdac>cmsrt.getSubmitedParam use large+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _large</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="medium" type="checkbox" /> Medium
+                                                    <input name="medium" type="checkbox" <phpdac>cmsrt.getSubmitedParam use medium+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _medium</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="small" type="checkbox" /> Small
+                                                    <input name="small" type="checkbox" <phpdac>cmsrt.getSubmitedParam use small+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _small</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="photodb" type="checkbox" /> <phpdac>cmsrt.slocale use _photodb</phpdac>
+                                                    <input name="photodb" type="checkbox" <phpdac>cmsrt.getSubmitedParam use photodb+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _photodb</phpdac>
                                                 </label>												
 											</div>
 										</div>	
@@ -112,24 +116,29 @@
 											</label>
 											<div class="controls">
 												<div id="normal-toggle-button">
-													<input name="imgupdcat" type="checkbox">
+													<input name="imgupdcat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use imgupdcat+checked</phpdac> >
 													<phpdac>rcimgitems.currCategory</phpdac>
 												</div>
 												<label class="checkbox">
-                                                    <input name="overw" type="checkbox" /> <phpdac>cmsrt.slocale use _overwrite</phpdac>
+                                                    <input name="overw" type="checkbox" <phpdac>cmsrt.getSubmitedParam use overw+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _overwrite</phpdac>
                                                 </label>
                                                 <label class="checkbox">
-                                                    <input name="large" type="checkbox" /> Large
+                                                    <input name="large" type="checkbox" <phpdac>cmsrt.getSubmitedParam use large+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _large</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="medium" type="checkbox" /> Medium
+                                                    <input name="medium" type="checkbox" <phpdac>cmsrt.getSubmitedParam use medium+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _medium</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="small" type="checkbox" /> Small
-                                                </label>												
-												<label class="checkbox">
-                                                    <input name="photodb" type="checkbox" /> <phpdac>cmsrt.slocale use _photodb</phpdac>
+                                                    <input name="small" type="checkbox" <phpdac>cmsrt.getSubmitedParam use small+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _small</phpdac>
                                                 </label>
+												<label class="checkbox">
+                                                    <input name="photodb" type="checkbox" <phpdac>cmsrt.getSubmitedParam use photodb+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _photodb</phpdac>
+												</label>	
 											</div>
 										</div>										
 										
@@ -144,16 +153,20 @@
 													<phpdac>rcimgitems.currCategory</phpdac>
 												</div>
                                                 <label class="checkbox">
-                                                    <input name="large" type="checkbox" /> Large
+                                                    <input name="large" type="checkbox" <phpdac>cmsrt.getSubmitedParam use large+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _large</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="medium" type="checkbox" /> Medium
+                                                    <input name="medium" type="checkbox" <phpdac>cmsrt.getSubmitedParam use medium+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _medium</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="small" type="checkbox" /> Small
+                                                    <input name="small" type="checkbox" <phpdac>cmsrt.getSubmitedParam use small+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _small</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="photodbrem" type="checkbox" /> <phpdac>cmsrt.slocale use _photodbrem</phpdac>
+                                                    <input name="photodbrem" type="checkbox" <phpdac>cmsrt.getSubmitedParam use photodbrem+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _photodbrem</phpdac>
                                                 </label>												
 											</div>
 										</div>
@@ -168,7 +181,8 @@
                                                     <input name="logset" type="checkbox" /> <phpdac>cmsrt.slocale use _logset</phpdac>
                                                 </label-->
 												<label class="checkbox">
-                                                    <input name="logclear" type="checkbox" /> <phpdac>cmsrt.slocale use _logclear</phpdac>
+                                                    <input name="logclear" type="checkbox" /> 
+													<phpdac>cmsrt.slocale use _logclear</phpdac>
                                                 </label>
 											</div>
 										</div>

@@ -43,10 +43,13 @@ class pcntl extends controller {
 	var $root_page, $debug, $name, $noqueue;
 	var $fp, $lan, $cl, $local_security, $httpurl;
 	var $preprocessor, $preprocess, $startProcess, $processStack;
-	var $encrypted;	
+	var $encrypted, $_ca, $_capth, $_iscached;	
 
 	public function __construct($code=null,$preprocess=null,$noqueue=null) { 
 		//global $_cleanOB;
+		$this->_ca = paramload('DIRECTIVES','cache');
+		$this->_capath = paramload('DIRECTIVES','cachepath');	
+		$this->_iscached = false;
 		
 		$this->mytime = $this->getthemicrotime();    
 		$xtime = $this->getthemicrotime(); 		
@@ -580,23 +583,126 @@ parse_ini_string_m:
    
         return ($this->myaction);
 	}	
-   	
+	
+
+	//cache name
+	protected function getCacheName() {
+		
+		if ($_id =  $_GET['id']) {
+			
+			return $_id . '.html';
+		}
+		elseif ($_cat = $_GET['cat']) {	
+		
+			$pager = $_GET['pager'] ? $_GET['pager'] : GetSessionParam('pager'); //21,42,63
+			$asc = $_GET['asc'] ? $_GET['asc'] : GetSessionParam('asc'); //asc/descr
+			$order = $_GET['order'] ? $_GET['order'] : GetSessionParam('order'); //order
+			$_details = $order . $asc . $pager;
+		
+			//paging
+			$_page = $_GET['page'] ? $_GET['page'] . '-'. $_details :  ($_details ? '-'. $_details : null); 
+			//search and filtering comma separated and : as =
+			$_input = $_GET['input'] ? str_replace(array(':',',','.'),'-',$_GET['input']) : null;
+			//cat name
+			$_catname = str_replace(',','-',$_cat);
+			
+			$filename = $_input ? $_catname .'-'. $_input . $_page : $_catname  . $_page;
+		
+			return $filename ? $filename . '.html' : null;
+		}
+		
+		return null;
+	}	
+	
+	protected function isLoggedIn() {
+		$UserName = GetGlobal('UserName');
+        $user = decode($UserName);
+		/*
+		$login = $GLOBALS['LOGIN'] ? $GLOBALS['LOGIN'] : $_SESSION['LOGIN'];
+		if ($login!='yes') 
+			return false;
+		*/
+		return $UserName ? true : false;
+	}	
+	
+	//read page data
+	protected function _cacheread($capath=null) {
+		$_ca = $capath ? $capath : '/';
+		
+		if ($data = @file_get_contents(getcwd() .$_ca. $this->getCacheName())) {
+			//echo 'cached';
+			$this->_iscached = true;
+			
+			return $data;
+		}
+
+		return null;	
+	}
+	
+	public function iscached() {
+		return $this->_iscached;
+	}	
+	
+	//save page data
+    protected function _cachewrite(&$data=null, $capath=null) {      
+		//echo $_GET['id'] . 'x' . $_GET['cat'] . '-'. GetReq('çat');
+		$_ca = $capath ? $capath : '/';
+
+		if ($filename = $this->getCacheName()) {
+			$date = date('r');
+			$data .= "<!-- cached at {$date} -->";
+			@file_put_contents(getcwd() .$_ca. $filename, $data); 	    
+		}	
+	  
+		return ($data); 	   
+	}   
+
+	//save action data only
+    protected function _cachewriteEx(&$data=null, $capath=null) {      
+		//echo $_GET['id'] . 'x' . $_GET['cat'] . '-'. GetReq('çat');
+		$_ca = $capath ? $capath : '/cp/cache/';
+
+		if ($filename = $this->getCacheName()) {
+			$date = date('r');
+			$data .= "<!-- cached at {$date} -->";
+			@file_put_contents(getcwd() .$_ca. $filename, $data); 	    
+		}	
+	  
+		return ($data); 	   
+	}
+
+	//read action data
+	protected function _cachereadEx($capath=null) {
+		$_ca = $capath ? $capath : '/cp/cache/';
+		
+		if ($data = @file_get_contents(getcwd() .$_ca. $this->getCacheName()))
+			return $data;
+	} 	
    
-    public function render($theme=null,$lan=null,$cl=null,$fp=null) {      
-   
-		$atime = $this->getthemicrotime();  
-	  	  
-		//$this->pre_render($theme,$lan,$cl,$fp);
+    //for cache third parameter must be set as true    
+	public function render($theme=null,$lan=null,$cache=null,$fp=null) {    
+	    $_cache = $_GET['modify'] ? false : $cache; //in case of click on cp disable cache mechanism
+		$_ca = paramload('DIRECTIVES','cache');
+		$_capath = paramload('DIRECTIVES','cachepath');
+		
+		//save the cache if cache+ca
+		if (($this->isLoggedIn()==false) && ($_cache) && ($_ca) && ($cachedret = $this->_cacheread($_capath)))
+			return $cachedret;
+		//else..
+
 		$data = $this->action($this->myaction);
+		/*if (($this->isLoggedIn()==false) && ($_cache) && ($_ca))
+			$this->_cachewriteEx($data);*/
 	  
 	    $hfp = new fronthtmlpage($fp, $theme);  
 	    $ret = $hfp->render($data); //this->data);
 	    unset($hfp);
-
-		if ($this->debug) 
-			echo "<!-- action elapsed " . $this->getthemicrotime() - $atime .  " sec -->";  	    
-	  
-		return ($ret); 	   
+		
+		//read the cache if cache+ca
+        if (($this->isLoggedIn()==false) && ($_cache) && ($_ca))
+			return $this->_cachewrite($ret, $_capath);
+		//else
+		return ($ret);	
 	}
    
 	//set security level at runtime

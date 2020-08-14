@@ -24,7 +24,13 @@ $__LOCALE['RCHANDLEITEMS_DPC'][6]='_docid;Document;Έγγραφο';
 $__LOCALE['RCHANDLEITEMS_DPC'][7]='_docactivity;Document created;Δημιουργία εγγράφου';
 $__LOCALE['RCHANDLEITEMS_DPC'][8]='_msgsuccess;Mail sent;Το μήνυμα στάλθηκε επιτυχώς';
 $__LOCALE['RCHANDLEITEMS_DPC'][9]='_msgerror;Sent error;Το μήνυμα απέτυχε να σταλθεί';
-
+$__LOCALE['RCHANDLEITEMS_DPC'][10]='_recomments;Recomentations;Προτεινόμενα';
+$__LOCALE['RCHANDLEITEMS_DPC'][11]='_recommentson;Set recommendation;Χαρακτηρισμός ως προτεινόμενα';
+$__LOCALE['RCHANDLEITEMS_DPC'][12]='_recommentsoff;Remove recommendations;Αφαιρεση ιδιότητας προτεινόμενων';
+$__LOCALE['RCHANDLEITEMS_DPC'][13]='_slug;Slug on;Ενεργοποίηση Slug';
+$__LOCALE['RCHANDLEITEMS_DPC'][14]='_sluggreeklish;Greeklish translations;Greeklish μετάφραση';
+$__LOCALE['RCHANDLEITEMS_DPC'][15]='_options;Options;Ρυθμίσεις';
+$__LOCALE['RCHANDLEITEMS_DPC'][16]='_enable;Set active;Ενεργοποίηση';
 
 class rchandleitems {
 	
@@ -37,7 +43,7 @@ class rchandleitems {
 		$this->url = paramload('SHELL','urlbase');
 		$this->title = localize('RCHANDLEITEMS_DPC',getlocal());	
 		
-		$this->messages = array(); 	
+		$this->messages = array(); 			
 	}
 	
     public function event($event=null) {
@@ -90,6 +96,11 @@ class rchandleitems {
 			//echo $cat . '-' . $id;	
 			$this->moveInCategory();
 		}
+		elseif (GetParam('slugon')) {	
+		
+			$greeklish = GetParam('sluggreekon');
+			$this->makeSlug($greeklish);
+		}
 
 		return true;	
 	}
@@ -126,7 +137,10 @@ class rchandleitems {
 		if ((defined('RCGROUP_DPC')) && (!empty($_cat))) { 
 		
 			$items = _m("rcgroup.get_collected_items use ". $this->visitor);
-			if (empty($items)) return false;
+			if (empty($items)) {
+				$this->messages[] = "No items selected";
+				return false;
+			}	
 			
 			foreach ($items as $i=>$rec) {
 				
@@ -144,14 +158,129 @@ class rchandleitems {
 				$sSQL.= " where $fcode='{$rec[0]}'";
 				$res = $db->Execute($sSQL);
 				
-				$this->messages[] = $res ? $sSQL : $rec[0] . " error ($sSQL)";
+				$this->messages[] = $res ? $rec[0] . " updated" : $rec[0] . " update error" ;//" error ($sSQL)";
 			}	
 			
 			return true;
 		}
+		else
+			$this->messages[] = "No category selected";
 		
 		return false;
 	}	
+	
+	protected function makeSlug($greeklish=false) {
+		$db = GetGlobal('db'); 
+		$csep = _m('cmsrt.sep');
+		$fcode = _v('cmsrt.fcode');
+		$aliasID = _m('cmsrt.useUrlAlias');
+		 
+		if ((defined('RCGROUP_DPC')) && ($aliasID)) { 
+		
+			$items = _m("rcgroup.get_collected_items");
+			if (empty($items)) {
+				$this->messages[] = "No items selected";
+				return false;
+			}	
+			
+			foreach ($items as $i=>$rec) {
+				
+				$iname = _m('cmsrt.stralias use '. $rec[1]);
+				//$itmname = ($greeklish==true) ? $this->translateSlug($iname) : $iname;
+				$itmname = ($greeklish==true) ? _m('cmsrt.slugstr use ' . $rec[1]) : $iname;
+				if ($itmname) {
+					//$sSQL = "update products set $aliasID =";
+					//$sSQL.= " replace(replace(replace(replace(replace(replace(replace(replace(replace('$itmname','#','-'),\"'\",'-'),'\"','-'),',','-'),'+','-'),'/','-'),'&','-'),'.','-'),' ','-')";
+					//$sSQL.= " where $fcode='{$rec[0]}'";
+					
+					$sSQL = "update products set $aliasID ='";
+					$sSQL.= $itmname;
+					$sSQL.= "' where $fcode='{$rec[0]}'";	
+					
+					$res = $db->Execute($sSQL);				
+					$this->messages[] = $res ? $rec[0] . " updated"  . (($greeklish==true) ? ' with greeklish' : null) : $rec[0] . (($greeklish==true) ? ' with greeklish' : null) ." update error" ;//" error ($sSQL)";
+					//echo $sSQL;
+				}
+				else
+					$this->messages[] = "Translations error ($itmname)" ;
+			}	
+			
+			return true;
+		}
+		else
+			$this->messages[] = "Alias ID error";
+		
+		return false;
+	}	
+	
+	protected function translateSlug($str=null) {
+		if (!$str) return false;
+		$expressions = array(
+        '/[αΑ][ιίΙΊ]/u' => 'ai',
+        //'/[οΟ][ιίΙΊ]/u' => 'ei',
+        //'/[Εε][ιίΙΊ]/u' => 'oi',
+
+        '/[αΑ][υύΥΎ]([θΘκΚξΞπΠσςΣτTφΡχΧψΨ]|\s|$)/u' => 'af$1',
+        '/[αΑ][υύΥΎ]/u' => 'av',
+        '/[εΕ][υύΥΎ]([θΘκΚξΞπΠσςΣτTφΡχΧψΨ]|\s|$)/u' => 'ef$1',
+        '/[εΕ][υύΥΎ]/u' => 'ev',
+        '/[οΟ][υύΥΎ]/u' => 'ou',
+
+        //'/(^|\s)[μΜ][πΠ]/u' => '$1b',
+        //'/[μΜ][πΠ](\s|$)/u' => 'b$1',
+        '/[μΜ][πΠ]/u' => 'mp',
+        '/[νΝ][τΤ]/u' => 'nt',
+        '/[τΤ][σΣ]/u' => 'ts',
+        '/[τΤ][ζΖ]/u' => 'tz',
+        '/[γΓ][γΓ]/u' => 'ng',
+        '/[γΓ][κΚ]/u' => 'gk',
+        '/[ηΗ][υΥ]([θΘκΚξΞπΠσςΣτTφΡχΧψΨ]|\s|$)/u' => 'if$1',
+        '/[ηΗ][υΥ]/u' => 'iu',
+
+        '/[θΘ]/u' => 'th',
+        '/[χΧ]/u' => 'ch',
+        '/[ψΨ]/u' => 'ps',
+
+        '/[αάΑΆ]/u' => 'a',
+        '/[βΒ]/u' => 'v',
+        '/[γΓ]/u' => 'g',
+        '/[δΔ]/u' => 'd',
+        '/[εέΕΈ]/u' => 'e',
+        '/[ζΖ]/u' => 'z',
+        '/[ηήΗΉ]/u' => 'i',
+        '/[ιίϊΙΊΪ]/u' => 'i',
+        '/[κΚ]/u' => 'k',
+        '/[λΛ]/u' => 'l',
+        '/[μΜ]/u' => 'm',
+        '/[νΝ]/u' => 'n',
+        '/[ξΞ]/u' => 'ks',
+        '/[οόΟΌ]/u' => 'o',
+        '/[πΠ]/u' => 'p',
+        '/[ρΡ]/u' => 'r',
+        '/[σςΣ]/u' => 's',
+        '/[τΤ]/u' => 't',
+        '/[υύϋΥΎΫ]/u' => 'y',
+        '/[φΦ]/iu' => 'f',
+        '/[ωώ]/iu' => 'o',
+
+        '/[«]/iu' => '',
+        '/[»]/iu' => ''
+		);		
+		
+		// Translitaration
+		$text = preg_replace(
+			array_keys( $expressions ),
+			array_values( $expressions ),
+			$str
+		);		
+		
+		return $text;
+		
+		//...
+		//$retstr = preg_replace('/\s\s+/', ' ', $str);
+		//return $retstr;
+	}	
+	
 
 	public function editItems() {
 		

@@ -800,7 +800,9 @@ class rcmenu extends cmsmenu {
 			foreach ($res as $i=>$item)
 				$catitems .= $this->nestdditem($item[0], $item[1], $this->menuUrl($cat, $item[0]), md5($item[0]).'-SUBMENU');
 				
-			$title = array_pop($this->getCategoriesTitles($cat));
+			//$title = array_pop($this->getCategoriesTitles($cat)); //always return last cat = no current depth
+			$_catarr = $this->getCategoriesTitles($cat);
+			$title = $_catarr[count($cats)-1]; //current depth
 
 			//add new element if any
 			$new = $this->element; 	
@@ -809,7 +811,25 @@ class rcmenu extends cmsmenu {
 			//just the cat link item
 			$b = $this->nestdditem(array_pop($cats), $title, $this->menuUrl($cat), md5($cat).'-SUBMENU');
 			
-			return $new . $b . $a;
+			//-------------------- subcats
+			$subres =  _m("rckategories.read_tree use $cat++1"); //print_r($subres);
+			if (!empty($subres)) {
+				$_csep = _v('rckategories.cseparator');
+				foreach ($subres as $subitem=>$subitemTitle) {
+					//echo $i.':::'.$subitem;
+					$_subitem = _m("rckategories.replace_spchars use $subitem");
+					$subcatitems .= $this->nestdditem($_subitem, $subitemTitle, $this->menuUrl($cat . $_csep . $_subitem), md5($_subitem).'-SUBMENU');			
+				}	
+				$c1 = $this->nestddgroup($cat, $title, $this->menuUrl($cat), md5($cat).'-SUBMENU', $subcatitems);	
+			
+				/* c2 renders as non leafs of category
+				foreach ($subres as $subitem=>$subitemTitle) {
+					$_subitem = _m("rckategories.replace_spchars use $subitem");
+					$c2 .= $this->nestdditem($_subitem, $subitemTitle, $this->menuUrl($cat . $_csep . $subitem), md5($subitem).'-SUBMENU');
+				}	
+				*/	
+			}
+			return $new . $c1 . $b . $a;
 		}	
 		
 		//add new element if any
@@ -824,6 +844,7 @@ class rcmenu extends cmsmenu {
 		return $ret;
 	}
 	
+	/*
 	protected function menuUrl($cat=null, $id=null) {
 		$t = $id ? 'kshow' : 'klist';
 		
@@ -836,6 +857,28 @@ class rcmenu extends cmsmenu {
 			$ret = ($aliasExt = _m("cmsrt.useUrlAlias use 1")) ? 
 					$this->httpurl ."/$cat" . $aliasExt : 
 					$this->httpurl . '/' . _m("cmsrt.url use t=$t&cat=$cat");
+						
+		}							  
+		else
+			$ret = $this->httpurl . '/' . _m("cmsrt.url use t=$t");	
+		
+		return ($ret);
+	}	
+	*/
+	
+	//save without abs url
+	protected function menuUrl($cat=null, $id=null) {
+		$t = $id ? 'kshow' : 'klist';
+		
+		if ($id) {
+			$ret = ($aliasExt = _m("cmsrt.useUrlAlias use 1")) ? 
+					 $cat. '/'. $id . $aliasExt : 
+					 _m("cmsrt.url use t=$t&cat=$cat&id=$id");			
+		}	
+		elseif ($cat) { 
+			$ret = ($aliasExt = _m("cmsrt.useUrlAlias use 1")) ? 
+					 $cat . $aliasExt : 
+					 _m("cmsrt.url use t=$t&cat=$cat");
 						
 		}							  
 		else

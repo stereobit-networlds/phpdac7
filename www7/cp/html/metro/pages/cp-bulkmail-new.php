@@ -20,7 +20,7 @@
     <link href="assets/fancybox/source/jquery.fancybox.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="assets/uniform/css/uniform.default.css" />
 	
-   <phpdac>fronthtmlpage.nvl use rcbulkmail.ckeditver+<script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script>+<script type="text/javascript" src="assets/ckeditor/ckeditor.js">+3</phpdac>
+   <phpdac>fronthtmlpage.nvl use rcbulkmail.ckeditver+<script src="https://www.stereobit.gr/ckeditor/ckeditor.js"></script>+<script type="text/javascript" src="assets/ckeditor/ckeditor.js">+3</phpdac>
    </script>		
 
 </head>
@@ -217,10 +217,7 @@ $(document).ready(function() {
 });	  
 	   
    </script>
-   <script src="js/aSimpleTour.js" type="text/javascript"></script>
-   
-   <phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
+   <script src="js/aSimpleTour.js" type="text/javascript"></script>   
 
 </body>
 <!-- END BODY -->

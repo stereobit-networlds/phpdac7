@@ -233,10 +233,7 @@
        jQuery(document).ready(function() {
            DraggablePortlet.init();
        });
-   </script>
-   
-	<phpdac>frontpage.include_part use /parts/google-analytics.php+++meteor</phpdac>
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->      
+   </script>  
 </body>
 <!-- END BODY -->
 </html>

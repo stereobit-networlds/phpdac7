@@ -38,8 +38,11 @@ class cms extends fronthtmlpage {
 		$this->tpath = $this->htmlpage; //fronthtmlpage
 		
 		//$this->httpurl = paramload('SHELL','protocol') . $this->url;	
+		/* cmd has no _server
 		$this->httpurl = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
 		$this->httpurl.= $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];				
+		*/
+		$this->httpurl = paramload('SHELL','urlbase');	
 		
 		$this->useragent = $_SERVER['HTTP_USER_AGENT'];	
 		$this->mobile = $this->isMobile();

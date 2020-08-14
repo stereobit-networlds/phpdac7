@@ -133,10 +133,7 @@
            $.configureBoxes();
        });
 
-   </script>
-
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
-
+   </script>  
 </body>
 <!-- END BODY -->
 </html>			 

@@ -48,25 +48,33 @@ $__LOCALE['RCEDIITEMS_DPC'][32]='_logset;Affect logs;Ενημέρωση αρχε
 $__LOCALE['RCEDIITEMS_DPC'][33]='_logclear;Clear logs;Άδειασμα αρχείων καταγραφής';
 $__LOCALE['RCEDIITEMS_DPC'][34]='_catupd;Update categories;Ενημέρωση κατηγοριών';
 $__LOCALE['RCEDIITEMS_DPC'][35]='_filter;Filter;Φίλτρο';
+$__LOCALE['RCEDIITEMS_DPC'][36]='_viewable;Viewable;Ορατό';
+$__LOCALE['RCEDIITEMS_DPC'][37]='_searchable;Searchable;Αναζητήσιμο';
+$__LOCALE['RCEDIITEMS_DPC'][38]='_slug;Slug on;Ενεργοποίηση Slug';
+$__LOCALE['RCEDIITEMS_DPC'][39]='_sluggreeklish;Greeklish translations;Greeklish μετάφραση';
+$__LOCALE['RCEDIITEMS_DPC'][40]='_options;Options;Ρυθμίσεις';
 
 class rcediitems {
 	
 	var $title, $prpath, $urlpath, $url;
 	var $fields, $etlfields, $messages;
-	var $iLimit;
+	var $iLimit, $lan, $exitcode;
 		
     public function __construct() {
+		
+		$this->lan = getlocal();
 	  
 		$this->prpath = paramload('SHELL','prpath');
 		$this->urlpath = paramload('SHELL','urlpath');	
 		$this->url = paramload('SHELL','urlbase');
-		$this->title = localize('RCEDIITEMS_DPC',getlocal());	
+		$this->title = localize('RCEDIITEMS_DPC', $lan);	
 		
 		$this->messages = array(); 
 		$this->fields = array('id','datein','code3','code5','owner','itmactive','active','itmname','uniname1','ypoloipo1','price0','price1','manufacturer','size','color','cat0','cat1','cat2','cat3','cat4');	
 		$this->etlfields = implode(',', $this->fields);
 		
-		$this->iLimit = 200; //insert,update,delete loop limit
+		$this->iLimit = 500; //200 //insert,update,delete loop limit
+		$this->exitCode = '-001';
 	}
 	
     public function event($event=null) {
@@ -80,7 +88,7 @@ class rcediitems {
 			                          break;
 																		
 			case 'cpediitems'     :
-			default               :	
+			default               :	 //$this->javascript(); //todo auto re-post
         }			
 			
     }	
@@ -100,6 +108,84 @@ class rcediitems {
         return ($out);
 	}
 	
+	protected function javascript($enc=null) {	
+
+        if (iniload('JAVASCRIPT')) {   
+		
+	        $code = $this->javascript_code();	
+			
+		    $js = new jscript;
+            $js->load_js($code,null,1);   			   
+		    unset ($js);
+	    }	
+	}		
+	
+	public function javascript_code()  {
+		
+	    $ajaxurl = seturl("t=");	
+		$process = localize('_process',getlocal());
+	
+		$js = <<<EOF
+
+function startediitems(subject, from, xcid, bid, isrecur)
+{
+    var s = $('#subject').val(); 
+	var sub = subject ? subject : s;
+	
+	var f = $('#from').val(); 
+	var frm = from ? from : f;
+ 
+	var sbid = $('#bid').val();	
+	var xbid = bid ? bid : parseInt(sbid);	
+	
+	var cid = xcid ? xcid : '{$this->cid}';	
+	var to = isrecur ? '' : '&ulist=' + $('#tags_1').val();	
+	
+	var xc = '{$this->exitCode}';
+	var lc = xc.length * -1;
+	
+	//$('#message_p').html('');
+	str = $('#message_p').html();
+	if (str.substr(lc) == xc) return; 
+	
+	$.ajax({
+	  url: '{$ajaxurl}cpiscontent&cid='+cid+to,
+	  type: 'GET',
+	  success:function(datavalid) {		
+	    if (datavalid == 1) {	
+		
+			$('#message_p').html('<img src="images/loading.gif" alt="Processing"> {$process}');
+			
+			setTimeout(function() { 
+
+			  $.ajax({
+				url: '{$ajaxurl}cpsaveediitems',
+				type: 'POST',
+				data: {FormAction: 'cpsaveediitems', xcid: cid, bid: xbid, subject: sub, from: frm},
+				success:function(postdata) {
+					if ((postdata.substr(lc)) == xc) {
+						$('#message_p').html(postdata);
+					}					
+					else {	
+						$('#message_p').append(postdata);				
+						var nxbid = parseInt(postdata.substr(lc));
+						setTimeout(function() { startediitems(sub, frm, cid, nxbid, 1);},5000);
+					}
+					//$('#message_p').html('');
+				}
+			  });
+			}, 1000);  
+		}
+		else {
+			$('#message_p').html(datavalid);
+		}
+	  }
+	}); 
+}		
+EOF;
+		return ($js);	
+    }		
+	
 	public function showEdiItems() {
 		
 		return $this->items_grid(null,140,5,'e', true);
@@ -108,7 +194,7 @@ class rcediitems {
 	public function showfilter() {
 		if (!$filter=GetParam('flt')) return null;
 		if (!$fvalue=GetParam('val')) return null;
-		$title = localize('_filter',getlocal());
+		$title = localize('_filter', $this->lan);
 		
 		if ($filter=='datein') {
 			$now = time(); // or your date as well
@@ -154,8 +240,8 @@ class rcediitems {
         $width = $width ? $width : null; //wide	
 		$mode = $mode ? $mode : 'd';
 		$noctrl = $noctrl ? 0 : 1;				   
-	    $lan = getlocal() ? getlocal() : 0;  
-		$title = localize('_items', getlocal()); 
+	    $lan = $this->lan ? $this->lan : 0;  
+		$title = localize('_items', $lan); 
 		
 		$_wf = $this->whereFilter();
 		$xsSQL = "SELECT * from (select {$this->etlfields}  from etlproducts $_wf) o ";		   
@@ -252,7 +338,11 @@ class rcediitems {
 			if (GetParam('logclear')) {
 				@unlink($this->prpath . 'edi-ins-counter.log');
 				@unlink($this->prpath . 'edi-insert.log');
-			}		
+			}	
+
+			//slug
+			$slug = GetParam('slugon') ? 1 : 0;
+			$greeklish = GetParam('sluggreekon') ? 1 : 0;			
 		
 		    $_wf = $this->whereFilter();
 			$sSQL = "select " .$this->etlfields. " from etlproducts ";
@@ -280,12 +370,12 @@ class rcediitems {
 						$cc[] = $db->qstr($_c);
 					}
 					else {
-						//$m = $i+1; //product cats start without ITEMS
-						$cc[] = $rec["cat$i"] ? $db->qstr($this->_mkcat($rec["cat$i"])) : "''";	
+						$slugcat = $slug ? ($greeklish ? _m('cmsrt.slugstr use '. $rec["cat$i"]) : strtolower($rec["cat$i"])) : $rec["cat$i"];
+						$cc[] = $slugcat ? $db->qstr($this->_mkcat($slugcat)) : "''";
 					}
 				}
 
-				$_cc = implode(',', $cc);
+				$_cc = implode($csep, $cc);
 				$sSQL = "select $fcode from products where $fcode = " . $db->qstr($rec[$fcode]);
 				$check = $db->Execute($sSQL);
 				
@@ -302,12 +392,21 @@ class rcediitems {
 						$_farr[] = $_f;
 						$_fields[] = is_numeric($rec[$_f]) ? $rec[$_f] : $db->qstr($rec[$_f]);
 					}
-					$fields = implode(',', $_farr); //$this->etlfields;
-				
-					$sSQL = "insert into products ($fields,cat0,cat1,cat2,cat3,cat4) values (";
+					$fields = implode(',', $_farr); //$this->etlfields;		
+					
+					if ($slug) {
+						$aliasID = _m('cmsrt.useUrlAlias');		
+						$sSQL = "insert into products ($fields,cat0,cat1,cat2,cat3,cat4,$aliasID) values (";
+					}				
+					else
+						$sSQL = "insert into products ($fields,cat0,cat1,cat2,cat3,cat4) values (";
 					$sSQL.= implode(',', $_fields);
 					$sSQL.= ",";	
 					$sSQL.= implode(',', $cc);
+					if ($slug) {
+						$_itmname = _m('cmsrt.stralias use '.$rec['itmname']);
+						$sSQL.= ",'" . ($greeklish ? _m('cmsrt.slugstr use '.$rec['itmname']) : $_itmname) . "'";
+					}	
 					$sSQL.= ")";	
 					
 					if (GetParam('dbset'))
@@ -315,7 +414,8 @@ class rcediitems {
 					if (GetParam('logset'))
 						file_put_contents($this->prpath . 'edi-insert.log', $sSQL . ";\r\n", FILE_APPEND | LOCK_EX);
 				
-					$this->messages[] = $x .' '. $rec[$fcode] .' Inserted '; //implode(',', $_fields); //$res ? $sSQL : $rec[0] . " error ($sSQL)";
+					$with = $slug ? ($greeklish ? 'with greeklish slug ':' with slug ') : '';
+					$this->messages[] = $x .' '. $rec[$fcode] .' Inserted ' . $with; 
 				}
 				$x+=1;	
 			}	
@@ -349,7 +449,11 @@ class rcediitems {
 			if (GetParam('logclear')) {
 				@unlink($this->prpath . 'edi-upd-counter.log');
 				@unlink($this->prpath . 'edi-update.log');
-			}
+			}		
+			
+			//params
+			$slug = GetParam('slugon') ? 1 : 0;
+			$greeklish = GetParam('sluggreekon') ? 1 : 0;				
 		
 			$_wf = $this->whereFilter();
 			$sSQL = "select " .$this->etlfields. " from etlproducts ";
@@ -377,12 +481,13 @@ class rcediitems {
 						$cc[] = "cat$i=" . $db->qstr($_c);
 					}
 					else {
-						//$m = $i+1; //product cats start without ITEMS
-						$cc[] = $rec["cat$i"] ? "cat$i=" . $db->qstr($this->_mkcat($rec["cat$i"])) : "cat$i=''";	
+						$slugcat = $slug ? ($greeklish ? _m('cmsrt.slugstr use '. $rec["cat$i"]) : strtolower($rec["cat$i"])) : $rec["cat$i"];
+						$cc[] = $slugcat ? $db->qstr($this->_mkcat($slugcat)) : "''";
 					}
 				}
 
-				$_cc = implode(',', $cc);
+				$_cc = implode($csep, $cc);
+				
 				$sSQL = "select $fcode from products where $fcode = " . $db->qstr($rec[$fcode]);
 				$check = $db->Execute($sSQL);
 				
@@ -404,13 +509,21 @@ class rcediitems {
 						$sSQL.= ",";	
 						$sSQL.= implode(',', $cc);	
 					}
+					//slug
+					if ($slug) {
+						$_itmname = _m('cmsrt.stralias use '.$rec['itmname']);
+						$aliasID = _m('cmsrt.useUrlAlias');	
+						$sSQL.= ", $aliasID = '" . ($greeklish ? _m('cmsrt.slugstr use '.$rec['itmname']) : $_itmname) . "'";		
+					}	
+					$sSQL.= " where $fcode = " . $db->qstr($rec[$fcode]);
 					
 					if (GetParam('dbset'))
 						$res = $db->Execute($sSQL);
 					if (GetParam('logset'))
 						file_put_contents($this->prpath . 'edi-update.log', $sSQL . ";\r\n", FILE_APPEND | LOCK_EX);
 				
-					$this->messages[] = $x .' '. $rec[$fcode] .' Updated ';//implode(',', $_fields); // $res ? $sSQL : $rec[0] . " error ($sSQL)";
+					$with = $slug ? ($greeklish ? 'with greeklish slug ':' with slug ') : '';
+					$this->messages[] = $x .' '. $rec[$fcode] .' Updated ' . $with;
 				}
 				$x+=1;	
 			}	
@@ -502,6 +615,7 @@ class rcediitems {
 		$cat = $cpGet['cat'];
 		$csep = _m('cmsrt.sep');
 		$fcode = _v('cmsrt.fcode');
+		$lan = $this->lan ? $this->lan : '0';
 		
 		$_cat = explode($csep, $cat);
 		
@@ -510,8 +624,19 @@ class rcediitems {
 			//clear log files
 			if (GetParam('logclear')) {
 				@unlink($this->prpath . 'edi-insert-categories.log');
-			}		
+			}	
+			
+			//fetch current category alias names
+			$sSQL = "select DISTINCT cat1,cat2,cat3,cat4,cat5,cat01,cat02,cat03,cat04,cat05,cat11,cat12,cat13,cat14,cat15 from categories ";
+			foreach ($_cat as $cid=>$ccat)
+				$sql[] = "cat" . strval($cid+2) . "='" . $ccat . "'";
+			$sSQL.= ' WHERE ' . implode(' AND ', $sql);			
+			//echo $sSQL;
+			$cres = $db->Execute($sSQL);
 		
+		    //param
+			$slug = GetParam('slugon') ? 1 : 0;	
+			$greeklish = GetParam('sluggreekon') ? 1 : 0;		
 			$active = GetParam('catact') ? 1 : 0;
 			$view = GetParam('catview') ? 1 : 0;
 			$search = GetParam('catsearch') ? 1 : 0;
@@ -533,12 +658,13 @@ class rcediitems {
 					if ($_cat[$i]) {
 						$_c = _m("cmsrt.replace_spchars use ".$_cat[$i]."+1");
 						$cc[] = $db->qstr($_c);
-						$ccalias[] = $db->qstr($_c);
+						$ccalias[] = $db->qstr($cres->fields('cat'.$lan.strval($i+2))); 
 					}
 					else {
-						//$m = $i+1; //product cats start without ITEMS
-						$cc[] = $rec["cat$i"] ? $db->qstr($this->_mkcat($rec["cat$i"])) : "''";	
-						$ccalias[] = $rec["cat$i"] ? $db->qstr($rec["cat$i"]) : "''";	
+						$cccat = $slug ? strtolower($rec["cat$i"]) : $rec["cat$i"];		
+						$slugcat = $greeklish ? _m('cmsrt.slugstr use '. $rec["cat$i"]) : $cccat;
+						$cc[] = $slugcat ? $db->qstr($this->_mkcat($slugcat)) : "''";							
+						$ccalias[] = $rec["cat$i"] ? $db->qstr($rec["cat$i"]) : "''";
 					}	
 				}
 				
@@ -552,7 +678,7 @@ class rcediitems {
 				if ($check->fields[0]) {
 					$this->messages[] = $x . ' Exist ' . $_cc;
 				}
-				else {				
+				else {	
 					$sSQL = "insert into categories (ctgid,ctgoutline,cat1,cat2,cat3,cat4,cat5,active,view,search,cat01,cat02,cat03,cat04,cat05,cat11,cat12,cat13,cat14,cat15) values (";
 					$sSQL.= "1,'$_id','ITEMS',"; //cthid must be set to be shown
 					$sSQL.= $_cc;	
@@ -568,7 +694,8 @@ class rcediitems {
 					if (GetParam('logset'))
 						file_put_contents($this->prpath . 'edi-insert-categories.log', $sSQL . ";\r\n", FILE_APPEND | LOCK_EX);
 				
-					$this->messages[] = $x . ' Inserted ' . $_cc;;// $sSQL; //$res ? $sSQL : $rec[0] . " error ($sSQL)";
+					$with = $slug ? ($greeklish ? 'with greeklish slug ':' with slug ') : '';
+					$this->messages[] = $x . ' Inserted '. $with . $_cc;
 				}
 				$x+=1;
 			}	
@@ -596,6 +723,10 @@ class rcediitems {
 			if (GetParam('logclear')) {
 				@unlink($this->prpath . 'edi-delete-categories.log');
 			}		
+			
+			//params
+			$slug = GetParam('slugon') ? 1 : 0;	
+			$greeklish = GetParam('sluggreekon') ? 1 : 0;				
 		
 			$_wf = $this->whereFilter();
 			$sSQL = 'select DISTINCT cat0,cat1,cat2,cat3,cat4 from etlproducts ';
@@ -614,20 +745,21 @@ class rcediitems {
 					if ($_cat[$i]) {
 						$_c = _m("cmsrt.replace_spchars use ".$_cat[$i]."+1");
 						$cc[] = $db->qstr($_c);
-						$ccalias[] = $db->qstr($_c);
+						$ccalias[] = $db->qstr($_c); //delete based on id
 					}
 					else {
-						//$m = $i+1; //product cats start without ITEMS
-						$cc[] = $rec["cat$i"] ? $db->qstr($this->_mkcat($rec["cat$i"])) : "''";	
-						$ccalias[] = $rec["cat$i"] ? $db->qstr($rec["cat$i"]) : "''";	
+						$cccat = $slug ? strtolower($rec["cat$i"]) : $rec["cat$i"];	
+						$slugcat = $greeklish ? _m('cmsrt.slugstr use '. $rec["cat$i"]) : $cccat;
+						$cc[] = $slugcat ? $db->qstr($this->_mkcat($slugcat)) : "''";							
+						$ccalias[] = $rec["cat$i"] ? $db->qstr($rec["cat$i"]) : "''";						
 					}	
 				}
 				
-				$_cc = implode(',', $cc);
+				$_cc = implode($csep, $cc);
 				$_ccalias = implode(',', $ccalias);
 				$_id = hash('crc32', implode('', $cc));
 				
-				$sSQL = "select ctgoutline from categories where ctgoutline = '$_id'";
+				$sSQL = "select ctgoutline from categories where ctgoutline = '$_id'"; //based on id
 				$check = $db->Execute($sSQL);
 				
 				if (!$check->fields[0]) {
@@ -642,7 +774,8 @@ class rcediitems {
 					if (GetParam('logset'))
 						file_put_contents($this->prpath . 'edi-delete-categories.log', $sSQL . ";\r\n", FILE_APPEND | LOCK_EX);
 				
-					$this->messages[] = $x . ' Deleted ' . $_cc;
+					$with = $slug ? ($greeklish ? 'with greeklish slug ':' with slug ') : '';
+					$this->messages[] = $x . ' Deleted ' . $with . $_cc;
 				}
 				$x+=1;
 			}	
@@ -660,56 +793,12 @@ class rcediitems {
 		if (!$name) return null;
 		
 		$ret = str_replace(
-				array('/','-','.',',','(',')'), 
-				array(' ',' ','','','',''), 
+				array('/','-','.',',','(',')','&','\\','*',':'), 
+				array(' ',' ','','','','','','','',''), 
 				$name);
 				
-		return $ret;
+		return str_replace(array('----','---','--'),'-', $ret);		
 	}
-	
-/*
-	public function editItems() {
-		
-		if (defined('RCGROUP_DPC')) 
-			$items = _m("rcgroup.get_collected_items");
-			
-		if (is_array($items)) {
-			
-			foreach ($items as $i=>$rec) {
-				
-				//update prices
-				$price0 = (GetParam('price'.$i)) ? str_replace(',','.',GetParam('price'.$i)) : str_replace(',','.',$rec[5]);
-				//$price1 = (GetParam('price'.$i)) ? str_replace(',','.',GetParam('price'.$i)) : str_replace(',','.',$rec[6]);	
-				//update qty
-				$qty = (GetParam('qty'.$i)) ? str_replace(',','.',GetParam('qty'.$i)) : 1;
-				
-				$line .= "						<div class=\"input-icon left\">
-													<i class=\"icon-user\"></i>
-													<input name=\"code$i\" class=\" \" type=\"text\"  value=\"{$rec[0]}\" disabled />
-													<span class=\"help-inline\">
-														<i class=\"icon-lock\"></i>
-														<input name=\"name$i\" class=\" \" type=\"text\" value=\"{$rec[1]}\" disabled/>
-													</span>
-													<span class=\"help-inline\">
-														<i class=\"icon-tasks\"></i>
-														<input name=\"qty$i\" class=\" \" type=\"text\" value=\"$qty\" />
-													</span>
-													<span class=\"help-inline\">
-														<i class=\"icon-tasks\"></i>
-														<input name=\"percent$i\" class=\" \" type=\"text\" value=\"0\" />
-													</span>													
-													<span class=\"help-inline\">
-														<i class=\"icon-tasks\"></i>
-														<input name=\"price$i\" class=\" \" type=\"text\" value=\"{$price0}\" />
-													</span>														
-												</div>";
-			}	
-			
-			return ($line);
-		}
-		return false;		
-	}	
-*/	
 	
 	public function viewMessages($template=null) {
 		if (empty($this->messages)) return;
@@ -723,65 +812,7 @@ class rcediitems {
 		}
 		return ($ret);
 	}	
-/*	
-	protected function createButton($name=null, $urls=null, $t=null, $s=null) {
-		$type = $t ? $t : 'primary'; //danger /warning / info /success
-		switch ($s) {
-			case 'large' : $size = 'btn-large '; break;
-			case 'small' : $size = 'btn-small '; break;
-			case 'mini'  : $size = 'btn-mini '; break;
-			default      : $size = null;
-		}
-		
-		if (!empty($urls)) {
-			foreach ($urls as $n=>$url)
-				$links .= '<li><a href="'.$url.'">'.$n.'</a></li>';
-			$lnk = '<ul class="dropdown-menu">'.$links.'</ul>';
-		} 
-		
-		$ret = '
-			<div class="btn-group">
-                <button data-toggle="dropdown" class="btn '.$size.'btn-'.$type.' dropdown-toggle">'.$name.' <span class="caret"></span></button>
-                '.$lnk.'
-            </div>'; 
-			
-		return ($ret);
-	}	
 
-	//tokens method	
-	protected function combine_tokens($template, $tokens, $execafter=null) {
-	    if (!is_array($tokens)) return;		
-
-		if ((!$execafter) && (defined('FRONTHTMLPAGE_DPC'))) {
-		  $fp = new fronthtmlpage(null);
-		  $ret = $fp->process_commands($template);
-		  unset ($fp);		  		
-		}		  		
-		else
-		  $ret = $template;
-		  
-		//echo $ret;
-	    foreach ($tokens as $i=>$tok) {
-            //echo $tok,'<br>';
-		    $ret = str_replace("$".$i."$",$tok,$ret);
-	    }
-		//clean unused token marks
-		for ($x=$i;$x<30;$x++)
-		  $ret = str_replace("$".$x."$",'',$ret);
-		//echo $ret;
-		
-		//execute after replace tokens
-		if (($execafter) && (defined('FRONTHTMLPAGE_DPC'))) {
-		  $fp = new fronthtmlpage(null);
-		  $retout = $fp->process_commands($ret);
-		  unset ($fp);
-          
-		  return ($retout);
-		}		
-		
-		return ($ret);
-	}
-*/
 };
 }
 ?>

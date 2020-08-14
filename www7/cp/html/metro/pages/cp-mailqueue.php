@@ -89,8 +89,6 @@ function disable(){ var id = arguments[0]; sndReqArg('cpbulkmail.php?t=cpdeactiv
 	</script>   
    <!-- END JAVASCRIPTS --> 
 
-	<phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
 </body>
 <!-- END BODY -->
 </html>

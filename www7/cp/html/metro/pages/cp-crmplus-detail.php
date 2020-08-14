@@ -62,28 +62,6 @@
 	<!--hpdac>crmgantti.javascript_code</phpda-->
    </script>
 
-   <!--script src="js/jquery-1.8.3.min.js"></script-->
-   <!--script src="js/jquery.nicescroll.js" type="text/javascript"></script>
-   <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-   <script src="assets/bootstrap-tree/bootstrap-tree/js/bootstrap-tree.js"></script>
-   <script src="js/jquery.scrollTo.min.js"></script-->
-
-   <!-- ie8 fixes -->
-   <!--[if lt IE 9]>
-   <script src="js/excanvas.js"></script>
-   <script src="js/respond.js"></script>
-   <![endif]-->
-
-   <!--common script for all pages-->
-   <!--script src="js/common-scripts.js"></script-->
-   
-   <!--script for this page only-->
-   <!--script src="js/tree.js"></script-->
-
-   <!--script>
-	function subdetails() {var str = arguments[0]; $('#crmsubdetails').load("cpcrmplus.php?t=cpcrmplusdata&module="+str);}
-	function dashboard() {var str = arguments[0]; $('#crmsubdetails').load("cpcrmplus.php?t=cpcrmplusdashboard&module="+str);}
-   </script-->
    
 </body>
 <!-- END BODY -->

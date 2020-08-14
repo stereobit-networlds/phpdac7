@@ -12,18 +12,19 @@
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 namespace phpdac7;
-/*
+
 error_reporting(E_ALL & ~E_NOTICE); //prod 0 /dev E_ALL ~E_NOTICE
 ini_set('log_errors', true); //prod true / dev false
 ini_set('display_errors', 1); //prod 1 / dev false
 ini_set('error_log', false);//'errors.log'); //prod 'errors.log' /dev false
-*/
+
 define ("_DS_", DIRECTORY_SEPARATOR);	
 define ("_OS_",(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' : 'LINMS');
 define ("_MODE_", 2); //1=phpdac5 or 2=agndac5
-define ("_MACHINENAME", _OS_);//((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINMS' : 'LINMS'));
+define ("_MACHINENAME", _OS_);
 define ("_DUMPFILE", 'dumpagn-'. _MACHINENAME . '.log');
 define ("_UMONFILE", '/tier/umon-'. _MACHINENAME . '-');
+define ("_LOGOFF", 1);
 
 if (isset($timezone)) //global timezone var
 	date_default_timezone_set($timezone);
@@ -38,12 +39,12 @@ $env = array(
 'appname' => 'phpdac7',
 'apppath' => '',
 'dpctype' => 'local',
-'dpcpath' => '/xampp-phpdac7',
+'dpcpath' => '/home/stereobi/public_html/bit77/phpdac7',
 'prjpath' => '/',
 'dachost' => '127.0.0.1',
 'dacport' => '19123',
-'app' => '/xampp-phpdac7/vendor/stereobit/cpdac7.phar',
-'cppath' =>'home/sterobi/public_html/basis/cp',
+'app' => '',/*'/var/stereobit/phpdac7/vendor/stereobit/cpdac7.phar',*/
+'cppath' =>'/home/stereobi/public_html/bit77/www1.bit77.gr/cp',
 'key' => 'd41d8cd98f00b204e9800998ecf8427e', 
 );
 $dac = false; //when shm.id exists turns to true
@@ -61,28 +62,28 @@ $st = $dac ? $stream : $env['dpcpath'];
 		
 define('_DPCPATH_', $env['dpcpath']);
 
-define('_DACSTREAMCVIEW_', 3); // verbose level
-define('_DACSTREAMCREP1_', "<!-- "); 
-define('_DACSTREAMCREP2_', "$st/"); 
+define('_DACSTREAMCVIEW_', 3); //verbose level
+define('_DACSTREAMCREP1_', "<!-- ");
+define('_DACSTREAMCREP2_', "$st/");
 define('_DACSTREAMCREP3_', ' -->');
 define('_DACSTREAMCREP0_', 'D'); //trail txt err		
-		
+			
 //REGISTER PHPDAC			
 //ms-windows can load the class below
 //stream_wrapper_register("phpdac5","phpdac7\c7_dacstream");
-//linux must set by require 
+//linux must set
 require($env['dpcpath'] ."/system/dacstreamc7.lib.php");  
 stream_wrapper_register("phpdac5","c_dacstream");
 
 //if st is stream (dacport at last 5 chars) and mode = 1/2
-if ((_MODE_ == 2) && (substr($st,-5) == $dp)) 
+if ((_MODE_ == 2) && (substr($st,-5) == $dp))
 {
 	//REGISTER PHPRES (client side,resources) protocol.		
 	require("$st/kernel/sresc.lib.php"); 
 	//require_once("$st/tier/sresct.lib.php"); 
 	stream_wrapper_register("phpres5","c_resstream");
 	
-	$__id = getSesId(true);
+	$__id = getSesId(true, $usr);
 	if ($agnport = trim(get('netport-' . $__id)))
 	{
 		//echo $_SESSION['uuid'];
@@ -90,6 +91,7 @@ if ((_MODE_ == 2) && (substr($st,-5) == $dp))
 		
 		//set heartbeat
 		getT('heartbrst');
+		getT('appconf-' . serialize(array_merge($env, $usr, array('dacport'=>$agnport))));
 		
 		//change protocol for the rest of request
 		$st = "phpres5://$dh:" . $agnport; //19125
@@ -111,9 +113,11 @@ require("$st/system/pcntlst.lib.php");
 //namespace\funcs
 function __log($data=null,$mode=null,$filename=null) 
 {
+	if (defined('_LOGOFF')) return true;
+		
 	$f = $filename ? $filename : '/phpdac7-'. _MACHINENAME .'.log';	
 	$fsize = 4 * 1024 * 1024; //4mb
-	
+
 	if (@filesize(getcwd() . $f) > $fsize) {
 		//rename old
 		if (@rename(getcwd() . $f, getcwd() . str_replace('.log', '.log-'.date('yz'), $f)))
@@ -122,7 +126,7 @@ function __log($data=null,$mode=null,$filename=null)
 	}	
 	else //append	
 		$m = $mode ? $mode : 'a+';
-		
+
 	if ($fp = @fopen (getcwd() . $f , $m)) 
     {
 		fwrite ($fp, date('c') .':'. $data . PHP_EOL);
@@ -189,9 +193,9 @@ function getIP($encode=false) {
 }
 
 //select between global sesID (REMOTE_ADDR or fixed id) and session
-function getSesId($encode=false) {
+function getSesId($encode=false, &$userData=null) {
 	global $sesID, $nosession;
-	
+
 	if (!isset($sesID)) 
 	{
 		//$id = ((!$nosession) ? session_id() : getIP(true));
@@ -204,14 +208,28 @@ function getSesId($encode=false) {
 			$adminsecid = $_SESSION['ADMINSecID'];
 	
 			$id = isset($username) ? $username : session_id();
+			$userData = array('sesid'=>(($encode==true) ? md5($id) : $id),
+							  'appid'=>$id,
+			                  'username'=>$username,
+							  'userid'=>$userid,
+							  'usersecid'=>$usersecid,
+							  'admin'=>$admin,
+							  'adminsecid'=>$adminsecid		
+							);
 		}
-		else
+		else 
+		{
 			$id = getIP();
+			$userData = array('sessionid'=>$id);
+		}	
 	}
-	else
+	else 
+	{
 		$id = $sesID;	
+	    $userData = array('sessionid'=>$id);
+    }	
+	//__log('ID:'.$id);
 	
-	__log('ID:'.$id);
 	return ($encode==true) ? md5($id) : $id;
 }
 
@@ -270,8 +288,8 @@ class c7_dacstream {
         $ret = substr($this->data,$this->position,$count);
 		$this->position += strlen($ret);
 		
-        return ($this->gc($ret,_DACSTREAMCVIEW_));
-		//return $ret;
+        //return ($this->gc($ret,_DACSTREAMCVIEW_)); 
+		return $ret;
    }
    
    public function stream_write($data) {

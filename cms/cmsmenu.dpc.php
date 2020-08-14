@@ -145,6 +145,7 @@ class cmsmenu {
 		$mid = 1;
 		foreach ($menu as $i=>$m) {
 			$ret2 = null;
+			$sbmenu = null;
 			list ($section, $name, $value) = explode('|', $m);			
 			
 			if ($sb = (array) $submenu[$section]) {
@@ -412,6 +413,82 @@ class cmsmenu {
 		
 		return ($ret);
 	}   
+	
+	/*********************** API *********************************/	
+	
+	public function apiMenu($name) {
+		
+		//return true;
+		return $this->apiCallMenu($name);
+	}		
+	
+	//callMenu
+	public function apiCallMenu($name=null,$menu_template=null,$glue_tag=null,$submenu_template=null,$wrap_submenu=null) {
+		if (!$name) return null;
+	    $lan = getlocal() ? getlocal() : '0';			
+		$db = GetGlobal('db');
+		
+		$sSQL = "select type,isfather,ischild,relative,relation,notes,locale,orderid from relatives where ";
+		$sSQL.= "type='$lan' and active=1 and ismenu=1 and ismaster=0 and locale=" . $db->qstr($name);
+		$sSQL.= " ORDER BY orderid";
+		//echo $sSQL;
+	    $result = $db->Execute($sSQL);
+
+		$menu = array();
+		$submenu = array();
+		foreach ($result as $i=>$rec) {
+			
+			$orderid = $rec['orderid'];
+			$relative = $rec['relative'];
+			$relation = $rec['relation'];
+			
+			if ($rec['ischild']) {
+				$submenu[$relative][$orderid] = $rec['notes']; 				
+			}
+			elseif ($rec['isfather']) {
+				$menu[$orderid] = $relation .'|'. $rec['notes']; 	
+			}
+		}	
+		
+		$ret = null;
+		
+		ksort($menu);
+		$mid = 1;
+		foreach ($menu as $i=>$m) {
+			$ret2 = null;
+			$sbmenu = null;
+			list ($section, $name, $value) = explode('|', $m);			
+			
+			if ($sb = (array) $submenu[$section]) {
+				ksort($sb);
+				foreach ($sb as $j=>$c) {
+					list ($cname, $cvalue) = explode('|', $c);					
+					//$ret2[$cname] = trim($cvalue) ? $this->make_link($cvalue) : '#';
+					$ret2[$j] = array('id'=>$j+1,
+									  'title'=>$cname,
+									  'url'=>trim($cvalue) ? $this->make_link($cvalue) : '#',
+									  'name'=>str_replace(' ','-',$name),);
+				}
+				$sbmenu = $ret2;
+				//print_r($sbmenu);
+			}
+		
+			if (!empty($sbmenu)) {
+				$ret[$i] = array('id'=>$i+1,
+								 'title'=>$name,
+				                 'url'=> trim($value) ? $this->make_link($value) : '#',
+								 'name'=>str_replace(' ','-',$name),
+								 'menu'=>$sbmenu);
+			}
+			else	
+				$ret[$i] = array('id'=>$i+1,
+								 'title'=>$name,
+				                 'url'=> trim($value) ? $this->make_link($value) : '#',
+								 'name'=>str_replace(' ','-',$name),);
+		}	
+		//print_r($ret);
+		return ($ret);		
+	}	
    
 };
 }

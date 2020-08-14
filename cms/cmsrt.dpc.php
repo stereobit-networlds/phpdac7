@@ -207,7 +207,7 @@ class cmsrt extends cms  {
 	
 	//overrite
 	protected function javascript() {
-        if (iniload('JAVASCRIPT')) {
+        if (defined('JAVASCRIPT_DPC'))  {
 			
            	$code = $this->createcookie_js();				
 			$code.= $this->javascript_ajax();
@@ -280,7 +280,7 @@ SCROLLTOP;
 	
     protected function refresh_page_js() {
    
-		if (iniload('JAVASCRIPT')) {
+		if (defined('JAVASCRIPT_DPC')) {
 			$code = $this->js_refresh();
 	   
 			$js = new jscript;
@@ -1699,7 +1699,7 @@ EOF;
 	}		
 
 	public function replace_spchars($string, $reverse=false, $rep=null) {
-		$repl = $rep ? $rep : $this->replacepolicy;
+		$repl = $rep ? $rep : null; //$this->replacepolicy; DISABLE POLICY
 		
 		switch ($repl) {	
 	
@@ -1721,7 +1721,7 @@ EOF;
 	}
 	
 	//update `products` set p5=replace(replace(replace(replace(replace(replace(replace(replace(itmname,"'",'-'),'"','-'),',','-'),'+','-'),'/','-'),'&','-'),'.','-'),' ','-') where code5='66001'
-	public function stralias($string) {
+	/*public function stralias($string) {
 		if (!$string) return null;
 		$g1 = array("'",',','"','+','/',' ','&','.');
 		$g2 = array('-','-',"-","-","-",'-','-','-');
@@ -1729,7 +1729,92 @@ EOF;
 		$regstr = trim(preg_replace('/\s\s+/', '-', $string)); //double spaces  
 		$str = str_replace($g1,$g2,$regstr);
 		return ($str);
-	}		
+	}*/
+	public function stralias($string) {
+		if (!$string) return null;
+
+		$g1 = array("'",',','"','+','/',' ','&','.',')','(','#','[',']','?');
+		$g2 = array('-','-',"-","-","-",'-','-','-','-','-','-','-','-','-');		
+	  
+		$str = str_replace($g1,$g2,trim($string));
+		return (str_replace(array('-----','----','---','--'),'-', strtolower($str)));
+	}
+
+	//from greek utf chars to greeklish
+	public function greekSlug($str=null) {
+		if (!$str) return false;
+		$expressions = array(
+        '/[αΑ][ιίΙΊ]/u' => 'ai',
+        //'/[οΟ][ιίΙΊ]/u' => 'ei',
+        //'/[Εε][ιίΙΊ]/u' => 'oi',
+
+        '/[αΑ][υύΥΎ]([θΘκΚξΞπΠσςΣτTφΡχΧψΨ]|\s|$)/u' => 'af$1',
+        '/[αΑ][υύΥΎ]/u' => 'av',
+        '/[εΕ][υύΥΎ]([θΘκΚξΞπΠσςΣτTφΡχΧψΨ]|\s|$)/u' => 'ef$1',
+        '/[εΕ][υύΥΎ]/u' => 'ev',
+        '/[οΟ][υύΥΎ]/u' => 'ou',
+
+        //'/(^|\s)[μΜ][πΠ]/u' => '$1b',
+        //'/[μΜ][πΠ](\s|$)/u' => 'b$1',
+        '/[μΜ][πΠ]/u' => 'mp',
+        '/[νΝ][τΤ]/u' => 'nt',
+        '/[τΤ][σΣ]/u' => 'ts',
+        '/[τΤ][ζΖ]/u' => 'tz',
+        '/[γΓ][γΓ]/u' => 'ng',
+        '/[γΓ][κΚ]/u' => 'gk',
+        '/[ηΗ][υΥ]([θΘκΚξΞπΠσςΣτTφΡχΧψΨ]|\s|$)/u' => 'if$1',
+        '/[ηΗ][υΥ]/u' => 'iu',
+
+        '/[θΘ]/u' => 'th',
+        '/[χΧ]/u' => 'ch',
+        '/[ψΨ]/u' => 'ps',
+
+        '/[αάΑΆ]/u' => 'a',
+        '/[βΒ]/u' => 'v',
+        '/[γΓ]/u' => 'g',
+        '/[δΔ]/u' => 'd',
+        '/[εέΕΈ]/u' => 'e',
+        '/[ζΖ]/u' => 'z',
+        '/[ηήΗΉ]/u' => 'i',
+        '/[ιίϊΙΊΪ]/u' => 'i',
+        '/[κΚ]/u' => 'k',
+        '/[λΛ]/u' => 'l',
+        '/[μΜ]/u' => 'm',
+        '/[νΝ]/u' => 'n',
+        '/[ξΞ]/u' => 'ks',
+        '/[οόΟΌ]/u' => 'o',
+        '/[πΠ]/u' => 'p',
+        '/[ρΡ]/u' => 'r',
+        '/[σςΣ]/u' => 's',
+        '/[τΤ]/u' => 't',
+        '/[υύϋΥΎΫ]/u' => 'y',
+        '/[φΦ]/iu' => 'f',
+        '/[ωώ]/iu' => 'o',
+
+        '/[«]/iu' => '',
+        '/[»]/iu' => ''
+		);		
+		
+		// Translitaration
+		$text = preg_replace(
+			array_keys( $expressions ),
+			array_values( $expressions ),
+			$str
+		);		
+		
+		return $text;
+	}	
+	
+	//slug str 
+	public function slugstr($inputstr=null) {
+		if (!$inputstr) return false;
+		
+		$str = trim($inputstr);	
+		$stralias = $this->stralias($str);	
+		$outputstr = $this->greekSlug($stralias);
+	
+		return strtolower($outputstr);
+	}	
 	
 	//cron func
 	public function replaceAliasCode($csvItems=null, $isStr=false) {
@@ -1757,6 +1842,54 @@ EOF;
 		
 		return false;	
 	}
+	
+	//runtime _m func
+	public function replaceSlugCode($itmcode=null, $itmname=null) {
+		$db = GetGlobal('db');
+		if ((!$itmcode) || (!$itmname)) return false;
+
+		if ($aliasID = $this->useUrlAlias()) {
+			
+			$slugname = $this->greekSlug($itmname);
+			
+			$sSQL = "update products set $aliasID = ";
+			$sSQL.= " replace(replace(replace(replace(replace(replace(replace(replace(replace('$slugname','#','-'),\"'\",'-'),'\"','-'),',','-'),'+','-'),'/','-'),'&','-'),'.','-'),' ','-')";
+			$sSQL.= " where {$this->fcode} = '" . $itmcode . "'";
+			$res = $db->Execute($sSQL);
+
+			return true;
+		}
+		
+		return false;	
+	}
+
+	//LRP = long running process
+	public function updateAliasAll() {
+		$db = GetGlobal('db');
+		$itmname = $this->lan ? 'itmname' : 'itmfname';		
+		
+		if ($aliasID = $this->useUrlAlias()) {
+			
+			$selectSQL = "select {$this->fcode},{$itmname} from products"; //all!!
+			$res = $db->Execute($selectSQL);
+			
+			foreach ($res as $rowid=>$row) {
+				
+				$slugname = $this->slugstr($row[$itmname]);
+			
+				$sSQL = "update products set $aliasID = " . $db->qstr($slugname);
+				$sSQL.= " where {$this->fcode} = '" . $row['code5'] . "'";
+				$res = $db->Execute($sSQL);
+				echo $sSQL . PHP_EOL;
+				echo $rowid + 1;
+				echo PHP_EOL;
+			}
+			//echo $sSQL . PHP_EOL;
+			return true;
+		}
+		
+		return false;
+	}		
 	
 	
 	
@@ -1912,7 +2045,19 @@ EOF;
 		}
 
 		return addslashes($str);
-	}	
+	}
+
+	//form submits params
+	public function getSubmitedParam($param=null,$sel=false) {
+		if (!$param) return false;
+		//echo $param,':',GetParam($param);
+		//print_r($_POST);
+		if (($_POST[$param]) && ($sel))
+			//return $sel ; 
+			return GetParam($param) ? $sel : null; //eg checked
+		
+		return GetParam($param);
+	}		
 	
 	/* db based include part */
 	public function include_partDb($fname=null, $args=null, $uselans=null, $tmplname=null) {	

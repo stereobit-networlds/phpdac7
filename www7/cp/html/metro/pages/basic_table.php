@@ -429,9 +429,7 @@
    <script src="js/common-scripts.js"></script>
 
    <!-- END JAVASCRIPTS -->
-   
-   <phpdac>frontpage.include_part use /parts/google-analytics.php+++meteor</phpdac>
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->    
+    
 </body>
 <!-- END BODY -->
 </html>

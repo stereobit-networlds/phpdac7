@@ -82,7 +82,7 @@ class cmsvstats  {
 
 	
 	protected function javascript() {
-        if (iniload('JAVASCRIPT')) {
+        if (defined('JAVASCRIPT_DPC')) {
 		
 		    //return no js when tags already loaded 
 			if (isset($this->hashtag) || (isset($this->cid) && isset($this->mc))) {}

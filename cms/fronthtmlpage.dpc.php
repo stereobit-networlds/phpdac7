@@ -40,7 +40,7 @@ class fronthtmlpage {
 		$this->session_use_cookie = paramload('SHELL','sessionusecookie');	
 				
 		$this->url = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		$this->url.= $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
+		$this->url.= $_SERVER['HTTP_HOST'];		
 		
 		$this->lan = getlocal() ? getlocal() : '0';		
 		$lans = arrayload('SHELL','languages');
@@ -121,13 +121,13 @@ class fronthtmlpage {
 		//echo $_SERVER['REQUEST_URI'];
 	}	
 	
-    public function render($actiondata) { 
+    public function render($actiondata, $extraTokens=null) { 
 		global $_cleanOB;
 
 	    if ($this->modify) 
 			$out = $this->modify_page();
  
-        $out .= $this->process_html_file($actiondata, $this->modify);		  
+        $out .= $this->process_html_file($actiondata, $this->modify, $extraTokens);		  
 	  		   	 
 		//timer
 		$this->t_fronthtmlpage->stop('fronthtmlpage');
@@ -136,9 +136,30 @@ class fronthtmlpage {
 			//ob_clean ();
 	  	  		  
 		return ($out);
-    }	
+    }
+
+	public function pushTokens($str=null) {
+		global $_tokens;
+		//echo $str;
+		
+		if ($str) {
+			//echo hex2bin($str);
+			$gz = bzdecompress(hex2bin($str));
+			//echo $gz;
+			//$this->tokens = json_decode($gz);
+			//print_r($this->tokens);
+			
+			$_tokens = json_decode($gz);
+			//print_r($_tokens);
+			return true;
+		}	
+		
+		return false;
+	}	
 	
-	protected function process_html_file($data, $admin=null) {
+	protected function process_html_file($data, $admin=null, $extraTokens=null) {
+		global $_tokens, $_html;
+		
 		if ($admin) { 
 			if ($this->anel) 
 				$htmldata = $this->anel_panel(); //anel angular js
@@ -149,44 +170,97 @@ class fronthtmlpage {
 
 			return ($htmldata);
 		}
-	  
+		
+		//First basic tokens 
+		$isServer = (!empty($_SERVER)) ? true : false;
+		$tokens['http'] = $isServer ? ((isset($_SERVER['HTTPS'])) ? 'https://' : 'http://') : paramload('SHELL','protocol');	//0
+		$tokens['host'] = $isServer ? $_SERVER['HTTP_HOST'] : paramload('SHELL','ip'); //1
+		$tokens['requri'] = $isServer ? $_SERVER['REQUEST_URI'] : '.'; //2
+		$tokens['charset'] = paramload('SHELL','charset');		//3	
+		$tokens['urlbase'] = paramload('SHELL','urlbase');
+		$tokens['reqcat'] = GetReq('cat');
+		$tokens['reqid'] = GetReq('id');
+		$tokens['reqpage'] = GetReq('page');
+		
+		//extra tokens at runtime (dac7 pcntlui)
+		if (!empty($extraTokens)) {
+			foreach ($extraTokens as $n=>$v) //push tokens
+				$tokens[$n] = $v;
+		}	
+					
 		if ($this->htmlfile) {
 			//$htmdata = file_get_contents($this->htmlfile);
 			//$htmdata = GetGlobal('controller')::streamfile_contents($this->htmlfile);
 			$htmdata = self::streamfile_contents($this->htmlfile); //ver 5
-			
-			$this->process_javascript($htmdata, $pageout);		
-			$ret = $this->process_commands($pageout);
-			$ret = str_replace("<?". $this->argument ."?>",$data,$ret);
-			
-			$tokens[] = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';	
-			$tokens[] = $_SERVER['HTTP_HOST'];//(strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];
-			$tokens[] = $_SERVER['REQUEST_URI'];
-			$tokens[] = 'utf-8';			
-			
-			//print_r($tokens);
-			$tags = array('$0$','$1$','$2$', '$3$');		
-			$ret = str_replace($tags, $tokens, $ret);	
-		  		
-			if (!$this->session_use_cookie)
-				$ret = $this->propagate_session($ret); 
 		}
+		elseif (isset($_html)) {
+			$htmdata = $_html;
+		}	
 		else {
-			global $_html;//standart name .... 
-			if ($_html) {
-				$this->process_javascript($_html, $pageout);
-				$ret = $this->process_commands($pageout);	
-		  
-				if (!$this->session_use_cookie)
-					$ret = $this->propagate_session($ret);			
-			}
-			else {
-				$hfile = $this->htmlfile ? $this->htmlfile : 'none';	
-				$ret = "Unknown html file (".$hfile.") or argument.\n" . $admlink;
-			}  
+			$hfile = $this->htmlfile ? $this->htmlfile : 'none';	
+			return "Undefined template data ($hfile)";
 		}	
 		
+		//htmdata exists		
+		$this->process_javascript($htmdata, $pageout);		
+		$ret = $this->process_commands($pageout);
+		$ret = str_replace("<?". $this->argument ."?>",$data,$ret);					
+		
+		if (!empty($_tokens)) {
+			$ret = $this->process_loop($ret, $_tokens, $tokensLoop); //ret tokens
+			//print_r($tokens);
+			//if (!empty($tokensLoop))//no need
+				//array_merge_recursive($tokens, $tokensLoop);
+			foreach ($tokensLoop as $n=>$v) //push tokens
+				$tokens[$n] = $v;
+		}
+		$this->process_tokens($tokens, $ret);			
+
+		//if (!$this->session_use_cookie) //DISABLED
+			//$ret = $this->propagate_session($ret); 
+		
 		return ($ret);	
+	}
+	
+	//process named tokens[last or oneitem] to the whole html body
+	public function process_tokens($tokens, &$data) {
+		if (empty($tokens)) return false;
+		//print_r($tokens);
+		foreach ($tokens as $name=>$value) 
+			$data = str_replace("{{{$name}}}", $value, $data);
+			
+		return true;	
+	}	
+	
+
+	//execute loop areas with named tokens and return last token array set
+	//for full text named tokens replacements
+	public function process_loop($data, $tokensarray=null, &$retTokens=null) {
+		if (!$tokensarray) return $data; //as is
+		$retTokens = array();
+		
+		$pattern = "@<phpdac-loop.*?>(.*?)</phpdac-loop>@s";
+		preg_match_all($pattern, $data, $matches, PREG_PATTERN_ORDER);
+		if (!$matches[1]) return $data; // as is
+		
+		foreach ($matches[1] as $r=>$cmd) {
+			//echo '<br/>' . $r . '--------------------------------->';
+			$repl = $cmd; //reset
+			foreach ($tokensarray as $tokens) {
+				//print_r($tokens);		
+				//echo $tokens->itmname .  '<br/>';
+				foreach ($tokens as $name=>$value) {
+			
+					$repl = str_replace("{{{$name}}}", $value, $repl);
+					$retTokens[$name] = $value; //save ret values
+				}
+			}
+			//$_cmd = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", "", $cmd)));
+			//$ret = _m($_cmd); //,1); //no error stop 					 
+			$data = str_replace("<phpdac-loop-$r>". $cmd . "</phpdac-loop>", $repl, $data);			
+		}
+	  
+		return ($data);
 	}	
 
 	public function process_commands($data,$is_serialized=null) {
@@ -207,20 +281,24 @@ class fronthtmlpage {
 			$data = str_replace("<phpdac>".$cmd."</phpdac>",$ret,$data);
 		}
 	  
-		return ($data);//as is
+		return ($data);
 	}
 	
 	protected function process_javascript($data, &$pageout) {
-	
+		//global $_tokens; //if _tokens exist do not load generated js 
+		
 		//call javascript 
-		if (defined('JAVASCRIPT_DPC')) {		  
+		if (defined('JAVASCRIPT_DPC')) { //REMOVE JAVASCRIPT_DPC when js not needed		  
+		//if ((empty($_tokens)) && (defined('JAVASCRIPT_DPC'))) {		  
 
 			_m('javascript.onLoad');
 			$jret = _m('javascript.callJavaS');
 			//echo $jret;
 			//if ($jret) 
 			$pageout = str_replace("</body>", $jret."</body>", $data); //body jqgrid problem 
-		}	
+		}
+		else
+			$pageout = $data; //as is	
 	}
 
 	protected function propagate_session($data,$ext='.php') {
@@ -1233,7 +1311,7 @@ EOF;
 		$ret = '
 function cc(name,value,days) {
     if (days) { var date = new Date(); date.setTime(date.getTime()+(days*24*60*60*1000)); var expires = "; expires="+date.toGMTString();} else var expires = "";
-    document.cookie = name+"="+value+expires+"; path=/; domain=.'.str_replace('www.','',$_SERVER['HTTP_HOST']).';" }
+    document.cookie = name+"="+value+expires+"; path=/; domain=.'.$_SERVER['HTTP_HOST'].';" }
 ';
         return ($ret);
 	}
@@ -1265,11 +1343,11 @@ function cc(name,value,days) {
 	static public function streamfile_contents($f=null, $falt=null) {
 		if (!$f) return null;
 		global $dac, $st;
-		
+		//echo $dac, ':', $st, '-------------------------------------' . PHP_EOL;
 		if ($dac) { 
 			$fp = str_replace(self::$staticprpath, '/cp/', $f);
-			phpdac7\__log('fetch remote:' . $fp);
-			
+			//phpdac7\__log('fetch remote:' . $fp); //dac7 not comaptible
+			//echo "$st/www7" . $fp . PHP_EOL;
 			return file_get_contents("$st/www7" . $fp);	
 		}
 		

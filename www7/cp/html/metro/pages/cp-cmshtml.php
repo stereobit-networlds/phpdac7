@@ -102,7 +102,6 @@
 	function editform() {var str = arguments[0]; $('#cmshtmledit').load("cpcmshtml.php?t=cpcmsfshow&id="+str);}
    </script>
 
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
 </body>
 <!-- END BODY -->
 </html>

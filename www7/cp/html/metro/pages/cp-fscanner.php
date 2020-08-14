@@ -87,8 +87,6 @@
 	function details() {var str = arguments[0]; $('#fdetails').load("cpfscanner.php?t=cpscanrep&date="+str);}
 	function sdetails() {var str = arguments[0]; str1 = arguments[1]; $('#fdetails').load("cpfscanner.php?t=cpscanrep&date="+str+"&acct="+str1);}
    </script>
-	<phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
 </body>
 <!-- END BODY -->
 </html>

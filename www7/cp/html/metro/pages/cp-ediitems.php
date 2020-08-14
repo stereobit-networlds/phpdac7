@@ -76,8 +76,8 @@
 								
                                 <div id="tabsleft" class="tabbable tabs-left">
                                 <ul>
-                                    <li><a href="#tabsleft-tab1" data-toggle="tab"><span class="strong">Options</span> <span class="muted">Options</span></a></li>
-									<li><a href="#tabsleft-tab2" data-toggle="tab"><span class="strong">Messages</span> <span class="muted">Messages</span></a></li>
+                                    <li><a href="#tabsleft-tab1" data-toggle="tab"><span class="strong"><phpdac>cmsrt.slocale use _options</phpdac></span></a></li>
+									<li><a href="#tabsleft-tab2" data-toggle="tab"><span class="strong"><phpdac>cmsrt.slocale use _messages</phpdac></span></a></li>
                                 </ul>
 
                                 <div class="tab-content">
@@ -89,9 +89,17 @@
 											</label>
 											<div class="controls">
 												<div id="normal-toggle-button">
-													<input name="moveincat" type="checkbox">
+													<input name="moveincat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use moveincat+checked</phpdac> >
 													<phpdac>rcediitems.currCategory</phpdac>
 												</div>
+												<label class="checkbox">
+                                                    <input name="slugon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use slugon+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _slug</phpdac>
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="sluggreekon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use sluggreekon+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _sluggreeklish</phpdac>
+                                                </label>
 											</div>
 										</div>	
 										<div class="control-group">
@@ -103,6 +111,14 @@
 													<input name="updincat" type="checkbox">
 													<phpdac>rcediitems.currCategory</phpdac>
 												</div>
+												<label class="checkbox">
+                                                    <input name="slugon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use slugon+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _slug</phpdac>
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="sluggreekon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use sluggreekon+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _sluggreeklish</phpdac>
+                                                </label>
 											</div>
 										</div>										
                                         <div class="control-group">
@@ -111,17 +127,29 @@
 											</label>
                                             <div class="controls">
 												<div id="normal-toggle-button">
-													<input name="createcat" type="checkbox">
+													<input name="createcat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use createcat+checked</phpdac>>
 													<phpdac>rcediitems.currCategory</phpdac>
 												</div>
+												<label class="checkbox">
+                                                    <input name="slugon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use slugon+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _slug</phpdac>
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="sluggreekon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use sluggreekon+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _sluggreeklish</phpdac>
+                                                </label>												
+												
                                                 <label class="checkbox">
-                                                    <input name="catact" type="checkbox" /> Active
+                                                    <input name="catact" type="checkbox" <phpdac>cmsrt.getSubmitedParam use catact+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _active</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="catview" type="checkbox" /> View
+                                                    <input name="catview" type="checkbox" <phpdac>cmsrt.getSubmitedParam use catview+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _viewable</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="catsearch" type="checkbox" /> Search
+                                                    <input name="catsearch" type="checkbox" <phpdac>cmsrt.getSubmitedParam use catsearch+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _searchable</phpdac>
                                                 </label>
                                             </div>
                                         </div>
@@ -133,7 +161,7 @@
 											</label>
 											<div class="controls">
 												<div id="normal-toggle-button">
-													<input name="delincat" type="checkbox">
+													<input name="delincat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use delincat+checked</phpdac> >
 													<phpdac>rcediitems.currCategory</phpdac>
 												</div>
 											</div>
@@ -144,9 +172,17 @@
 											</label>
                                             <div class="controls">
 												<div id="normal-toggle-button">
-													<input name="deletecat" type="checkbox">
+													<input name="deletecat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use deletecat+checked</phpdac> >
 													<phpdac>rcediitems.currCategory</phpdac>
 												</div>
+												<label class="checkbox">
+                                                    <input name="slugon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use slugon+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _slug</phpdac>
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="sluggreekon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use sluggreekon+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _sluggreeklish</phpdac>
+                                                </label>
                                             </div>
                                         </div>
 										
@@ -154,13 +190,16 @@
 										<div class="control-group">
 											<div class="controls">
 												<label class="checkbox">
-                                                    <input name="dbset" type="checkbox" /> <phpdac>cmsrt.slocale use _dbset</phpdac>
+                                                    <input name="dbset" type="checkbox" /> 
+													<phpdac>cmsrt.slocale use _dbset</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="logset" type="checkbox" /> <phpdac>cmsrt.slocale use _logset</phpdac>
+                                                    <input name="logset" type="checkbox" /> 
+													<phpdac>cmsrt.slocale use _logset</phpdac>
                                                 </label>
 												<label class="checkbox">
-                                                    <input name="logclear" type="checkbox" /> <phpdac>cmsrt.slocale use _logclear</phpdac>
+                                                    <input name="logclear" type="checkbox" /> 
+													<phpdac>cmsrt.slocale use _logclear</phpdac>
                                                 </label>
 											</div>
 										</div>	
@@ -168,9 +207,9 @@
 										<h3><phpdac>rcediitems.showFilter</phpdac></h3>		
                                     </div>	
 									<div class="tab-pane" id="tabsleft-tab2">
-                                    	<h3>Messages</h3>
+                                    	<h3><phpdac>cmsrt.slocale use _messages</phpdac></h3>
 										<div class="control-group">
-											<label class="control-label">Messages</label>
+											<label class="control-label"><phpdac>cmsrt.slocale use _messages</phpdac></label>
 											<div class="controls">
 												<select id="messages" multiple="multiple" style="height:100px;width:100%;">
 												<phpdac>rcediitems.viewMessages</phpdac>
@@ -237,71 +276,6 @@
    <script src="js/form-wizard.js"></script>
 
    <!-- END JAVASCRIPTS -->
-   <script>
-       $(function () {
-           $(" input[type=radio], input[type=checkbox]").uniform();
-       });
-
-$(document).ready(function() {
-    $('#btn-up').bind('click', function() {
-        $('#group-sort option:selected').each( function() {
-            var newPos = $('#group-sort option').index(this) - 1;
-            if (newPos > -1) {
-                $('#group-sort option').eq(newPos).before("<option value='"+$(this).val()+"' selected='selected'>"+$(this).text()+"</option>");
-                $(this).remove();
-            }
-        });
-    });
-    $('#btn-down').bind('click', function() {
-        var countOptions = $('#group-sort option').size();
-        $('#group-sort option:selected').each( function() {
-            var newPos = $('#group-sort option').index(this) + 1;
-            if (newPos < countOptions) {
-                $('#group-sort option').eq(newPos).after("<option value='"+$(this).val()+"' selected='selected'>"+$(this).text()+"</option>");
-                $(this).remove();
-            }
-        });
-    });
-	
-	$('#sortGroup').submit( function() {
-		$('#group-sort option').attr('selected', 'selected');
-	}); 
-
-    $('#startTour').click(function(){
-          options = {
-            data : [
-              { element : '#tabsleft', 'tooltip' : 'Βήματα κατασκευής περιεχομένου', 'position' : 'TL', 'text' : '<h3>Content wizard</h3><p>Με την επιλογή και την συμπλήρωση στοιχείων που αφορούν την κατασκευή του περιεχομένου, την επιλογή λίστας ή πολλαπλών λιστών και την χρήση των επιλεγμένων αντικειμένων, μπορείτε να δημιουργήσετε το περιεχόμενο σας αυτόματα, να το αποθηκεύσετε ως εργασία και να το αποστείλετε στους αποδέκτες σας.</p>'  },
-              { element : '#select_template', 'tooltip' : 'Επιλογή εικαστικού θέματος', 'position' : 'TL', 'text' : '<h3>Επιλογή εικαστικού</h3><p>Επιλέξτε ένα απο τα έτοιμα εικαστικά θέματα. Φόρτώστε το περιεχόμενο τους και αποτυπώστε μέσα σε αυτό, αυτόματα τις πιθανές επιλογές των αντικειμένων που επιλέξατε σε προηγούμενα βήματα.</p>' },
-              { element : '#edit_template', 'tooltip' : 'Προβολή εικαστικού θέματος', 'position' : 'Β', 'text' : '<h3>Εικαστικό θέμα</h3><p>Απεικόνιση του περιεχόμενου που επιλέξατε. Μπορείτε να δείτε πώς μεταβάλεται η δυναμική σχεδιάση καθώς ρυθμίζετε τα αντικείμενα προβολής.</p>' },
-			  { element : '#sortGroup', 'tooltip' : 'Ρύθμιση ταξινόμησης', 'position' : 'T', 'text' : '<h3>Ταξινόμηση ειδών</h3><p>Επιλέξτε ένα απο τα αντικείμενα της λίστας για να ρυθμίσετε την θέση του στο εικαστικό που επιλέξατε.</p>' },
-			  { element : '.update-btn', 'tooltip' : 'Πλήκτρα κίνησης', 'position' : 'TR', 'text' : '<h3>Πλήκτα κίνησης</h3><p>Εφόσον επιλέξετε αντικείμενο, μετακινείστε το στην λίστα χρησιμοποιώντας τα πλήκτρα κατεύθυνσης. Με το πλήκτρο Edit μπορείτε να επιστρέψετε στην διαδικασία επιλογής ειδών για να προσθαφαιρέσετε αντικείμενα.</p>' },
-			  { element : '.pager.wizard', 'tooltip' : 'Πατήστε Next', 'position' : 'BR', 'text' : '<h3>Πατήστε Next</h3><p>Πατήστε το πλήκρο Next για να συνεχίσετε.</p>' },
-              { element : '#select_ulists', 'tooltip' : 'Επιλογή λίστας', 'position' : 'BL' , 'text' : '<h3>Επιλογή λίστας</h3><p>Επιλέξτε λίστα διανομής που αποθηκεύσατε ώστε να συμμετάσχει στην διανομή του περιεχομένου.</p>' },
-              { element : '#select_ulists_multiple', 'tooltip' : 'Επιλογή πολλαπλών λιστών', 'position' : 'BL', 'text' : '<h3>Πολλαπλές λίστες</h3><p>Επιλέξτε μία ή περισσότερες λίστες διανομής κρατώντας το ctrl πατημένο όσο επιλέγετε το όνομα της λίστας που θέλετε να συμμετέχει στην αποστολή.</p>' },
-              { element : '#edit_csv', 'tooltip' : 'Λίστα csv', 'position' : 'BL', 'text' : '<h3>CSV λίστα</h3><p>Μία λίστα e-mails -csv (comma separated values, διακεκομένη με κόμμα (,)- μπορεί να συμπληρωθεί σε αυτό το σημείο ώστε να συμπεριλάβει τους αποδέκτες στην διανόμη.</p>' },
-              { element : '#select_addons', 'tooltip' : 'Πρόσθετα', 'position' : 'BL', 'text' : '<h3>Πρόσθετα</h3><p>Επιλέξτε τα πρόσθετα που θα συνυπολογιστούν στην διανομή. Αυτά μπορεί να είναι χρήστες της e-Enterprise εφαρμογής, πελάτες της e-Enterprise εφαρμογής ή άλλο.</p>' },
-			  { element : '.pager.wizard', 'tooltip' : 'Πατήστε Next', 'position' : 'BR', 'text' : '<h3>Πατήστε Next</h3><p>Πατήστε το πλήκρο Next για να συνεχίσετε.</p>' },
-              { element : '#select_webpage', 'tooltip' : 'Προβολή ως ιστοσελίδα', 'position' : 'BL', 'text' : '<h3>View as webpage</h3><p>Επιλογή προσθήκης συνδέσμου για την προβολή του περιεχομένου ως ιστοσελίδα. Αφορά εγκαταστάσεις e-Enterprise, που έχουν την δυνατότητα να οδηγούν τους παραλήπτες στο κανάλι προβολής τους.</p>' },
-              { element : '#edit_webpage', 'tooltip' : 'Κείμενο προστροπής', 'position' : 'BL', 'text' : '<h3>Κείμενο προστροπής</h3><p>Κείμενο που εμφανίζεται στο προ-ρυθμισμένο περιεχόμενο και σύνδεσμος για την προβολή του περιεχομένου ως ιστοσελίδα.</p>' },
-              { element : '#select_unsubscribe', 'tooltip' : 'Σύνδεσμος δυνατότητας αφαίρεσης παραλήπτη απο την λίστα', 'position' : 'BL', 'text' : '<h3>Επιλογή αφαίρεσης απο την λίστα</h3><p>Δίνεται πάντα η δυνατότητα στον παραλήπτη να ενημερώθει για την ισχύουσα νομοθεσία αποστολή μηνυμάτων και τη δυνατότητα του να αφαιρέσει το e-mail του απο την λίστα διανομής.</p>' },
-              { element : '#edit_unsubscribe', 'tooltip' : 'Κείμενο προτροπής', 'position' : 'BL', 'text' : '<h3>Κείμενο προστροπής</h3><p>Κείμενο προτροπής για την ενημέρωση του παραλήπτη.</p>' },
-			  { element : '.pager.wizard', 'tooltip' : 'Πατήστε Next', 'position' : 'BR', 'text' : '<h3>Πατήστε Next</h3><p>Πατήστε το πλήκρο Next για να συνεχίσετε.</p>' },
-              { element : '#edit_from', 'tooltip' : 'Αποστολέας', 'position' : 'BL', 'text' : '<h3>Αποστολέας</h3><p>Συμπληρώστε ή αφήστε την προεπιλογή ως έχει, για τα στοιχεία του αποστολέα.</p>' },
-              { element : '#edit_to', 'tooltip' : 'Παραλήπτης', 'position' : 'BL', 'text' : '<h3>Παραλήπτης</h3><p>Συμπλήρώστε το e-mail του παραλήπτη. Έκτος της λίστας διανομής μπορεί να συμπεριλαμβάνεται και ένας τυπικός παραλήπτης. Συνήθως αφορά στοιχεία του ίδιου ή άλλου e-mail λογαριασμού του αποστολέα για την λήψη του περιεχομένου.</p>' },
-			  { element : '#edit_subject', 'tooltip' : 'Θέμα εργασίας-αποστολής', 'position' : 'BL', 'text' : '<h3>Θέμα εργασίας</h3><p>Τίτλος θέματος εργασίας - αποστολής βάση του οποίου αποθηκεύεται η εργασία και αποστέλεται στις λίστες διανομής.</p>' },
-			  { element : '.pager.wizard', 'tooltip' : 'Τέλος ρυθμίσεων', 'position' : 'BR', 'text' : '<h3>Τέλος ρυθμίσεων</h3><p>Πατήστε το πλήκρο Finish για να αποθηκέυσετε τις ρυθμίσεις της εργασίας.</p>' }
-            ] ,
-            controlsPosition : 'BR'
-          };
-
-        $.aSimpleTour(options);  
-    });	
-	
-});	  
-	   
-   </script>
-   <script src="js/aSimpleTour.js" type="text/javascript"></script>   
-
 </body>
 <!-- END BODY -->
 </html>

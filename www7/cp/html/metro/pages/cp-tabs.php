@@ -102,9 +102,7 @@
    <!--script for this page only-->
 
 
-   <!-- END JAVASCRIPTS -->
-   <phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->        
+   <!-- END JAVASCRIPTS -->       
 </body>
 <!-- END BODY -->
 </html>

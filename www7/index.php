@@ -39,7 +39,7 @@ if ($mc_page == 'home') {
 else
 	$_GET['style'] = 'alt';
 
-$headerStyle = ($mc_page=='home') ? 1 : 2;
+$headerStyle = 2;//($mc_page=='home') ? 1 : 2;
 echo $htmlpage->render(null,getlocal(),null,'media-center/index.php');
 $time = (microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) / 60;
 echo "<!-- remote $time -->";

@@ -20,7 +20,7 @@
     <link href="assets/fancybox/source/jquery.fancybox.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="assets/uniform/css/uniform.default.css" />
 	
-   <script src="http://www.xix.gr/ckeditor/ckeditor.js"></script>		
+   <script src="https://www.stereobit.gr/ckeditor/ckeditor.js"></script>		
 
 </head>
 <!-- END HEAD -->
@@ -308,9 +308,7 @@
            $(" input[type=radio], input[type=checkbox]").uniform();
        });
 
-   </script>
-   <phpdac>frontpage.include_part use /parts/google-analytics.php+++meteor</phpdac>
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
+   </script>  
 
 </body>
 <!-- END BODY -->

@@ -85,8 +85,6 @@
    <script>
 	function editform() {var str = arguments[0]; $('#cmsform').load("cpcmstemplates.php?t=cpcmsfshow&id="+str);}
    </script>
-	<phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
 </body>
 <!-- END BODY -->
 </html>

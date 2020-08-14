@@ -257,7 +257,7 @@
    <script src="assets/fancybox/source/jquery.fancybox.pack.js"></script>
    <script src="js/jquery.scrollTo.min.js"></script>
 
-   <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+   <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
    <script src="js/jQuery.dualListBox-1.3.js" language="javascript" type="text/javascript"></script>
 
 
@@ -278,9 +278,6 @@
 
    </script>
    <!-- END JAVASCRIPTS --> 
-
-	<phpdac>frontpage.include_part use /parts/google-analytics.php+++meteor</phpdac>
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
 </body>
 <!-- END BODY -->
 </html>

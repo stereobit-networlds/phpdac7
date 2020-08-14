@@ -47,6 +47,8 @@ class shtags {
    var $cseparator, $replacepolicy, $reset_input;
    
    var $tmpl_path, $tmpl_name;   
+   
+   var $shclass;
 
     function __construct() {
    
@@ -80,6 +82,8 @@ class shtags {
 
 		$this->use_canonical_for_filters = _m('cmsrt.paramload use ESHOP+canonicalfilter') ?: false; //else use category for rel
 		$this->reset_input = array();	
+		
+		$this->shclass = defined('SHKATALOGMEDIA_DPC') ? 'shkatalogmedia' : 'shkatalog';
     }
 
 	public function event($event=null) {
@@ -123,7 +127,7 @@ class shtags {
 		$httpurl = _v('cmsrt.httpurl');
 		$aliasID = _v('cmsrt.userUrlAlias');
 		$klistcmd = _v('cmsrt.klistcmd');
-		$kshowtcmd = _v('cmsrt.kshowcmd');
+		$kshowcmd = _v('cmsrt.kshowcmd');
 		$cat = GetReq('cat');
 		$id = GetReq('id');	
 		$t = GetReq('t');
@@ -161,7 +165,7 @@ class shtags {
 		$input = GetReq('input');
 		$out = array();
 		$priceSQL = null;
-		$_all = _v('shkatalogmedia._catAllFilter');	
+		$_all = _v($this->shclass . '._catAllFilter');	
 		if (!$input) return false;	
 		
 		if (strstr($input, ',')) {
@@ -215,7 +219,7 @@ class shtags {
 		$item = GetReq('id');	
 		$cat = GetReq('cat');
 	    $lan = getlocal();	
-		$_all = _v('shkatalogmedia._catAllFilter');			
+		$_all = _v($this->shclass . '._catAllFilter');			
 		
 		if ($data = $this->readfilter()) {
 			print_r($data);
@@ -267,7 +271,7 @@ class shtags {
 	    $lan = getlocal();
 	    $itmname = $lan?'itmname':'itmfname';
 	    $itmdescr = $lan?'itmdescr':'itmfdescr';
-		$_all = _v('shkatalogmedia._catAllFilter');				
+		$_all = _v($this->shclass . '._catAllFilter');				
 		
 		if ($data = $this->readfilter()) {
 			
@@ -289,8 +293,8 @@ class shtags {
 		}	
 	    elseif ($item) { 
  
-			$this->result = _v("shkatalogmedia.result");
-			$ppol = _m("shkatalogmedia.read_policy");
+			$this->result = _v($this->shclass . ".result");
+			$ppol = _m($this->shclass . ".read_policy");
 			//print_r($this->result);		
 		
 			$this->item = $this->result->fields[$itmname];
@@ -363,9 +367,9 @@ class shtags {
 	    $itmkeywords = $lan?'keywords'.$lan:'keywords0';
 	    $itmdescr = $lan?'descr'.$lan:'descr0';  
 		$itmtitle = $lan?'title'.$lan:'title0';
-		$_all = _v('shkatalogmedia._catAllFilter');				
+		$_all = _v($this->shclass . '._catAllFilter');				
 
-        $code = $item ? _v('shkatalogmedia.realID') : (($cat!=$_all) ? $cat : null);		
+        $code = $item ? _v($this->shclass . '.realID') : (($cat!=$_all) ? $cat : null);		
 		
 		if ($code) {
 			$sSQL = "select code,tag,$itmkeywords,$itmdescr,$itmtitle from ptags ";

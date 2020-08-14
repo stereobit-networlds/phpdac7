@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="assets/bootstrap-toggle-buttons/static/stylesheets/bootstrap-toggle-buttons.css" />
     <!--link rel="stylesheet" type="text/css" href="assets/bootstrap-daterangepicker/daterangepicker.css" /-->	
 
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
 	
 	<link href="../javascripts/themes/redmond/jquery-ui.custom.css" rel="stylesheet" /> 
 	<link href="../javascripts/jqgrid/css/ui.jqgrid.css" rel="stylesheet" />  
@@ -278,9 +278,6 @@
         });
       });
     </script>     
-
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
-
 </body>
 <!-- END BODY -->
 </html>

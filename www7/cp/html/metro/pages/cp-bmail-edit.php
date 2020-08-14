@@ -402,8 +402,6 @@ $(document).ready(function() {
    </script>
    <script src="js/aSimpleTour.js" type="text/javascript"></script>
    <script>cryptoPost.decrypt('<phpdac>pcntl.getEncrypted</phpdac>');</script>
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
-
 </body>
 <!-- END BODY -->
 </html>

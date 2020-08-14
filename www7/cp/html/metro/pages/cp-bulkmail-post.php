@@ -306,10 +306,7 @@
           $.aSimpleTour(options);  
         });
       });
-    </script>     
-
-   <phpdac>frontpage.include_part use /parts/google-analytics.php+++metro</phpdac>
-   <!-- e-Enterprise, stereobit.networlds (phpdac5) -->     
+    </script>        
 
 </body>
 <!-- END BODY -->
