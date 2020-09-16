@@ -7,8 +7,7 @@ define("RCADDONS_DPC",true);
 
 $__DPC['RCADDONS_DPC'] = 'rcaddons';
 
-$a = GetGlobal('controller')->require_dpc('libs/appkey.lib.php');
-require_once($a);
+require_once(_r('libs/appkey.lib.php'));
  
 $__EVENTS['RCADDONS_DPC'][0]='cpaddons';
 $__EVENTS['RCADDONS_DPC'][1]='cpadd';

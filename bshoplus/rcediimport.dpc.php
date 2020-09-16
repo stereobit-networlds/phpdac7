@@ -54,12 +54,15 @@ $__LOCALE['RCEDIIMPORT_DPC'][38]='xml;Exports XML;Εξαγωγές XML';
 $__LOCALE['RCEDIIMPORT_DPC'][39]='csv;Exports CSV;Εξαγωγές CSV';
 $__LOCALE['RCEDIIMPORT_DPC'][40]='sql;Exports SQL;Εξαγωγές SQL';
 $__LOCALE['RCEDIIMPORT_DPC'][41]='log;Exports LOG;Εξαγωγές LOG';
+$__LOCALE['RCEDIIMPORT_DPC'][42]='_lrp;Long Running Process;Long Running Process';
 
 class rcediimport {
 	
 	var $title, $prpath, $urlpath, $url;
 	var $fields, $etlfields, $messages;
-	var $etlPath, $etlLOG, $i, $now, $maxLines;
+	var $etlPath, $etlLOG, $i, $now, $maxLines, $maxPage;
+	
+	var $dac7, $indac7, $dacEnv;
 		
     public function __construct() {
 	  
@@ -83,7 +86,12 @@ class rcediimport {
 		$this->i = 0;
 		$this->now = date("Y-m-d H:m:s");
 		
-		$this->maxLines = 5000;
+		$this->dac7 = _m('cmsrt.isDacRunning');
+		$this->indac7 = _m('cmsrt.runningInsideDac');
+		$this->dacEnv = GetGlobal('controller')->env;		
+		
+		$this->maxLines = ($this->indac7==true) ? 50000 : 5000;
+		$this->maxPage = ($this->indac7==true) ? 10000 : 500;
 	}
 	
     public function event($event=null) {
@@ -308,40 +316,59 @@ class rcediimport {
 	}	
 
 	protected function submit() {
-		$currfile = $this->currFile();
-		$currfilePath = $this->currFile(true);
-		//$this->messages[] = "File " . $currfile;
-		//return; //test
 		
-		if (!is_readable($currfilePath)) {
-		//if (!is_file($currfilePath)) {	
+		if ($this->dac7==true) {
+			//when in dac mode submit is all at once ()see async/ppost/bshopplus_rchandleitems_submit
 			
-			$this->messages[] = "File ($currfilePath) not exists";
-			return false;
-		}	
-		
-		if (stristr($currfile, '.csv')) { //csv file
-		
-			$this->messages[] = "File $currfile";
-			$this->istextCSV($currfile, false, true);
+			//if ($this->savePostCookie()) {
+			if (_m('cmsrt.savePostCookie')) {	
+				
+				//execute long running processs	
+				$cmd = 'async/ppost/bshopplus_rcediimport_submit/';
+				phpdac7\getT($cmd); //exec cmd and close tier
+				
+				$this->jsDialog('Start', localize('_lrp', getlocal()), 3000, 'cdact.php?t=texit');
+				$this->messages[] = 'LRP started!';	
+				
+				return true;
+			}
+			else
+				$this->messages[] = 'LRP failed!';	
 		}
-		elseif (stristr($currfile, '.sql')) { //sql file
+		else {		
+			$currfile = $this->currFile();
+			$currfilePath = $this->currFile(true);		
 		
-			$this->messages[] = "File $currfile";
-			$this->istextSQL(false, true);
-		}
-		else {//xml
-		
-			$this->messages[] = "Unhandled file $currfile";
-			//$this->istextSQL(false, true);
-		}	
+			if (!is_readable($currfilePath)) {	
 			
-		return true;	
+				$this->messages[] = "File ($currfilePath) not exists";
+				return false;
+			}	
+		
+			if (stristr($currfile, '.csv')) { //csv file
+		
+				$this->messages[] = "File $currfile";
+				$this->istextCSV($currfile, false, true);
+			}
+			elseif (stristr($currfile, '.sql')) { //sql file
+			
+				$this->messages[] = "File $currfile";
+				$this->istextSQL(false, true);
+			}
+			else {//xml
+		
+				$this->messages[] = "Unhandled file $currfile";
+				//$this->istextSQL(false, true);
+			}	
+			
+			return true;
+		}
+		return false;	
 	}
 	
 
 	//partial SQL insert
-	protected function istextSQL($log=false, $logdb=false) {	
+	public function istextSQL($log=false, $logdb=false) {	
 		$db = GetGlobal('db');
 		
 		$cntfile = $this->etlPath . 'import-counter.log';
@@ -356,7 +383,7 @@ class rcediimport {
 		
 		//$sqlarray = file($this->currFile(true));
 		
-		$line_delimiter =  ');' . PHP_EOL;		
+		$line_delimiter =  ';;'; //DOUBLE COLLON	//');;' . PHP_EOL;
 		$sqlarray = explode($line_delimiter, file_get_contents( $this->currFile(true)));
 		
 		$errmsg = 0;
@@ -372,10 +399,11 @@ class rcediimport {
 			$x = $_x ? $_x : 1;
 			foreach ($sqlarray as $zi=>$rec) {
 				if (($_x) && ($zi < $_x)) continue;
-				if ($x == $_x + 500) {
+				if ($x == $_x + $this->maxPage) {
 						
 					file_put_contents($cntfile, $x);
-					$this->messages[] = '(' . $x . ') Press submit to continue...';
+					//$this->messages[] = '(' . $x . ') Press submit to continue...';
+					$this->_echo('(' . $x . ') Press submit to continue...');
 						
 					//save log messages
 					//if (GetParam('logset'))
@@ -388,42 +416,56 @@ class rcediimport {
 
 				if ($sqlstatement) 
 				{
-					$runSQL = trim(str_replace("\r\n", "", $sqlstatement)) . $line_delimiter; //add delimiter trail
+					$runSQL = trim(str_replace("\r\n", "", $sqlstatement));// . $line_delimiter; //add delimiter trail
 					//$ix=0;
 					
 					if ((stristr($runSQL,'insert')) || (stristr($runSQL,'update')) ||
 						(stristr($runSQL,'delete ')) || (stristr($runSQL,'select'))) 
 					{
-						if ($res = $db->Execute($runSQL,1)) 
-						{
-							$ix=1;
-						}
-						else 
-						{
-							$this->messages[] = $runSQL . " (" . $db->error . ")";
-							$errmsg += 1;
-						}
-						//if (GetParam('dbset'))
-							//$res = $db->Execute($runSQL);
-						$i+=1;
-					}					
+					
+					//support multiple sql separated by ; -last separator must be ); = $line_delimiter -
+					/*$mSQL = array(); //reset
+					if (strstr($runSQL, ';')) 
+						$mSQL = explode(';', $runSQL); //many sql cmds
+					else
+						$mSQL[] = $runSQL; //one elemet array
+					
+					foreach ($mSQL as $m=>$rSQL)
+					{*/
+						//if (trim($rSQL)) {
+							
+							if ($res = $db->Execute($runSQL,1)) //runSQL
+							{
+								$ix=1;
+								//$this->_echo('Executed: ' . $rSQL);
+							}
+							else 
+							{
+								//$this->messages[] = $runSQL . " (" . $db->error . ")";
+								$this->_echo('Error: ' . $runSQL . " (" . $db->error . ")");
+								$errmsg += 1;
+							}
+
+							$i+=1;	
+						//}
+					}	
 				}				
 				$x+=1;
 			} //foreach			
 			} //max
 		} //not empty array
 	
-		$this->messages[] = "(". date('Y-m-d H:i:s') . ")"; 
-		$this->messages[] = "----------------------- End of process";
-		$this->messages[] = "Row SQL file readed!";	
-		$this->messages[] = $_max . " records in file!";		
-		$this->messages[] = ($_counter + $i) . " records readed!";		
-		$this->messages[] = $i . " records executed!";
-		$this->messages[] = "Import done!";	 			
-		$this->messages[] = '----------------------- Errors';			
-		$this->messages[] = $errmsg;
-		$this->messages[] = "Time elapsed:" . (microtime(true) - $start)/60;
-		$this->messages[] = '------------------------------';	
+		$this->_echo("(". date('Y-m-d H:i:s') . ")"); 
+		$this->_echo("----------------------- End of process");
+		$this->_echo("Row SQL file readed!");	
+		$this->_echo($_max . " records in file!");		
+		$this->_echo(($_counter + $i) . " records readed!");		
+		$this->_echo($i . " records executed!");
+		$this->_echo("Import done!");	 			
+		$this->_echo('----------------------- Errors');			
+		$this->_echo($errmsg);
+		$this->_echo("Time elapsed:" . (microtime(true) - $start)/60);
+		$this->_echo('------------------------------');	
 	
 	    //erase counter file
 		@unlink($cntfile);
@@ -435,7 +477,7 @@ class rcediimport {
 	}		
 
 	//partial CSV insert
-	protected function istextCSV($name=null, $log=false, $logdb=false) {
+	public function istextCSV($name=null, $log=false, $logdb=false) {
 		$db = GetGlobal('db'); 
 		  		
 		$cntfile = $this->etlPath . 'import-counter.log';
@@ -454,7 +496,8 @@ class rcediimport {
 		  
 			$data = @file_get_contents($this->currFile(true));
 	        if (!$data) {
-				$this->messages[] = "File ($name) is empty!";
+				//$this->messages[] = "File ($name) is empty!";
+				$this->_echo("File ($name) is empty!");
 				return false;
 			}
 			
@@ -479,21 +522,24 @@ class rcediimport {
 			if (!empty($source)) 
 			{	
 				$start = microtime(true);	 
-				$this->messages[] = "Start : $start, mode: $mode";
+				//$this->messages[] = "Start : $start, mode: $mode";
+				$this->_echo("Start : $start, mode: $mode");
 				
 				$_max = count($source);
 				if ($_max <= $this->maxLines) { //max lines to check
-				$this->messages[] = "Max : $_max";
+				//$this->messages[] = "Max : $_max";
+				$this->_echo("Max : $_max");
 				
 				//for ($_i = $titlelines; $_i <= $_max ; $_i++) {	
 				$_x = @file_get_contents($cntfile);
 				$x = $_x ? $_x : 1;
 				foreach ($source as $zi=>$rec) {
 					if (($_x) && ($zi < $_x)) continue;
-					if ($x == $_x + 500) {
+					if ($x == $_x + $this->maxPage) {
 						
 						file_put_contents($cntfile, $x);
-						$this->messages[] = '(' . $x . ') Press submit to continue...';
+						//$this->messages[] = '(' . $x . ') Press submit to continue...';
+						$this->_echo('(' . $x . ') Press submit to continue...');
 						
 						//save log messages
 						//if (GetParam('logset'))
@@ -517,7 +563,8 @@ class rcediimport {
 											$ix+=1;
 										}
 										else {
-											$this->messages[] = $sSQL . " (" . $db->error . ")";
+											//$this->messages[] = $sSQL . " (" . $db->error . ")";
+											$this->_echo($sSQL . " (" . $db->error . ")");
 											$errmsg += 1;
 										}
 									  }					  
@@ -530,7 +577,8 @@ class rcediimport {
 											$ix+=1;
 										}
 										else {
-											$this->messages[] = $sSQL . " (" . $db->error . ")";
+											//$this->messages[] = $sSQL . " (" . $db->error . ")";
+											$this->_echo($sSQL . " (" . $db->error . ")");
 											$errmsg += 1;			
 										}
 									  }						  
@@ -556,7 +604,8 @@ class rcediimport {
                                         $ix+=1;									  			
 									  }
 									  else {
-										$this->messages[] = $sSQL . " (" . $db->error . ")";
+										//$this->messages[] = $sSQL . " (" . $db->error . ")";
+										$this->_echo($sSQL . " (" . $db->error . ")");
 										$errmsg += 1;		   
 									  }
 									  //if (GetParam('dbset'))
@@ -570,21 +619,22 @@ class rcediimport {
 				}//max
 			} //if array	
 		
-			$this->messages[] = "(". date('Y-m-d H:i:s') . ")"; 
-			$this->messages[] = "----------------------- End of process";
-			$this->messages[] = $scenario . " file readed!";
-			$this->messages[] = "Mode:" . $mode;
-			$this->messages[] = $_max . " records in file!";			
-			$this->messages[] = ($titlelines + $i) . " records readed!";			
-			$this->messages[] = $i . " records executed!";
-			$this->messages[] = "Import done!";	 			
-			$this->messages[] = '----------------------- Errors';			
-			$this->messages[] = $errmsg;
-			$this->messages[] = "Time elapsed:" . (microtime(true) - $start)/60;
-			$this->messages[] = '------------------------------';			 
+			$this->_echo("(". date('Y-m-d H:i:s') . ")"); 
+			$this->_echo("----------------------- End of process");
+			$this->_echo($scenario . " file readed!");
+			$this->_echo("Mode:" . $mode);
+			$this->_echo($_max . " records in file!");			
+			$this->_echo(($titlelines + $i) . " records readed!");			
+			$this->_echo($i . " records executed!");
+			$this->_echo("Import done!");	 			
+			$this->_echo('----------------------- Errors');			
+			$this->_echo($errmsg);
+			$this->_echo("Time elapsed:" . (microtime(true) - $start)/60);
+			$this->_echo('------------------------------');			 
 		}
 		else 
-			$this->messages[] = "Scenario missing! (" . $scenario . ")";
+			//$this->messages[] = "Scenario missing! (" . $scenario . ")";
+			$this->_echo("Scenario missing! (" . $scenario . ")");
 		
 		//erase counter file
 		@unlink($cntfile);
@@ -823,6 +873,41 @@ class rcediimport {
 		$ret = implode(',',$rf);
 
 		return $ret;	  
+	}	
+	
+	protected function jsDialog($text=null, $title=null, $time=null, $source=null) {
+	   $stay = $time ? $time : 3000;//2000;
+
+       if (defined('JSDIALOGSTREAMSRV_DPC')) {
+			$sd = new jsdialogStreamSrv();
+			//$ret= $sd->streamDialog();
+			
+			if ($text)	
+				$code = $sd->say($text, $title, $source, $stay);
+			else
+				$code = $sd->streamDialog('jsdtime');
+		   
+			$js = new jscript;	
+			$js->load_js($code,null,1);		
+			unset ($js);
+	   }	
+	}
+
+	public function streamDialog() {
+		
+		return _m('rcpmenu.streamDialog');
+	}	
+
+	//say a message 
+	protected function _echo($message=null, $type='TYPE_IRON') {
+		if (!$message) return false;
+		
+		$this->messages[] = $message;
+		
+		if ($this->indac7==true) 
+			$this->dacEnv->_say($message, $type);				
+		
+		return true;
 	}	
   	
 };

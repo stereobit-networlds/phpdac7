@@ -30,6 +30,9 @@ $cptemplate = _m('cmsrt.paramload use FRONTHTMLPAGE+cptemplate');
 	switch ($_GET['t']) {
 		case 'cpreplicate'   : $p = 'cp-replica-detail'; break;
 		case 'cpreplicadtl'  : $p = $_GET['iframe'] ? 'cp-replica-detail' : 'cp-replica'; break;
+		
+		case 'cpdorepall'    :
+		case 'cpreplica'     :
 		default              : $p = $_GET['iframe'] ? 'cp-replica-detail' : 'cp-replica';
 	}
 	

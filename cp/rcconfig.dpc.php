@@ -6,8 +6,7 @@ define("RCCONFIG_DPC",true);
 
 $__DPC['RCCONFIG_DPC'] = 'rcconfig';
 
-$a = GetGlobal('controller')->require_dpc('gui/form.dpc.php');
-require_once($a);
+require_once(_r('gui/form.dpc.php'));
 
 $__EVENTS['RCCONFIG_DPC'][0]='cpconfig';
 $__EVENTS['RCCONFIG_DPC'][1]='cpconfedit';

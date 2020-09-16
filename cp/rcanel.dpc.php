@@ -7,8 +7,7 @@ define("RCANEL_DPC",true);
 
 $__DPC['RCANEL_DPC'] = 'rcanel';
 
-$a = GetGlobal('controller')->require_dpc('phpdac/rccontrolpanel.dpc.php');
-require_once($a);
+require_once(_r('phpdac/rccontrolpanel.dpc.php'));
  
 GetGlobal('controller')->get_parent('RCCONTROLPANEL_DPC','RCANEL_DPC');
 

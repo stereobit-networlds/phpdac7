@@ -42,7 +42,9 @@ class Twig_Autoloader
         //echo '>>>>',dirname(__FILE__).'/'.str_replace(array('_', "\0"), array('/', ''), $class).'.php';
         //if (file_exists($file = dirname(__FILE__).'/'.str_replace(array('_', "\0"), array('/', ''), $class).'.php')) {
             //require $file;
-			GetGlobal('controller')->_require('twig/'.str_replace(array('_', "\0"), array('/', ''), $class).'.php');
+			//GetGlobal('controller')->_require('twig/'.str_replace(array('_', "\0"), array('/', ''), $class).'.php');
+			require_once(_r('twig/'.str_replace(array('_', "\0"), array('/', ''), $class).'.php'));
         //}
     }
 }
+?>

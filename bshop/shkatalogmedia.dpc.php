@@ -286,7 +286,7 @@ class shkatalogmedia {
 				$_COOKIE['viewmode'] = 'list';
 		}	
 
-		$this->isListView = $_COOKIE['viewmode']=='list' ? 1 : 0;
+		$this->isListView = ($_COOKIE['viewmode']=='list') ? 1 : 0;
 		//echo '-', $this->gridORlist , '+' , $this->isListView;
       
 		$this->siteTitle = remote_paramload('SHELL','urltitle',$this->path);	
@@ -304,8 +304,9 @@ class shkatalogmedia {
 		$this->phpName = _v('cmsrt.phpName');
 		$ajax = _m('cmsrt.paramload use ESHOP+ajax'); //ajax mode	
 		$catName = _m('shkategories.getcurrentkategory use ++1'); //category name
+		
         $this->pageName = $catName ? 'page-' . $catName : 'page-' . $this->phpName; //'page'; //div name		
-		$this->filterajax = $ajax ? $this->pageName : false; 
+		$this->filterajax = $ajax ? true : false; 
 		$this->mobile = _v('cmsrt.mobile');
 		
 		$this->klistcmd = _m('cmsrt.paramload use ESHOP+klistcmd') ?: 'klist'; //products
@@ -773,12 +774,12 @@ class shkatalogmedia {
 
 		//echo $this->min_price.'-'.$this->max_price.'-'.$min.'-'.$max.'-'.$diff.'-'.$step;		
 					
-		$onPrice = /*(($div = $this->filterajax) && (!$this->mobile)) ?		
+		$onPrice = /*(($this->filterajax) && (!$this->mobile)) ?		
 "$('.price-slider').on('slideStop', function(slideEvt) {
 	var p = $('.price-slider').val();
 	var value = p.replace(',', '.');
 	//console.log(value);
-	ajaxCall('$purl'+value+'/','$div',1);
+	ajaxCall('$purl'+value+'/','{$this->pageName}',1);
 });" :	*/		
 "$('.price-slider').on('slideStop', function(slideEvt) {
 	var p = $('.price-slider').val();
@@ -1806,25 +1807,25 @@ function agentDiv(n, px) { return false; }
 		
 		switch ($pcmd) {
 			case 'ktree'  : $treeid = GetParam('treeid');
-			                if ($div = $this->filterajax) {
+			                if ($this->filterajax) {
 								$url = ($treeid) ? $this->httpurl . "/ktree/$cat/$treeid/$p/" :
 												   _m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
-								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','$div',1)\">" . strval($label) . "</a>";
+								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','{$this->pageName}',1)\">" . strval($label) . "</a>";
 							}	
 							else {
 								//$ret = ($treeid) ? _m("cmsrt.url use t=$pcmd&cat=$cat&treeid=$treeid&page=$p+" . strval($label)) :
 								//				   _m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
 								$url = ($treeid) ? $this->httpurl . "/ktree/$cat/$treeid/$p/" :
 													_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
-								$ret = "<a href=\"$url\" onClick=\"gotoTop('$div')\">" . strval($label) . "</a>";
+								$ret = "<a href=\"$url\" onClick=\"gotoTop('{$this->pageName}')\">" . strval($label) . "</a>";
 							}					   
 			                break;
 							
-			case 'kfilter': if ($div = $this->filterajax) {
+			case 'kfilter': if ($this->filterajax) {
 								$url = $this->httpurl .'/';
 								$url.= ($inp) ? _m("cmsrt.url use t=$pcmd&cat=$cat&input=$inp&page=$p") :
 												_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
-								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','$div',1)\">" . strval($label) . "</a>";
+								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','{$this->pageName}',1)\">" . strval($label) . "</a>";
 							}
 							else {
 								//$ret = ($inp) ? _m("cmsrt.url use t=$pcmd&cat=$cat&input=$inp&page=$p+" . strval($label)) :
@@ -1833,17 +1834,17 @@ function agentDiv(n, px) { return false; }
 								$url = $this->httpurl .'/';
 								$url.= ($inp) ? _m("cmsrt.url use t=$pcmd&cat=$cat&input=$inp&page=$p") :
 												_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
-								$ret = "<a href=\"$url\" onClick=\"gotoTop('$div')\">" . strval($label) . "</a>";					
+								$ret = "<a href=\"$url\" onClick=\"gotoTop('{$this->pageName}')\">" . strval($label) . "</a>";					
 							}					
 							break;
 							
 			case 'filter' : 
-			case 'search' : if (($p>0) && ($div = $this->filterajax) && (!$this->mobile)) {
+			case 'search' : if (($p>0) && ($this->filterajax) && (!$this->mobile)) {
 								//ajax paging
 								$url = $this->httpurl .'/';
 								$url.= ($inp) ? _m("cmsrt.url use t=$pcmd&input=$inp&cat=$cat&page=$p") :
 												_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
-								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','$div',1)\">" . strval($label) . "</a>";
+								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','{$this->pageName}',1)\">" . strval($label) . "</a>";
 							}
 							else {
 								//$ret =  ($inp) ? _m("cmsrt.url use t=$pcmd&input=$inp&cat=$cat&page=$p+" . strval($label)) :
@@ -1852,21 +1853,21 @@ function agentDiv(n, px) { return false; }
 								$url = $this->httpurl .'/';
 								$url.= ($inp) ? _m("cmsrt.url use t=$pcmd&input=$inp&cat=$cat&page=$p") :
 												_m("cmsrt.url use t={$this->klistcmd}&cat=$cat&page=$p");
-								$ret = "<a href=\"$url\" onClick=\"gotoTop('$div')\">" . strval($label) . "</a>";												 
+								$ret = "<a href=\"$url\" onClick=\"gotoTop('{$this->pageName}')\">" . strval($label) . "</a>";												 
 							}					 
 			                break;
-			default       : if (($p>0) && ($div = $this->filterajax) && (!$this->mobile)) {
+			default       : if (($p>0) && ($this->filterajax) && (!$this->mobile)) {
 								//ajax paging
 								$url = $this->httpurl .'/';
 								$url.= _m("cmsrt.url use t=$pcmd&cat=$cat&page=$p");
-								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','$div',1)\">" . strval($label) . "</a>";
+								$ret = "<a href=\"javascript:void(0)\" onClick=\"ajaxCall('$url','{$this->pageName}',1)\">" . strval($label) . "</a>";
 							}
 							else {
 								//$ret = _m("cmsrt.url use t=$pcmd&cat=$cat&page=$p+" . strval($label));
 								
 								$url = $this->httpurl .'/';
 								$url.= _m("cmsrt.url use t=$pcmd&cat=$cat&page=$p");
-								$ret = "<a href=\"$url\" onClick=\"gotoTop('$div')\">" . strval($label) . "</a>";
+								$ret = "<a href=\"$url\" onClick=\"gotoTop('{$this->pageName}')\">" . strval($label) . "</a>";
 							}	
 		}
 		
@@ -1875,6 +1876,8 @@ function agentDiv(n, px) { return false; }
 	
 	protected function show_paging($pagecmd=null,$mytemplate=null,$nopager=null) {
 	    if ($nopager) return;
+		$next = null;
+		$prev = null;
 		 
 	    $cat = GetReq('cat'); // asis	
 		$inp = GetParam('input');
@@ -1925,8 +1928,8 @@ function agentDiv(n, px) { return false; }
 		
 	    $cpnum = $page+1;
 		$currentpage = ($this->mobile) ? 
-						"<a href=\"javascript:window.scrollTo(0,parseInt($('#{$this->filterajax}').offset().top),10)\">$cpnum</a>" :
-						"<a href=\"javascript:gotoTop('{$this->filterajax}')\">$cpnum</a>";
+						"<a href=\"javascript:window.scrollTo(0,parseInt($('#{$this->pageName}').offset().top),10)\">$cpnum</a>" :
+						"<a href=\"javascript:gotoTop('{$this->pageName}')\">$cpnum</a>";
 	    $current = $this->combine_tokens($tmplcontents, array(0=>"class='{$this->pager_current_class}'" ,1=>$currentpage));   
 	
 	    $page_titles = $prev . $current . $next;	  	
@@ -1939,13 +1942,13 @@ function agentDiv(n, px) { return false; }
 
 	protected function pSortUrl($pOrder) {
 	    $cat = GetReq('cat');   
-		if (($_POST['input']) || (($_GET['input']) && (GetReq('t')=='search'))) 
+		if ((isset($_POST['input'])) || ((isset($_GET['input'])) && (GetReq('t')=='search'))) 
 			$cmd = 'search';
-		elseif (($_GET['input']) && (GetReq('t')=='filter')) 
+		elseif ((isset($_GET['input'])) && (GetReq('t')=='filter')) 
 			$cmd = 'filter';
-		elseif (($_GET['input']) && (GetReq('t')=='kfilter')) 
+		elseif ((isset($_GET['input'])) && (GetReq('t')=='kfilter')) 
 			$cmd = 'kfilter';
-		elseif (($_GET['treeid']) && (GetReq('t')=='ktree')) 
+		elseif ((isset($_GET['treeid'])) && (GetReq('t')=='ktree')) 
 			$cmd = 'ktree';			
 		else
 			$cmd = GetReq('t');	
@@ -2111,6 +2114,7 @@ function agentDiv(n, px) { return false; }
         $cat = GetReq('cat');   
 	    $custom_template = false;
 	    $ogImage = array();
+		$toprint = null;
 
 	    $mylinemax = ($linemax>0) ? $linemax : $this->linemax;   
 		
@@ -2195,9 +2199,7 @@ function agentDiv(n, px) { return false; }
 				//$toprint .= localize('_norec',$this->lan);			
 		}
 
-	    $out .= $toprint;
-
-	    return ($out);	
+	    return ($toprint);	
 	}	
 	
 	//api version
@@ -2313,8 +2315,8 @@ function agentDiv(n, px) { return false; }
 			 
 			$this->ogTags = $this->openGraphTags(array(0=>$this->siteTitle,
 													1=>$tokens[0],
-													2=>$tokens[1],														
-													3=>$itemlink,
+													2=>$tokens[1] ?? $tokens[0],		
+													3=>$tokens[14],
 													4=>$tokens[18], 
 													));				 
 			/* js ref analytics */ 
@@ -3099,7 +3101,8 @@ function agentDiv(n, px) { return false; }
 	
 	public function show_menu_items($items=10,$linemax=null,$template=null,$photosize=null,$menu=null) {
         $db = GetGlobal('db');	
-		$pz = $photosize ? $photosize : 1;			
+		$pz = $photosize ? $photosize : 1;	
+		$out = null;	
 		
 		if (defined('CMSMENU_DPC')) {
 			
@@ -3268,7 +3271,8 @@ function agentDiv(n, px) { return false; }
 				if (!empty($rec)) {
 		   
 					$meter+=1;
-					$cat = $this->getkategories($rec, 1, $this->lan, $this->klistcmd);		 
+					$_cat = $rec['cat0'].$sep.$rec['cat1'].$sep.$rec['cat2'].$sep.$rec['cat3'];
+					$cat = $this->getkategories($_cat, 1, $this->lan, $this->klistcmd);		 
 					$linkcat = $this->getkategoriesS(array(0=>$rec['cat0'],1=>$rec['cat1'],2=>$rec['cat2'],3=>$rec['cat3'],4=>$rec['cat4']));	      			      		   
 			 		   
 					if (strtolower($headcat)!=strtolower($cat)) {//paging start
@@ -3612,7 +3616,7 @@ function agentDiv(n, px) { return false; }
 		$tokens[] = number_format(floatval($price),$this->decimals,',','.');
 			
 		if (($cart==true) && (defined("SHCART_DPC"))) {
-			$page = $_GET['page'] ? $_GET['page'] : 0;
+			$page = isset($_GET['page']) ? $_GET['page'] : 0;
 
 			$cartstr = $rec[$this->fcode].';'.
 						$this->replace_cartchars($rec[$this->itmname]).';;;'.
@@ -3639,7 +3643,7 @@ function agentDiv(n, px) { return false; }
 		            $this->httpurl . '/' . $otherimgpath . $rec[$this->fcode] . $this->restype :
 		            $this->httpurl . $this->get_photo_url($rec[$this->fcode], $imgsize);	
 						
-        $tokens[] = $rec[$this->getmapf('lastprice')];	
+        $tokens[] = isset($rec[$this->getmapf('lastprice')]) ? $rec[$this->getmapf('lastprice')] : 0;	
         $tokens[] = $rec[$this->itmname]; 
         $tokens[] = _m("cmsrt.replace_spchars use $cat+1");  
 
@@ -4111,6 +4115,9 @@ function agentDiv(n, px) { return false; }
 		$input = $inp ? $inp : GetReq('input');
 		$reset_input = array();
 		$priceSQL = null;
+		$fltname = null;
+		$fltvalue = null;
+		
 		$_allS = (defined("SHKATEGORIES_DPC")) ? _v('shkategories._catAllSearch') : $this->_catAllFilter;		
 		
 		if (strstr($input, ',')) {
@@ -4231,8 +4238,8 @@ function agentDiv(n, px) { return false; }
 										
 					$ff = !empty($reset_input) ? implode(',', $reset_input) .",". $f : $f; //<---- reset input and set comma sep values (search input, manufacturer, price etc)
 					$url = $this->httpurl . "/$command/$_cat/"; //_cat!!!
-					$theurl = (($div = $this->filterajax) && (!$this->mobile)) ? 
-								"filter('$url','$div','filter0')" : 
+					$theurl = (($this->filterajax) && (!$this->mobile)) ? 
+								"filter('$url','{$this->pageName}','filter0')" : 
 								( $selected ? "remFilter('$selected','{$this->pageName}')" : $baseurl . _m("cmsrt.url use t=$command&cat=$_cat&input=$ff")); //$cat=_cat $f=$ff !!
 										
 					$tokens[] = $t[0];
@@ -5043,10 +5050,11 @@ EOF;
 	public function make_combo($url2go,$values,$title=null,$selection=null,$style=null) {
 	    $mystyle = $style ? $style : $this->asccombostyle;
 		$name = $title ? $title : 'name' . md5($url2go);
+		$size = null;
 	
 		$r = "<select name=\"".$name."\" class=\"" . $mystyle . "\"" . ( $size != 0 ? "size=\"".$size."\"" : "");
-		$r.= (($div = $this->filterajax) && (!$this->mobile)) ? 
-				" onChange=\"ajaxCall(this.options[this.selectedIndex].value,'$div',1)\">" :
+		$r.= (($this->filterajax) && (!$this->mobile)) ? 
+				" onChange=\"ajaxCall(this.options[this.selectedIndex].value,'{$this->pageName}',1)\">" :
 				" onChange=\"location=this.options[this.selectedIndex].value\">";
 			  
 		if (!empty($values) && ($title)) 	  
@@ -5098,7 +5106,7 @@ EOF;
 			}  
 		}			
 
-		$ret = $this->map_f[$ch];
+		$ret = isset($this->map_f[$ch]) ? $this->map_f[$ch] : null;
 		return ($ret);
 	}	
 	

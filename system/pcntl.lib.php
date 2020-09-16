@@ -886,6 +886,8 @@ parse_ini_string_m:
 			//print_r($processChain);
 			if (!empty($processChain))
 				$pchain = implode(',',$processChain);
+			else
+				$pchain = null;
 
 			//echo '<br/>' . $dpc . ':' . $pchain;
 			if (class_exists($__DPC[$class])) {

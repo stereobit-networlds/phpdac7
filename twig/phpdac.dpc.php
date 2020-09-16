@@ -1,6 +1,4 @@
 <?php
-
-	   
 class phpdac {
 
     var $prpath, $tpath, $tcache;
@@ -277,3 +275,4 @@ class phpdac {
 		return false;
     }*/
 }
+?>

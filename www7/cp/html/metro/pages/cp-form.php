@@ -54,7 +54,7 @@
                              <h4><i class="icon-edit"></i> <phpdac>i18nL.translate use contactform+RCCONTROLPANEL</phpdac> </h4>
                            <span class="tools">
                                <a href="javascript:;" class="icon-chevron-down"></a>
-                               <a href="javascript:;" class="icon-remove"></a>
+                               <!--a href="javascript:;" class="icon-remove"></a-->
                            </span>
                          </div>
                          <div class="widget-body">

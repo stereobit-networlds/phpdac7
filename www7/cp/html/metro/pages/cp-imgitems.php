@@ -20,6 +20,8 @@
     <link href="assets/fancybox/source/jquery.fancybox.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="assets/uniform/css/uniform.default.css" />
 	
+	<link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">	
+	
 	<link href="../javascripts/themes/redmond/jquery-ui.custom.css" rel="stylesheet" /> 
 	<link href="../javascripts/jqgrid/css/ui.jqgrid.css" rel="stylesheet" />  
 	
@@ -324,6 +326,13 @@ $(document).ready(function() {
    </script>
    <script src="js/aSimpleTour.js" type="text/javascript"></script>   
 
+     <!-- stream dialog -->
+   <script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
+   <script language="JavaScript">		
+		setInterval(function() {<phpdac>rchandleitems.streamDialog</phpdac>}, 30000);	
+   </script>
+   <!-- end stream dialog -->   
+   
 </body>
 <!-- END BODY -->
 </html>

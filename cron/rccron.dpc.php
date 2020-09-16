@@ -11,12 +11,14 @@ $__EVENTS['RCCRON_DPC'][1]='cpjobsshow';
 $__EVENTS['RCCRON_DPC'][2]='cpcronjobs';
 $__EVENTS['RCCRON_DPC'][3]='cpjobcode';
 $__EVENTS['RCCRON_DPC'][4]='cpjobcodesave';
+$__EVENTS['RCCRON_DPC'][5]='cpjobcoderun';
 
 $__ACTIONS['RCCRON_DPC'][0]='cpcron';
 $__ACTIONS['RCCRON_DPC'][1]='cpjobsshow';
 $__ACTIONS['RCCRON_DPC'][2]='cpcronjobs';
 $__ACTIONS['RCCRON_DPC'][3]='cpjobcode';
 $__ACTIONS['RCCRON_DPC'][4]='cpjobcodesave';
+$__ACTIONS['RCCRON_DPC'][5]='cpjobcoderun';
 
 //$__DPCATTR['RCCRON_DPC']['cpcron'] = 'cpcron,1,0,0,0,0,0,0,0,0,0,0,1';
 
@@ -36,20 +38,27 @@ $__LOCALE['RCCRON_DPC'][12]='_title;Title;Τίτλος';
 $__LOCALE['RCCRON_DPC'][13]='_type;Type;Τύπος';
 $__LOCALE['RCCRON_DPC'][14]='_lastActualTimestamp;Lt;Lt';
 $__LOCALE['RCCRON_DPC'][15]='_save;Save;Αποθήκευση';
+$__LOCALE['RCCRON_DPC'][16]='_cron;Cron;Χρονισμός εργασιών';
+$__LOCALE['RCCRON_DPC'][17]='_coderun;Test code;Έλεγχος εργασίας';
 
-class rccron  {
+require_once(_r('cp/cpdac7.lib.php'));
+
+class rccron extends cpdac7 {
 
     var $title, $path;
 	var $seclevid, $userDemoIds;
+	//var $dac7, $indac7, $dacEnv; //extended class
 		
 	function __construct() {
+		
+		parent::__construct();		
 	
-	  $this->path = paramload('SHELL','prpath');
-	  $this->title = localize('RCCRON_DPC',getlocal());	 
+		$this->path = paramload('SHELL','prpath');
+		$this->title = localize('RCCRON_DPC',getlocal());	 
 	  
-	  $this->seclevid = $GLOBALS['ADMINSecID'] ? $GLOBALS['ADMINSecID'] : $_SESSION['ADMINSecID'];
-	  $this->userDemoIds = array(5,6,7); //8 
-	  //echo $this->seclevid;  
+		$this->seclevid = $GLOBALS['ADMINSecID'] ? $GLOBALS['ADMINSecID'] : $_SESSION['ADMINSecID'];
+		$this->userDemoIds = array(5,6,7); //8 
+		//echo $this->seclevid;    
 	}
 	
     function event($event=null) {
@@ -58,6 +67,10 @@ class rccron  {
 	   if ($login!='yes') return null;		 
 	
 	   switch ($event) {
+		 case 'cpjobcoderun' : $this->run_job_code(true);	
+							   die('<br><br><br>End of task');	
+		                       break;  
+							   
 		 case 'cpjobcodesave': $this->save_job_code();	
 		                       break;  		   
 		   							   
@@ -71,8 +84,27 @@ class rccron  {
 		                       die();
 							   break; 	   
 	     case 'cpcron'       :
-		 default             :    
-		                      
+		 default             :  //when dac7 running fireup/exec cron with click
+								//useful when no e-Enterprisr.printer is active 
+								//and also usefull for system cron a cron call with silent-on enabled !! LOGIN ERR!!
+		                        /*if ($this->dac7==true) {
+									
+									//execute long running processs	
+									$cmd = 'async/ppost/cron_crondaemon/';
+									phpdac7\getT($cmd); //exec cmd //and close tier
+				
+									$this->jsDialog('Start', localize('_cron', getlocal()), 3000);//, 'cdact.php?t=texit');
+									//$this->messages[] = 'LRP started!';	
+								}*/
+								
+								//extended class	
+								//if ($this->execDac7cmd('async/ppost/cron_crondaemon/'))
+									//$this->jsDialog('Start', localize('_cron', getlocal()), 3000);//, 'cdact.php?t=texit');	
+								
+								//if ($this->execDac7cmd('async/ppost/cron_crondaemon2/'))	
+									//$this->jsDialog('Start', localize('_cron', getlocal()), 3000, 'cdact.php?t=texit');	
+								
+								//dac7 internal client...
 	   }
 			
     }   
@@ -83,7 +115,8 @@ class rccron  {
 	  if ($login!='yes') return null;	
 	 
 	  switch ($action) {
-			
+
+		 case 'cpjobcoderun'  : break;	 //died task
 		 case 'cpjobcodesave' : 										  
 		 case 'cpjobsshow'    : $out = $this->cronjobs_grid(null,140,5,'r', true);
 								//$out .= "<div id='jobcode'></div>"; //2nd div inside this save	 
@@ -93,9 +126,13 @@ class rccron  {
 							  break;					  
 	     case 'cpcron'      :
 
-		 default            : $edit = _m("cmsrt.isLevelUser use 8") ? 'd' : 'e';
-		                      $out .= "<div id='cronjobs'></div>";
-		                      $out .= $this->crontab_grid(null,140,5,$edit, true);	
+		 default            : // usefull for system cron a cron call with silend-on enabled LOGIN ERR!!
+							  if ($silent = GetReq('silent')) {} 
+							  else { 	
+								$edit = _m("cmsrt.isLevelUser use 8") ? 'd' : 'e';
+								$out .= "<div id='cronjobs'></div>";
+								$out .= $this->crontab_grid(null,140,5,$edit, true);	
+							  }
 							  
 	  }	 
 
@@ -201,7 +238,11 @@ class rccron  {
 			$toprint .= "<input type=\"hidden\" name=\"FormName\" value=\"savejobcode\">"; 
 			$toprint .= "<input type=\"hidden\" name=\"id\" value=\"".$id."\">";
 			$toprint .= "<INPUT type=\"submit\" name=\"submit\" value=\"" . localize('_save',getlocal()) . "\">&nbsp;";  
-			$toprint .= "<INPUT type=\"hidden\" name=\"FormAction\" value=\"" . "cpjobcodesave" . "\">";	 	   
+			$toprint .= "<INPUT type=\"hidden\" name=\"FormAction\" value=\"" . "cpjobcodesave" . "\">";
+			
+			//url to test code	
+			$runcodeurl = seturl("t=cpjobcoderun&id=".$id); 
+			$toprint .= "&nbsp;&nbsp;<h3><a href='$runcodeurl'>".localize('_coderun',getlocal())."</a></h3>";
 	   	}    
         $toprint .= "</FONT></FORM>"; 
 
@@ -225,8 +266,86 @@ class rccron  {
 
 		return (true);		
 	}		
-		
 	
+	protected function run_job_code($verbose=false, $saverr=false) {
+		if (!$id=GetParam('id')) return false;
+		$script =  $this->load_job_code($id);
+		
+		echo '<br>' . $script;
+		//require_once(_r('agents/pcntlui.dpc.php'));
+		
+		$ret = eval($script);
+		//$ret = $this->testscript();
+		echo '<br>result:' . $ret;
+		return $id;
+		
+		if ($verbose)
+			echo '<br>' . $script;
+		
+		
+		if (class_exists('pcntl', true)) {
+			if ($saverr)
+				@file_put_contents($this->path . 'cronerr.txt', date('c') . PHP_EOL . "Script:" . PHP_EOL . $script . PHP_EOL);			
+			
+			set_time_limit(120);
+			
+			//$ret = eval($script);
+			//if (($ret==false) && ($error = error_get_last())) 
+			/*if (!$ret = eval($script))	
+			{  
+				$error = error_get_last();
+				if ($verbose)
+					echo '<br>' . $error;				
+				if ($saverr)
+					@file_put_contents($this->path . '/cronerr.txt', $error . PHP_EOL);
+						
+				//$ret = true; //bypass					
+			}
+			//test*/
+			//$ret = $this->testscript();
+			
+			set_time_limit(ini_get('max_execution_time'));
+			
+			if ($verbose)
+				echo '<br>' . date('c') . " End of run";
+			if ($saverr)
+				@file_put_contents($this->path . 'cronerr.txt', date('c') . " End of run" . PHP_EOL);			
+						
+		}
+
+		if ($verbose)
+			echo date('c') . "<br> Class pcntl not exist";
+		if ($saverr)
+			@file_put_contents($this->path . 'cronerr.txt', date('c') . " Class pcntl not exist" . PHP_EOL);			
+							
+		
+		return (true);		
+	}	
+
+	protected function testscript() {
+			$page = new pcntl('
+load_extension adodb refby _ADODB_; 
+super database;
+',0,1);				
+			$db = GetGlobal('db');
+			$now = date("Y-m-d H:m:s");
+			$sSQL = "insert into syncsql (fid,status,date,execdate,sqlres,sqlquery,reference) values (1,1,'$now','$now',''," .
+					$db->qstr(0) . "," . $db->qstr('e-Enterprise') . ")"; 
+	
+			$ret = $db->Execute($sSQL,1);
+			
+			return (true);	
+	}	
+	
+	protected function testscript2() {				
+			$db = GetGlobal('db');
+			$now = date("Y-m-d H:m:s");
+			$sSQL = "insert into syncsql (fid,status,date,execdate,sqlres,sqlquery,reference) values (1,1,'$now','$now',''," .
+					$db->qstr(0) . "," . $db->qstr('cron') . ")"; 
+			$ret = $db->Execute($sSQL,1);
+			
+			return (true);	
+	}	
 };
 }
 ?>

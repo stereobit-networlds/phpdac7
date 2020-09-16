@@ -148,7 +148,7 @@ class cmsmenu {
 			$sbmenu = null;
 			list ($section, $name, $value) = explode('|', $m);			
 			
-			if ($sb = (array) $submenu[$section]) {
+			if ((isset($submenu[$section])) && ($sb = (array) $submenu[$section])) {
 				ksort($sb);
 				$tmpl2 = $submenu_template ? _m('cmsrt.select_template use ' . $submenu_template) : null;
 				

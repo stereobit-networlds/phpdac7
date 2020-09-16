@@ -20,7 +20,7 @@
    <link rel="stylesheet" type="text/css" href="assets/nestable/jquery.nestable.css" />
    <link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">
    
-   <script type="text/javascript" src="ckfinder/ckfinder.js"></script>   
+   <!--script type="text/javascript" src="ckfinder/ckfinder.js"></script-->   
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
@@ -148,7 +148,7 @@
    <script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>   
    
    <script>
-		CKFinder.popup({
+		/*CKFinder.popup({
          height: 600
 		});  
 
@@ -165,7 +165,7 @@
                      } );
                  }
              } );
-        }		
+        }*/		
    
    
 $('#save').click(function() {

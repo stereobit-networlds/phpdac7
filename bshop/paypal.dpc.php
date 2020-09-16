@@ -24,8 +24,9 @@ define("PAYPAL_DPC",true);
 
 $__DPC['PAYPAL_DPC'] = 'paypal';
 
-$d = GetGlobal('controller')->require_dpc('bshop/paypal.lib.php');
-require_once($d); 
+//$d = GetGlobal('controller')->require_dpc('bshop/paypal.lib.php');
+//require_once($d); 
+require_once(_r('bshop/paypal.lib.php'));
 // Setup class
 //require_once('paypal.class.php');  // include the class file
 
@@ -55,7 +56,7 @@ class paypal {
 	var $this_script;
 	var $paypal_post;
 
-	public function paypal() {
+	public function __construct() {
    
 		$this->paypal_post = array();
    

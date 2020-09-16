@@ -6,11 +6,7 @@ define("RCKATEGORIES_DPC",true);
 
 $__DPC['RCKATEGORIES_DPC'] = 'rckategories';
 
-//$a = GetGlobal('controller')->require_dpc('rc/rcbrowser.lib.php');
-//require_once($a);
-
-$d = GetGlobal('controller')->require_dpc('bshop/shkategories.dpc.php');
-require_once($d);
+require_once(_r('bshop/shkategories.dpc.php'));
 
 $__EVENTS['RCKATEGORIES_DPC'][0]='cpkategories';
 $__EVENTS['RCKATEGORIES_DPC'][1]='cats';
@@ -415,14 +411,19 @@ class rckategories extends shkategories {
         $mode = $mode ? $mode : 'd';
 		$noctrl = $noctrl ? 0 : 1;
         $editlink = $editlink ? $editlink : seturl("t=cpeditcat&cat={cat2}");
-		$title = $this->title;						
+		$title = $this->title;				
 	
 	    if (!defined('MYGRID_DPC')) 
 		   return ($this->add_category()); 
 		   
-        $lan = getlocal()?getlocal():0;
+		$l = getlocal();   
+        $lan = $l ? $l : '0';
+		$cpGet = _v('rcpmenu.cpGet');	  
+		$cat = $cpGet['cat'];
+		$where = null;	
 	
-	    if (GetReq('cat')) {
+	    //if GetReq('cat') {
+	    if ($cat) {
 			$myfields = 'id,ctgid,';
 			$mytitles = localize('id',getlocal()) . ',' . localize('_ctgid',getlocal()) . ',';
 			$myfields .= /*"cat{$lan}1,*/"cat{$lan}2,cat{$lan}3,cat{$lan}4,cat{$lan}5,";
@@ -431,7 +432,14 @@ class rckategories extends shkategories {
 			$myfields .= 'active,view,search';
 			$mytitles .= localize('_active',getlocal()) . ',' . localize('_view',getlocal()) . ',' . localize('_search',getlocal());
 
-			$xsSQL = 'select * from (select '.$myfields . ' from categories) as o';
+			$_w = array();
+			$_cat = explode($this->cseparator ,$cat);
+			foreach ($_cat as $i=>$c) {
+				$_w[] = 'cat'.strval($i+2)."='".$c."'"; 
+			}	
+			$where = (!empty($w)) ? ' WHERE ' . implode(' AND ', $_w) : null;//HAS NO EFFECT @FREE EDITION!!!
+			
+			$xsSQL = 'select * from (select '.$myfields . ' from categories '. $where .') as o';
 
 			_m("mygrid.column use grid2+id|".localize('_id',getlocal())."|5|0|");	
 			_m("mygrid.column use grid2+ctgid|".localize('_ctgid',getlocal())."|link|5|".$editlink.'||');		
@@ -795,8 +803,7 @@ class rckategories extends shkategories {
 	}	
 	
 	protected function edit_kategories() {
-		$cpGet = GetGlobal('controller')->calldpc_var('rcpmenu.cpGet');
-		//print_r($cpGet); echo '>';	  
+		$cpGet = _v('rcpmenu.cpGet');	  
 		$cat = $cpGet['cat']; //stored cat for cp
 		$id = 'id';//$this->getmapf('code');
 		$editlink = "javascript:edit_cat({".$id."})";

@@ -96,14 +96,16 @@ class shkategories {
 		$this->cat_result = null; //save as var for tags
 		$this->wordlength = 60;  // max word chars
 			
-		$this->treeajax = _m('cmsrt.paramload use ESHOP+ajaxtree') ?: 0; //ajax fetch tree
+		//dynamic ajaxtree is disabled when product id is selected
+		$_ajaxtree = _m('cmsrt.paramload use ESHOP+ajaxtree') ?: 0;
+		$this->treeajax = (GetReq('id')) ? 0 : $_ajaxtree; //ajax fetch tree
 		$this->phpName = _v('cmsrt.phpName'); 
 		$this->mobile = _v('cmsrt.mobile');		
 		
 		$this->klistcmd = _m('cmsrt.paramload use ESHOP+klistcmd') ?: 'klist'; //products
 		$this->kshowcmd = _m('cmsrt.paramload use ESHOP+kshowcmd') ?: 'kshow'; //product	
 
-		//default phrase, a character when click fopr a category search without a phrase
+		//default phrase, a character when click for a category search without a phrase
 		$this->_catAllSearch = _m('cmsrt.paramload use ESHOP+searchallkeyword') ?: 'all'; //'*' 		
 		
 		//on all pages
@@ -356,7 +358,8 @@ class shkategories {
 		if (!$wordlength) $wordlength = 19;//for calldpc purposes
 		$mystylesheet = $stylesheet ? $stylesheet : 'group_category_title';	
 		$mystylesheet_selected = $mystylesheet . '_selected';   
-	   	$t = $cmd ? $cmd : 'shkategories';   
+	   	$t = $cmd ? $cmd : 'shkategories'; 
+		$out = null;		
 
 		static $cd = -1;
 	   
@@ -409,7 +412,8 @@ class shkategories {
 	/*using accordion template version 2*/
 	public function show_tree2($group=null,$mode=0,$template=null) {		
 		$cat = GetReq('cat');    
-		$t = $this->klistcmd;			
+		$t = $this->klistcmd;
+		$out = null;	
 	   
 	   	static $cd = -1;
 	   
@@ -445,7 +449,8 @@ class shkategories {
 					$tokens[2] = null;//_m("cmsrt.url use t=$t&cat=$gr"); //url
 
 					//if ($cgroup==$line) {
-					if (mb_strstr($cgroup,$_id)) {
+					//if (mb_strstr($cgroup,$_id)) {
+					if (strcmp($cgroup,$_id)===0) {	
 						$cd+=1;
 						if ($cd+1<$this->depthview) {//depth view param for hidden categories
 							$subcat_tokens = $this->show_tree2($folder,$mode,$template);
@@ -476,7 +481,8 @@ class shkategories {
 	public function show_tree1($group=null,$mode=0,$template=null,$ajaxcall=false) {		
 		$cat = GetReq('cat');    
 		$t = $this->klistcmd;			
-	   
+		$out = null;
+		
 	   	static $cd = -1;
 	   
 		$tokens = array();		 
@@ -504,14 +510,15 @@ class shkategories {
 					}	
 			  	
 					//$gr = $current_leaf;		 
-					$cgroup = $ptree[$cd+1]; 	 		
+					$cgroup = $ptree[$cd+1] ? $ptree[$cd+1] : null; 	 		
 
 					$tokens[0] = $_id;
 					$tokens[1] = $this->summarize(null,$line);//accordion cat name
 					$tokens[2] = $this->catUrl($gr, $t); 
 
 					//if ($cgroup==$line) {
-					if (mb_strstr($cgroup,$_id)) { //selected cat
+					//if (mb_strstr($cgroup,$_id)) { //selected cat
+					if (strcmp($cgroup,$_id)===0) {
 						$template = ($cd<0) ? $template : "<li>" . $template . "</li>";
 						$cd+=1;
 						if ($cd+1<$this->depthview) {//depth view param for hidden categories
@@ -554,7 +561,8 @@ class shkategories {
 	}		
 
     public function show_menu($group=null, $template=null, $viewtype=null) { 
-		$group = $group ? $group : GetReq('cat');	 
+		$group = $group ? $group : GetReq('cat');	
+		$out = null;	
 		
 		if ($group) {
 			
@@ -580,10 +588,12 @@ class shkategories {
 	
 	//  SHOW SELECTED TREE FUNCTIONS
 	protected function show_selected_branch($id,$line,$t=null,$myselcat=null,$expand=null,$stylesheet=null,$outpoint=null,$br=1,$template=null,$linkclass=null,$linksonly=null,$titlesonly=null,$idsonly=null) {
-	    $mystylesheet = $stylesheet ? $stylesheet : 'group_category_title';	
+	    $mystylesheet = $stylesheet ? $stylesheet : 'group_category_title';
+		$mycat = null;	
+		$out = null;
 	
-	    $mytemplate = $template ? $this->select_template($template,$cat) :		   
-								  $this->select_template('fpcatcolumn',$cat);			   
+		$_tmpl = $this->select_template($template);
+	    $mytemplate = $template ? $_tmpl :  $this->select_template('fpcatcolumn');			   
 			  
 		if ($line) {	
 			if (trim($myselcat)!=null) {
@@ -598,12 +608,13 @@ class shkategories {
 			if ($outpoint)
 			    $mycat .= str_repeat('&nbsp;',$outpoint) . $this->outpoint;		  
             $mycat .= "<a href=\"" . $this->catUrl($gr, $t); 
-			$mycat .=  ($linkclass) ? "\" class=\"$linkclass\">" : "\">";
+			$mycat .=  $linkclass ? "\" class=\"$linkclass\">" : "\">";
 			$mycat .= $line;		
 			$mycat .= "</a>";	
 		
-			$tokens[] = ($linksonly) ? $this->catUrl($gr, $t) :
-				                   ($titlesonly ? $line : ($idsonly ? $id : $mycat));
+			$tokens[] = $linksonly ? $this->catUrl($gr, $t) :
+				             ($titlesonly ? $line : 
+								($idsonly ? $id : $mycat));
 			$tokens[] = $id;
 			$out .= $this->combine_tokens($mytemplate, $tokens, true);					
 
@@ -614,7 +625,8 @@ class shkategories {
 	
     public function show_selected_tree($cmd=null,$group=null,$showroot=null,$expand=null,$viewlevel=null,$stylesheet=null,$outpoint=null,$br=1,$template=null,$linkclass=null,$linksonly=null,$titlesonly=null,$idsonly=null) {
 		$mystylesheet = $stylesheet ? $stylesheet : 'group_category_title';	
-		$myselcat = $group ? $group : GetReq('cat'); 	  
+		$myselcat = $group ? $group : GetReq('cat'); 	 
+		$out = null;	
 
 		static $cd = -1;
 		$wordlength = 19;//for calldpc purposes
@@ -633,17 +645,17 @@ class shkategories {
 				$myselcat = implode($this->cseparator,$pv);
 			}
 		}
-		    
+
 		if ($showroot) 
-			$ddir = $this->read_tree(null,null,1);
+			$ddir = $this->read_tree(null,null,1); //empty cat when selected showroot
 		elseif ($myselcat) 	
-			$ddir = $this->read_tree($myselcat,null,1);	
+			$ddir = $this->read_tree($myselcat,null,1);	//selected cat	
 		
 		$i=0;	 
-		if ($ddir)  {	   
+		if (!empty($ddir))  {	   
 			reset($ddir);
 			foreach ($ddir as $id => $line) {		  
-				$out .= ($showroot) ? 
+				$out .= $showroot ? 
 						$this->show_selected_branch($id,$line,$t,null,$expand,$mystylesheet,$outpoint,$br,$template,$linkclass,$linksonly,$titlesonly,$idsonly):
 						$this->show_selected_branch($id,$line,$t,$myselcat,$expand,$mystylesheet,$outpoint,$br,$template,$linkclass,$linksonly,$titlesonly,$idsonly);
 			
@@ -816,7 +828,8 @@ class shkategories {
     protected function view_analyzedir($cmd=null,$prefix=null,$startup=0,$nolinks=null,$isroot=false) { 	
 		$t = ($cmd?$cmd:GetReq('t'));	
 		$g = $this->replace_spchars(GetReq('cat'));
-		$a = GetReq('a');	   	
+		$a = GetReq('a');	
+		$curl = null;	
 		
 		if ($prefix) 
           $mytokens[] = $prefix;
@@ -929,8 +942,8 @@ class shkategories {
 					$tdata = explode('@',$data); 
 					$tok[] = $tdata[0]; //url
 					$tok[] = $tdata[1]; //title
-					$tok[] = $tdata[2];
-					$tok[] = ($n==count($navdata)-1) ? 1 : 0; 
+					$tok[] = $tdata[2]; //root category
+					$tok[] = ($n==count($navdata)-1) ? 1 : 0; //iscurrent
 					$navdata2[] = $this->combine_tokens($mytemplate2,$tok,true);
 					unset($tok);
 				}  
@@ -1002,26 +1015,33 @@ class shkategories {
 		return ($localizeit);	 
 	}
 	
-	//to be disabled ?
-    public function getkategories($rec=null,$links=null,$lan=null,$cmd=null, $debug=false) {
+	//fetch category titles
+    public function getkategories($cat=null,$links=null,$lan=null,$cmd=null, $debug=false) {
 		$db = GetGlobal('db');
 		$cmd = $cmd ? $cmd : $this->klistcmd;
 		$lang = $lan ? $lan : getlocal();
 		$f = $lang ? $lang : '0';
+		$cc =null;
+		$rec = null;
+		
+		$cc = explode($this->cseparator, $cat);
+		foreach ($cc as $f=>$fname)
+			if ($fname) $rec['cat'. strval($f)] = $fname;		
 	   
 		$sSQL = "select distinct cat2,cat{$f}2,cat3,cat{$f}3,cat4,cat{$f}4,cat5,cat{$f}5 from categories where ";
 
-		if (($rec['cat0']) && ($this->depthview>=1)) $sSQL .= "cat2='".$this->replace_spchars($rec['cat0'])."'"; 
-		if (($rec['cat1']) && ($this->depthview>=2)) $sSQL .= "and cat3='".$this->replace_spchars($rec['cat1'])."'";
-		if (($rec['cat2']) && ($this->depthview>=3)) $sSQL .= "and cat4='".$this->replace_spchars($rec['cat2'])."'";
-		if (($rec['cat3']) && ($this->depthview>=4)) $sSQL .= "and cat5='".$this->replace_spchars($rec['cat3'])."'";			  			  			  
+		if (($rec['cat0']) && ($this->depthview>=1)) $sSQL .= "cat2='".$this->replace_spchars($rec['cat0'],1)."'"; 
+		if (($rec['cat1']) && ($this->depthview>=2)) $sSQL .= "and cat3='".$this->replace_spchars($rec['cat1'],1)."'";
+		if (($rec['cat2']) && ($this->depthview>=3)) $sSQL .= "and cat4='".$this->replace_spchars($rec['cat2'],1)."'";
+		if (($rec['cat3']) && ($this->depthview>=4)) $sSQL .= "and cat5='".$this->replace_spchars($rec['cat3'],1)."'";			  			  			  
 
 	    $result = $db->Execute($sSQL,2);	
 	  					
-		$_cat0 = $result->fields["cat{$f}2"] ? $result->fields["cat{$f}2"] : $this->replace_spchars($rec['cat0']);
-		$_cat1 = $result->fields["cat{$f}3"] ? $result->fields["cat{$f}3"] : $this->replace_spchars($rec['cat1']);
-		$_cat2 = $result->fields["cat{$f}4"] ? $result->fields["cat{$f}4"] : $this->replace_spchars($rec['cat2']);
-		$_cat3 = $result->fields["cat{$f}5"] ? $result->fields["cat{$f}5"] : $this->replace_spchars($rec['cat3']);
+		$_cat0 = $result->fields["cat{$f}2"] ?? $this->replace_spchars($rec['cat0']);
+		$_cat1 = $result->fields["cat{$f}3"] ?? $this->replace_spchars($rec['cat1']);
+		$_cat2 = $result->fields["cat{$f}4"] ?? $this->replace_spchars($rec['cat2']);
+		$_cat3 = $result->fields["cat{$f}5"] ?? $this->replace_spchars($rec['cat3']);
+		//$_cat4 = $result->fields["cat{$f}5"] ?? $this->replace_spchars($rec['cat4']);
 						
         if (($rec['cat0']) && ($this->depthview>=1)) {
 		    if ($links)
@@ -1050,14 +1070,14 @@ class shkategories {
 			else				 
                 $ck[3] = $_cat3;
 		}	
-				   
+		/*		   
         if (($rec['cat4']) && ($this->depthview>=5)) {
 		    if ($links)
 		  	    $ck[4] = _m("cmsrt.url use t=$cmd&cat=" . $rec['cat0'].$this->cseparator.$rec['cat1'].$this->cseparator.$rec['cat2'].$this->cseparator.$rec['cat3'].$this->cseparator.$rec['cat4'] . "+" . $_cat4); 
 			else				 
-                $ck[4] = $this->replace_spchars($rec['cat4']);
+                $ck[4] = $_cat4;
 		}	
-				  	  	
+		*/		  	  	
         if (!empty($ck))
             $cat = implode($this->cseparator,$ck);
 		
@@ -1264,7 +1284,7 @@ class shkategories {
 				$f = $this->replace_spchars($rec[0]);
 				$ff = $rec[1];			   
 				if ($f) 
-					$data[$f] = isset($ff) ? $ff : $f; 
+					$data[$f] = $ff ? $ff : $f; 
 			}  
 	
 			@asort($data); 
@@ -1482,7 +1502,7 @@ class shkategories {
     }
 	
 	public function replace_spchars($string, $reverse=false) {
-		$pc = null; //$this->replacepolicy; DISABLE POLICY
+		$pc = null; //$this->replacepolicy; //DISABLE POLICY
 		
 		switch ($pc) {	
 			case '_' : 	$ret = $reverse ?  str_replace('_',' ',$string) : str_replace(' ','_',$string); break;
@@ -1634,9 +1654,9 @@ class shkategories {
 		}
 		    
 		if ($showroot) 
-			$ddir = $this->read_tree(null,null,1);
+			$ddir = $this->read_tree(null,null,1); //empty cat when selected showroot
 		elseif ($myselcat) 	
-			$ddir = $this->read_tree($myselcat,null,1);	
+			$ddir = $this->read_tree($myselcat,null,1);	//selected cat			
 		
 		$i=0;	 
 		if ($ddir)  {	   

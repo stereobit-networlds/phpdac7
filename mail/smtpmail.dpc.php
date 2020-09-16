@@ -7,24 +7,28 @@ define("SMTPMAIL_DPC",true);
 
 $__DPC['SMTPMAIL_DPC'] = 'smtpmail';
 
-
-if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) {
-  $d = GetGlobal('controller')->require_dpc('mail/smtpclass3.lib.php');
-  require_once($d);
-  $e = GetGlobal('controller')->require_dpc('mail/phpmailer.lib.php');
-  require_once($e);
+//REMOVE IF for phar inclusion and include all independent of mail chosen method
+//if ((defined('SMTP_PHPMAILER')) && (SMTP_PHPMAILER=='true')) {
+  //$d = GetGlobal('controller')->require_dpc('mail/smtpclass3.lib.php');
+  //require_once($d);
+  require_once(_r('mail/smtpclass3.lib.php'));
+  //$e = GetGlobal('controller')->require_dpc('mail/phpmailer.lib.php');
+  //require_once($e);
+  require_once(_r('mail/phpmailer.lib.php'));
   //echo 'SMTP';
-}
-elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
-  $d = GetGlobal('controller')->require_dpc('mail/phpmailer.lib.php');
-  require_once($d);
+//}
+//elseif ((defined('SENDMAIL_PHPMAILER')) && (SENDMAIL_PHPMAILER=='true')) {
+  //$d = GetGlobal('controller')->require_dpc('mail/phpmailer.lib.php');
+  //require_once($d);
+  require_once(_r('mail/phpmailer.lib.php'));
   //echo 'PHPMAILER';
-}
-else {
-  $d = GetGlobal('controller')->require_dpc('mail/smtpclass2.lib.php');
-  require_once($d);
+//}
+//else {
+  //$d = GetGlobal('controller')->require_dpc('mail/smtpclass2.lib.php');
+  //require_once($d);
+  require_once(_r('mail/smtpclass2.lib.php'));
   //echo 'DEFAULT';
-}
+//}
 
 
 class smtpmail {

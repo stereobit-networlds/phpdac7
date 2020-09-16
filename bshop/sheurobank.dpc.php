@@ -7,8 +7,9 @@ define("SHEUROBANK_DPC",true);
 
 $__DPC['SHEUROBANK_DPC'] = 'sheurobank';
 
-$d = GetGlobal('controller')->require_dpc('libs/sha256.lib.php');
-require_once($d); 
+//$d = GetGlobal('controller')->require_dpc('libs/sha256.lib.php');
+//require_once($d); 
+require_once(_r('libs/sha256.lib.php'));
 
 $__EVENTS['SHEUROBANK_DPC'][0]='eurobank';
 $__EVENTS['SHEUROBANK_DPC'][1]='process';

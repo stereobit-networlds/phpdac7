@@ -47,7 +47,7 @@ class cmsrt extends cms  {
 	var $autoresize, $restype, $replacepolicy;	
 	var $items, $csvitems;
 	
-	var $lan_set, $selected_lan, $message;
+	var $lan_set, $selected_lan, $message, $path, $prpath;
 	var $selectSQL, $fcode, $lastprice, $pager, $itmplpath;	
 	var $lan, $itmname, $itmdescr, $itmeter;
 	var $picbg, $picmd, $picsm, $home, $cat_result, $isCAttach;
@@ -60,9 +60,11 @@ class cmsrt extends cms  {
 		cms::__construct();
 	  
 		$this->owner = GetSessionParam('LoginName');	
+		$this->path = paramload('SHELL','prpath');
+		$this->prpath = paramload('SHELL','prpath');
 		
 		$this->map_t = remote_arrayload('RCITEMS','maptitle',$this->prpath);	
-		$this->map_f = remote_arrayload('RCITEMS','mapfields',$this->prpath);		
+		$this->map_f = remote_arrayload('RCITEMS','mapfields',$this->prpath);	
 		
 		$csep = remote_paramload('RCITEMS','csep',$this->prpath); 
 		$this->cseparator = $csep ? $csep : '^';	
@@ -213,7 +215,8 @@ class cmsrt extends cms  {
 			$code.= $this->javascript_ajax();
 			$code.= $this->scrolltop_javascript_code();			
 			
-			if (!strstr($_ENV["SCRIPT_FILENAME"],'/cp/')) {/*CP script, jquery conflict with jqgrid*/	
+			$myenv = (isset($_ENV["SCRIPT_FILENAME"])) ? $_ENV["SCRIPT_FILENAME"] : null;
+			if (($myenv) && (!strstr($myenv,'/cp/'))) {/*CP script, jquery conflict with jqgrid*/	
 
 				switch ($this->load_mode) { 
 					case 1 : $code .= $this->scroll_javascript_code(); break;
@@ -1557,29 +1560,31 @@ EOF;
 		$phptml = $path . $tfile . '.php';
 		$phpmtml = $path . 'mob@'.$tfile . '.php';
 		
-		if (($this->mobile) && ($data = trim(@file_get_contents($phpmtml)))) {
-		//if (($this->mobile) && ($data = trim(GetGlobal('controller')::streamfile_contents($phpmtml)))) {	
+		//if (($this->mobile) && ($data = trim(@file_get_contents($phpmtml)))) {
+		if (($this->mobile) && ($data = trim(self::streamfile_contents($phpmtml)))) {	
 			//echo 'Template PHPmob:' . $phpmtml . '</br>';
+			
 			//save cmsTemplates to be able to edit in cp
-			//self::stackTemplate($path . 'mob@'.$tfile . '.php');
-			
+			self::stackTemplate($path . 'mob@'.$tfile . '.php');
 			return $this->dCompile($data);
 		}
-		elseif ($data = trim(@file_get_contents($phptml))) {
-		//elseif ($data = trim(GetGlobal('controller')::streamfile_contents($phptml))) {
+		//elseif ($data = trim(@file_get_contents($phptml))) {
+		elseif ($data = trim(self::streamfile_contents($phptml))) {
 			//echo 'Template PHP:' . $phptml . '</br>';
-			//self::stackTemplate($path . $tfile . '.php');
 			
+			self::stackTemplate($path . $tfile . '.php');
 			return $this->dCompile($data);
 		}
+		//else 
 
 		//.htm files 
-		//self::stackTemplate($path . str_replace('.', $this->lan.'.', str_replace('.htm', '', $tfile) . '.htm'));
-					
 		$fhtml = $path . str_replace('.', $this->lan.'.', str_replace('.htm', '', $tfile) . '.htm');
 		//echo 'Template HTM:' . $fhtml . '</br>';
-		return @file_get_contents($fhtml); 
-		//return GetGlobal('controller')::streamfile_contents($fhtml);
+		self::stackTemplate($fhtml);		
+		$data = self::streamfile_contents($fhtml);		
+		
+		//$data = @file_get_contents($fhtml); 
+		return $data ? $this->dCompile($data) : null;
     }		
 	
 	public function createButton($name=null, $urls=null, $t=null, $s=null) {
@@ -1733,11 +1738,11 @@ EOF;
 	public function stralias($string) {
 		if (!$string) return null;
 
-		$g1 = array("'",',','"','+','/',' ','&','.',')','(','#','[',']','?');
-		$g2 = array('-','-',"-","-","-",'-','-','-','-','-','-','-','-','-');		
+		$g1 = array("'",',','"','+','/',' ','&','.',')','(','#','[',']','?','%');
+		$g2 = array('-','-',"-","-","-",'-','-','-','-','-','-','-','-','-','-');		
 	  
 		$str = str_replace($g1,$g2,trim($string));
-		return (str_replace(array('-----','----','---','--'),'-', strtolower($str)));
+		return (str_replace(array('-----','----','---','--'),'-', strtolower(trim($str,'-'))));
 	}
 
 	//from greek utf chars to greeklish
@@ -2057,7 +2062,40 @@ EOF;
 			return GetParam($param) ? $sel : null; //eg checked
 		
 		return GetParam($param);
-	}		
+	}	
+
+	//dac7 running engine is on (when dpc running at www server and dac7 is present)
+	public function isDacRunning() {
+		global $stream, $dp, $dac;
+	    //echo $stream, $dp;
+
+		if ((substr($stream,-5)==$dp) && ($dac==true))
+			return true;
+		
+		return false;	
+	}
+
+	//running inside engine (when dpc running at dac7 as remote call)
+	public function runningInsideDac() {
+
+		if ((defined('PCNTLUI_DPC')) && (GetGlobal('controller')->env->ldscheme))
+			return true;
+		
+		return false;	
+	}	
+
+	//save params for dac-7 cmd	
+	public function savePostCookie() {
+
+		foreach ($_POST as $n=>$v)
+			$params[] = "$n=$v";
+			
+		$reqparams = implode('&', $params);
+		//echo '--------->'.$reqparams;
+		$ret = @file_put_contents($this->prpath . '/_cookie.txt', $reqparams, LOCK_EX);	
+		
+		return ($ret);
+	}	
 	
 	/* db based include part */
 	public function include_partDb($fname=null, $args=null, $uselans=null, $tmplname=null) {	
@@ -2102,13 +2140,20 @@ EOF;
 			$mobilefname = implode('/', $fparts);
 			$mobilefname.= '/'. $lastpart;
 
+			/*
 			if (is_readable($mobilefname))
 				$ret = parent::include_part($mobilefname,$args,$uselans,$tmplname);
 			//if ($ret) echo $mobilefname . '<br/>';
+			*/
+			if ($ret = parent::include_part($mobilefname,$args,$uselans,$tmplname)) //mobile version
+				return $ret;
+			//else...
 		} 
 
-		return ($ret) ? $ret : parent::include_part($fname,$args,$uselans,$tmplname);
-			
+		/*
+		return (isset($ret)) ? $ret : parent::include_part($fname,$args,$uselans,$tmplname);
+		*/
+		return parent::include_part($fname,$args,$uselans,$tmplname); //standart version
 	}	
 
 	//override
@@ -2119,14 +2164,19 @@ EOF;
 			$lastpart = 'mob@' . array_pop($fparts);
 			$mobilefname = implode('/', $fparts);
 			$mobilefname.= '/'. $lastpart;
-
+			/*
 			if (is_readable($mobilefname))
 				$ret = parent::include_part_arg($mobilefname,$args,$uselans,$tmplname);
 			//if ($ret) echo $mobilefname . '<br/>';
+			*/
+			if ($ret = parent::include_part_arg($mobilefname,$args,$uselans,$tmplname)) //mobile version
+				return $ret;
+			//else...	
 		} 
-
-		return ($ret) ? $ret : parent::include_part_arg($fname,$args,$uselans,$tmplname);
-			
+		/*
+		return (isset($ret)) ? $ret : parent::include_part_arg($fname,$args,$uselans,$tmplname);
+		*/
+		return 	parent::include_part_arg($fname,$args,$uselans,$tmplname); //standart version
 	}
 	
     //overrite
@@ -2141,13 +2191,24 @@ EOF;
 		}
 
 		$pathname = $this->prpath . $this->htmlpage . "/" . $this->MC_TEMPLATE . "/" . $param . '.php';
-		$loadfile = (is_readable($pathname)) ? $pathname : str_replace('mob@', '', $pathname);
-		//echo $pathname;
-		
-		//self::stackTemplate($pathname);
-				
+		/*				
+		$loadfile = (is_readable($pathname)) ? $pathname : str_replace('mob@', '', $pathname);	
 		$contents = @file_get_contents($loadfile); //$pathname);
 		$out = $this->process_commands($contents);
+		*/		
+		
+		if ($contents = trim(self::streamfile_contents($pathname))) { //mobile version
+				
+			self::stackTemplate($pathname);
+			$out = $this->process_commands($contents);
+		}
+		elseif ($contents = trim(self::streamfile_contents(str_replace('mob@', '', $pathname)))) { //standart version
+		
+			self::stackTemplate(str_replace('mob@', '', $pathname));
+			$out = $this->process_commands($contents);		
+		}
+		else
+			$out = null;
 		
 		return ($out);		
 	}	

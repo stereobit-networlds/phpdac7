@@ -167,7 +167,7 @@
 
                 <div class="tab-pane active" id="description">
                     <p>					
-						$13$
+						$53$
 					</p>		
                     <div class="meta-row">
                         <div class="inline">

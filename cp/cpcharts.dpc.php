@@ -7,8 +7,7 @@ define("CPCHARTS_DPC",true);
 
 $__DPC['CPCHARTS_DPC'] = 'cpcharts';
 
-$a = GetGlobal('controller')->require_dpc('cp/cpflotcharts.lib.php');
-require_once($a);
+require_once(_r('cp/cpflotcharts.lib.php'));
 
 $__EVENTS['CPCHARTS_DPC'][0]='cpcharts';
 $__EVENTS['CPCHARTS_DPC'][1]='cpchart1';

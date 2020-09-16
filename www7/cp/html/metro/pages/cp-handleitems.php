@@ -20,6 +20,7 @@
     <link href="assets/fancybox/source/jquery.fancybox.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="assets/uniform/css/uniform.default.css" />
 	
+	<link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">
    </script>		
 
 </head>
@@ -61,11 +62,13 @@
                             <form id="tForm" method="post" action="cphandleitems.php?t=cpsavehitems" class="form-horizontal">
 								<input type="hidden" name="FormName" value="savehitems" />
 								<input type="hidden" name="FormAction" value="cpsavehitems" />
+								<input type="hidden" name="cat" value="<phpdac>rchandleitems.postCategory</phpdac>" />
 								
                                 <div id="tabsleft" class="tabbable tabs-left">
                                 <ul>
                                     <li><a href="#tabsleft-tab1" data-toggle="tab"><span class="strong"><phpdac>cmsrt.slocale use _options</phpdac></span></a></li>
 									<li><a href="#tabsleft-tab2" data-toggle="tab"><span class="strong"><phpdac>cmsrt.slocale use _messages</phpdac></span></a></li>
+									<!--li><a href="#tabsleft-tab3" data-toggle="tab"><span class="strong"><phpdac>cmsrt.slocale use _messages</phpdac></span></a></li-->
                                 </ul>
 
                                 <div class="tab-content">
@@ -89,6 +92,24 @@
 													<phpdac>rchandleitems.currCategory</phpdac>
 												</div>
 											</div>
+											<div class="controls">
+												<div id="normal-toggle-button">
+													<input name="movecatincat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use movecatincat+checked</phpdac>>
+													<phpdac>cmsrt.slocale use _movecatincategory</phpdac>
+												</div>
+											</div>
+											<div class="controls">
+												<div id="normal-toggle-button">
+													<input name="movecatfromroot" type="checkbox" <phpdac>cmsrt.getSubmitedParam use movecatfromroot+checked</phpdac>>
+													<phpdac>cmsrt.slocale use _movecatfromroot</phpdac>
+												</div>
+											</div>
+											<div class="controls">
+												<div id="normal-toggle-button">
+													<input name="delmovedcat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use delmovedcat+checked</phpdac>>
+													<phpdac>cmsrt.slocale use _delmovedcat</phpdac>
+												</div>
+											</div>	
 										</div>
 										<div class="control-group">
 											<label class="control-label">
@@ -105,6 +126,17 @@
 												</label>												
 											</div>
 										</div>
+										<div class="control-group">
+											<label class="control-label">
+												<phpdac>cmsrt.slocale use _deleteincategory</phpdac>
+											</label>
+											<div class="controls">
+												<div id="normal-toggle-button">
+													<input name="delincat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use delincat+checked</phpdac>>
+													<phpdac>rchandleitems.currCategory</phpdac>
+												</div>
+											</div>
+										</div>										
                                         <div class="control-group">
                                             <label class="control-label">
 												<phpdac>cmsrt.slocale use _recomments</phpdac>
@@ -164,6 +196,17 @@
 											</div>	
 										</div>										
                                     </div>
+									<!--div class="tab-pane" id="tabsleft-tab3">
+                                    	<h3><phpdac>cmsrt.slocale use _messages</phpdac></h3>
+										<div class="control-group">
+											<label class="control-label"><phpdac>cmsrt.slocale use _messages</phpdac></label>
+											<div class="controls">
+												<textarea name="tail" id="tailafile" rows="8" cols="150">
+												<-hpdac>rchandleitems.tail</phpda->
+												</textarea>
+											</div>
+										</div>										
+                                    </div-->
 
                                     <ul class="pager wizard">
 										<li class="next"><a href="javascript:document.getElementById('tForm').submit();">Submit</a></li>
@@ -250,6 +293,12 @@
    <!--script for this page-->
    <script src="js/form-wizard.js"></script>
 
+    <!-- stream dialog -->
+   <script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
+   <script language="JavaScript">		
+		setInterval(function() {<phpdac>rchandleitems.streamDialog</phpdac>}, 30000);	
+   </script>
+   <!-- end stream dialog -->    
    <!-- END JAVASCRIPTS -->
 
 </body>

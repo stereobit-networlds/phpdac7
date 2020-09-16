@@ -55,6 +55,7 @@ $__LOCALE['RCIMGITEMS_DPC'][36]='_large;Large;Μεγάλες';
 $__LOCALE['RCIMGITEMS_DPC'][37]='_medium;Medium;Μεσαίες';
 $__LOCALE['RCIMGITEMS_DPC'][38]='_small;Small;Μικρές';
 $__LOCALE['RCIMGITEMS_DPC'][39]='_options;Options;Ρυθμίσεις';
+$__LOCALE['RCIMGITEMS_DPC'][40]='_lrp;Long Running Process;Long Running Process';
 
 class rcimgitems {
 	
@@ -62,8 +63,10 @@ class rcimgitems {
 	var $fields, $etlfields, $messages;
 	
 	var $encodeimageid, $restype, $photodb;
-	var $photoquality, $mixphoto, $erase2db;
-	var $iLimit;
+	var $photoquality, $mixphoto, $erase2db, $autoresize, $img_small, $img_medium, $img_large;
+	var $iLimit, $catTitles;
+	
+	var $dac7, $indac7, $dacEnv;
 		
     public function __construct() {
 	  
@@ -83,8 +86,22 @@ class rcimgitems {
 		$this->erase2db = remote_paramload('RCITEMS','erase2db',$this->path);	  
 		$this->mixphoto = remote_paramload('RCITEMS','mixphoto',$this->path);	 
 		$this->photoquality = remote_paramload('RCITEMS','photoquality',$this->path);
+		
+        $this->autoresize = remote_arrayload('RCITEMS','autoresize',$this->prpath);
+		
+		//3 sized scaled images
+		$photo_bg = remote_paramload('RCITEMS','photobgpath',$this->prpath);		  
+		$this->img_large = $photo_bg ? $this->urlpath ."/images/$photo_bg/" : $thubpath;	  	  
+		$photo_md = remote_paramload('RCITEMS','photomdpath',$this->prpath);		  
+		$this->img_medium = $photo_md ? $this->urlpath ."/images/$photo_md/" : $thubpath;	  	  
+		$photo_sm = remote_paramload('RCITEMS','photosmpath',$this->prpath);		  
+		$this->img_small = $photo_sm ? $this->urlpath ."/images/$photo_sm/" : $thubpath;	  
+		
+		$this->dac7 = _m('cmsrt.isDacRunning');
+		$this->indac7 = _m('cmsrt.runningInsideDac');
+		$this->dacEnv = GetGlobal('controller')->env;			
 
-		$this->iLimit = 500;	
+		$this->iLimit = ($this->indac7==true) ? 5000 : 500;//500;	
 	}
 	
     public function event($event=null) {
@@ -119,6 +136,8 @@ class rcimgitems {
 	}
 	
 	public function showEdiItems() {
+		
+		$this->catTitles = _m('rcpmenu.showCategoryTitles use +&nbsp;&gt;&nbsp;');
 		
 		return $this->items_grid(null,140,5,'e', true);
 	}
@@ -204,48 +223,53 @@ class rcimgitems {
 		return ($out);  	
 	}		
 	
-	protected function submit() { 		
-		
-		if (GetParam('imgincat')) { //insert - copy
-			//echo 'a1';	
-			$this->imgInCategory();
-			return true;
-		}
-		elseif (GetParam('imgupdcat')) { //update -ovewrite
-			//echo 'a1';	
-			$this->imgUpdCategory();
-			return true;
-		}
-		elseif (GetParam('imgdelcat')) { //delete -remove
-			//echo 'a1';	
-			$this->imgDelCategory();
-			return true;
-		}		
+	protected function submit() { 
 
+		if ($this->dac7==true) {
+			//when in dac mode submit is all at once ()see async/ppost/bshopplus_rchandleitems_submit
+			
+			//if ($this->savePostCookie()) {
+			if (_m('cmsrt.savePostCookie')) {	
+				
+				//execute long running processs	
+				$cmd = 'async/ppost/bshopplus_rcimgitems_submit/';
+				phpdac7\getT($cmd); //exec cmd and close tier
+				
+				$this->jsDialog('Start', localize('_lrp', getlocal()), 3000, 'cdact.php?t=texit');
+				$this->messages[] = 'LRP started!';	
+				
+				return true;
+			}
+			else
+				$this->messages[] = 'LRP failed!';	
+		}
+		else {		
+		
+			if (GetParam('imgincat')) { //insert - copy
+				//echo 'a1';	
+				$this->imgInCategory();
+				return true;
+			}
+			elseif (GetParam('imgupdcat')) { //update -ovewrite
+				//echo 'a1';	
+				$this->imgUpdCategory();
+				return true;
+			}
+			elseif (GetParam('imgdelcat')) { //delete -remove
+				//echo 'a1';	
+				$this->imgDelCategory();
+				return true;
+			}		
+		}
 		return false;	
 	}
 	
 	public function currCategory() {
-		$cpGet = _v('rcpmenu.cpGet');
-		$cat = $cpGet['cat'];
-		$id = $cpGet['id'];  		
-			
-		//echo $cat . '-' . $id;
-		$csep = _m('cmsrt.sep');
-		//$currcat = str_replace($csep, ' &gt; ', $cat);
-		//return $currcat;
 		
-		$cats = explode($csep, $cat);
-		foreach ($cats as $i=>$c)
-			$_cat[] = _m("cmsrt.replace_spchars use $c+1");
-		
-		if (!empty($_cat))
-			return implode(' &gt; ', $_cat);	
-		
-		return false;
+		return $this->catTitles;
 	}
 
-	protected function imgInCategory() {
+	public function imgInCategory($checkexist=false) {
 		$db = GetGlobal('db'); 
 		$cpGet = _v('rcpmenu.cpGet');
 		$cat = $cpGet['cat'];
@@ -253,9 +277,10 @@ class rcimgitems {
 		$fcode = _v('cmsrt.fcode');
 		
 		$_itype = $this->select_image_type();
+		$_type = $this->select_image_type(true);
 		$_cat = explode($csep, $cat);
 		
-		if (!empty($_cat)) {
+		//if (!empty($_cat)) { //NOT DEPEND ON CATEGORY
 
 			//clear log files
 			if (GetParam('logclear')) {
@@ -275,41 +300,47 @@ class rcimgitems {
 			foreach ($items as $zi=>$rec) {
 				if (($_x) && ($zi < $_x)) continue;
 				if ($x == $_x + $this->iLimit) { //300
+				
 					file_put_contents($this->prpath . 'edi-img-counter.log', $x);
-					$this->messages[] = '(' . $x . ') Press submit to continue...';
-					//break;
+					
+					//$this->messages[] = '(' . $x . ') Press submit to continue...';
+					$this->_echo('(' . $x . ') Press submit to continue...');
+
 					return true;
 				}				
 				
-				if ($this->add_photo($rec[$fcode], $_itype, $rec['owner'])) 
-				{
-					//if (GetParam('dbset'))
-						//$res = $db->Execute($sSQL);
-					//if (GetParam('logset'))
-						//file_put_contents($this->prpath . 'edi-images.log', $sSQL . ";\r\n", FILE_APPEND | LOCK_EX);
-				
-					$this->messages[] = $x ." ($_itype) Insert image:". $rec[$fcode] . $this->restype . ' inserted ';					
+				//check existance of small
+				if (($checkexist==true) && ($this->exist_photo($rec[$fcode], $_type))) {
+					$this->_echo($x . " ($_itype) Insert image:" . $rec[$fcode] . $this->restype . ' exists !');
+				}	
+				else {
+					if ($this->add_photo($rec[$fcode], $_itype, $rec['owner'])) 
+						//$this->messages[] = $x ." ($_itype) Insert image:". $rec[$fcode] . $this->restype . ' inserted ';					
+						$this->_echo($x ." ($_itype) Insert image:". $rec[$fcode] . $this->restype . ' inserted ');
+					else
+						//$this->messages[] = $x . " ($_itype) Insert image:" . $rec[$fcode] . $this->restype . ' not exists ';
+						$this->_echo($x . " ($_itype) Insert image:" . $rec[$fcode] . $this->restype . ' not exists ');
 				}
-				else
-					$this->messages[] = $x . " ($_itype) Insert image:" . $rec[$fcode] . $this->restype . ' not exists ';
-
 				$x+=1;	
 			}	
 			
 			@unlink($this->prpath . 'edi-img-counter.log');
 			return true;
-		}
+		/*}
 		else
-			$this->messages[] = 'There is no selected category';
+			//$this->messages[] = 'There is no selected category';
+			$this->_echo('There is no selected category');
 		
 		return false;
+		*/
 	}
 	
-	protected function imgUpdCategory() {
-		// ..
+	public function imgUpdCategory() {
+
+		return $this->imgInCategory(true);
 	}
 	
-	protected function imgDelCategory() {
+	public function imgDelCategory() {
 		$db = GetGlobal('db'); 
 		$cpGet = _v('rcpmenu.cpGet');
 		$cat = $cpGet['cat'];
@@ -319,7 +350,7 @@ class rcimgitems {
 		$_itype = $this->select_image_type(true);
 		$_cat = explode($csep, $cat);
 		
-		if (!empty($_cat)) {
+		//if (!empty($_cat)) { //NOT DEPEND ON CATEGORY
 
 			//clear log files
 			if (GetParam('logclear')) {
@@ -339,9 +370,12 @@ class rcimgitems {
 			foreach ($items as $zi=>$rec) {
 				if (($_x) && ($zi < $_x)) continue;
 				if ($x == $_x + $this->iLimit) { //300
+				
 					file_put_contents($this->prpath . 'edi-img-counter.log', $x);
-					$this->messages[] = '(' . $x . ') Press submit to continue...';
-					//break;
+					
+					//$this->messages[] = '(' . $x . ') Press submit to continue...';
+					$this->_echo('(' . $x . ') Press submit to continue...');
+				
 					return true;
 				}				
 				
@@ -366,26 +400,26 @@ class rcimgitems {
 											$this->delete_photodb($rec[$fcode], 'SMALL');
 										break;
 					}
-					//if (GetParam('dbset'))
-						//$res = $db->Execute($sSQL);
-					//if (GetParam('logset'))
-						//file_put_contents($this->prpath . 'edi-images.log', $sSQL . ";\r\n", FILE_APPEND | LOCK_EX);
-				
-					$this->messages[] = $x ." ($_itype) Delete image:". $rec[$fcode] . $this->restype . ' deleted ';					
+
+					//$this->messages[] = $x ." ($_itype) Delete image:". $rec[$fcode] . $this->restype . ' deleted ';					
+					$this->_echo($x ." ($_itype) Delete image:". $rec[$fcode] . $this->restype . ' deleted ');
 				}
 				else
-					$this->messages[] = $x . " ($_itype) Delete image:" . $rec[$fcode] . $this->restype . ' not exists ';
+					//$this->messages[] = $x . " ($_itype) Delete image:" . $rec[$fcode] . $this->restype . ' not exists ';
+					$this->_echo($x . " ($_itype) Delete image:" . $rec[$fcode] . $this->restype . ' not exists ');
 
 				$x+=1;	
 			}	
 			
 			@unlink($this->prpath . 'edi-img-counter.log');
 			return true;
-		}
+		/*}
 		else
-			$this->messages[] = 'There is no selected category';
+			//$this->messages[] = 'There is no selected category';
+			$this->_echo('There is no selected category');
 		
 		return false;
+		*/
 	}	
 
 	
@@ -419,15 +453,6 @@ class rcimgitems {
 	}
 	
     protected function create_thumbnail($s, $file, $ptype, $uphotoid=null) {
-        $autoresize = remote_arrayload('RCITEMS','autoresize',$this->prpath);
-		
-		//3 sized scaled images
-		$photo_bg = remote_paramload('RCITEMS','photobgpath',$this->prpath);		  
-		$img_large = $photo_bg ? $this->urlpath ."/images/$photo_bg/" : $thubpath;	  	  
-		$photo_md = remote_paramload('RCITEMS','photomdpath',$this->prpath);		  
-		$img_medium = $photo_md ? $this->urlpath ."/images/$photo_md/" : $thubpath;	  	  
-		$photo_sm = remote_paramload('RCITEMS','photosmpath',$this->prpath);		  
-		$img_small = $photo_sm ? $this->urlpath ."/images/$photo_sm/" : $thubpath;	  
 		
 		$f = $file . $this->restype;
 		
@@ -435,14 +460,14 @@ class rcimgitems {
 		
 			  case 'SMALL' : //resize medium, small and save at once
 							 //$this->messages[] = 'Autoresize:' . implode(' , ',$autoresize);
-                             if (!empty($autoresize)) {							 
+                             if (!empty($this->autoresize)) {							 
                                $image = new SimpleImage();
                                $image->load($s);
 							   //$this->messages[] = 'Load small:' . $s;						   
 							   
-							   if ($dim_small = $autoresize[0]) {
+							   if ($dim_small = $this->autoresize[0]) {
                                  $image->resizeToWidth($dim_small);
-                                 $image->save($img_small . $f);
+                                 $image->save($this->img_small . $f);
 								 //$this->messages[] = 'Save small:' . $img_small . $f;
 								 
 								 //auto add to db
@@ -454,54 +479,54 @@ class rcimgitems {
 			                 break;
 							 
 			  case 'MEDIUM' : //resize medium, small and save at once
-                             if (!empty($autoresize)) {							 
+                             if (!empty($this->autoresize)) {							 
                                $image = new SimpleImage();
                                $image->load($s);
 							   
-							   if ($dim_medium = $autoresize[1]) {
+							   if ($dim_medium = $this->autoresize[1]) {
                                  $image->resizeToWidth($dim_medium);
-                                 $image->save($img_medium . $f);
+                                 $image->save($this->img_medium . $f);
 								 //auto add to db
 								 if (GetParam('photodb'))
 									$this->add_photo2db($file,$this->restype,'MEDIUM');
 							   }							   
-							   /*if ($dim_small = $autoresize[0]) {
+							   if ($dim_small = $this->autoresize[0]) {
                                  $image->resizeToWidth($dim_small);
-                                 $image->save($img_small . $myfilename);
+                                 $image->save($this->img_small . $f);
 								 //auto add to db
 								 if (GetParam('photodb'))
 									$this->add_photo2db($file,$this->restype,'SMALL');
-                               }*/
+                               }
                                return 1;							   
 							 }
 			                 break;
 							 
 			  case 'LARGE' : //resize large, medium and small and save at once	
-                             if (!empty($autoresize)) {							 
+                             if (!empty($this->autoresize)) {							 
                                $image = new SimpleImage();
                                $image->load($s);
 							   
 							   if ($dim_large = $autoresize[2]) {
                                  $image->resizeToWidth($dim_large);
-                                 $image->save($img_large . $f);	
+                                 $image->save($this->img_large . $f);	
 								 //auto add to db
 								 if (GetParam('photodb'))
 									$this->add_photo2db($file,$this->restype,'LARGE');
 							   }								   
-							   /*if ($dim_medium = $autoresize[1]) {
+							   if ($dim_medium = $this->autoresize[1]) {
                                  $image->resizeToWidth($dim_medium);
-                                 $image->save($img_medium . $f);	
+                                 $image->save($this->img_medium . $f);	
 								 //auto add to db
 								 if (GetParam('photodb'))
 									$this->add_photo2db($file,$this->restype,'MEDIUM');
 							   }
-							   if ($dim_small = $autoresize[0]) {
+							   if ($dim_small = $this->autoresize[0]) {
                                  $image->resizeToWidth($dim_small);
-                                 $image->save($img_small . $f);	
+                                 $image->save($this->img_small . $f);	
 								 //auto add to db
 								 if (GetParam('photodb'))
 									$this->add_photo2db($file,$this->restype,'SMALL');
-							   }*/
+							   }
                                return 1; 							   
 							 }
 			                 break;
@@ -512,11 +537,11 @@ class rcimgitems {
 									 $this->urlpath . remote_paramload('RCITEMS','respath',$this->prpath);
 							         
 							 //resize large autoresize
-                             if (!empty($autoresize)) {							 
+                             if (!empty($this->autoresize)) {							 
                                $image = new SimpleImage();
                                $image->load($s);
 							   						   
-							   if ($dim_large = $autoresize[2]) {
+							   if ($dim_large = $this->autoresize[2]) {
                                  $image->resizeToWidth($dim_large);
                                  $image->save($path . $f);	
 								 //auto add to db
@@ -556,6 +581,22 @@ class rcimgitems {
 		
 		return false;
 	}
+	
+	protected function exist_photo($id, $type=null) {
+		if (!$id) return;
+		$ret = false;
+		
+		$f = $id . $this->restype;
+		
+		switch ($type) {
+			case 'LARGE' : $ret = is_file($this->img_large . $f); break;
+			case 'MEDIUM': $ret = is_file($this->img_medium . $f);break;
+			case 'SMALL' : 
+			default      : $ret = is_file($this->img_small . $f);
+		}
+
+		return $ret;	
+	}	
 
 	function delete_photo($id=null, $type=null) {
 		$uid = null;
@@ -700,7 +741,42 @@ class rcimgitems {
 	    else
 			$ret = move_uploaded_file($s,$f);
 				
+	}
+
+	protected function jsDialog($text=null, $title=null, $time=null, $source=null) {
+	   $stay = $time ? $time : 3000;//2000;
+
+       if (defined('JSDIALOGSTREAMSRV_DPC')) {
+			$sd = new jsdialogStreamSrv();
+			//$ret= $sd->streamDialog();
+			
+			if ($text)	
+				$code = $sd->say($text, $title, $source, $stay);
+			else
+				$code = $sd->streamDialog('jsdtime');
+		   
+			$js = new jscript;	
+			$js->load_js($code,null,1);		
+			unset ($js);
+	   }	
+	}
+
+	public function streamDialog() {
+		
+		return _m('rcpmenu.streamDialog');
 	}	
+	
+	//say a message 
+	protected function _echo($message=null, $type='TYPE_IRON') {
+		if (!$message) return false;
+		
+		$this->messages[] = $message;
+		
+		if ($this->indac7==true) 
+			$this->dacEnv->_say($message, $type);				
+		
+		return true;
+	}		
 
 };
 }

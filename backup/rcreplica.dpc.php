@@ -42,13 +42,26 @@ $__LOCALE['RCREPLICA_DPC'][16]='_ref;Reference;Reference';
 $__LOCALE['RCREPLICA_DPC'][17]='_sqlres;Res;Res';
 $__LOCALE['RCREPLICA_DPC'][18]='_query;Query;Query';
 $__LOCALE['RCREPLICA_DPC'][19]='_acct;Acct;Acct';
+$__LOCALE['RCREPLICA_DPC'][20]='_files;Files;Αρχεία';
+$__LOCALE['RCREPLICA_DPC'][21]='_sql;Database;Βάση δεδομένων';
+$__LOCALE['RCREPLICA_DPC'][22]='_runday;Run 1 day back;Εκτέλεση για 1 ημέρα πριν';
+$__LOCALE['RCREPLICA_DPC'][23]='_runtoday;Run today;Εκτέλεση για σήμερα';
+$__LOCALE['RCREPLICA_DPC'][24]='_runweek;Run 1 week back;Εκτέλεση για μια εβδομάδα πριν';
+$__LOCALE['RCREPLICA_DPC'][25]='_runmonth;Run 1 month back;Εκτέλεση για ενα μήνα πρίν';
+$__LOCALE['RCREPLICA_DPC'][26]='_runall;Run all;Εκτέλεση όλων';
+$__LOCALE['RCREPLICA_DPC'][27]='_mode;Mode;Επιλογή';
+$__LOCALE['RCREPLICA_DPC'][28]='_actions;Actions;Ενέργειες';
 
-class rcreplica  {
+require_once(_r('cp/cpdac7.lib.php'));
+
+class rcreplica extends cpdac7 {
 
     var $title, $path, $urlpath;
 	var $seclevid, $userDemoIds;
 		
 	function __construct() {
+		
+		parent::__construct();
 	
 		$this->path = paramload('SHELL','prpath');
 		$this->urlpath = paramload('SHELL','urlpath');
@@ -65,8 +78,7 @@ class rcreplica  {
 	
 	   switch ($event) {
 
-		 case 'cpdorepall'   : $m = (GetReq('mode')=='sql') ? 1 : 2; //0
-		                       $this->doreplication($m, true);
+		 case 'cpdorepall'   : $this->doreplication(null, true);
 		                       break;
 	   
 		 case 'cpdorepsql'   : $this->doreplication(1, true);
@@ -114,24 +126,26 @@ class rcreplica  {
 	}	
 
 	protected function replicationMode() {
+		$lan = getlocal();
 		$mode = (GetReq('mode')=='sql') ? 'SQL' : 'Filesystem';
 		$um = (GetReq('mode')=='sql') ? '&mode=sql' : '&mode=files'; 
+		$mcmd = array();
+		$rcmd = array();
 		
-		$turl1 = seturl('t=cpreplica&mode=files');
-		$turl2 = seturl('t=cpreplica&mode=sql');		
-		$button = $this->createButton('Mode', array('Files'=>$turl1,
-													'SQL'=>$turl2,
-		                                            ));
+		$mcmd[localize('_files', $lan)] = seturl('t=cpreplica&mode=files');
+		$mcmd[localize('_sql', $lan)] = seturl('t=cpreplica&mode=sql');		
+		$button = $this->createButton(localize('_mode', $lan), $mcmd);
 													
-		$turl1 = seturl('t=cpdorepall&backtrace=today'.$um);
-		$turl2 = seturl('t=cpdorepall&backtrace=yesterday'.$um);
-		$turl3 = seturl('t=cpdorepall&backtrace=week'.$um);
-		$turl4 = seturl('t=cpdorepall&backtrace=month'.$um);
-		$button .= $this->createButton('Actions', array('Run today'=>$turl1,
-														'Run 1 day'=>$turl2,
-														'Run week'=>$turl3,
-														'Run 30 days'=>$turl4,
-		                                              ),'warning');
+		$rcmd[localize('_runtoday', $lan)] = seturl('t=cpdorepall&backtrace=today'.$um);
+		$rcmd[localize('_runday', $lan)] = seturl('t=cpdorepall&backtrace=yesterday'.$um);
+		$rcmd[localize('_runweek', $lan)] = seturl('t=cpdorepall&backtrace=week'.$um);
+		$rcmd[localize('_runmonth', $lan)] = seturl('t=cpdorepall&backtrace=month'.$um);
+		if ($this->dac7) {
+			$rcmd[0] = ''; //sep
+			$rcmd[localize('_runall', $lan)] = seturl('t=cpdorepall'.$um);
+		}		
+		
+		$button .= $this->createButton(localize('_actions', $lan), $rcmd,'warning');
 													  													   
 		$content = (GetReq('mode')=='sql') ?
 					$this->replica_sqlgrid(null,140,5,'r', true) :
@@ -303,6 +317,25 @@ class rcreplica  {
 		
 	}	
 	
+	//dac7 version
+	protected function dac7difSQL($d=null) {
+		$db = GetGlobal('db');
+		$backtrace = date("Y-m-d H:i:s", mktime(date('H'), date('i'), date('s'), date('n'), date('j')-$d, date('Y')));
+
+		//desc form old to new 
+		$sSQL = "SELECT id,time,sqlquery FROM syncsql where status=1 and reference='system' AND reference NOT LIKE 'replication' AND sqlquery NOT LIKE '%cron%' and time > '$backtrace' order by time";
+		$this->_echo($sSQL, 'TYPE_IRON');
+		$result = $db->Execute($sSQL);
+		foreach ($result as $r=>$rec) {
+			//$this->_echo($rec['sqlquery'], 'TYPE_IRON');
+			echo '.';
+		}
+		$this->_echo('..!', 'TYPE_IRON');	
+		
+		return true;		
+	}	
+		
+	
 	//replicate differencial file system activity
 	protected function difFiles($d=null, $download=false) {
 		$db = GetGlobal('db');
@@ -320,7 +353,7 @@ class rcreplica  {
 			return false;
 		}
 		else {
-			$sSQL = "SELECT id, stamp, status, file_path, file_last_mod FROM fshistory WHERE (status='ADDED' or status='ALTERED') and file_path NOT LIKE 'FIRST SCAN%' and stamp > '$backtrace'";
+			$sSQL = "SELECT id, timein, stamp, status, file_path, file_last_mod FROM fshistory WHERE (acct NOT LIKE '%replicated%') AND (status='ADDED' or status='ALTERED') AND (file_path NOT LIKE 'FIRST SCAN%') AND (timein > '$backtrace') ORDER BY timein";
 			$result = $db->Execute($sSQL);
 		
 			foreach ($result as $r=>$rec) {
@@ -344,6 +377,29 @@ class rcreplica  {
 		}
 		
 	}
+	
+	//dac7 version
+	protected function dac7difFiles($d=null, $download=false) {
+		$db = GetGlobal('db');
+		$backtrace = date("Y-m-d H:i:s", mktime(date('H'), date('i'), date('s'), date('n'), date('j')-$d, date('Y')));
+
+		$sSQL = "SELECT id, timein, stamp, status, file_path, file_last_mod FROM fshistory WHERE (acct NOT LIKE '%replicated%') AND (status='ADDED' or status='ALTERED') AND (file_path NOT LIKE 'FIRST SCAN%') AND (timein > '$backtrace') ORDER BY timein";
+		$this->_echo($sSQL, 'TYPE_IRON');
+		
+		$result = $db->Execute($sSQL);
+		
+		foreach ($result as $r=>$rec) {
+			if (is_readable($rec['file_path']))  {   
+				
+				$f = str_replace($this->urlpath .'/', '', $rec['file_path']);
+				//$this->_echo($f 'TYPE_IRON');
+				echo '.';
+			}	
+		}
+		$this->_echo('..!', 'TYPE_IRON');	
+
+		return true;
+	}	
 
 	protected function zipFiles($afiles, $download=false, $ftp=false)	{
 		static $zip; 
@@ -400,39 +456,104 @@ class rcreplica  {
 		
 	}
 	
-	protected function doreplication($mode=null, $download=false) {
+	public function doreplication($mode=null, $download=false) {
+		$mode = $mode ?? ((GetReq('mode')=='sql') ? 1 : 2); //0
 		$bt = GetReq('backtrace');
+		$loc = '_runall';
 		
-		ini_set('max_execution_time', 600);
-		ini_set('memory_limit','1024M');
+		if ($this->dac7) { //call remote dac7 cmd
+			//save cookie params for dac-7 cmd
+			$reqparams = "mode=" . $mode . "&backtrace=" . $bt;
+			//file_put_contents($this->path . '/_cookie.txt', $reqparams, LOCK_EX);				   
 
-		//set_time_limit(180);		
-		
-		switch ($bt) {
-			case 'month'     : $d = 30; break;
-			case 'week'      : $d = 7; break;
-			case 'yesterday' : $d = 1; break;
-			case 'today'     : $d = 0; break;
-			default          : $d = -1;
-		}
-		
-		if ($d) {			
+			if ($bt) { //inside dac7, outside of -this- class
+				
+				switch ($bt) {
+					case 'month'     : $loc = '_runmonth'; $d = 30; break;
+					case 'week'      : $loc = '_runweek'; $d = 7; break;
+					case 'yesterday' : $loc = '_runday'; $d = 1; break;
+					case 'today'     : $loc = '_runtoday'; $d = 0; break;
+					default          : $loc = '_runall'; $d = 0;
+				}
+				
+				//add days param
+				$reqparams .= "&days=" . $d;
+			}	
+			
+			//executed inside dac7 engine when called as ppost ETL
+			/*if ($this->execDac7cmd('async/ppost/backup_replication/', $reqparams))
+				$this->jsDialog('Start', localize('_runall', getlocal()), 3000, 'cdact.php?t=texit');	
+			*/
+			
+			//executed inside dac7 engine when called as dbo ETL
+						
+			//'async/dbo/replication/dbofilter03/dbofilter04/replicatenode/'
+			//'_replicationdb'=>'async/dbo/replication_db/dbofilter_execute_remote/dbofilter_update_local/replicatenode/',
+			//'_replicationfl'=>'async/dbo/replication_files/dbofilter03/dbofilter04/replicatenode/',
+			
 			switch ($mode) {
-				case 1  : $this->difSQL($d, $download); break;
-				case 2  : $this->difFiles($d, $download); break;
-				case 0  :
-				default : $f1 = $this->difSQL($d, false); 
-				          $f2 = $this->difFiles($d, false);
-						  $this->zipFiles(array($f1,$f2), $download);
-			}			  
+				case 2 :	//exec ETL method for files replication
+							if ($this->execDac7cmd('async/dbo/replication_files/dbofilter_savefile_remote/dbofilter_updatefile_local/replicatefilenode/', $reqparams))
+								$this->jsDialog('Start', localize($loc, getlocal()), 3000, 'cdact.php?t=texit');
+							break;
+				case 1 :
+				default:
+							//exec ETL method for db replication
+							if ($this->execDac7cmd('async/dbo/replication_db/dbofilter_execute_remote/dbofilter_update_local/replicatenode/', $reqparams))
+								$this->jsDialog('Start', localize($loc, getlocal()), 3000, 'cdact.php?t=texit');	
+			}
+			return true;	
 		}
 		else {
-			$f1 = $this->difSQL(365, false); 
-			$f2 = $this->difFiles(365, false);
-			$this->zipFiles(array($f1,$f2), $download);
-		}
+			if ($this->indac7) {
+				//executed inside dac7 engine when called as ppost ETL
+				switch ($bt) {
+					case 'month'     : $d = 30; break;
+					case 'week'      : $d = 7; break;
+					case 'yesterday' : $d = 1; break;
+					case 'today'     : $d = 0; break;
+					default          : $d = 0;
+				}
+				
+				$this->dac7difSQL($d); 
+				$this->dac7difFiles($d);
+				
+				return true;
+			}
+			else { //common www request
+				ini_set('max_execution_time', 600);
+				ini_set('memory_limit','1024M');
+
+				//set_time_limit(180);		
 		
-		return true;	
+				switch ($bt) {
+					case 'month'     : $d = 30; break;
+					case 'week'      : $d = 7; break;
+					case 'yesterday' : $d = 1; break;
+					case 'today'     : $d = 0; break;
+					default          : $d = 0;
+				}
+		
+				if ($d) {			
+					switch ($mode) {
+						case 1  : 	$this->difSQL($d, $download); break;
+						case 2  : 	$this->difFiles($d, $download); break;
+						case 0  :
+						default : 	$f1 = $this->difSQL($d, false); 
+									$f2 = $this->difFiles($d, false);
+									$this->zipFiles(array($f1,$f2), $download);
+					}			  
+				}
+				else {
+					$f1 = $this->difSQL(365, false); 
+					$f2 = $this->difFiles(365, false);
+					$this->zipFiles(array($f1,$f2), $download);
+				}
+				
+				return true;
+			}
+		}
+		return false;	
 	}
 	
 	protected function createButton($name=null, $urls=null, $t=null, $s=null) {
@@ -448,7 +569,7 @@ class rcreplica  {
 		
 		if (!empty($urls)) {
 			foreach ($urls as $n=>$url)
-				$links .= '<li><a href="'.$url.'">'.$n.'</a></li>';
+				$links .= $url ? '<li><a href="'.$url.'">'.$n.'</a></li>' : '<li class="divider"></li>';
 			$lnk = '<ul class="dropdown-menu">'.$links.'</ul>';
 		} 
 		

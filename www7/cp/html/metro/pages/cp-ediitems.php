@@ -20,6 +20,8 @@
     <link href="assets/fancybox/source/jquery.fancybox.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="assets/uniform/css/uniform.default.css" />
 	
+	<link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">	
+	
 	<link href="../javascripts/themes/redmond/jquery-ui.custom.css" rel="stylesheet" /> 
 	<link href="../javascripts/jqgrid/css/ui.jqgrid.css" rel="stylesheet" />  
 	
@@ -52,10 +54,16 @@
             <!-- END PAGE HEADER-->
 
             <!-- BEGIN PAGE CONTENT-->
+			<!--div class="row-fluid">
+                 <div class="span12">
+                    <METRO/INDEX>					 
+                 </div>	 
+             </div-->	
+			 
             <div class="row-fluid">
                 <div class="span12">
 				
-					<!--METRO/INDEX-->
+					<?METRO/INDEX?>
 										
                     <div class="widget box purple">
                         <div class="widget-title">
@@ -70,9 +78,11 @@
                             <form id="tForm" method="post" action="cpediitems.php?t=cpsaveediitems" class="form-horizontal">
 								<input type="hidden" name="FormName" value="saveediitems" />
 								<input type="hidden" name="FormAction" value="cpsaveediitems" />
+								<input type="hidden" name="cat" value="<phpdac>rcediitems.currentCategory</phpdac>" />
+								<input type="hidden" name="mode" value="<phpdac>rcediitems.currentMode</phpdac>" />
 								
-								<input type="hidden" name="flt" value="<phpdac>rcimgitems.getFilter use 1</phpdac>" />
-								<input type="hidden" name="val" value="<phpdac>rcimgitems.getFilter</phpdac>" />
+								<input type="hidden" name="flt" value="<phpdac>rcediitems.getFilter use 1</phpdac>" />
+								<input type="hidden" name="val" value="<phpdac>rcediitems.getFilter</phpdac>" />
 								
                                 <div id="tabsleft" class="tabbable tabs-left">
                                 <ul>
@@ -90,8 +100,18 @@
 											<div class="controls">
 												<div id="normal-toggle-button">
 													<input name="moveincat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use moveincat+checked</phpdac> >
-													<phpdac>rcediitems.currCategory</phpdac>
-												</div>
+													<phpdac>rcediitems.showCategory</phpdac> 
+												<label>
+													<phpdac>cmsrt.slocale use _fromhere</phpdac>
+												</label>
+												<label class="checkbox">
+                                                    <input name="catoverroot" type="checkbox" <phpdac>cmsrt.getSubmitedParam use catoverroot+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _overroot</phpdac>
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="catfromroot" type="checkbox" <phpdac>cmsrt.getSubmitedParam use catfromroot+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _fromroot</phpdac>
+                                                </label>
 												<label class="checkbox">
                                                     <input name="slugon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use slugon+checked</phpdac> /> 
 													<phpdac>cmsrt.slocale use _slug</phpdac>
@@ -100,6 +120,7 @@
                                                     <input name="sluggreekon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use sluggreekon+checked</phpdac> /> 
 													<phpdac>cmsrt.slocale use _sluggreeklish</phpdac>
                                                 </label>
+												</div>
 											</div>
 										</div>	
 										<div class="control-group">
@@ -108,9 +129,21 @@
 											</label>
 											<div class="controls">
 												<div id="normal-toggle-button">
-													<input name="updincat" type="checkbox">
-													<phpdac>rcediitems.currCategory</phpdac>
-												</div>
+													<input name="updincat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use updincat+checked</phpdac> >
+													<phpdac>rcediitems.showCategory</phpdac>
+												
+												<label class="checkbox">
+                                                    <input name="catupd" type="checkbox" <phpdac>cmsrt.getSubmitedParam use catupd+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _catsetupdate</phpdac> <phpdac>cmsrt.slocale use _fromhere</phpdac>
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="catoverroot" type="checkbox" <phpdac>cmsrt.getSubmitedParam use catoverroot+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _overroot</phpdac>
+                                                </label>												
+												<label class="checkbox">
+                                                    <input name="catfromroot" type="checkbox" <phpdac>cmsrt.getSubmitedParam use catfromroot+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _fromroot</phpdac>
+                                                </label>												
 												<label class="checkbox">
                                                     <input name="slugon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use slugon+checked</phpdac> /> 
 													<phpdac>cmsrt.slocale use _slug</phpdac>
@@ -119,6 +152,7 @@
                                                     <input name="sluggreekon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use sluggreekon+checked</phpdac> /> 
 													<phpdac>cmsrt.slocale use _sluggreeklish</phpdac>
                                                 </label>
+												</div>
 											</div>
 										</div>										
                                         <div class="control-group">
@@ -128,8 +162,15 @@
                                             <div class="controls">
 												<div id="normal-toggle-button">
 													<input name="createcat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use createcat+checked</phpdac>>
-													<phpdac>rcediitems.currCategory</phpdac>
-												</div>
+													<phpdac>rcediitems.showCategory</phpdac>
+													
+												<label>
+													<phpdac>cmsrt.slocale use _overroot</phpdac>
+												</label>
+												<label class="checkbox">
+                                                    <input name="createcatfromroot" type="checkbox" <phpdac>cmsrt.getSubmitedParam use createcatfromroot+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _fromroot</phpdac>
+                                                </label>
 												<label class="checkbox">
                                                     <input name="slugon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use slugon+checked</phpdac> /> 
 													<phpdac>cmsrt.slocale use _slug</phpdac>
@@ -151,6 +192,7 @@
                                                     <input name="catsearch" type="checkbox" <phpdac>cmsrt.getSubmitedParam use catsearch+checked</phpdac> /> 
 													<phpdac>cmsrt.slocale use _searchable</phpdac>
                                                 </label>
+												</div>
                                             </div>
                                         </div>
 										
@@ -162,7 +204,7 @@
 											<div class="controls">
 												<div id="normal-toggle-button">
 													<input name="delincat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use delincat+checked</phpdac> >
-													<phpdac>rcediitems.currCategory</phpdac>
+													<phpdac>rcediitems.showCategory</phpdac>
 												</div>
 											</div>
 										</div>										
@@ -173,8 +215,14 @@
                                             <div class="controls">
 												<div id="normal-toggle-button">
 													<input name="deletecat" type="checkbox" <phpdac>cmsrt.getSubmitedParam use deletecat+checked</phpdac> >
-													<phpdac>rcediitems.currCategory</phpdac>
-												</div>
+													<phpdac>rcediitems.showCategory</phpdac> 
+												<label>
+													<phpdac>cmsrt.slocale use _overroot</phpdac>
+												</label>
+												<label class="checkbox">
+                                                    <input name="deletecatfromroot" type="checkbox" <phpdac>cmsrt.getSubmitedParam use deletecatfromroot+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _fromroot</phpdac>
+                                                </label>												
 												<label class="checkbox">
                                                     <input name="slugon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use slugon+checked</phpdac> /> 
 													<phpdac>cmsrt.slocale use _slug</phpdac>
@@ -183,6 +231,7 @@
                                                     <input name="sluggreekon" type="checkbox" <phpdac>cmsrt.getSubmitedParam use sluggreekon+checked</phpdac> /> 
 													<phpdac>cmsrt.slocale use _sluggreeklish</phpdac>
                                                 </label>
+												</div>
                                             </div>
                                         </div>
 										
@@ -215,16 +264,11 @@
 												<phpdac>rcediitems.viewMessages</phpdac>
 												</select>
 											</div>
-										</div>
-										<!--div class="control-group">
-										    <label class="control-label">Items</label>
-											<div class="controls">
-												<-hpdac>rcediitems.editItems</phpda->														
-											</div>	
-										</div-->										
+										</div>										
                                     </div>
 
                                     <ul class="pager wizard">
+										<phpdac>rcediitems.noFilterWarning</phpdac>
 										<li class="next"><a href="javascript:document.getElementById('tForm').submit();">Submit</a></li>
                                     </ul>
                                 </div>
@@ -234,13 +278,7 @@
                     </div>
                 </div>
             </div>
-            <!-- END PAGE CONTENT-->
-
-             <div class="row-fluid">
-                 <div class="span12">
-                    <?METRO/INDEX?>					 
-                 </div>	 
-             </div>			
+            <!-- END PAGE CONTENT-->		
 
          </div>
          <!-- END PAGE CONTAINER-->
@@ -275,6 +313,12 @@
    <!--script for this page-->
    <script src="js/form-wizard.js"></script>
 
+     <!-- stream dialog -->
+   <script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
+   <script language="JavaScript">		
+		setInterval(function() {<phpdac>rchandleitems.streamDialog</phpdac>}, 30000);	
+   </script>
+   <!-- end stream dialog -->   
    <!-- END JAVASCRIPTS -->
 </body>
 <!-- END BODY -->

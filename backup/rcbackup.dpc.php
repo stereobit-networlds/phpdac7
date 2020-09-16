@@ -32,7 +32,9 @@ $__LOCALE['RCBACKUP_DPC'][6]='_code;Code;Κωδικός';
 $__LOCALE['RCBACKUP_DPC'][7]='_id;ID;ID';
 $__LOCALE['RCBACKUP_DPC'][8]='_save;Save;Αποθήκευση';
 
-class rcbackup  {
+require_once(_r('cp/cpdac7.lib.php'));
+
+class rcbackup extends cpdac7 {
 
     var $title, $path, $urlpath;
 	var $seclevid, $userDemoIds, $owner;
@@ -40,6 +42,8 @@ class rcbackup  {
 	var $instDownload;
 		
 	function __construct() {
+		
+		parent::__construct();
 	
 		$this->path = paramload('SHELL','prpath');
 		$this->urlpath = paramload('SHELL','urlpath');
@@ -49,7 +53,7 @@ class rcbackup  {
 		$this->userDemoIds = array(5,6,7,8); 
 		
 		$this->owner = $_POST['Username'] ? $_POST['Username'] : GetSessionParam('LoginName'); 
-		$this->instDownload = true;//false;	
+		$this->instDownload = ($this->indac7) ? false : true;//false;	
 	}
 	
     function event($event=null) {
@@ -61,8 +65,22 @@ class rcbackup  {
 		 case 'cpbackupdn'   : echo $this->loadframeDn();
 		                       die();
 							   break;		   
-		 case 'cpbackupsave' : $file = $this->downloadFile(); 
-							   if ($this->instDownload) die($file);		
+		 case 'cpbackupsave' :  if ($this->dac7) { //dac 7 zip use for realy big files
+												   //instant download not possible
+												   
+									//save cookie params for dac-7 cmd
+									$reqparams = "mode=" . GetReq('mode') . "&cp=" . GetReq('cp'). "&path=" . GetReq('path') . "&table=" . GetReq('table');
+									file_put_contents($this->path . '/_cookie.txt', $reqparams, LOCK_EX);				   
+
+									if ($this->execDac7cmd('async/ppost/backup_downloadfile/'))
+										$this->jsDialog('Start', localize('_save', getlocal()), 3000, 'cdact.php?t=texit');						
+			 
+								}
+								else { //www use
+									$file = $this->downloadFile(); 
+									if ($this->instDownload) die($file);		
+								}
+								
 		                       break;  		   
 		   							   
 		 case 'cpbackupget'  : $this->download($this->urlpath . urldecode(GetReq('file')));
@@ -447,13 +465,15 @@ class rcbackup  {
 		
 	}	
 	
-	protected function downloadFile() {
+	public function downloadFile() {
 		$mode = GetReq('mode');
 		
-		ini_set('max_execution_time', 600);
-		ini_set('memory_limit','1024M');
+		if (!$this->dac7) {
+			ini_set('max_execution_time', 600);
+			ini_set('memory_limit','1024M');
 
-		//set_time_limit(180); 	
+			//set_time_limit(180); 	
+		}	
 		
 		switch ($mode) {
 			case 'root'  : $path = GetReq('cp'); 
@@ -486,6 +506,41 @@ class rcbackup  {
 		return($ret);
 	}
 	
+	//dac7 version
+	/*public function downloadFileDac7() {
+		$mode = GetReq('mode');
+		
+		switch ($mode) {
+			case 'root'  : $path = GetReq('cp'); 
+						   $p = explode('/', '/'.$path); // / at start in case of one level
+						   $name = array_pop($p);	
+			               $ret = $this->backup_directory_norec($path, $name, false);//$this->instDownload);
+						   break;				
+			case 'system': $path = GetReq('cp'); 
+						   $p = explode('/', '/'.$path); // / at start in case of one level
+						   $name = array_pop($p);	
+			               $ret = $this->backup_directory($path, $name, false);//$this->instDownload);
+						   break;	
+			case 'dir'   : $path = GetReq('path');
+						   $p = explode('/', '/'.$path); // / at start in case of one level	
+						   $name = array_pop($p);	
+						   $ret = $this->backup_directory($path, $name, false);//$this->instDownload);
+			               break;
+			case 'pics'  : $path = GetReq('path');
+						   $p = explode('/', $path);	
+						   $name = array_pop($p);	
+						   $ret = $this->backup_directory_norec($path, $name, false);//$this->instDownload);
+			               break;
+			case 'table' : $table = GetReq('table');
+						   $ret = $this->backup_Table($table, null, false);//$this->instDownload);
+			               break;  
+			case 'files' :
+			default      : $ret = $this->backup_Files(null, false);//$this->instDownload);
+		}
+		
+		return($ret);
+	}	
+	*/
 	
 	protected function getFilesButtons() {
 		
@@ -561,7 +616,7 @@ class rcbackup  {
 		
 		if (!empty($urls)) {
 			foreach ($urls as $n=>$url)
-				$links .= '<li><a href="'.$url.'" '.$blank.'>'.$n.'</a></li>';
+				$links .= $url ? '<li><a href="'.$url.'" '.$blank.'>'.$n.'</a></li>' : '<li class="divider"></li>';
 			$lnk = '<ul class="dropdown-menu">'.$links.'</ul>';
 		} 
 		

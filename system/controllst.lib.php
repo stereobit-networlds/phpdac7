@@ -240,9 +240,14 @@ class controller  {
 	  $dpcmethod = explode(".",trim($part[0]));	//echo $dpcmethod[0],">>>>";
 	  $method = trim($dpcmethod[1]);	
 	  $class = strtoupper(trim($dpcmethod[0])).'_DPC';
-	  $var = explode("+",trim($part[1]));    
+	  $var = (isset($part[1])) ? explode("+",trim($part[1])) : array();    
 	  
-	  if ((defined($class)) &&
+	  //undefined offset notice correction
+	  for($zi=0;$zi<=30;$zi++) {
+		  if (isset($var[$zi])) {} else $var[$zi] = '';
+	  }	  
+	  
+	  if ((defined($class)) && (isset($__DPCMEM[$class])) &&
 	      (is_object($__DPCMEM[$class])) &&
 	      (method_exists($__DPCMEM[$class],$method))) {
 	  
@@ -348,7 +353,7 @@ class controller  {
 	      }		
 		}	  
 	  
-	    die($part[0]." is not a dpc object !\n");	  	  
+	    die($part[0]." is not a dpc object ! " . $part[1]);	  	  
 	  }	
 	}
 	
@@ -730,15 +735,15 @@ class controller  {
 	//parent dpc just included where child dpc loaded by script 
 	public function get_parent($parent,$child) {
 	  
-	  $GLOBALS["__EVENTS"][$child] = $GLOBALS["__EVENTS"][$parent];
+	  $GLOBALS["__EVENTS"][$child] = isset($GLOBALS["__EVENTS"][$parent]) ? $GLOBALS["__EVENTS"][$parent] : '';
 	  $GLOBALS["__EVENTS"][$parent] = array();
-	  $GLOBALS["__ACTIONS"][$child] = $GLOBALS["__ACTIONS"][$parent];
+	  $GLOBALS["__ACTIONS"][$child] = isset($GLOBALS["__ACTIONS"][$parent]) ? $GLOBALS["__ACTIONS"][$parent] : '';
 	  $GLOBALS["__ACTIONS"][$parent] = array();
-	  $GLOBALS["__DPCATTR"][$child] = $GLOBALS["__DPCATTR"][$parent];
+	  $GLOBALS["__DPCATTR"][$child] = isset($GLOBALS["__DPCATTR"][$parent]) ? $GLOBALS["__DPCATTR"][$parent] : '';
 	  $GLOBALS["__DPCATTR"][$parent] = array();	  
 	  
 	  //compatibility for script parser commands
-	  $GLOBALS["__PARSECOM"][$child] = $GLOBALS["__PARSECOM"][$parent];
+	  $GLOBALS["__PARSECOM"][$child] = isset($GLOBALS["__PARSECOM"][$parent]) ? $GLOBALS["__PARSECOM"][$parent] : '';
 	  $GLOBALS["__PARSECOM"][$parent] = array();	  
 	    
 	  
@@ -752,11 +757,17 @@ class controller  {
         $lr = GetGlobal('__DPCLOCALE');
    
 	    //echo $dpc,">>><br>";
-	    if (is_array($loc[$dpc])) {
+	    if ((is_array($loc)) && (is_array($loc[$dpc]))) {
 		
 	        foreach ($loc[$dpc] as $id=>$explain) {
-	         $parts = explode(";",$explain);
-		     $lr[$parts[0]] = $parts[1].";".$parts[2].";".$parts[3];
+				$parts = explode(";",$explain);
+			 
+				$a = isset($parts[0]) ? $parts[0] : '';
+				$b = isset($parts[1]) ? $parts[1] : '';
+				$c = isset($parts[2]) ? $parts[2] : '';
+				$d = isset($parts[3]) ? $parts[3] : '';
+				
+				$lr[$a] = $b.";".$c.";".$d;
 	        }		 
 			
 			if ($debug) {

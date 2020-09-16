@@ -11,11 +11,13 @@
    <meta content="" name="author" />
    <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
    <link href="assets/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
-   <link href="assets/bootstrap/css/bootstrap-fileupload.css" rel="stylesheet" />
+   <!--link href="assets/bootstrap/css/bootstrap-fileupload.css" rel="stylesheet" /-->
    <link href="assets/font-awesome/css/font-awesome.css" rel="stylesheet" />
    <link href="css/style.css" rel="stylesheet" />
    <link href="css/style-responsive.css" rel="stylesheet" />
    <link href="css/style-default.css" rel="stylesheet" id="style_color" />
+   
+   <link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">
 
 	<link href="../javascripts/themes/redmond/jquery-ui.custom.css" rel="stylesheet" /> 
 	<link href="../javascripts/jqgrid/css/ui.jqgrid.css" rel="stylesheet" />  
@@ -30,7 +32,7 @@
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
-<body class="fixed-top">
+<body class="fixed-top" onLoad="init()">
    <!-- BEGIN HEADER -->
 	<phpdac>frontpage.include_part use /parts/header.php+++metro</phpdac>
    <!-- END HEADER -->
@@ -51,10 +53,10 @@
                  <div class="span12">
                      <div class="widget red">
                          <div class="widget-title">
-                             <h4><i class="icon-edit"></i> Cron </h4>
+                             <h4><i class="icon-edit"></i> <phpdac>cmsrt.slocale use _cron</phpdac> </h4>
                            <span class="tools">
                                <a href="javascript:;" class="icon-chevron-down"></a>
-                               <a href="javascript:;" class="icon-remove"></a>
+                               <!--a href="javascript:;" class="icon-remove"></a-->
                            </span>
                          </div>
                          <div class="widget-body">
@@ -98,7 +100,12 @@
 	function cronjobs() {var str = arguments[0]; $('#cronjobs').load("cpcron.php?t=cpcronjobs&id="+str);}
    </script>
 
-	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->   
+     <!-- stream dialog -->
+   <script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
+   <script language="JavaScript">		
+		setInterval(function() {<phpdac>rccron.streamDialog</phpdac>}, 30000);	
+   </script>
+   <!-- end stream dialog -->  
 </body>
 <!-- END BODY -->
 </html>

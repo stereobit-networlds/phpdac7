@@ -24,8 +24,8 @@ class cms extends fronthtmlpage {
 		$UserName = GetGlobal('UserName');		
 		$UserSecID = GetGlobal('UserSecID');
 		$this->user = decode($UserName);			
-		$this->seclevid = $GLOBALS['ADMINSecID'] ? $GLOBALS['ADMINSecID'] : 
-							($_SESSION['ADMINSecID'] ? $_SESSION['ADMINSecID'] :
+		$this->seclevid = isset($GLOBALS['ADMINSecID']) ? $GLOBALS['ADMINSecID'] : 
+							(isset($_SESSION['ADMINSecID']) ? $_SESSION['ADMINSecID'] :
 								(((decode($UserSecID))) ? (decode($UserSecID)) : 0));		
 		
 		fronthtmlpage::__construct();
@@ -77,15 +77,19 @@ class cms extends fronthtmlpage {
     public function paramload($section,$param) {
 		$config = GetGlobal('config');
 		//echo $param;
-		if ($ret = $config[$section][$param]) 
+		if ( (is_array($config[$section])) && (isset($config[$section][$param])) ) {
+			$ret = $config[$section][$param];
 			return ($ret); 
+		}	
     }
 
     public function arrayload($section,$array) {
 		$config = GetGlobal('config');
   
-		if ($data = $config[$section][$array]) 
+		if ( (is_array($config[$section])) && (isset($config[$section][$array])) ) { 	
+			$data = $config[$section][$array];
 			return(explode(",",$data));
+		}	
     }
 	
 	

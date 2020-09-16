@@ -6,8 +6,7 @@ define("CPLOGIN_DPC",true);
 
 $__DPC['CPLOGIN_DPC'] = 'cplogin';
 
-$a = GetGlobal('controller')->require_dpc('libs/scaptcha.lib.php');
-require_once($a);
+require_once(_r('libs/scaptcha.lib.php'));
 
 $__EVENTS['CPLOGIN_DPC'][0]='cplogin';
 $__EVENTS['CPLOGIN_DPC'][1]='dologin';

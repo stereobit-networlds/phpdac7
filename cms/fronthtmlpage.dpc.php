@@ -659,11 +659,12 @@ EOF;
 			$name = ($uselans) ? str_replace('.', getlocal() . '.', $fname) : $fname;	
 			$pathname = $this->urlpath . '/cp/'.$name;
 
-			if (is_readable($pathname)) {
+			//if (is_readable($pathname)) {
+				//$contents = @file_get_contents($pathname);
+				//...
+			if ($contents = trim(self::streamfile_contents($pathname))) {
 				
 				self::stackTemplate($pathname);
-				
-				$contents = @file_get_contents($pathname);
 				$ret = $this->process_commands($contents);
 				return ($ret);
 			}
@@ -820,6 +821,7 @@ EOF;
 	/*split and execute multiple dac cmds*/
 	protected function dacexec($dcmds=null) {
 	    if (!$dcmds) return null;
+		$ret = null;
 		
 	    $mcmds = explode('::',$dcmds);
 		foreach ($mcmds as $c=>$cmd) { 
@@ -1348,7 +1350,7 @@ function cc(name,value,days) {
 			$fp = str_replace(self::$staticprpath, '/cp/', $f);
 			//phpdac7\__log('fetch remote:' . $fp); //dac7 not comaptible
 			//echo "$st/www7" . $fp . PHP_EOL;
-			return file_get_contents("$st/www7" . $fp);	
+			return @file_get_contents("$st/www7" . $fp);	
 		}
 		
 		//else filesystem default

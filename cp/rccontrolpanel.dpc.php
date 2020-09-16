@@ -505,10 +505,13 @@ document.addEventListener('keydown', function(event) {
 			//call cpGet from rcpmenu not this (only def action)
 			$cpGet = _v('rcpmenu.cpGet');	
 			$csep = _m('cmsrt.sep');
-			if ($id = _m("cmsrt.getRealItemCode use " . $cpGet['id']))
+			if ($id = _m("cmsrt.getRealItemCode use " . $cpGet['id'])) {
 				$section = ' &gt; ' . $this->getItemName($id);
-			elseif ($cat = $cpGet['cat'])
-				$section = ' &gt; ' . str_replace($csep, ' &gt; ', _m("cmsrt.replace_spchars use $cat+1"));
+			}	
+			elseif ($cat = $cpGet['cat']) {
+				//$section = ' &gt; ' . str_replace($csep, ' &gt; ', _m("cmsrt.replace_spchars use $cat+1"));
+				$section = ' &gt; ' . _m('rcpmenu.showCategoryTitles use '. $cat . '+&nbsp;&gt;&nbsp;');
+			}	
 			else
 				$section = null;
 	  

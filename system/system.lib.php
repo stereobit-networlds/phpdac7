@@ -106,7 +106,7 @@
 	function GetSessionParam($ParamName) {
 
 		if ((!isset($_POST[$ParamName]) && !isset($_GET[$ParamName])))
-			return $_SESSION[$ParamName];
+			return isset($_SESSION[$ParamName]) ? $_SESSION[$ParamName] : null;
 
 		return null; 
 	}
@@ -162,10 +162,13 @@
 	}
 
 	function GetGlobal($param) {
-		if ($ret = $_SESSION[$param]) 
+		if ((isset($_SESSION[$param])) && ($ret = $_SESSION[$param]))
 			return ($ret);
   
-		return ($GLOBALS[$param]);
+        if (isset($GLOBALS[$param]))
+			return ($GLOBALS[$param]);
+		
+		return null;
 	}
 
 	function SetGlobal($param,$val=null) {
@@ -274,9 +277,10 @@ function iniload($section) {
 function paramload($section,$param) {
   $config = GetGlobal('config');
 
-  if (is_array($config[$section]))     
+  if ((is_array($config[$section])) && (isset($config[$section][$param])))    
 	return ($config[$section][$param]);
 
+  return null;	
 }
 
 function arrayload($section,$array) {
@@ -294,8 +298,19 @@ function remote_paramload($section,$param,$remoteapppath,$usepath=null) {
   $config = GetGlobal('config');
 	
   if ($usepath) {//switch db case
-    $config = @parse_ini_file($remoteapppath."config.ini",true);
-	$t_config = @parse_ini_file($remoteapppath."myconfig.txt",true);
+  
+	$rmpath = $remoteapppath ? $remoteapppath : getcwd();
+	
+	if (is_readable($rmpath . "/config.ini.php")) { //.ini/php
+		include($rmpath . "/config.ini.php");
+		$config = @parse_ini_string($conf, 1, INI_SCANNER_RAW);//NORMAL); 
+		include($rmpath . "/myconfig.txt.php");
+		$t_config = parse_ini_string($myconf, 1, INI_SCANNER_RAW);
+	}
+	else { //old method
+		$config = @parse_ini_file($remoteapppath."config.ini",true);
+		$t_config = @parse_ini_file($remoteapppath."myconfig.txt",true);
+	}
 	
     if (is_array($t_config[$section]) && isset($t_config[$section][$param])) 
       return ($t_config[$section][$param]);
@@ -304,9 +319,12 @@ function remote_paramload($section,$param,$remoteapppath,$usepath=null) {
   }
   
   //get from mem	
-  if ($ret = $config[$section][$param]) 
-    return ($ret);
+  if ( (is_array($config[$section])) && (isset($config[$section][$param])) ) { 
+    $ret = $config[$section][$param];
+    return $ret;
+  }
 
+  return null;
 }
 
 function remote_arrayload($section,$array,$remoteapppath,$usepath=null) {
@@ -322,8 +340,12 @@ function remote_arrayload($section,$array,$remoteapppath,$usepath=null) {
 	  return (explode(",",$config[$section][$array]));	
   }	
 	
-  if ($data = $config[$section][$array]) 
+   if ( (is_array($config[$section])) && (isset($config[$section][$array])) ) {	
+    $data = $config[$section][$array];
     return(explode(",",$data));
+   }
+
+   return null;	
 }
 
 
@@ -515,7 +537,7 @@ function seturl($query='',$title='',$ssl=0,$jscript='',$sid=1,$rewrite=null) {
 							 }
 							 else {
 	                           $url = $name . "?"; //. $query;
-	                           (($encURLparam) ? $url .= encode_url($query,$encURLparam) : $url .= $query);
+	                           ((isset($encURLparam)) ? $url .= encode_url($query,$encURLparam) : $url .= $query);
 	                           if ($sid) $url .=  "&" . SID;
 							 }
 	                       }  

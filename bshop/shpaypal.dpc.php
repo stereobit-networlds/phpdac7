@@ -7,8 +7,9 @@ define("SHPAYPAL_DPC",true);
 
 $__DPC['SHPAYPAL_DPC'] = 'shpaypal';
 
-$d = GetGlobal('controller')->require_dpc('bshop/paypal.dpc.php');
-require_once($d); 
+//$d = GetGlobal('controller')->require_dpc('bshop/paypal.dpc.php');
+//require_once($d); 
+require_once(_r('bshop/paypal.dpc.php'));
 
 GetGlobal('controller')->get_parent('SHPAYPAL_DPC','PAYPAL_DPC');
 
@@ -42,7 +43,7 @@ class shpaypal extends paypal {
    
 	var $paypal_payment;     
 
-	public function shpaypal() {
+	public function __construct() {
 		$UserSecID = GetGlobal('UserSecID');
 		$UserName = GetGlobal('UserName');
 		$UserID = GetGlobal('UserID');
@@ -51,7 +52,7 @@ class shpaypal extends paypal {
 		$this->username = decode($UserName);
 		$this->userid = decode($UserID);   
 	 
-		paypal::paypal();  
+		paypal::__construct();  
 	 
 		$this->path = paramload('SHELL','prpath'); 
 	 	 

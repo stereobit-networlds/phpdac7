@@ -6,8 +6,7 @@ define("SHLOGIN_DPC",true);
 
 $__DPC['SHLOGIN_DPC'] = 'shlogin';
 
-$a = GetGlobal('controller')->require_dpc('libs/scaptcha.lib.php');
-require_once($a);
+require_once(_r('libs/scaptcha.lib.php'));
 
 $__EVENTS['SHLOGIN_DPC'][0]='shlogin';
 $__EVENTS['SHLOGIN_DPC'][1]='dologin';

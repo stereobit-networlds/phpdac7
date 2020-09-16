@@ -69,12 +69,12 @@ class shtags {
 		//read at init if there is tags in url...???
 		//$this->save_global_tag_vars();
 
-		$this->replacepolicy = remote_paramload('SHKATEGORIES','replacechar',$this->path);	 
-		$csep = remote_paramload('SHKATEGORIES','csep',$this->path); 
+		$this->replacepolicy = remote_paramload('SHKATEGORIES','replacechar',$this->prpath);	 
+		$csep = remote_paramload('SHKATEGORIES','csep',$this->prpath); 
 		$this->cseparator = $csep ? $csep : '^';	
 
-		$this->tmpl_path = remote_paramload('FRONTHTMLPAGE','path',$this->path);
-		$this->tmpl_name = remote_paramload('FRONTHTMLPAGE','template',$this->path); 
+		$this->tmpl_path = remote_paramload('FRONTHTMLPAGE','path',$this->prpath);
+		$this->tmpl_name = remote_paramload('FRONTHTMLPAGE','template',$this->prpath); 
 
 		$this->maintitle = remote_paramload('INDEX','title', $this->prpath);
 		$this->maindescr = remote_paramload('INDEX','meta-description', $this->prpath);	
@@ -271,7 +271,12 @@ class shtags {
 	    $lan = getlocal();
 	    $itmname = $lan?'itmname':'itmfname';
 	    $itmdescr = $lan?'itmdescr':'itmfdescr';
-		$_all = _v($this->shclass . '._catAllFilter');				
+		$_all = _v($this->shclass . '._catAllFilter');	
+
+		//$cc =null;	
+		$_cc = null;
+		//$rec = null;
+		$fcat = null;
 		
 		if ($data = $this->readfilter()) {
 			
@@ -303,10 +308,13 @@ class shtags {
 			$this->keywords = str_replace(',,',',', str_replace(' ',',',$this->item));
 		}
 		elseif ($cat) {//echo 'z'; print_r($mytree);
-		
-			$cc = explode($this->cseparator, $cat);
-			$xcat = array_pop($cc);
-			$this->item = $this->replace_spchars($xcat,1);
+			//$cc = explode($this->cseparator, $cat);
+			$fcat = _m('shkategories.getkategories use '. $cat);
+			$_cc = explode($this->cseparator, $fcat);
+			//print_r($_cc);
+			$xcat = array_pop($_cc); //$cc);
+			//echo $xcat;
+			$this->item = $xcat; //$this->replace_spchars($xcat,1);
 			$this->descr = $this->item;
 			$this->price = null;
 			$this->keywords = str_replace(',,',',', str_replace(' ',',', $this->item));		
@@ -341,9 +349,9 @@ class shtags {
 
     public function get_page_info($key=null,$defkey=null) {
 		//echo '>'.$this->{$key};
-		$meta_title = ($defkey=='NULL') ? null : ($defkey ? $defkey : $this->maintitle);
-		$meta_descr = ($defkey=='NULL') ? null : ($$defkey ? $defkey : $this->maindescr);
-		$meta_keywords = ($defkey=='NULL') ? null : ($$defkey ? $defkey : $this->mainkeys);			
+		$meta_title = ($defkey=='NULL') ? null : ((isset($defkey)) ? $defkey : $this->maintitle);
+		$meta_descr = ($defkey=='NULL') ? null : ((isset($defkey)) ? $defkey : $this->maindescr);
+		$meta_keywords = ($defkey=='NULL') ? null : ((isset($defkey)) ? $defkey : $this->mainkeys);			
    	   
 		//echo $this->item,'>',$key;
 		if ($key=='item') 
@@ -504,8 +512,9 @@ class shtags {
 	}
 
 	protected function replace_spchars($string, $reverse=false) {
+		$pc = null; //$this->replacepolicy; //DISABLE POLICY
 		
-		switch ($this->replacepolicy) {	
+		switch ($pc) {	
 	
 			case '_' : $ret = $reverse ?  str_replace('_',' ',$string) : str_replace(' ','_',$string); break;
 			case '-' : $ret = $reverse ?  str_replace('-',' ',$string) : str_replace(' ','-',$string);break;

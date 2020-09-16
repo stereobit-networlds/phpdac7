@@ -7,8 +7,7 @@ define("RCPMENU_DPC",true);
 
 $__DPC['RCPMENU_DPC'] = 'rcpmenu';
 
-$a = GetGlobal('controller')->require_dpc('jsdialog/jsdialogStreamSrv.dpc.php');
-require_once($a);
+require_once(_r('jsdialog/jsdialogStreamSrv.dpc.php'));
 
 $__EVENTS['RCPMENU_DPC'][1]='cpmenu';
 $__EVENTS['RCPMENU_DPC'][2]='cpmenu1';
@@ -181,7 +180,9 @@ class rcpmenu {
 	var $path, $urlpath, $inpath, $menufile;
 	var $delimiter, $dropdown_class, $dropdown_class2;  
 
-	var $seclevid, $turl, $cpGet, $turldecoded; 
+	var $seclevid, $turl, $cpGet, $turldecoded;
+
+	static $staticprpath;
 	
 	public function __construct() {
 	   
@@ -189,6 +190,8 @@ class rcpmenu {
 	   
 	    $this->urlpath = paramload('SHELL','urlpath');
 	    $this->inpath = paramload('ID','hostinpath');	
+		
+		self::$staticprpath = paramload('SHELL','prpath');
 	  
         $this->menufile = $this->path . 'menucp.ini';
 	    $this->delimiter = ',';
@@ -307,7 +310,8 @@ class rcpmenu {
 		return ($ret);
 	}
    
-	protected function readINI() {  
+	protected function readINI() {
+		$m = null;	
 
         if (defined('CCPP_VERSION')) { //override, customized per line
 			$cat = $this->cpGet['cat'] ? array('ON'=>1,'OFF'=>null) : array('ON'=>null,'OFF'=>1);
@@ -319,9 +323,11 @@ class rcpmenu {
 							'ADMIN'=>$this->parse_userSecurity(),
 							);
 			//print_r($config);
-			
+			/*
 			if (is_readable($this->menufile)) {
 				$sini = @file_get_contents($this->menufile);
+			*/
+			if ($sini = trim(self::streamfile_contents($this->menufile))) {
 				//echo $sini;
 			    
 				$preprocessor = new CCPP($config, true); //new ccpp
@@ -334,14 +340,38 @@ class rcpmenu {
 		}
         else {
 			//echo $this->menufile;
-			if (is_readable($this->menufile))
+			/*
+			if (is_readable($this->menufile)) {
 				$m = parse_ini_file($this->menufile,1,INI_SCANNER_RAW);			
+				return ($m);
+			}	
+			*/
 			
-			return ($m);
+			if ($sini = trim(self::streamfile_contents($this->menufile))) {
+				$m = parse_ini_string($sini,1,INI_SCANNER_RAW);
+				return ($m);
+			}
 		}
 		
 		return false;	
 	}
+	
+	//fetch stream menucp content
+	static protected function streamfile_contents($f=null, $falt=null) {
+		if (!$f) return null;
+		global $dac, $st;
+		//echo $dac, ':', $st, '-------------------------------------' . PHP_EOL;
+		if ($dac) { 
+			$fp = str_replace(self::$staticprpath, '/cp/', $f);
+			//phpdac7\__log('fetch remote:' . $fp); //dac7 not comaptible
+			//echo "$st/www7" . $fp . PHP_EOL;
+			return @file_get_contents("$st/www7" . $fp);	
+		}
+		
+		//else filesystem default
+		$fout = $falt ? $falt : $f;
+		return @file_get_contents($fout);
+	}	
    			
 
 	public function render($menu_template=null,$glue_tag=null,$submenu_template=null) {
@@ -496,6 +526,88 @@ class rcpmenu {
 		
 		return ($sslurl . $ret);
 	}
+	
+	public function showCategoryTitles($mycat=null, $sep='|') {
+		$cat = $mycat ? $mycat : $this->cpGet['cat'];		
+		$csep = _m('cmsrt.sep');
+		if (empty($cat)) return null;
+		//echo 'cpCat'.md5($cat);	
+		
+		//if (!$rcat = GetSessionParam('cpCat'.md5($cat))) {			
+		
+			$_cat = null;
+			$_cc = $this->getKategories($cat);
+			//echo $_cc;//, $cat; 
+			$cats = explode($csep, $_cc);
+			//print_r($cats);
+			foreach ($cats as $i=>$c)
+				$_cat[] = $c;
+		
+			$ret = implode($sep, $_cat);
+			//SetSessionParam('cpCat'. md5($mycat), $ret);
+			return $ret;
+		//}
+		//else
+		//return $rcat;		
+	}
+	
+	//fetch category titles
+    protected function getkategories($cat=null) {
+		$db = GetGlobal('db');
+		$lan = getlocal();
+		$f = $lan ? $lan : '0';
+		$cc =null;
+		$rec = null;
+		
+		$csep = _m('cmsrt.sep');
+		$depthview = remote_paramload('SHKATEGORIES','depthview',$this->prpath);
+		
+		$cc = explode($csep, $cat);
+		foreach ($cc as $n=>$fname)
+			if ($fname) $rec['cat'. strval($n)] = $fname;		
+	   
+		$sSQL = "select distinct cat2,cat{$f}2,cat3,cat{$f}3,cat4,cat{$f}4,cat5,cat{$f}5 from categories where ";
+
+		if (($rec['cat0']) && ($depthview>=1)) $sSQL .= "cat2='". _m("cmsrt.replace_spchars use " . $rec['cat0'] . '+1')."'"; 
+		if (($rec['cat1']) && ($depthview>=2)) $sSQL .= " and cat3='". _m("cmsrt.replace_spchars use " . $rec['cat1'] . '+1')."'"; 
+		if (($rec['cat2']) && ($depthview>=3)) $sSQL .= " and cat4='". _m("cmsrt.replace_spchars use " . $rec['cat2'] . '+1')."'"; 
+		if (($rec['cat3']) && ($depthview>=4)) $sSQL .= " and cat5='". _m("cmsrt.replace_spchars use " . $rec['cat3'] . '+1')."'"; 			  			  			  
+
+	    $result = $db->Execute($sSQL,2);	
+	  	//echo $sSQL;				
+		$_cat0 = $result->fields["cat{$f}2"] ?? _m("cmsrt.replace_spchars use " . $rec['cat0']);
+		$_cat1 = $result->fields["cat{$f}3"] ?? _m("cmsrt.replace_spchars use " . $rec['cat1']);
+		$_cat2 = $result->fields["cat{$f}4"] ?? _m("cmsrt.replace_spchars use " . $rec['cat2']);
+		$_cat3 = $result->fields["cat{$f}5"] ?? _m("cmsrt.replace_spchars use " . $rec['cat3']);
+		//$_cat4 = $result->fields["cat{$f}6"] ?? _m("cmsrt.replace_spchars use " . $rec['cat4']);
+						
+        if (($rec['cat0']) && ($depthview>=1)) {
+                $ck[0] = $_cat0;
+		}  	
+				 	
+        if (($rec['cat1']) && ($depthview>=2)) {				   
+                $ck[1] = $_cat1;
+		}		
+
+        if (($rec['cat2']) && ($depthview>=3)) {					 
+                $ck[2] = $_cat2;
+		}		  
+ 
+        if (($rec['cat3']) && ($depthview>=4)) {			 
+                $ck[3] = $_cat3;
+		}
+		/*	
+		if (($rec['cat4']) && ($depthview>=5)) {			 
+                $ck[4] = $_cat4;
+		}*/
+				  	  	
+        if (!empty($ck))
+            $cat = implode($csep,$ck);
+		
+        unset($ck); //reset ck
+
+        return ($cat);
+    }	
 
 	protected function combine_tokens($template_contents,$tokens, $execafter=null) {
 	

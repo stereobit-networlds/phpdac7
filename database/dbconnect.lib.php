@@ -30,7 +30,9 @@ class dbconnect {
      $this->saveSql = true; //false;
 	 $this->replicateSql = false;
 	 $this->repServer = null;
-     $this->excludeTables = array('mailqueue', 'panalyze', 'pphotos', 'stats', 'syncsql');	  	 
+     $this->excludeTables = array('mailqueue', 'panalyze', 'pphotos', 'stats', 'syncsql', 'cpmessages', 
+								  'crontab','cronjob', 'fsbaseline', 'fshistory', 'fsscanned', 'fsbackup',
+								  'etlproducts','difproducts','difprodlogs');  	 
    }
    
    protected function SaveSqlQuery($sql=null) {

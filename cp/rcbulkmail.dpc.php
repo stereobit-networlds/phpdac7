@@ -7,11 +7,8 @@ define("RCBULKMAIL_DPC",true);
 
 $__DPC['RCBULKMAIL_DPC'] = 'rcbulkmail';
 
-$v = GetGlobal('controller')->require_dpc('crypt/ciphersaber.lib.php');
-require_once($v); 
-
-$a = GetGlobal('controller')->require_dpc('libs/appkey.lib.php');
-require_once($a);
+require_once(_r('crypt/ciphersaber.lib.php'));
+require_once(_r('libs/appkey.lib.php'));
 
 
 $__EVENTS['RCBULKMAIL_DPC'][0]='cpbulkmail';

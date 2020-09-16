@@ -27,6 +27,7 @@ public i18n.i18nL;
 $cptemplate = _m('cmsrt.paramload use FRONTHTMLPAGE+cptemplate');
 
 	switch ($_GET['t']) {
+		case 'cpjobcoderun'  : die('Code test run exit'); break;
 		case 'cpjobcodesave' : $p = 'cp-cron-detail'; break;
 		case 'cpcronjobs'    : $p = $_GET['iframe'] ? 'cp-cron-detail' : 'cp-cron'; break;
 		default              : $p = $_GET['iframe'] ? 'cp-cron-detail' : 'cp-cron';

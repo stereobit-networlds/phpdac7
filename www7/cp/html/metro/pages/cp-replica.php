@@ -16,6 +16,8 @@
    <link href="css/style.css" rel="stylesheet" />
    <link href="css/style-responsive.css" rel="stylesheet" />
    <link href="css/style-default.css" rel="stylesheet" id="style_color" />
+   
+   <link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">
 
 	<link href="../javascripts/themes/redmond/jquery-ui.custom.css" rel="stylesheet" /> 
 	<link href="../javascripts/jqgrid/css/ui.jqgrid.css" rel="stylesheet" />  
@@ -87,6 +89,13 @@
 	function filedetails() {var str = arguments[0]; var str1 = arguments[1]; $('#rdetails').load("cpreplica.php?t=cpreplfile&date="+str+"&acct="+str1);}
 	function sqldetails() {var str = arguments[0]; $('#rdetails').load("cpreplica.php?t=cpreplsql&date="+str);}
    </script> 
+   
+      <!-- stream dialog -->
+   <script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
+   <script language="JavaScript">		
+		setInterval(function() {<phpdac>rcreplica.streamDialog</phpdac>}, 30000);	
+   </script>
+   <!-- end stream dialog -->   
 </body>
 <!-- END BODY -->
 </html>

@@ -6,11 +6,8 @@ define("RCSLIDESHOW_DPC",true);
 
 $__DPC['RCSLIDESHOW_DPC'] = 'rcslideshow';
 
-$a = GetGlobal('controller')->require_dpc('gui/form.dpc.php');
-require_once($a);
-
-$d = GetGlobal('controller')->require_dpc('cms/cmsmenu.dpc.php');
-require_once($d);
+require_once(_r('gui/form.dpc.php'));
+require_once(_r('cms/cmsmenu.dpc.php'));
 
 $__EVENTS['RCSLIDESHOW_DPC'][0]='cpsconfig';
 $__EVENTS['RCSLIDESHOW_DPC'][1]='cpsconfedit';
@@ -196,9 +193,9 @@ class rcslideshow extends cmsmenu {
 			foreach ($data as $var=>$val) {
 				$sectionvar = $section .'-'. $var;
 				$localize_var = localize($var,getlocal());
-				if (strstr($var, 'image'))
+				/*if (strstr($var, 'image'))
 					$form->addElement($section,new form_element_ckfinder($localize_var,$sectionvar,$val,"span11",60,255,$editable));
-				else
+				else*/
 					$form->addElement($section,new form_element_text($localize_var,$sectionvar,$val,"span11",60,255,$editable));
 			}
 			$newelement = localize("_newelement",getlocal());
@@ -844,9 +841,9 @@ class rcslideshow extends cmsmenu {
 		$form->addGroup($section,$button_title);		
 
 		foreach ($this->slidervars as $inputname) {
-			if (strstr($inputname, 'image'))
+			/*if (strstr($inputname, 'image'))
 				$form->addElement($section,new form_element_ckfinder(ucfirst($inputname),$inputname,'',"span6",60,255,0));		
-			else
+			else*/
 				$form->addElement($section,new form_element_text(ucfirst($inputname),$inputname,'',"span6",60,255,0));		
 		}	
 			

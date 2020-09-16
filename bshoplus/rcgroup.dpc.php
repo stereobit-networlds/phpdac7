@@ -31,7 +31,7 @@ class rcgroup {
 	var $selected_items, $autoresize, $restype, $odd;	
 	
 	var $filename, $fields, $photodb, $sizeDB;
-	var $owner, $savecolpath;
+	var $owner, $savecolpath, $dac7;
 
     function __construct() {
 	  
@@ -39,9 +39,13 @@ class rcgroup {
 		$this->urlpath = paramload('SHELL','urlpath');	
 		$this->url = paramload('SHELL','urlbase');
 		$this->title = localize('RCGROUP_DPC',getlocal());
-
-		$this->owner = GetSessionParam('LoginName');
-        $this->savecolpath = remote_paramload('RCGROUP','savecolpath',$this->prpath);		
+		
+		$this->dac7 = _m('cmsrt.isDacRunning');
+		$this->indac7 = _m('cmsrt.runningInsideDac');
+		
+		//if dac engine running and this class running at www or this class running into engine
+		$this->owner = (($this->indac7==true)||($this->dac7==true)) ? 
+							'dac7admin' : GetSessionParam('LoginName');	
 		
 		$this->map_t = remote_arrayload('RCITEMS','maptitle',$this->prpath);	
 		$this->map_f = remote_arrayload('RCITEMS','mapfields',$this->prpath);		
@@ -81,13 +85,17 @@ class rcgroup {
 		$this->selected_items = null;		
 		
         $this->listName = 'mygroup';
-        $this->savedlist = GetSessionParam($this->listName) ? GetSessionParam($this->listName) : null;
-		$this->filename = $this->prpath . $this->savecolpath . '/' . $_POST['cname'] . '.' . base64_encode($this->owner) . '.col';
+        $this->savedlist = GetSessionParam($this->listName) ?? null;
+		
+		$cpath = remote_paramload('RCGROUP','savecolpath',$this->prpath);	
+		$this->savecolpath = $cpath ?  $cpath . '/' : null;
+		$cname = $_POST['cname'] ? $_POST['cname'] : '_rcgroup';
+		$this->filename = $this->prpath . $cpath . $cname . '.' . md5($this->owner) . '.col';
 		
 		$this->fields = array('code','itmname','itmdescr','itmremark','uniname1','price0','price1','cat','item_name_url','item_url','photo_url');
 		$this->xmlfile = $_POST['xmlfile'];
         $this->listXMLName = 'myXMLlist';
-        $this->savedXMLlist = GetSessionParam($this->listXMLName) ? GetSessionParam($this->listXMLName) : null;		
+        $this->savedXMLlist = GetSessionParam($this->listXMLName) ?? null;	
 	}
 	
     function event($event=null) {
@@ -127,12 +135,6 @@ class rcgroup {
 		                           $out .= 'SessionList:' . $this->savedList . '<br/>';
 								   $out .= implode('<br/>', $_POST);
 								   $out .= implode('<br/>', array_keys($_POST));
-		                           /*$out .= $this->listName . ':'; //implode('<br/>', $_POST); 
-								   foreach ($_POST[$this->listName] as $s)
-									$out .= $s.'|';
-								   $out .= '<br/><br/>tlist:';	
-								   foreach ($_POST['tlist'] as $t)
-									$out .= $t.'|';	*/
 		                           break;
 		   default               : //$out = $this->savedlist;
 		 }			 
@@ -140,32 +142,6 @@ class rcgroup {
 	     return ($out);
 	}
 		
-/*	
-	protected function readPattern($template=null, $path=null) {
-		$file = str_replace('-sub.htm', '', $template) . '.pattern.txt';
-		//echo $file;
-		if (is_readable($file))  {
-			$pf = file($file);
-			//search last edited line
-			foreach ($pf as $line) {
-				if (trim($line)) {
-					$joins = explode(',', array_pop($pf)); 
-					break;
-				}
-			}
-			//rest lines
-			foreach ($pf as $line) {
-				$subtemplates .= trim($line);
-			}
-			$pattern[0] = explode(',', $subtemplates);
-			$pattern[1] = (array) $joins;
-			//print_r($pattern);
-			return ($pattern);
-		}	
-		
-		return null;
-	}
-*/	
 	protected function get_selected_items($preset=null, $asis=false) {
 		
 		if ($this->savedXMLlist) 
@@ -177,12 +153,8 @@ class rcgroup {
 	}	
 	
 	//called by crm renderForm func
-	public function get_collected_items($visitor=null, $preset=null, $asis=false) {
-		/*$is_reseller = false;
-		//if visitor (email) search for price option
-		if ($visitor)
-			$is_reseller = $this->get_cus_type($visitor);
-		*/
+	public function get_collected_items($preset=null, $asis=false) {
+
 		$this->selected_items = $this->get_selected_items($preset, $asis);
 		
 		if (!empty($this->selected_items)) {
@@ -277,14 +249,34 @@ class rcgroup {
     }
 	
 	protected function saveListInFile($data=null) {
+		//echo $this->filename;
 		
+		//CASE 1 (default): if there is post name
 		if ($_POST['cname']) { 
 		    if (!is_dir($this->prpath . $this->savecolpath))
 				@mkdir($this->prpath . $this->savecolpath);
 		
-			$ret = @file_put_contents($this->filename, $data);
-			return $ret;
+			if ($data) {
+				$ret = @file_put_contents($this->filename, $data);
+				return $ret;
+			}
+			else
+				@unlink($this->filename); //remove file if exists
 		}
+		
+		//CASE 2 : if there is dac running always save a file named _rcgroup by default
+		if ($this->dac7==true) {
+		    if (!is_dir($this->prpath . $this->savecolpath))
+				@mkdir($this->prpath . $this->savecolpath);
+		
+			if ($data) {
+				$ret = @file_put_contents($this->filename, $data);
+				return $ret;			
+			}
+			else
+				@unlink($this->filename); //remove file if exists			
+		}	
+		
 		return false;
 	}	
 	
@@ -536,16 +528,18 @@ class rcgroup {
 	    $itmname = $lan?'itmname':'itmfname';
 	    $itmdescr = $lan?'itmdescr':'itmfdescr';	
         $codefield = $this->getmapf('code');
-
+		
 		if ($preset) {
 			if ($asis==false) {
-				$colext = '.' . base64_encode($this->owner) . '.col';
+				$colext = '.' . md5($this->owner) . '.col';
 				$colfile = $preset . $colext;
-				$itemsIdList = @file_get_contents($this->prpath . $this->savecolpath . '/'. $colfile);
+				$file = $this->prpath . $this->savecolpath . $colfile;
+				$itemsIdList = @file_get_contents($file);
 			}
 			else
 				$itemsIdList = $preset;
-			//SetSessionParam($this->listName, $itemsIdList); //dont save in mem
+			
+			//echo $this->owner,'-',md5($this->owner),'-',$itemsIdList, $file ;
 		}	
 		else
 			$itemsIdList = GetSessionParam($this->listName);
@@ -622,7 +616,7 @@ class rcgroup {
 		                    seturl('t=cploadgrp&collection=',null,null,null,null);
 		
 		if (defined('RCFS_DPC')) {
-			$path = $this->prpath . $this->savecolpath . '/';
+			$path = $this->prpath . $this->savecolpath;
 			$myext = explode(',',$ext);
 			$extensions = is_array($myext) ? $myext : array(0=>".png",1=>".gif",2=>".jpg");
 			//echo '>', print_r($extensions);
@@ -658,14 +652,14 @@ class rcgroup {
 	}	
 	
 	public function viewCollectionsSelect() {
-		$colext = '.' . base64_encode($this->owner) . '.col';
+		$colext = '.' . md5($this->owner) . '.col';
 		$ret = $this->show_select_collections('mycollection', null, $colext, null);
 		return ($ret);
 	}		
 	
 	protected function loadList() {
 		$colfile = $_GET['collection'];
-		$list = @file_get_contents($this->prpath . $this->savecolpath . '/'. $colfile);
+		$list = @file_get_contents($this->prpath . $this->savecolpath . $colfile);
 		
 		SetSessionParam($this->listName, $list);
 		return $list;

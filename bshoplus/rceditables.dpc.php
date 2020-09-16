@@ -14,35 +14,57 @@ $__EVENTS['RCEDITABLES_DPC'][0]='cpeditables';
 $__EVENTS['RCEDITABLES_DPC'][1]='cpediexec';
 $__EVENTS['RCEDITABLES_DPC'][2]='cpedilog';
 $__EVENTS['RCEDITABLES_DPC'][3]='cpeditrunc';
+$__EVENTS['RCEDITABLES_DPC'][4]='cpdiflog';
 
 $__ACTIONS['RCEDITABLES_DPC'][0]='cpeditables';
 $__ACTIONS['RCEDITABLES_DPC'][1]='cpediexec';
 $__ACTIONS['RCEDITABLES_DPC'][2]='cpedilog';
 $__ACTIONS['RCEDITABLES_DPC'][3]='cpeditrunc';
+$__ACTIONS['RCEDITABLES_DPC'][4]='cpdiflog';
 
 $__DPCATTR['RCEDITABLES_DPC']['cpeditables'] = 'cpeditables,1,0,0,0,0,0,0,0,0,0,0,1';
 
 $__LOCALE['RCEDITABLES_DPC'][0]='RCEDITABLES_DPC;EDI tables;Πίνακες EDI';
 $__LOCALE['RCEDITABLES_DPC'][1]='_edi;EDI;EDI';
 $__LOCALE['RCEDITABLES_DPC'][2]='_etl;ETL;ETL';
-$__LOCALE['RCEDITABLES_DPC'][3]='_makecsv;Make items csv;Δημιουργία csv ειδών';
-$__LOCALE['RCEDITABLES_DPC'][4]='_makesql;Make items descr sql;Δημιουργία sql περιγραφών';
-$__LOCALE['RCEDITABLES_DPC'][5]='_makeimg;Sync img;Ενημέρωση εικόνων';
+$__LOCALE['RCEDITABLES_DPC'][3]='_makecsv;Create items csv file;Δημιουργία csv ειδών';
+$__LOCALE['RCEDITABLES_DPC'][4]='_makesql;Create items description file;Δημιουργία περιγραφών ειδών';
+$__LOCALE['RCEDITABLES_DPC'][5]='_makeimg;Download images;Ανάκτηση (κατέβασμα) εικόνων απο την πηγη';
 $__LOCALE['RCEDITABLES_DPC'][6]='_filter;Filter;Φίλτρο';
 $__LOCALE['RCEDITABLES_DPC'][7]='_out;Exports;Εξαγωγές';
 $__LOCALE['RCEDITABLES_DPC'][8]='_log;Log;Log';
-$__LOCALE['RCEDITABLES_DPC'][9]='_truncate;Erase EDI data;Διαγραφή EDI';
+$__LOCALE['RCEDITABLES_DPC'][9]='_truncate;Erase data;Διαγραφή στοιχείων';
 $__LOCALE['RCEDITABLES_DPC'][10]='xml;Exports XML;Εξαγωγές XML';
 $__LOCALE['RCEDITABLES_DPC'][11]='csv;Exports CSV;Εξαγωγές CSV';
 $__LOCALE['RCEDITABLES_DPC'][12]='sql;Exports SQL;Εξαγωγές SQL';
 $__LOCALE['RCEDITABLES_DPC'][13]='log;Exports LOG;Εξαγωγές LOG';
+$__LOCALE['RCEDITABLES_DPC'][14]='_sync1;Read source and update ETL products;Ανάγνωση πηγής και ενημέρωση ETL πίνακα';
+$__LOCALE['RCEDITABLES_DPC'][15]='_sync2;Fetch new images and update items photos;Αντιγραφή νέων  εικόνων και ενημέρωση φωτογραφιών ειδών';
+$__LOCALE['RCEDITABLES_DPC'][16]='_sync3;Find diffs and insert lookup items;Έλεγχος διαφορών και εισαγωγή ειδών προς επεξεργασία';
+$__LOCALE['RCEDITABLES_DPC'][17]='_nofilter;Warning: Without filter may affect all objects;Προειδοποίηση: Χωρίς επιλεγμένο φίλτρο ενδέχεται να επηρεαστούν όλα τα αντικείμενα';
+$__LOCALE['RCEDITABLES_DPC'][18]='etlproducts;ETL products;ETL products';
+$__LOCALE['RCEDITABLES_DPC'][19]='difproducts;DIF products;DIF products';
+$__LOCALE['RCEDITABLES_DPC'][20]='_editetlproducts;Edit ETL products;Edit ETL products';
+$__LOCALE['RCEDITABLES_DPC'][21]='_editdifproducts;Edit DIF products;Edit DIF products';
+$__LOCALE['RCEDITABLES_DPC'][22]='_sync4;Update items without category update;Ενημέρωση ειδών στην ισχύουσα κατηγορία του είδους';
+$__LOCALE['RCEDITABLES_DPC'][23]='_sync5;Insert items in current category;Εισαγωγή ειδών στην κατηγορία επιλογής';
+$__LOCALE['RCEDITABLES_DPC'][24]='_sync6;Insert items and create category;Εισαγωγή ειδών και κατασκευή κατηγορίας';
+$__LOCALE['RCEDITABLES_DPC'][25]='_synccsv;Read source and update items;Ανάγνωση πηγής και ενημέρωση ειδών';
+$__LOCALE['RCEDITABLES_DPC'][26]='_syncdescr;Read source and insert items description;Ανάγνωση πηγής και εισαγωγή περιγραφών ειδών';
+$__LOCALE['RCEDITABLES_DPC'][27]='_syncdescrupd;Insert items description from file;Εισαγωγή περιγραφών ειδών απο αρχείο';
+$__LOCALE['RCEDITABLES_DPC'][28]='_diflog;History Log;Ιστορικό αλλαγών';
+$__LOCALE['RCEDITABLES_DPC'][29]='_history;History;Ιστορικό';
+$__LOCALE['RCEDITABLES_DPC'][30]='_synccsvdisable;Read source and disable not included items;Ανάγνωση πηγής και απενεργοποίηση μη συμπεριλαμβανομένων στοιχείων';
+$__LOCALE['RCEDITABLES_DPC'][31]='_synccsvdisable2;Disable product items (readed source);Απενεργοποίηση μη συμπεριλαμβανομένων στοιχείων (αναγνωσμένης πηγής)';
+$__LOCALE['RCEDITABLES_DPC'][32]='_sync7;Disable items in current category;Απενεργοποίηση ειδών στην ισχύουσα κατηγορία του είδους';
+$__LOCALE['RCEDITABLES_DPC'][33]='_synccheck;Check tables;Έλεγχος πινάκων';
 
 class rceditables  {
 
 	var $title, $prpath, $urlpath, $url;
 	var $ediT, $etlproducts;
-	var $etlT, $etlCMD, $etlCNF, $etlOWN, $etlLOG, $etlPath;
-	var $messages;
+	var $etlT, $etlCMD, $etlCNF, $etlOWN, $etlLOG, $etlPath, $messages;
+	var $dac7, $indac7, $dacEnv;
 
 	public function __construct() {
 		
@@ -61,19 +83,39 @@ class rceditables  {
 		//ETL CONF
 		$this->etlCNF = array('kaisidis', 'aidonitsa', 'logicom', 'agc', 'tradesor');	
 		$this->etlOWN = array('kaisidis'=>'data-media', 'aidonitsa'=>'aidonitsa', 'logicom'=>'logicom', 'agc'=>'agc', 'tradesor'=>'tradesor'); //owner title		
-		$this->etlCMD = array('_makecsv'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/',
+		$this->etlCMD = array('_synccheck'=>'async/ppost/bshopplus_rcediimport_compare/[confname]/',
+		                      0=>'',
+							  '_makecsv'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/',
 							  '_makesql'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/sqlnodepattach/|async/sql/[confname]/sqlread/',	
 							  '_makeimg'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgread/',
-							  //'_makeimg'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgread/',
-							  //'_makeimg'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgread/',
+							  1=>'',
+							  '_synccsv'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/|async/ppost/bshopplus_rcediimport_submit_csv/[confname]/',
+							  '_syncdescr'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/sqlnodepattach/|async/sql/[confname]/sqlread/|async/ppost/bshopplus_rcediimport_submit_sql/[confname]/',	
+							  '_synccsvdisable2'=>'async/ppost/bshopplus_rcediimport_disable/[confname]/',
 							);
 		$this->difCMD = array('_dbo1'=>'async/dbo/_products/dbofilter01/dbofilter02/imgnode/|async/img/_products/imgread/',
-							  '_bit77'=>'async/pcntl/bit77/imgnode/|async/dbo/_products/dbofilter01/dbofilter02/imgnode/|async/img/_products/imgread/',	
-							  '_kshow'=>'async/pcntl/kshow/imgnode/p5node/|async/img/_products/imgread/',	
-							  '_klist'=>'async/pcntl/klist/imgnode/p5node/|async/img/_products/imgread/',	
-							  '_pcmd'=>'async/pcmd/env1/envnode/',
-							  '_devenv'=>'async/pcmd/devenv/envnode/|async/img/_products/imgread/',			
-							  '_ampcache'=>'async/pcntl/ampcache/imgnode/',
+							  //'_bit77'=>'async/pcntl/bit77/imgnode/|async/dbo/_products/dbofilter01/dbofilter02/imgnode/|async/img/_products/imgread/',	
+							  //'_kshow'=>'async/pcntl/kshow/imgnode/p5node/|async/img/_products/imgread/',	
+							  //'_klist'=>'async/pcntl/klist/imgnode/p5node/|async/img/_products/imgread/',	
+							  //'_pcmd'=>'async/pcmd/env1/envnode/',
+							  //'_devenv'=>'async/pcmd/devenv/envnode/|async/img/_products/imgread/',			
+							  //'_ampcache'=>'async/pcntl/ampcache/imgnode/',
+							  //'_cron'=>'async/ppost/cron_crondaemon/',
+							  //'_replication'=>'async/dbo/replication/dbofilter03/dbofilter04/replicatenode/',
+							  //'_replicationdb'=>'async/dbo/replication_db/dbofilter_execute_remote/dbofilter_update_local/replicatenode/',
+							  //'_replicationfl'=>'async/dbo/replication_files/dbofilter03/dbofilter04/replicatenode/',
+							  //0=>'',
+							  '_sync3'=>'async/ppost/bshopplus_diffitems/[confname]/',
+							  '_synccsvdisable'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/|async/ppost/bshopplus_rcediimport_submit_csv/[confname]/|async/ppost/bshopplus_rcediimport_disable/[confname]/',							  
+							  0=>'',
+							  '_sync4'=>'async/ppost/bshopplus_diffitems_update/[confname]/',				
+							  '_sync7'=>'async/ppost/bshopplus_diffitems_disable/[confname]/',
+							  1=>'',		
+							  '_sync5'=>'async/ppost/bshopplus_diffitems_insert/[confname]/',
+							  '_sync6'=>'async/ppost/bshopplus_diffitems_insertwithcategories/[confname]/',
+							  2=>'',
+							  '_sync2'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgread/|async/ppost/bshopplus_rcimgitems_submit/[confname]/',
+							  '_syncdescrupd'=>'async/ppost/bshopplus_rcediimport_submit_sql/[confname]/',
 							);						
 		$this->etlT = array('etlproducts'=>$this->etlCMD,
 							'difproducts'=>$this->difCMD,
@@ -89,7 +131,11 @@ class rceditables  {
 						);
 		/*				
 		$this->etlLOG2 = array('etlproducts'=>array('xml'=>'etlproducts.xml','csv'=>'etlproducts.csv','log'=>'etlproducts.log'),
-						);*/				
+						);*/
+
+		$this->dac7 = _m('cmsrt.isDacRunning');
+		$this->indac7 = _m('cmsrt.runningInsideDac');
+		$this->dacEnv = GetGlobal('controller')->env;						
 		
 		$this->messages = array(); 
 	}
@@ -101,6 +147,8 @@ class rceditables  {
 
 		switch ($event) {
 			
+			case 'cpdiflog'         : break;
+			
 			case 'cpedilog'         : $this->readLOG(); 
 									  break;
 
@@ -108,7 +156,8 @@ class rceditables  {
 				
 										phpdac7\getT($cmd); //exec cmd and close tier
 										$this->jsDialog('Start', localize('_edi', getlocal()), 3000, 'cdact.php?t=texit');
-
+										//close tier: ..'cdact.php?t=texit');
+										
 										$_cmd = explode('|', $cmd);
 										foreach ($_cmd as $i=>$c)
 											$this->messages[] = "Cmd $i: " . $c;
@@ -142,6 +191,11 @@ class rceditables  {
 
 		switch ($action) {
 			
+			case 'cpdiflog'         : $out .= $this->selectEDI(true);
+									  $out .= "<hr/>"; //"<div id='cmsvars'></div>";	
+									  $out .= $this->tableDIFLOG();
+									  break;
+			
 			case 'cpedilog'         : 			
 			case 'cpediexec'        : $out .= $this->selectEDI(true);
 									  $out .= "<hr/>";			
@@ -159,13 +213,51 @@ class rceditables  {
 		return ($out);
     }
 	
+	protected function tableDIFLOG() {
+		
+		$out = $this->diflog_table(null,null,null, 'r', true);	
+		return ($out);
+	}	
+	
+	protected function diflog_table($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
+	    $height = $height ? $height : 600;
+        $rows = $rows ? $rows : 25;
+        $width = $width ? $width : null; //wide	
+		$mode = $mode ? $mode : 'r';
+		$noctrl = $noctrl ? 0 : 1;	
+	    $lan = getlocal() ? getlocal() : 0;  
+		$title = str_replace(' ', '_', localize('_history',$lan));		
+
+	    if (defined('MYGRID_DPC')) {
+
+			$fields = array('code','datein','flag','ypoloipo1','price0','price1','price2','pricepc','weight','volume');
+				
+			$sSQL = "select * from (";
+			$sSQL.= "SELECT " . implode(',',$fields) . " from difprodlogs";
+			$sSQL .= ') as o'; 
+			
+			foreach ($fields as $i=>$f)
+				_m("mygrid.column use grid1+$f|". localize($f, $lan)."|10|0|");	
+				
+			$out = _m("mygrid.grid use grid1+difprodlogs+$sSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1+1");
+	    }
+		else 
+		   $out = 'Initialize jqgrid.';
+		   
+        return ($out); 
+	}	
+	
 	protected function tablesEDI() {
 		
 		if (GetReq('edi')) {
 			
 			$editvars = _m("cmsrt.isLevelUser use 8") ? 'd' : 'r';
 			$out = $this->showfilter();
-			$out.= $this->show_table(null,null,null, $editvars, true);
+			
+			if ($editable = GetReq('edit'))
+				$out.= $this->edit_table(null,null,null, 'd', true);
+			else	
+				$out.= $this->show_table(null,null,null, 'r', true);
 		}
 		else {
 			$out = $this->selectLOG();
@@ -197,13 +289,20 @@ class rceditables  {
 		
 		//EDI select table
 		foreach ($this->ediT as $title => $f) { 
-			$menu[$title] = 'cpeditables.php?edi='. $title;
-			$menuTrunc[$title] = 'cpeditables.php?t=cpeditrunc&editable='. $title;
+			$menu[localize($title, $lan)] = 'cpeditables.php?edi='. $title;
+			$menuTrunc[localize($title, $lan)] = 'cpeditables.php?t=cpeditrunc&editable='. $title;
 		}	
+		
+		//sep
+		$menu[0] = '';
+		//EDI select editable table
+		foreach ($this->ediT as $title => $f) { 
+			$menu[localize('_edit'.$title, $lan)] = 'cpeditables.php?edit=1&edi='. $title;
+		}
 		
 		if ($table = GetReq('edi')) { 
 			//sep
-			$menu[0] = '';
+			$menu[1] = '';
 			//EDI data export home
 			$menu[localize('_out', $lan)] = "cpeditables.php";
 		
@@ -213,6 +312,11 @@ class rceditables  {
 				$EDIselectButton .= $this->selectETL();
 		}
 		else {
+			//sep
+			$menu[1] = '';
+			//EDI dif log
+			$menu[localize('_diflog', $lan)] = "cpeditables.php?t=cpdiflog";
+			
 			$EDIselectButton = $this->createButton(localize('RCEDITABLES_DPC', $lan), $menu); 
 						
 			//ETL truncate table command
@@ -237,8 +341,12 @@ class rceditables  {
 		$id = $cpGet['id'];  	
 		$csep = _m('cmsrt.sep');
 		
+		//save cookie params for dac-7 cmd
+		$reqparams = "&cat=" . $cat . "&id=" . $id;
+		file_put_contents($this->prpath . '/_cookie.txt', $reqparams, LOCK_EX);						
+		
 		if (!empty($this->etlCNF)) {
-			
+			$sepID = 0;
 			foreach ($this->etlCNF as $i=>$cnf) {
 				
 				$menu = array(); //reset
@@ -246,19 +354,20 @@ class rceditables  {
 				if (!empty($this->etlT[$table])) {
 					foreach ($this->etlT[$table] as $title=>$cmd) 
 					{
-						$_title = localize($title, $lan);
-						
-						//save params for dac-7 cmd
-						$reqparams = "&cat=" . $cat . "&id=" . $id;
-						file_put_contents($this->prpath . '/_cookie.txt', $reqparams, LOCK_EX);
-						
-						$menu[$_title] = "cpeditables.php?t=cpediexec&edi=$table&cmd=". str_replace('[confname]', $cnf, $cmd);
+						if (is_numeric($title)) { //separator
+							$menu[$sepID] = '';
+							$sepID+=1;
+						}
+						else {	
+							$_title = localize($title, $lan);
+							$menu[$_title] = "cpeditables.php?t=cpediexec&edi=$table&cmd=". str_replace('[confname]', $cnf, $cmd);
+						}	
 					}
 					//test menu item
 					//$menu['Test'] = "cpeditables.php?t=cpediexec&edi=$table&cmd=hello/howru";
 				}
 				//sep
-				$menu[0] = '';
+				$menu[$sepID] = '';
 				
 				$dataowner = $this->etlOWN[$cnf];
 				$menu[localize('_truncate', $lan)] = "cpeditables.php?t=cpeditrunc&editable=$table&owner=$dataowner";
@@ -351,6 +460,13 @@ class rceditables  {
 		return "<h3>$title</h3>"; 
 	}	
 	
+	public function noFilterWarning() {
+		if ((!$filter=GetParam('flt')) || (!$fvalue=GetParam('val')))  
+			return localize('_nofilter',getlocal());
+		
+		return null;
+	}	
+	
 	protected function whereFilter() {
 		if (!$filter=GetParam('flt')) return null;
 		if (!$fvalue=GetParam('val')) return null;
@@ -406,6 +522,49 @@ class rceditables  {
         return ($out); 
 	}
 	
+
+	protected function edit_table($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
+		if (!$table = GetReq('edi')) return null;
+		
+	    $height = $height ? $height : 600;
+        $rows = $rows ? $rows : 25;
+        $width = $width ? $width : null; //wide	
+		$mode = $mode ? $mode : 'r';
+		$noctrl = $noctrl ? 0 : 1;	
+	    $lan = getlocal() ? getlocal() : 0;  
+		$title = ucfirst($table); //str_replace(' ', '_', localize('RCEDITABLES_DPC',getlocal()));		
+
+	    if (defined('MYGRID_DPC')) {
+
+			//if (array_key_exists($table, $this->ediT)) {
+			if (is_array($this->ediT[$table])) {
+				
+				$fields = implode(',', $this->ediT[$table]);
+				
+				//$_wf = $this->whereFilter();
+				$sSQL = "select * from (";
+				$sSQL.= "SELECT " . $fields . " from " . $table; // . $_wf;
+				$sSQL .= ') as o'; 
+			
+				foreach ($this->ediT[$table] as $i=>$f) {
+					
+					if (($f=='id') || ($f=='datein') || ($f=='owner'))
+						_m("mygrid.column use grid1+$f|". localize($f, $lan)."|5|0|"); //"|link|5|cpeditables.php?edi=$table&flt=$f&val=\{$f}\\");//"|5|0|");	
+					else
+						_m("mygrid.column use grid1+$f|". localize($f, $lan)."|10|1|");//"|5|0|");	
+				}	
+				
+				$out = _m("mygrid.grid use grid1+$table+$sSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1+1");
+			}
+			else
+				$out = 'Unknown ' . $table;
+	    }
+		else 
+		   $out = 'Initialize jqgrid.';
+		   
+        return ($out); 
+	}	
+	
 	protected function createButton($name=null, $urls=null, $t=null, $s=null) {
 		$type = $t ? $t : 'primary'; //danger /warning / info /success
 		switch ($s) {
@@ -430,24 +589,6 @@ class rceditables  {
             </div>'; 
 			
 		return ($ret);
-	}
-
-	protected function jsDialog($text=null, $title=null, $time=null, $source=null) {
-	   $stay = $time ? $time : 3000;//2000;
-
-       if (defined('JSDIALOGSTREAMSRV_DPC')) {
-			$sd = new jsdialogStreamSrv();
-			//$ret= $sd->streamDialog();
-			
-			if ($text)	
-				$code = $sd->say($text, $title, $source, $stay);
-			else
-				$code = $sd->streamDialog('jsdtime');
-		   
-			$js = new jscript;	
-			$js->load_js($code,null,1);		
-			unset ($js);
-	   }	
 	}
 	
 	public function viewMessages($template=null) {
@@ -486,19 +627,40 @@ class rceditables  {
 		";
 	}	
 	
-	//replace on page call
+	protected function jsDialog($text=null, $title=null, $time=null, $source=null) {
+	   $stay = $time ? $time : 3000;//2000;
+
+       if (defined('JSDIALOGSTREAMSRV_DPC')) {
+			$sd = new jsdialogStreamSrv();
+			//$ret= $sd->streamDialog();
+			
+			if ($text)	
+				$code = $sd->say($text, $title, $source, $stay);
+			else
+				$code = $sd->streamDialog('jsdtime');
+		   
+			$js = new jscript;	
+			$js->load_js($code,null,1);		
+			unset ($js);
+	   }	
+	}
+
 	public function streamDialog() {
 		
-		/*if ($cmd = GetReq('çmd')) {
-			
-			$sd = new jsdialogStreamSrv();
-			$ret = $sd->say($cmd, 'EDIS', 'cdact.php?t=texit', 5000);
-		
-			return ($ret);
-		}
-		else*/
-			return _m('rcpmenu.streamDialog');
+		return _m('rcpmenu.streamDialog');
 	}	
+	
+	//say a message 
+	protected function _echo($message=null, $type='TYPE_IRON') {
+		if (!$message) return false;
+		
+		$this->messages[] = $message;
+		
+		if ($this->indac7==true) 
+			$this->dacEnv->_say($message, $type);				
+		
+		return true;
+	}
 
 };
 }

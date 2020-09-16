@@ -6,17 +6,10 @@ define("RCUWIZARD_DPC",true);
 
 $__DPC['RCUWIZARD_DPC'] = 'rcuwizard';
 
-$x = GetGlobal('controller')->require_dpc('libs/cpanelx3.lib.php');
-require_once($x);
-
-$a = GetGlobal('controller')->require_dpc('cp/rcwizard.dpc.php');
-require_once($a);
-
-$b = GetGlobal('controller')->require_dpc('libs/htaccess.lib.php');
-require_once($b);
-
-$c = GetGlobal('controller')->require_dpc('libs/appkey.lib.php');
-require_once($c);
+require_once(_r('libs/cpanelx3.lib.php'));
+require_once(_r('cp/rcwizard.dpc.php'));
+require_once(_r('libs/htaccess.lib.php'));
+require_once(_r('libs/appkey.lib.php'));
 
 GetGlobal('controller')->get_parent('RCWIZARD_DPC','RCUWIZARD_DPC');
 

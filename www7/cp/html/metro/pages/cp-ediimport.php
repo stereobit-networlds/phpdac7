@@ -16,6 +16,8 @@
     <link href="css/style.css" rel="stylesheet" />
     <link href="css/style-responsive.css" rel="stylesheet" />
     <link href="css/style-default.css" rel="stylesheet" id="style_color" />
+	
+	<link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">
 
     <link href="assets/fancybox/source/jquery.fancybox.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="assets/uniform/css/uniform.default.css" />
@@ -234,8 +236,14 @@ $(document).ready(function() {
 });	  
 	   
    </script>
-   <script src="js/aSimpleTour.js" type="text/javascript"></script>   
-
+   <script src="js/aSimpleTour.js" type="text/javascript"></script>  
+   
+    <!-- stream dialog -->
+   <script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
+   <script language="JavaScript">		
+		setInterval(function() {<phpdac>rcediimport.streamDialog</phpdac>}, 30000);	
+   </script>
+   <!-- end stream dialog -->
 </body>
 <!-- END BODY -->
 </html>

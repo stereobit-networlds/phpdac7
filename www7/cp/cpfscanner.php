@@ -27,6 +27,8 @@ public i18n.i18nL;
 $cptemplate = _m('cmsrt.paramload use FRONTHTMLPAGE+cptemplate');
 
 	switch ($_GET['t']) {
+		case 'cprunaccsyncfile' : $p = 'cp-fscanner'; break;
+		case 'cprunaccfile'  : $p = 'cp-fscanner'; break;
 		case 'cpmakeaccfile' : $p = $_GET['iframe'] ? 'cp-fscanner-detail' : 'cp-fscanner'; break;
 		case 'cpsreport'     : $p = 'cp-fscanner-detail'; break;
 		case 'cpscanrep'     : $p = $_GET['iframe'] ? 'cp-fscanner-detail' : 'cp-fscanner'; break;

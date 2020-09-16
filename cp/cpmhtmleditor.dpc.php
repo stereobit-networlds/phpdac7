@@ -4,11 +4,8 @@ $__DPCSEC['CPMHTMLEDITOR_DPC']='1;1;1;1;1;1;1;1;1;1;1';
 if ((!defined("CPMHTMLEDITOR_DPC")) && (seclevel('CPMHTMLEDITOR_DPC',decode(GetSessionParam('UserSecID')))) ) {
 define("CPMHTMLEDITOR_DPC",true);
 
-$a = GetGlobal('controller')->require_dpc('images/wateresize.lib.php');
-require_once($a);
-
-$b= GetGlobal('controller')->require_dpc('images/SimpleImage.lib.php');
-require_once($b);
+require_once(_r('images/wateresize.lib.php'));
+require_once(_r('images/SimpleImage.lib.php'));
 
 $__DPC['CPMHTMLEDITOR_DPC'] = 'cpmhtmleditor';
 

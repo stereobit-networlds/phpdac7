@@ -6,8 +6,7 @@ define("RCTRANSACTIONS_DPC",true);
 
 $__DPC['RCTRANSACTIONS_DPC'] = 'rctransactions';
 
-$d = GetGlobal('controller')->require_dpc('bshop/shtransactions.dpc.php');
-require_once($d);
+require_once(_r('bshop/shtransactions.dpc.php'));
  
 $__EVENTS['RCTRANSACTIONS_DPC'][0]='cptransactions';
 $__EVENTS['RCTRANSACTIONS_DPC'][1]='cptransshow';

@@ -6,8 +6,7 @@ define("RCTRANSSQL2_DPC",true);
 
 $__DPC['RCTRANSSQL2_DPC'] = 'rctranssql2';
 
-$d = GetGlobal('controller')->require_dpc('cp/rcsyncsql.dpc.php');
-require_once($d);
+require_once(_r('cp/rcsyncsql.dpc.php'));
  
 $__EVENTS['RCTRANSSQL2_DPC'][0]='cptranssql';
 $__EVENTS['RCTRANSSQL2_DPC'][1]='cptsqlshow';

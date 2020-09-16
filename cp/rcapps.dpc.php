@@ -6,11 +6,8 @@ define("RCAPPS_DPC",true);
 
 $__DPC['RCAPPS_DPC'] = 'rcapps';
 
-$a = GetGlobal('controller')->require_dpc('libs/cpanelx3.lib.php');
-require_once($a);
-
-$b = GetGlobal('controller')->require_dpc('libs/htaccess.lib.php');
-require_once($b);
+require_once(_r('libs/cpanelx3.lib.php'));
+require_once(_r('libs/htaccess.lib.php'));
  
 $__EVENTS['RCAPPS_DPC'][0]='cpapps';
 $__EVENTS['RCAPPS_DPC'][1]='cpappsshow';
@@ -913,7 +910,7 @@ Scan executed in $elapsed seconds.\r\n";
 
 		//log
 		if ($ajaxid>0)
-			$log = @file_put_contents($this->urlpath . '/' . $this->dir_prefix . $app . '/' . $app . '.log', $report, LOCK_EX | FILE_APPEND);		
+			$log = file_put_contents($this->urlpath . '/' . $this->dir_prefix . $app . '/' . $app . '.log', $report, LOCK_EX | FILE_APPEND);		
 		
 		if ($repout) 
 			return(nl2br($report));

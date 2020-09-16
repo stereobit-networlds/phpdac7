@@ -681,7 +681,7 @@ parse_ini_string_m:
    
     //for cache third parameter must be set as true    
 	public function render($theme=null,$lan=null,$cache=null,$fp=null) {    
-	    $_cache = $_GET['modify'] ? false : $cache; //in case of click on cp disable cache mechanism
+	    $_cache = isset($_GET['modify']) ? false : $cache; //in case of click on cp disable cache mechanism
 		$_ca = paramload('DIRECTIVES','cache');
 		$_capath = paramload('DIRECTIVES','cachepath');
 		
@@ -919,6 +919,8 @@ parse_ini_string_m:
 			//print_r($processChain);
 			if (!empty($processChain))
 				$pchain = implode(',',$processChain);
+			else
+				$pchain = null;
 
 			//echo '<br/>' . $dpc . ':' . $pchain;
 			if (class_exists($__DPC[$class])) {
@@ -999,9 +1001,9 @@ parse_ini_string_m:
 		
 		if ($dac) { 
 			$fp = str_replace(paramload('SHELL','prpath'),'/cp/',$f);
-			phpdac7\__log('fetch remote:' . $fp);
+			//phpdac7\__log('fetch remote:' . $fp);
 			
-			return file_get_contents("$st/www7" . $fp);	
+			return @file_get_contents("$st/www7" . $fp);	
 		}
 		
 		//else filesystem default

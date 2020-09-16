@@ -3,12 +3,16 @@
 class crondaemon {
 	
 	var $name, $prpath;
+	var $dac7, $indac7, $dacEnv;
 
     function __construct($name=null) {
 
 		$this->name = $name ? $name : 'cdaemon';
 		$this->prpath = paramload('SHELL','prpath');
 		
+		$this->dac7 = _m('cmsrt.isDacRunning');
+		$this->indac7 = _m('cmsrt.runningInsideDac');
+		$this->dacEnv = GetGlobal('controller')->env;			
     }
 
     public function run() {
@@ -19,8 +23,14 @@ class crondaemon {
 	
     protected function _processCronTabs() {
 		$db = GetGlobal('db');
+		
+		$this->_echo('Process Cron Tabs', 'TYPE_IRON');
+		
     	$sql = 'SELECT `id` FROM crontab';
     	foreach($db->GetCol($sql) as $crontabId) {
+			
+			//$this->_echo('Cron Tab: ' . $crontabId, 'TYPE_IRON');
+			
     		$crontab = new crontab($crontabId);
     		if (is_a($crontab, 'crontab')) $crontab->process();
     	}
@@ -34,14 +44,20 @@ class crondaemon {
 		
 		$rows = $db->GetCol($sql);
 		if ($db->ErrorMsg()) {
+			
 			$this->writeLog('MySQL error: '.$db->ErrorMsg().' when _getJobs is called '.$sql);
+			$this->_echo('Db error:'. $db->ErrorMsg(), 'TYPE_IRON');
+			
 			return false;
 		}
 		else {
 			foreach((array)$rows as $cronJobId)  
 				$jobs[] = new cronjob($cronJobId);
-			if (!empty($jobs)) 
+			if (!empty($jobs)) {
+				
 				$this->writeLog('found jobs ('.count($jobs).'): '.implode(',',$rows));
+				$this->_echo('found jobs ('.count($jobs).'): '.implode(',',$rows), 'TYPE_IRON');
+			}	
 			
 			return $jobs;
 		}	
@@ -54,23 +70,29 @@ class crondaemon {
 		
    		$jobs = $this->_getJobs();
 		
-    	foreach($jobs as $job) {
+    	foreach($jobs as $jid=>$job) {
 			
 			$this->storeMessage('Cron job started');
     	
 	    	if (!empty($job->code)) {
 				
 				$script = new cronscript();
-				$results = $script->run($job->code);
+				$results = $script->run($job->code, true);
 			}
 
 			$job->endTimestamp = time();
 			
 			//if (!empty($results)) 
-			if ($results)	
+			if ($results) {	
 				$job->results = $results;
-			else 
+				
+				$this->_echo('JobID:'.$jid . ' => ' . $results, 'TYPE_IRON');
+			}	
+			else {
 				$job->results = 'error';//'results were empty';
+				
+				$this->_echo('JobID:'.$jid . ' => Error!', 'TYPE_IRON');
+			}	
 			
 			$job->update();
    		}
@@ -112,6 +134,23 @@ class crondaemon {
 		$result = $db->Execute($sSQL,1);
 		
 		return true;
-    }		
+    }
+
+	//say a message 
+	protected function _echo($message=null, $type='TYPE_IRON') {
+		if (!$message) return false;
+		
+		if ($this->indac7==true) { 
+		
+			if (method_exists($this->dacEnv, '_say'))
+				$this->dacEnv->_say($message, $type);				
+			else
+				echo '[----]' . $message . PHP_EOL;
+			
+			return true;
+		}
+		
+		return false;
+	}	
 }
 ?>

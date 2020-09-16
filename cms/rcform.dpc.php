@@ -103,7 +103,7 @@ class rcform extends cmsform {
 		$id = GetReq('id');
 
 		$vurl = seturl('t=cpviewsubmitedform&id='.$id);
-		$frame = "<iframe src =\"$vurl\" width=\"100%\" height=\"350px\"><p>Your browser does not support iframes</p></iframe>";    
+		$frame = "<iframe src =\"$vurl\" width=\"100%\" height=\"150px\"><p>Your browser does not support iframes</p></iframe>";    
 
 		if ($ajaxdiv)
 			return $ajaxdiv.'|'.$frame;
@@ -138,9 +138,9 @@ class rcform extends cmsform {
 	   $id = 'id';
 	   $editlink = "javascript:viewform({".$id."})";
 	   
-	   $ret = $this->getFormsList(null,240,20, $editlink, 'r', true);
 	   $init_content = null; 
-	   $ret .= "<div id='vform'>$init_content</div>";    	   
+	   $ret = "<div id='vform'>$init_content</div>";    	   
+	   $ret .= $this->getFormsList(null,240,20, $editlink, 'r', true);	   
 
 	   return ($ret);			  
 	   

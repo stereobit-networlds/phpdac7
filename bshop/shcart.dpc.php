@@ -1034,13 +1034,15 @@ function addtocart(id,cartdetails)
 	
 	public function jsDialog($text=null, $title=null, $time=null, $source=null) {
 		if (!defined('JAVASCRIPT_DPC')) return ;
+		$_text = $text ? addslashes($text) : null;
+		$_title = $title ? addslashes($title) : null;
 		
 	    $stay = $time ? $time : 3000;//2000;
 	   
         if (defined('JSDIALOGSTREAM_DPC')) {
 	   
 			if ($text)	
-				$code = _m("jsdialogstream.say use $text+$title+$source+$stay");
+				$code = _m("jsdialogstream.say use $_text+$_title+$source+$stay");
 			else
 				$code = _m('jsdialogstream.streamDialog use jsdtime');
 		   
@@ -1782,12 +1784,12 @@ function addtocart(id,cartdetails)
 		$myqty = $qty ? $qty : 1; 
 		$param = explode(";",$id);
 
-		$page = $param[5];
-		$gr = $param[4]; 
-		$ar = $param[0]; //$id;
+		$page = isset($param[5]) ? $param[5] : 0;
+		$gr = isset($param[4]) ? $param[4] : null; 
+		$ar = isset($param[0]) ? $param[0] : null; //$id;
 
-		$price = $param[8]; 
-		$ypoA = $param[14];
+		$price = isset($param[8]) ? $param[8] : 0; 
+		$ypoA = isset($param[14]) ? $param[14] : 0;
 		if (floatval(str_replace(",",".",$price))>0.001) {//check price
 			//if ((!$this->ignoreqtyzero) && ($ypoA>0)) {//check availability..NOT WORK
 
@@ -3093,14 +3095,17 @@ function addtocart(id,cartdetails)
 	}	
 	
 	protected function get_selection_text($id,$params=null) {
+		$out = null;
 
 		$mytemplate = _m('cmsrt.select_template use ' . $id);
 		$out = $this->combine_tokens($mytemplate,$params,true);
+		
 		return ($out);	   	    	
 	}	
 
 
     protected function calculate_totals() {
+		$ret = 0;
 
         $data[] = number_format(floatval($this->total),$this->dec_num,',','.');
 
@@ -3143,6 +3148,8 @@ function addtocart(id,cartdetails)
     }
 	
 	protected function finalize_cart_success() {
+		$out = null;
+		
 		if ($mygototitle = $this->onSuccessGotoTitle) {
 			$onsuccess = explode('/',$mygototitle); 
 			$onsuccesstitle = $onsuccess[$this->lan];
@@ -3178,7 +3185,9 @@ function addtocart(id,cartdetails)
 	}
 
 	protected function finalize_cart_error() {
+		$out = null;
 		//echo 'finalize-cart-error';
+		
 		if ($err1 = $this->mailerror) {
 			//change status of transaction
             if (defined('SHTRANSACTIONS_DPC')) 
@@ -3207,7 +3216,8 @@ function addtocart(id,cartdetails)
 		return ($out);
 	}
 	
-	public function quickview($ret_tokens=false, $template1=null, $template2=null) {		
+	public function quickview($ret_tokens=false, $template1=null, $template2=null) {	
+		$out = null;
 		 
 		if ($this->notempty()) {
 			
@@ -4771,7 +4781,7 @@ function addtocart(id,cartdetails)
 			return ($ret);
 		}	
 	   
-		if ($imglink)
+		if (isset($imglink))
 			return ($imglink);
 	
 		//else button	

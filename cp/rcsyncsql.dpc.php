@@ -6,8 +6,7 @@ define("RCSYNCSQL_DPC",true);
 
 $__DPC['RCSYNCSQL_DPC'] = 'rcsyncsql';
 
-$d = GetGlobal('controller')->require_dpc('cp/rcimportdb.dpc.php');
-require_once($d);
+require_once(_r('cp/rcimportdb.dpc.php'));
  
 $__EVENTS['RCSYNCSQL_DPC'][0]='cpsyncsql';
 $__EVENTS['RCSYNCSQL_DPC'][1]='cpdosync';
