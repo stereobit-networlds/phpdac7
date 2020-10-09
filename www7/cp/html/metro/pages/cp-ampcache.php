@@ -71,8 +71,62 @@
                                 </ul>
 
                                 <div class="tab-content">
-                                    <div class="tab-pane" id="tabsleft-tab1">	
+                                    <div class="tab-pane" id="tabsleft-tab1">
 										<div class="control-group">
+											<label class="control-label">
+												<phpdac>cmsrt.slocale use _ampcacheset</phpdac>
+											</label>
+											<div class="controls">
+												<div id="normal-toggle-button">
+													<input name="ampcacheset" type="checkbox" <phpdac>cmsrt.getSubmitedParam use ampcacheset+checked</phpdac> >
+													<phpdac>rcampcache.showCategory</phpdac> 
+
+												<label class="checkbox">
+                                                    <input name="ampitemins" type="checkbox" <phpdac>cmsrt.getSubmitedParam use ampitemins+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _ampitemins</phpdac>
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="ampitemupd" type="checkbox" <phpdac>cmsrt.getSubmitedParam use ampitemupd+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _ampitemupd</phpdac>
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="ampitemdel" type="checkbox" <phpdac>cmsrt.getSubmitedParam use ampitemdel+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _ampitemdel</phpdac>
+                                                </label>
+												<label class="checkbox">
+                                                    <input name="ampusediff" type="checkbox" <phpdac>cmsrt.getSubmitedParam use ampusediff+checked</phpdac> /> 
+													<phpdac>cmsrt.slocale use _ampusediff</phpdac><br/>
+													<phpdac>cmsrt.slocale use _ampinsert</phpdac><br/>
+													<phpdac>cmsrt.slocale use _ampupdate</phpdac><br/>
+													<phpdac>cmsrt.slocale use _ampdelete</phpdac>
+                                                </label>
+												</div>
+											</div>
+										</div>
+										
+									
+										<div class="control-group">
+											<label class="control-label">
+												<phpdac>cmsrt.slocale use _ampdelete</phpdac>
+											</label>
+											<div class="controls">
+												<div id="normal-toggle-button">
+													<input name="ampdeldisabled" type="checkbox" <phpdac>cmsrt.getSubmitedParam use ampdeldisabled+checked</phpdac>>
+												</div>
+											</div>
+										</div>
+										<div class="control-group">
+											<label class="control-label">
+												<phpdac>cmsrt.slocale use _ampdeleteperm</phpdac>
+											</label>
+											<div class="controls">
+												<div id="normal-toggle-button">
+													<input name="ampdeldisabledperm" type="checkbox" <phpdac>cmsrt.getSubmitedParam use ampdeldisabledperm+checked</phpdac>>
+												</div>
+											</div>
+										</div>									
+									
+										<!--div class="control-group">
 											<label class="control-label">
 												<phpdac>cmsrt.slocale use _ampkatalog</phpdac>
 											</label>
@@ -91,7 +145,7 @@
 													<input name="ampitems" type="checkbox" <phpdac>cmsrt.getSubmitedParam use ampitems+checked</phpdac>>
 												</div>
 											</div>
-										</div>									
+										</div-->									
                                     </div>	
 									<div class="tab-pane" id="tabsleft-tab2">
                                     	<h3><phpdac>cmsrt.slocale use _messages</phpdac></h3>

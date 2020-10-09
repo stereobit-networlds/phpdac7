@@ -1244,8 +1244,8 @@ if (!defined('_ADODB_LAYER')) {
 			
 				if ($replicate) {
 					//$cclass = get_called_class(); //always this
-					$mysql = addslashes($sql);
-					$xrSQL = "insert into syncsql (fid,status,date,execdate,sqlres,sqlquery,reference) values (1,1,'$now','$now','1','$mysql','system')"; 
+					//$mysql = addslashes($sql);
+					$xrSQL = "insert into syncsql (fid,status,date,execdate,sqlres,sqlquery,reference) values (1,1,'$now','$now','1',\"$sql\",'system')"; 
 					$retrep = $this->_Execute($xrSQL, false);		
 				}	
 			}			

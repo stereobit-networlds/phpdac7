@@ -421,17 +421,20 @@ class shkatalogmedia {
 															break;
 
 												//cart api			
-												case 'kcartadd':		if ((defined("SHCART_DPC")) && ($ctokens = _m('shcart.apiCartAdd use ' . GetReq('id')))) 
-																			die(json_encode($ctokens));
+												case 'kcartadd':		if ((defined("SHCART_DPC")) && ($ctokens['items'] = _m('shcart.apiCartAdd use ' . GetReq('id')))) 
+																			SetSessionParam('cartstatus',0);
+																		die(json_encode($ctokens)); 
 															break;
-												case 'kcartremove':		if ((defined("SHCART_DPC")) && ($ctokens = _m('shcart.apiCartRemove use ' . GetReq('id')))) 
+												case 'kcartremove':		if ((defined("SHCART_DPC")) && ($ctokens['items'] = _m('shcart.apiCartRemove use ' . GetReq('id')))) 
 																			SetSessionParam('cartstatus',0); 
+																		die(json_encode($ctokens)); 	
 															break;
-												case 'kcartclear'	:	if ((defined("SHCART_DPC")) && ($clear = _m('shcart.apiCartClear')))
+												case 'kcartclear'	:	if ((defined("SHCART_DPC")) && ($ctokens['items'] = _m('shcart.apiCartClear')))
 																			SetSessionParam('cartstatus',0); 
+																		die(json_encode($ctokens)); 
 															break;
-												case 'kcart'    :		if ((defined("SHCART_DPC")) && ($json = _m('shcart.apiCartRead')))
-																			die($json); //with ;;params !!
+												case 'kcart'    :		if ((defined("SHCART_DPC")) && ($json['items'] = _m('shcart.apiCartRead')))
+																			die((empty($json['items'])) ? json_encode(array('items'=>array())) : json_encode($json));
 															break;
 															
 												//cat api			

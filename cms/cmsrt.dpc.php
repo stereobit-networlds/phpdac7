@@ -1742,7 +1742,7 @@ EOF;
 		$g2 = array('-','-',"-","-","-",'-','-','-','-','-','-','-','-','-','-');		
 	  
 		$str = str_replace($g1,$g2,trim($string));
-		return (str_replace(array('-----','----','---','--'),'-', strtolower(trim($str,'-'))));
+		return (str_replace(array('-----','----','---','--'),'-', strtolower(rtrim(ltrim($str,'-'),'-'))));
 	}
 
 	//from greek utf chars to greeklish
@@ -1855,10 +1855,11 @@ EOF;
 
 		if ($aliasID = $this->useUrlAlias()) {
 			
-			$slugname = $this->greekSlug($itmname);
+			$slugname = $this->slugstr($itmname);
 			
 			$sSQL = "update products set $aliasID = ";
-			$sSQL.= " replace(replace(replace(replace(replace(replace(replace(replace(replace('$slugname','#','-'),\"'\",'-'),'\"','-'),',','-'),'+','-'),'/','-'),'&','-'),'.','-'),' ','-')";
+			//$sSQL.= " replace(replace(replace(replace(replace(replace(replace(replace(replace('$slugname','#','-'),\"'\",'-'),'\"','-'),',','-'),'+','-'),'/','-'),'&','-'),'.','-'),' ','-')";
+			$sSQL.= $db->qstr($slugname);//already chars replaced
 			$sSQL.= " where {$this->fcode} = '" . $itmcode . "'";
 			$res = $db->Execute($sSQL);
 
@@ -2085,13 +2086,15 @@ EOF;
 	}	
 
 	//save params for dac-7 cmd	
-	public function savePostCookie() {
+	public function savePostCookie($extraParams=null) {
 
 		foreach ($_POST as $n=>$v)
 			$params[] = "$n=$v";
 			
 		$reqparams = implode('&', $params);
+		$reqparams.= $extraParams;
 		//echo '--------->'.$reqparams;
+		
 		$ret = @file_put_contents($this->prpath . '/_cookie.txt', $reqparams, LOCK_EX);	
 		
 		return ($ret);

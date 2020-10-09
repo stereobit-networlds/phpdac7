@@ -2,10 +2,10 @@
 
 class cronscript {
 	
-	var $name, $prpath;
-	var $dac7, $indac7, $dacEnv;
+	var $name, $prpath, $masterEnv;
+	//var $dac7, $indac7, $dacEnv;
 
-    function __construct($name=null) {
+    function __construct(& $env=null, $name=null) {
 
 		$this->name = $name ? $name : 'cscript';
 		$this->prpath = paramload('SHELL','prpath');
@@ -13,6 +13,8 @@ class cronscript {
 		$this->dac7 = _m('cmsrt.isDacRunning');
 		$this->indac7 = _m('cmsrt.runningInsideDac');
 		$this->dacEnv = GetGlobal('controller')->env;			
+		
+		$this->masterEnv = $env; //run inside dac		
     }
 
     public function run($script=null, $saverr=false) {
@@ -28,8 +30,8 @@ class cronscript {
 		
 		$ret = null;
 		
-		if (class_exists('pcntlui', true)) {
-			$this->_echo('Init pcntlui...', 'TYPE_IRON');
+		//if (class_exists('pcntlui', true)) {
+			//$this->_echo('Init pcntlui...', 'TYPE_IRON');	
 			
 			if ($saverr)
 				@file_put_contents($this->prpath . 'cronerr.txt', date('c') . PHP_EOL . "Script:" . PHP_EOL . $script . PHP_EOL);			
@@ -42,9 +44,10 @@ class cronscript {
 			
 
 			try {
-				$ret = eval($script);
-			} catch (ParseError $e) 
-			//if (!$ret = eval($script))				
+				
+				$ret = eval($script);	
+			} 
+			catch (ParseError $e) 				
 			{
  
 				$error = $e;//error_get_last();
@@ -66,12 +69,12 @@ class cronscript {
 			if ($saverr)
 				@file_put_contents($this->prpath . 'cronerr.txt', date('c') . "End of run". PHP_EOL);			
 						
-		}
+		/*}
 		else {
 			$this->_echo('Init pcntlui...failed!', 'TYPE_IRON');
 			if ($saverr)
 				@file_put_contents($this->prpath . 'cronerr.txt', date('c') . PHP_EOL . "Class pcntl not exist" . PHP_EOL . $script . PHP_EOL);			
-		}			
+		}*/			
 		
 		return ($ret ? $ret : false);
     }
@@ -107,8 +110,10 @@ super database;
 		
 		if ($this->indac7==true) { 
 		
-			if (method_exists($this->dacEnv, '_say'))
-				$this->dacEnv->_say($message, $type);				
+			//if (method_exists($this->dacEnv, '_say'))
+				//$this->dacEnv->_say($message, $type);				
+			if ((is_object($this->masterEnv)) && (method_exists($this->masterEnv, '_say')))	
+				$this->masterEnv->_say($message, $type);			
 			else
 				echo '[----]' . $message . PHP_EOL;
 			

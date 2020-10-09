@@ -25,10 +25,19 @@ $__LOCALE['RCAMPCACHE_DPC'][9]='_options;Options;Ρυθμίσεις';
 $__LOCALE['RCAMPCACHE_DPC'][10]='_enable;Set active;Ενεργοποίηση';
 $__LOCALE['RCAMPCACHE_DPC'][11]='_lrp;Long Running Process;Long Running Process';
 $__LOCALE['RCAMPCACHE_DPC'][12]='_tail;Tail;Tail';
+$__LOCALE['RCAMPCACHE_DPC'][13]='_ampinsert;Insert into Amp cache;Εισαγωγή νεων αντικειμένων στην Amp Cache';
+$__LOCALE['RCAMPCACHE_DPC'][14]='_ampupdate;Update Amp cache;Μεταβολή αντικειμένων στην Amp Cache';
+$__LOCALE['RCAMPCACHE_DPC'][15]='_ampdelete;Deactivate inactive items from Amp cache;Aπενεργοποίηση μη ενεργών αντικειμένων απο Amp Cache';
+$__LOCALE['RCAMPCACHE_DPC'][16]='_ampcacheset;Create Amp pages;Κατασκευή Amp σελίδων';
+$__LOCALE['RCAMPCACHE_DPC'][17]='_ampitemins;Insert;Εισαγωγή';
+$__LOCALE['RCAMPCACHE_DPC'][18]='_ampitemupd;Update;Μεταβολή';
+$__LOCALE['RCAMPCACHE_DPC'][19]='_ampitemdel;Deactivate;Απενεργοποίηση';
+$__LOCALE['RCAMPCACHE_DPC'][20]='_ampdeleteperm;Delete inactive items from Amp cache;Διαγραφή μη ενεργών αντικειμένων απο Amp Cache';
+$__LOCALE['RCAMPCACHE_DPC'][21]='_ampusediff;Use differencial table;Χρήση πίνακα διαφορών';
 
 class rcampcache {
 	
-	var $title, $prpath, $urlpath, $url, $messages;
+	var $title, $prpath, $urlpath, $url, $messages, $catTitles;
 	var $dac7;
 		
     public function __construct() {
@@ -74,7 +83,7 @@ class rcampcache {
 			
 			case 'cpsaveamp'           :
 			case 'cpampcache'          : 
-		    default                    : 
+		    default                    :  $this->catTitles = _m('rcpmenu.showCategoryTitles use +&nbsp;&gt;&nbsp;');	
 		}		
 		
         return ($out);
@@ -87,20 +96,43 @@ class rcampcache {
 
 		if ($this->dac7==true) {
 
-			if (_m('cmsrt.savePostCookie')) {
+			if (_m('cmsrt.savePostCookie use &id=' . $id)) {
 				
 				// async/pcntl/ampcache/imgnode/
 				
 				//execute long running processs	
-				if ((GetParam('ampitems')) && (GetParam('ampkatalog'))) {
+				//if ((GetParam('ampitems')) && (GetParam('ampkatalog'))) {
+				if (GetParam('ampcacheset')) {	
 					
-					$cmd = 'async/pcntl/ampcache/imgnode/';
+					$usediff = GetParam('ampusediff');
+					
+					if (GetParam('ampitemins')) 
+						$cmd = ($usediff) ? 'async/pcntl/ampcache_diffitems_insert/imgnode/':
+											'async/pcntl/ampcache_insert/imgnode/';
+					elseif (GetParam('ampitemupd'))
+						$cmd = ($usediff) ? 'async/pcntl/ampcache_diffitems_update/imgnode/':
+											'async/pcntl/ampcache_update/imgnode/';
+					elseif (GetParam('ampitemdel')) 
+						$cmd = ($usediff) ? 'async/pcntl/ampcache_diffitems_delete/imgnode/':
+											'async/pcntl/ampcache_delete/imgnode/';
+					else	
+						$cmd = ($usediff) ? 'async/pcntl/ampcache/imgnode_diffitems/':
+											'async/pcntl/ampcache/imgnode/';
+					
 					phpdac7\getT($cmd); //exec cmd and close tier
+					//echo $cmd;
 				
 					$this->jsDialog('Start', localize('_lrp', getlocal()), 3000, 'cdact.php?t=texit');
 					$this->messages[] = 'LRP ampcache started!';	
 				}
-				elseif ((GetParam('ampitems')) && (!GetParam('ampkatalog'))) {
+				elseif (GetParam('ampitemdeldisabled')) {
+					
+						$delperm = GetParam('ampdeldisabledperm');					
+					
+						$cmd = 	($delperm) ? 'async/pcntl/ampcache_delete_disabled_permanent/imgnode/':
+											 'async/pcntl/ampcache_delete_disabled/imgnode/';				
+				}							 
+				/*elseif ((GetParam('ampitems')) && (!GetParam('ampkatalog'))) {
 					
 					$cmd = 'async/pcntl/kshow/imgnode/p5node/|async/img/_products/imgread/';
 					phpdac7\getT($cmd); //exec cmd and close tier
@@ -115,7 +147,7 @@ class rcampcache {
 				
 					$this->jsDialog('Start', localize('_lrp', getlocal()), 3000, 'cdact.php?t=texit');
 					$this->messages[] = 'LRP klist started!';						
-				}	
+				}*/	
 				else
 					$this->messages[] = 'Please select an option before start!';	
 				
@@ -145,6 +177,11 @@ class rcampcache {
 		$id = $cpGet['id'];  	
 		
 		return ($cat);
+	}	
+	
+	public function showCategory() {
+		
+		return $this->catTitles;
 	}	
 	
 	public function tail($_file=null, $_lines=null) {

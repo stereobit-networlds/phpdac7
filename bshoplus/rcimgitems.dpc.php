@@ -56,6 +56,10 @@ $__LOCALE['RCIMGITEMS_DPC'][37]='_medium;Medium;Μεσαίες';
 $__LOCALE['RCIMGITEMS_DPC'][38]='_small;Small;Μικρές';
 $__LOCALE['RCIMGITEMS_DPC'][39]='_options;Options;Ρυθμίσεις';
 $__LOCALE['RCIMGITEMS_DPC'][40]='_lrp;Long Running Process;Long Running Process';
+$__LOCALE['RCIMGITEMS_DPC'][42]='_edi;EDI Data;EDI Data';
+$__LOCALE['RCIMGITEMS_DPC'][43]='_dif;DIF Data;DIF Data';
+$__LOCALE['RCIMGITEMS_DPC'][44]='_mode;Select data source;Επιλογή προέλευσης';
+$__LOCALE['RCIMGITEMS_DPC'][45]='_selectsource;Select data source;Επιλογή προέλευσης';
 
 class rcimgitems {
 	
@@ -79,13 +83,13 @@ class rcimgitems {
 		$this->fields = array('id','datein','code3','code5','owner','itmactive','active','itmname','uniname1','ypoloipo1','price0','price1','manufacturer','size','color','cat0','cat1','cat2','cat3','cat4');	
 		$this->etlfields = implode(',', $this->fields);
 		
-		$this->encodeimageid = remote_paramload('RCITEMS','encodeimageid',$this->path);
+		$this->encodeimageid = remote_paramload('RCITEMS','encodeimageid',$this->prpath);
 	    $this->photodb = remote_paramload('RCITEMS','photodb',$this->prpath);
 		$this->restype = remote_paramload('RCITEMS','restype',$this->prpath);		
 		
-		$this->erase2db = remote_paramload('RCITEMS','erase2db',$this->path);	  
-		$this->mixphoto = remote_paramload('RCITEMS','mixphoto',$this->path);	 
-		$this->photoquality = remote_paramload('RCITEMS','photoquality',$this->path);
+		$this->erase2db = remote_paramload('RCITEMS','erase2db',$this->prpath);	  
+		$this->mixphoto = remote_paramload('RCITEMS','mixphoto',$this->prpath);	 
+		$this->photoquality = remote_paramload('RCITEMS','photoquality',$this->prpath);
 		
         $this->autoresize = remote_arrayload('RCITEMS','autoresize',$this->prpath);
 		
@@ -101,7 +105,7 @@ class rcimgitems {
 		$this->indac7 = _m('cmsrt.runningInsideDac');
 		$this->dacEnv = GetGlobal('controller')->env;			
 
-		$this->iLimit = ($this->indac7==true) ? 5000 : 500;//500;	
+		$this->iLimit = ($this->indac7==true) ? 15000 : 500;//500;	
 	}
 	
     public function event($event=null) {
@@ -129,17 +133,60 @@ class rcimgitems {
 			
 			case 'cpsaveimgitems'      :
 			case 'cpimgitems'          : 
-		    default                    : $out = $this->showEdiItems();
+		    default                    :$this->catTitles = _m('rcpmenu.showCategoryTitles use +&nbsp;&gt;&nbsp;'); 
+			
+										//$out = $this->showEdiItems();
+										$out = $this->itemsEdiMode();
 		}		
 		
         return ($out);
 	}
 	
+	protected function itemsEdiMode() {
+		$lan = getlocal();
+		$mode = $this->currentMode(); //GetReq('mode') ? GetReq('mode') : 'edi';
+        
+		$turl0 = seturl('t=cpimgitems&mode=edi');		
+		$turl1 = seturl('t=cpimgitems&mode=dif');
+		$button = $this->createButton(localize('_mode', getlocal()), 
+										array(localize('_edi', getlocal())=>$turl0,
+										      localize('_dif', getlocal())=>$turl1,
+		                                ),'success');		
+																	
+		switch ($mode) {
+			
+			case 'dif' :   $content = $this->itemsDIFgrid(null,140,5,'e', true); break;
+			case 'edi' :   
+			default    :   $content = $this->itemsEDIgrid(null,140,5,'e', true);
+		}			
+					
+		$ret = $this->window(localize('_imgitems', $lan).': '.
+							localize('_selectsource', $lan).' &gt; '.
+							localize('_'.$mode, $lan), $button, $content);
+		
+		return ($ret);
+	}
+
+	public function currentMode() {	
+		$mode = GetParam('mode') ? GetParam('mode') : GetReq('mode');	
+		
+		return $mode ? $mode : 'edi';
+	}	
+
+	public function currentTable() {	
+		$mode = $this->currentMode();	
+		
+		switch ($mode) {
+			case 'dif' : $tbl = 'difproducts'; break;
+			case 'edi' :
+			default    : $tbl = 'etlproducts';
+		}	
+		return ($tbl);
+	}	
+	
 	public function showEdiItems() {
 		
-		$this->catTitles = _m('rcpmenu.showCategoryTitles use +&nbsp;&gt;&nbsp;');
-		
-		return $this->items_grid(null,140,5,'e', true);
+		return $this->itemsEDIgrid(null,140,5,'e', true);
 	}
 	
 	public function showfilter() {
@@ -185,7 +232,7 @@ class rcimgitems {
 		return " where $filter=" . $v; 
 	}
 	
-	protected function items_grid($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
+	protected function itemsEDIgrid($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
 	    $height = $height ? $height : 800;
         $rows = $rows ? $rows : 36;
         $width = $width ? $width : null; //wide	
@@ -193,6 +240,7 @@ class rcimgitems {
 		$noctrl = $noctrl ? 0 : 1;				   
 	    $lan = getlocal() ? getlocal() : 0;  
 		$title = localize('_items', getlocal()); 
+		$mode = "mode=" . $this->currentMode();
 		
 		$_wf = $this->whereFilter();
 		$xsSQL = "SELECT * from (select {$this->etlfields}  from etlproducts $_wf) o ";		   
@@ -200,28 +248,67 @@ class rcimgitems {
 		_m("mygrid.column use grid1+id|".localize('id',$lan)."|2|0|");
 		_m("mygrid.column use grid1+itmactive|".localize('_active',$lan)."|boolean|1|1:0");		
 		_m("mygrid.column use grid1+active|".localize('_active',$lan)."|boolean|1|101:0|");
-		_m("mygrid.column use grid1+datein|".localize('_date',$lan)."|link|5|cpimgitems.php?flt=datein&val={datein}");	
+		_m("mygrid.column use grid1+datein|".localize('_date',$lan)."|link|5|cpimgitems.php?$mode&flt=datein&val={datein}");	
 		_m("mygrid.column use grid1+code3|".localize('_code',$lan)."|5|0|");
-		_m("mygrid.column use grid1+code5|".localize('_code',$lan)."|link|5|cpimgitems.php?flt=code5&val={code5}");	
+		_m("mygrid.column use grid1+code5|".localize('_code',$lan)."|link|5|cpimgitems.php?$mode&flt=code5&val={code5}");	
 		_m("mygrid.column use grid1+itmname|".localize('_title',$lan)."|10|0|");	
-		_m("mygrid.column use grid1+cat0|".localize('_cat',$lan)."|link|5|cpimgitems.php?flt=cat0&val={cat0}");	
-		_m("mygrid.column use grid1+cat1|".localize('_cat',$lan)."|link|5|cpimgitems.php?flt=cat1&val={cat1}");
-		_m("mygrid.column use grid1+cat2|".localize('_cat',$lan)."|link|5|cpimgitems.php?flt=cat2&val={cat2}");
-		_m("mygrid.column use grid1+cat3|".localize('_cat',$lan)."|link|5|cpimgitems.php?flt=cat3&val={cat3}");
-		_m("mygrid.column use grid1+cat4|".localize('_cat',$lan)."|link|5|cpimgitems.php?flt=cat4&val={cat4}");
+		_m("mygrid.column use grid1+cat0|".localize('_cat',$lan)."|link|5|cpimgitems.php?$mode&flt=cat0&val={cat0}");	
+		_m("mygrid.column use grid1+cat1|".localize('_cat',$lan)."|link|5|cpimgitems.php?$mode&flt=cat1&val={cat1}");
+		_m("mygrid.column use grid1+cat2|".localize('_cat',$lan)."|link|5|cpimgitems.php?$mode&flt=cat2&val={cat2}");
+		_m("mygrid.column use grid1+cat3|".localize('_cat',$lan)."|link|5|cpimgitems.php?$mode&flt=cat3&val={cat3}");
+		_m("mygrid.column use grid1+cat4|".localize('_cat',$lan)."|link|5|cpimgitems.php?$mode&flt=cat4&val={cat4}");
 		_m("mygrid.column use grid1+uniname1|".localize('_uniname1',$lan)."|5|0|");		
 		_m("mygrid.column use grid1+ypoloipo1|".localize('_ypoloipo1',$lan)."|5|0|");			
 		_m("mygrid.column use grid1+price0|".localize('_price0',$lan)."|5|0|");		
 		_m("mygrid.column use grid1+price1|".localize('_price1',$lan)."|5|0|");			
-		_m("mygrid.column use grid1+manufacturer|".localize('_manufacturer',$lan)."|link|5|cpimgitems.php?flt=manufacturer&val={manufacturer}");//."|5|0|");
+		_m("mygrid.column use grid1+manufacturer|".localize('_manufacturer',$lan)."|link|5|cpimgitems.php?$mode&flt=manufacturer&val={manufacturer}");//."|5|0|");
 		_m("mygrid.column use grid1+size|".localize('_size',$lan)."|5|0|");
 		_m("mygrid.column use grid1+color|".localize('_color',$lan)."|5|0|");
-		_m("mygrid.column use grid1+owner|".localize('_owner',$lan)."|link|5|cpimgitems.php?flt=owner&val={owner}");
+		_m("mygrid.column use grid1+owner|".localize('_owner',$lan)."|link|5|cpimgitems.php?$mode&flt=owner&val={owner}");
 
-		$out = _m("mygrid.grid use grid1+products+$xsSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1");
+		$out = _m("mygrid.grid use grid1+etlproducts+$xsSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1");
 		
 		return ($out);  	
 	}		
+	
+	protected function itemsDIFgrid($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
+	    $height = $height ? $height : 800;
+        $rows = $rows ? $rows : 36;
+        $width = $width ? $width : null; //wide	
+		$mode = $mode ? $mode : 'd';
+		$noctrl = $noctrl ? 0 : 1;				   
+	    $lan = getlocal() ? getlocal() : 0;  
+		$title = localize('_items', getlocal()); 
+		$mode = "mode=" . $this->currentMode();		
+		
+		$_wf = $this->whereFilter();
+		$xsSQL = "SELECT * from (select {$this->etlfields}  from difproducts $_wf) o ";		   
+		   							
+		_m("mygrid.column use grid1+id|".localize('id',$lan)."|2|0|");
+		_m("mygrid.column use grid1+itmactive|".localize('_active',$lan)."|boolean|1|1:0");		
+		_m("mygrid.column use grid1+active|".localize('_active',$lan)."|boolean|1|101:0|");
+		_m("mygrid.column use grid1+datein|".localize('_date',$lan)."|link|5|cpimgitems.php?$mode&flt=datein&val={datein}");	
+		_m("mygrid.column use grid1+code3|".localize('_code',$lan)."|5|0|");
+		_m("mygrid.column use grid1+code5|".localize('_code',$lan)."|link|5|cpimgitems.php?$mode&flt=code5&val={code5}");	
+		_m("mygrid.column use grid1+itmname|".localize('_title',$lan)."|10|0|");	
+		_m("mygrid.column use grid1+cat0|".localize('_cat',$lan)."|link|5|cpimgitems.php?$mode&flt=cat0&val={cat0}");	
+		_m("mygrid.column use grid1+cat1|".localize('_cat',$lan)."|link|5|cpimgitems.php?$mode&flt=cat1&val={cat1}");
+		_m("mygrid.column use grid1+cat2|".localize('_cat',$lan)."|link|5|cpimgitems.php?$mode&flt=cat2&val={cat2}");
+		_m("mygrid.column use grid1+cat3|".localize('_cat',$lan)."|link|5|cpimgitems.php?$mode&flt=cat3&val={cat3}");
+		_m("mygrid.column use grid1+cat4|".localize('_cat',$lan)."|link|5|cpimgitems.php?$mode&flt=cat4&val={cat4}");
+		_m("mygrid.column use grid1+uniname1|".localize('_uniname1',$lan)."|5|0|");		
+		_m("mygrid.column use grid1+ypoloipo1|".localize('_ypoloipo1',$lan)."|5|0|");			
+		_m("mygrid.column use grid1+price0|".localize('_price0',$lan)."|5|0|");		
+		_m("mygrid.column use grid1+price1|".localize('_price1',$lan)."|5|0|");			
+		_m("mygrid.column use grid1+manufacturer|".localize('_manufacturer',$lan)."|link|5|cpimgitems.php?$mode&flt=manufacturer&val={manufacturer}");//."|5|0|");
+		_m("mygrid.column use grid1+size|".localize('_size',$lan)."|5|0|");
+		_m("mygrid.column use grid1+color|".localize('_color',$lan)."|5|0|");
+		_m("mygrid.column use grid1+owner|".localize('_owner',$lan)."|link|5|cpimgitems.php?$mode&flt=owner&val={owner}");
+
+		$out = _m("mygrid.grid use grid1+difproducts+$xsSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1");
+		
+		return ($out);   	
+	}	
 	
 	protected function submit() { 
 
@@ -289,7 +376,8 @@ class rcimgitems {
 			}		
 		
 			$_wf = $this->whereFilter();
-			$sSQL = "select " .$this->etlfields. " from etlproducts ";
+			$tbl = $this->currentTable();
+			$sSQL = "select " .$this->etlfields. " from $tbl ";
 			$sSQL.= $_wf ? $_wf . ' and active>0 and itmactive>0' : 
 								' where active>0 and itmactive>0' ;			
 			$items = $db->Execute($sSQL);
@@ -314,12 +402,10 @@ class rcimgitems {
 					$this->_echo($x . " ($_itype) Insert image:" . $rec[$fcode] . $this->restype . ' exists !');
 				}	
 				else {
-					if ($this->add_photo($rec[$fcode], $_itype, $rec['owner'])) 
-						//$this->messages[] = $x ." ($_itype) Insert image:". $rec[$fcode] . $this->restype . ' inserted ';					
-						$this->_echo($x ." ($_itype) Insert image:". $rec[$fcode] . $this->restype . ' inserted ');
+					if ($this->add_photo($rec[$fcode], $_itype, $rec['owner'])) 				
+					    $this->_echo($x ." ($_itype) Insert image:". $rec[$fcode] . $this->restype . ' inserted ');
 					else
-						//$this->messages[] = $x . " ($_itype) Insert image:" . $rec[$fcode] . $this->restype . ' not exists ';
-						$this->_echo($x . " ($_itype) Insert image:" . $rec[$fcode] . $this->restype . ' not exists ');
+						$this->_echo($x . " ($_itype) " . $rec[$fcode] . $this->restype . ' not exist ');
 				}
 				$x+=1;	
 			}	
@@ -359,7 +445,8 @@ class rcimgitems {
 			}		
 		
 			$_wf = $this->whereFilter();
-			$sSQL = "select " .$this->etlfields. " from etlproducts ";
+			$tbl = $this->currentTable();
+			$sSQL = "select " .$this->etlfields. " from $tbl ";
 			$sSQL.= $_wf ? $_wf . ' and active>0 and itmactive>0' : 
 								' where active>0 and itmactive>0' ;			
 			$items = $db->Execute($sSQL);
@@ -506,7 +593,7 @@ class rcimgitems {
                                $image = new SimpleImage();
                                $image->load($s);
 							   
-							   if ($dim_large = $autoresize[2]) {
+							   if ($dim_large = $this->autoresize[2]) {
                                  $image->resizeToWidth($dim_large);
                                  $image->save($this->img_large . $f);	
 								 //auto add to db
@@ -742,6 +829,58 @@ class rcimgitems {
 			$ret = move_uploaded_file($s,$f);
 				
 	}
+	
+	protected function createButton($name=null, $urls=null, $t=null, $s=null) {
+		$type = $t ? $t : 'primary'; //danger /warning / info /success
+		switch ($s) {
+			case 'large' : $size = 'btn-large '; break;
+			case 'small' : $size = 'btn-small '; break;
+			case 'mini'  : $size = 'btn-mini '; break;
+			default      : $size = null;
+		}
+		
+		//$ret = "<button class=\"btn  btn-primary\" type=\"button\">Primary</button>";
+		
+		if (!empty($urls)) {
+			foreach ($urls as $n=>$url)
+				$links .= '<li><a href="'.$url.'">'.$n.'</a></li>';
+			$lnk = '<ul class="dropdown-menu">'.$links.'</ul>';
+		} 
+		
+		$ret = '
+			<div class="btn-group">
+                <button data-toggle="dropdown" class="btn '.$size.'btn-'.$type.' dropdown-toggle">'.$name.' <span class="caret"></span></button>
+                '.$lnk.'
+            </div>'; 
+			
+		return ($ret);
+	}
+	
+	
+	protected function window($title, $buttons, $content) {
+		$ret = '	
+		    <div class="row-fluid">
+                <div class="span12">
+                  <div class="widget red">
+                        <div class="widget-title">
+                           <h4><i class="icon-reorder"></i> '.$title.'</h4>
+                           <span class="tools">
+                               <a href="javascript:;" class="icon-chevron-down"></a>
+                           </span>
+                        </div>
+                        <div class="widget-body">
+							<div class="btn-toolbar">
+							'. $buttons .'
+							<hr/><div id="cmsform"></div>
+							</div>
+							'.  $content .'
+                        </div>
+                  </div>
+                </div>
+            </div>
+';
+		return ($ret);
+	}		
 
 	protected function jsDialog($text=null, $title=null, $time=null, $source=null) {
 	   $stay = $time ? $time : 3000;//2000;

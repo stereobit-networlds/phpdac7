@@ -46,17 +46,24 @@ $__LOCALE['RCMESSAGES_DPC'][9]='_ip;Ip;Ip';
 $__LOCALE['RCMESSAGES_DPC'][10]='_tid;Item;Είδος';
 $__LOCALE['RCMESSAGES_DPC'][11]='_httpagent;Agent;Agent';
 
-class rcmessages  {
+require_once(_r('cp/cpdac7.lib.php'));
+
+class rcmessages extends cpdac7 {
 	
-	var $seclevid, $owner, $messages;
+	var $seclevid, $owner, $messages, $dac7procs;
 
 	public function __construct() {
+		
+		parent::__construct();
 		
 		$this->seclevid = $GLOBALS['ADMINSecID'] ? $GLOBALS['ADMINSecID'] : $_SESSION['ADMINSecID'];		
 		$this->owner = $_POST['Username'] ? $_POST['Username'] : GetSessionParam('LoginName');
 		
 		$this->messages = GetSessionParam('cpMessages') ? GetSessionParam('cpMessages') : array();
 		$this->isCrm = false;
+		
+		if ($this->dac7==true)
+			$this->dac7procs = json_decode(phpdac7\get('srvProcessStack'), true);
 	}
 
     public function event($event=null) {
@@ -71,19 +78,48 @@ class rcmessages  {
 			case 'cpinboxno'   	: 	//ajax call
 									$tsk = $this->getInboxTotal();
 									die($tsk);
-									break;							 
+									break;	
+									
 			case 'cpinbox'     	: 	$tsk = $this->getInbox();
 									die($tsk);
 									break;								 
 
 			case 'cptasksno'   	: 	//$this->site_stats();  
-									$tsk = $this->getTasksTotal();
+									$tasks = $this->getTasksTotal();
+									$procs = (!empty($this->dac7procs)) ? count($this->dac7procs) : 0;
+									$tsk = strval($tasks + $procs);
 									die($tsk);
-									break;	 							 
+									break;	 
+									
 			case 'cptasks'     	: 	//SetSessionParam('cpTasks', ''); //reset tasks
 									//$this->site_stats(); //read space task
+									
 									if (defined('RCULISTSTATS_DPC')) //read active campaign tasks
 										_m('rculiststats.percentofCamps');
+
+									//if ($this->dac7==true) { //dac7 processes
+										//$procs = phpdac7\get('srvProcessStack');
+										//$procs = phpdac7\get('srvSchedules');
+										//$procs = phpdac7\get('srvState');
+										//echo '>' . $procs;
+										
+										//if ($processes = json_decode($procs, true)) {
+										if (!empty($this->dac7procs)) {	
+											foreach ($this->dac7procs as $ic=>$chain) {
+												$proc = implode('/', $chain);
+												//echo $proc . '<br/>';
+												$namedproc = '#'. strval($ic+1) . ' ' . substr($proc, -30);
+											
+												$status = ($ic==0) ? 'info' : 'warning'; //'danger'
+												$percent = ($ic==0) ? 50 : 10;//(100-intval($rec[2]*100));
+												$purl = '#';//'cpbulkmail.php?t=cppreviewcamp&cid=';
+												
+												//do not save in session +1
+												_m("rccontrolpanel.setTask use $status|$namedproc|$percent|$purl+1");
+											}
+										}		
+									//}		
+										
 									$tsk = $this->getTasks();
 									die($tsk);
 									break;			
@@ -597,7 +633,7 @@ class rcmessages  {
 	public function getTasksTotal() { 
 		$tasks = _v('rccontrolpanel.tasks');
 		
-		$ret = (empty($tasks)) ? null : strval(count($tasks));
+		$ret = (empty($tasks)) ? null : count($tasks);
 		return $ret;		
 	}		
 

@@ -1136,15 +1136,20 @@ document.addEventListener('keydown', function(event) {
 	}
 	
 	//set task method
-	public function setTask($task=null) {
+	public function setTask($task=null, $notsaveses=false) {
 		if (!$task) return false;
 		$id = explode('|',$task);
 		$hash = md5($id[0].$id[1]);
 		
 		//if (array_key_exists($hash, $this->tasks)) {}
 		//else {
+			
 			$this->tasks[$hash] = $task;
-			SetSessionParam('cpTasks', $this->tasks);
+			
+			if ($notsaveses) {}
+			else
+				SetSessionParam('cpTasks', $this->tasks);
+			
 			return true;
 		//}
 		//return false;	

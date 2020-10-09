@@ -6,8 +6,7 @@ define("SHLOGIN_DPC",true);
 
 $__DPC['SHLOGIN_DPC'] = 'shlogin';
 
-$a = GetGlobal('controller')->require_dpc('cms/cmslogin.dpc.php');
-require_once($a);
+require_once(_r('cms/cmslogin.dpc.php'));
  
 //$__EVENTS['SHLOGIN_DPC'][0]='shlogin';
 //$__ACTIONS['SHLOGIN_DPC'][0]='shlogin';

@@ -27,8 +27,8 @@ $__DPCATTR['RCEDITABLES_DPC']['cpeditables'] = 'cpeditables,1,0,0,0,0,0,0,0,0,0,
 $__LOCALE['RCEDITABLES_DPC'][0]='RCEDITABLES_DPC;EDI tables;Πίνακες EDI';
 $__LOCALE['RCEDITABLES_DPC'][1]='_edi;EDI;EDI';
 $__LOCALE['RCEDITABLES_DPC'][2]='_etl;ETL;ETL';
-$__LOCALE['RCEDITABLES_DPC'][3]='_makecsv;Create items csv file;Δημιουργία csv ειδών';
-$__LOCALE['RCEDITABLES_DPC'][4]='_makesql;Create items description file;Δημιουργία περιγραφών ειδών';
+$__LOCALE['RCEDITABLES_DPC'][3]='_makecsv;Create csv file (manual insert);Δημιουργία csv ειδών (εισαγωγή με 2ο βήμα)';
+$__LOCALE['RCEDITABLES_DPC'][4]='_makesql;Create items description file (manual insert);Δημιουργία περιγραφών ειδών (εισαγωγή με 2ο βήμα)';
 $__LOCALE['RCEDITABLES_DPC'][5]='_makeimg;Download images;Ανάκτηση (κατέβασμα) εικόνων απο την πηγη';
 $__LOCALE['RCEDITABLES_DPC'][6]='_filter;Filter;Φίλτρο';
 $__LOCALE['RCEDITABLES_DPC'][7]='_out;Exports;Εξαγωγές';
@@ -50,14 +50,23 @@ $__LOCALE['RCEDITABLES_DPC'][22]='_sync4;Update items without category update;Ε
 $__LOCALE['RCEDITABLES_DPC'][23]='_sync5;Insert items in current category;Εισαγωγή ειδών στην κατηγορία επιλογής';
 $__LOCALE['RCEDITABLES_DPC'][24]='_sync6;Insert items and create category;Εισαγωγή ειδών και κατασκευή κατηγορίας';
 $__LOCALE['RCEDITABLES_DPC'][25]='_synccsv;Read source and update items;Ανάγνωση πηγής και ενημέρωση ειδών';
-$__LOCALE['RCEDITABLES_DPC'][26]='_syncdescr;Read source and insert items description;Ανάγνωση πηγής και εισαγωγή περιγραφών ειδών';
+$__LOCALE['RCEDITABLES_DPC'][26]='_makesql1;Read source and insert items description;Ανάγνωση πηγής και εισαγωγή περιγραφών ειδών';
 $__LOCALE['RCEDITABLES_DPC'][27]='_syncdescrupd;Insert items description from file;Εισαγωγή περιγραφών ειδών απο αρχείο';
 $__LOCALE['RCEDITABLES_DPC'][28]='_diflog;History Log;Ιστορικό αλλαγών';
 $__LOCALE['RCEDITABLES_DPC'][29]='_history;History;Ιστορικό';
-$__LOCALE['RCEDITABLES_DPC'][30]='_synccsvdisable;Read source and disable not included items;Ανάγνωση πηγής και απενεργοποίηση μη συμπεριλαμβανομένων στοιχείων';
-$__LOCALE['RCEDITABLES_DPC'][31]='_synccsvdisable2;Disable product items (readed source);Απενεργοποίηση μη συμπεριλαμβανομένων στοιχείων (αναγνωσμένης πηγής)';
+$__LOCALE['RCEDITABLES_DPC'][30]='_synccsvdisable;Read source and disable not included items;Ανάγνωση πηγής και απενεργοποίηση μη συμπεριλαμβανομένων ειδών';
+$__LOCALE['RCEDITABLES_DPC'][31]='_synccsvdisable2;Disable product items (readed source);Απενεργοποίηση μη συμπεριλαμβανομένων ειδών (αναγνωσμένης πηγής)';
 $__LOCALE['RCEDITABLES_DPC'][32]='_sync7;Disable items in current category;Απενεργοποίηση ειδών στην ισχύουσα κατηγορία του είδους';
 $__LOCALE['RCEDITABLES_DPC'][33]='_synccheck;Check tables;Έλεγχος πινάκων';
+$__LOCALE['RCEDITABLES_DPC'][34]='_makeimgoverwrite;Download images (overwrite);Ανάκτηση (κατέβασμα με αντικατάσταση) εικόνων απο την πηγη';
+$__LOCALE['RCEDITABLES_DPC'][35]='_synccsvdisableorinsert;Read source and disable or insert items;Ανάγνωση πηγής και απενεργοποίηση ή εισαγωγή ειδών';
+$__LOCALE['RCEDITABLES_DPC'][36]='_csvcheck;Check EDI vs CSV read;Έλεγχος EDI με CSV ανάγνωση';
+$__LOCALE['RCEDITABLES_DPC'][37]='_makeimg2;Insert new items photo;Εισαγωγή φωτογραφιών νέων ειδών';
+$__LOCALE['RCEDITABLES_DPC'][38]='_makesql2;Insert items description;Εισαγωγή περιγραφών ειδών';
+$__LOCALE['RCEDITABLES_DPC'][39]='_makesql3;Update items description;Ενημέρωση περιγραφών ειδών';
+$__LOCALE['RCEDITABLES_DPC'][40]='_makeimg3;Update changed items photo;Ενημέρωση φωτογραφιών μεταβληθέντων ειδών';
+$__LOCALE['RCEDITABLES_DPC'][41]='_delimg;Delete disabled items photo;Διαγραφή φωτογραφιών απενεργοποιημένων ειδών';
+$__LOCALE['RCEDITABLES_DPC'][42]='_delsql;Delete disabled items attachment;Διαγραφή περιγραφών απενεργοποιημένων ειδών';
 
 class rceditables  {
 
@@ -74,26 +83,28 @@ class rceditables  {
 		$this->title = localize('RCEDIITEMS_DPC',getlocal());			
 		
 		//EDI CONF
-		$this->etlproducts = array('id','datein','code3','code5','owner','itmactive','active','itmname','uniname1','ypoloipo1','price0','price1','manufacturer','size','color','cat0','cat1','cat2','cat3','cat4');	
-		$this->difproducts = array('id','datein','code3','code5','owner','itmactive','active','itmname','uniname1','ypoloipo1','price0','price1','manufacturer','size','color','cat0','cat1','cat2','cat3','cat4');	
+		$this->etlproducts = array('id','datein','code3','code5','owner','itmactive','active','itmname','uniname1','ypoloipo1','price0','price1','pricepc','price2','manufacturer','size','color','cat0','cat1','cat2','cat3','cat4');	
+		$this->difproducts = array('id','datein','code3','code5','owner','itmactive','active','itmname','uniname1','ypoloipo1','price0','price1','pricepc','price2','manufacturer','size','color','cat0','cat1','cat2','cat3','cat4');	
 		$this->ediT = array('etlproducts'=>$this->etlproducts,
 							'difproducts'=>$this->difproducts,
 							/*'editest'=>array('a','b'),*/
 							 );	
 		//ETL CONF
-		$this->etlCNF = array('kaisidis', 'aidonitsa', 'logicom', 'agc', 'tradesor');	
-		$this->etlOWN = array('kaisidis'=>'data-media', 'aidonitsa'=>'aidonitsa', 'logicom'=>'logicom', 'agc'=>'agc', 'tradesor'=>'tradesor'); //owner title		
+		$this->etlCNF = array('kaisidis', 'aidonitsa', 'logicom', 'agc', 'tradesor', 'eldico');	
+		$this->etlOWN = array('kaisidis'=>'data-media', 'aidonitsa'=>'aidonitsa', 'logicom'=>'logicom', 'agc'=>'agc', 'tradesor'=>'tradesor', 'eldico'=>'eldico'); //owner title		
 		$this->etlCMD = array('_synccheck'=>'async/ppost/bshopplus_rcediimport_compare/[confname]/',
-		                      0=>'',
+							  '_csvcheck'=>'async/ppost/bshopplus_rcediimport_csvcheck/[confname]/',	
+							  0=>'',
+							  '_synccsv'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/|async/ppost/bshopplus_rcediimport_submit_csv/[confname]/',
+							  '_makesql1'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/sqlnodepattach/|async/sql/[confname]/sqlread/|async/ppost/bshopplus_rcediimport_submit_sql/[confname]/',	
+							  '_synccsvdisable2'=>'async/ppost/bshopplus_rcediimport_disable/[confname]/',
+		                      1=>'',
 							  '_makecsv'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/',
 							  '_makesql'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/sqlnodepattach/|async/sql/[confname]/sqlread/',	
 							  '_makeimg'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgread/',
-							  1=>'',
-							  '_synccsv'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/|async/ppost/bshopplus_rcediimport_submit_csv/[confname]/',
-							  '_syncdescr'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/sqlnodepattach/|async/sql/[confname]/sqlread/|async/ppost/bshopplus_rcediimport_submit_sql/[confname]/',	
-							  '_synccsvdisable2'=>'async/ppost/bshopplus_rcediimport_disable/[confname]/',
+							  '_makeimgoverwrite'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgoverwrite/',							  
 							);
-		$this->difCMD = array('_dbo1'=>'async/dbo/_products/dbofilter01/dbofilter02/imgnode/|async/img/_products/imgread/',
+		$this->difCMD = array(//'_dbo1'=>'async/dbo/_products/dbofilter01/dbofilter02/imgnode/|async/img/_products/imgread/',
 							  //'_bit77'=>'async/pcntl/bit77/imgnode/|async/dbo/_products/dbofilter01/dbofilter02/imgnode/|async/img/_products/imgread/',	
 							  //'_kshow'=>'async/pcntl/kshow/imgnode/p5node/|async/img/_products/imgread/',	
 							  //'_klist'=>'async/pcntl/klist/imgnode/p5node/|async/img/_products/imgread/',	
@@ -107,15 +118,20 @@ class rceditables  {
 							  //0=>'',
 							  '_sync3'=>'async/ppost/bshopplus_diffitems/[confname]/',
 							  '_synccsvdisable'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/|async/ppost/bshopplus_rcediimport_submit_csv/[confname]/|async/ppost/bshopplus_rcediimport_disable/[confname]/',							  
-							  0=>'',
-							  '_sync4'=>'async/ppost/bshopplus_diffitems_update/[confname]/',				
-							  '_sync7'=>'async/ppost/bshopplus_diffitems_disable/[confname]/',
-							  1=>'',		
+							  '_synccsvdisableorinsert'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/csvnode/|async/csv/[confname]/csvread/|async/ppost/bshopplus_rcediimport_submit_csv/[confname]/|async/ppost/bshopplus_rcediimport_disableorinsert/[confname]/',							  	
+							  0=>'',		
+							  '_makeimg2'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/ppost/bshopplus_diffitems_imgread/[confname]/|async/ppost/bshopplus_diffitems_insert_images/[confname]/',
+							  '_makesql2'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/sqlnodepattach/|async/sql/[confname]/sqlread/|async/ppost/bshopplus_diffitems_sqlread/[confname]/',							  
 							  '_sync5'=>'async/ppost/bshopplus_diffitems_insert/[confname]/',
 							  '_sync6'=>'async/ppost/bshopplus_diffitems_insertwithcategories/[confname]/',
-							  2=>'',
-							  '_sync2'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/img/[confname]/imgread/|async/ppost/bshopplus_rcimgitems_submit/[confname]/',
-							  '_syncdescrupd'=>'async/ppost/bshopplus_rcediimport_submit_sql/[confname]/',
+							  1=>'',
+							  '_makeimg3'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/ppost/bshopplus_diffitems_imgreadupd/[confname]/|async/ppost/bshopplus_diffitems_update_images/[confname]/',
+							  '_makesql3'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/sqlnodepattach/|async/sql/[confname]/sqlread/|async/ppost/bshopplus_diffitems_sqlreadupd/[confname]/',								  
+							  '_sync4'=>'async/ppost/bshopplus_diffitems_update/[confname]/',							  
+							  2=>'',	
+							  '_delimg'=>'async/xml/[confname]/xmlfilter01/xmlfilter02/imgnode/|async/ppost/bshopplus_diffitems_imgreadrem/[confname]/|async/ppost/bshopplus_diffitems_delete_images/[confname]/',								  
+							  '_delsql'=>'async/ppost/bshopplus_diffitems_sqldelete/[confname]/',
+							  '_sync7'=>'async/ppost/bshopplus_diffitems_disable/[confname]/',							  
 							);						
 		$this->etlT = array('etlproducts'=>$this->etlCMD,
 							'difproducts'=>$this->difCMD,
@@ -128,6 +144,7 @@ class rceditables  {
 							  'logicom'=>array('xml'=>'logicom-out.xml','csv'=>'logicom-out.csv','sql'=>'logicom-out.sql','log'=>'logicom-out.log'),
 							  'agc'=>array('xml'=>'agc-out.xml','csv'=>'agc-out.csv','sql'=>'agc-out.sql','log'=>'agc-out.log'),
 							  'tradesor'=>array('xml'=>'tradesor-out.xml','csv'=>'tradesor-out.csv','sql'=>'tradesor-out.sql','log'=>'tradesor-out.log'),
+							  'eldico'=>array('xml'=>'eldico-out.xml','csv'=>'eldico-out.csv','sql'=>'eldico-out.sql','log'=>'eldico-out.log'),
 						);
 		/*				
 		$this->etlLOG2 = array('etlproducts'=>array('xml'=>'etlproducts.xml','csv'=>'etlproducts.csv','log'=>'etlproducts.log'),
@@ -212,40 +229,6 @@ class rceditables  {
 
 		return ($out);
     }
-	
-	protected function tableDIFLOG() {
-		
-		$out = $this->diflog_table(null,null,null, 'r', true);	
-		return ($out);
-	}	
-	
-	protected function diflog_table($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
-	    $height = $height ? $height : 600;
-        $rows = $rows ? $rows : 25;
-        $width = $width ? $width : null; //wide	
-		$mode = $mode ? $mode : 'r';
-		$noctrl = $noctrl ? 0 : 1;	
-	    $lan = getlocal() ? getlocal() : 0;  
-		$title = str_replace(' ', '_', localize('_history',$lan));		
-
-	    if (defined('MYGRID_DPC')) {
-
-			$fields = array('code','datein','flag','ypoloipo1','price0','price1','price2','pricepc','weight','volume');
-				
-			$sSQL = "select * from (";
-			$sSQL.= "SELECT " . implode(',',$fields) . " from difprodlogs";
-			$sSQL .= ') as o'; 
-			
-			foreach ($fields as $i=>$f)
-				_m("mygrid.column use grid1+$f|". localize($f, $lan)."|10|0|");	
-				
-			$out = _m("mygrid.grid use grid1+difprodlogs+$sSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1+1");
-	    }
-		else 
-		   $out = 'Initialize jqgrid.';
-		   
-        return ($out); 
-	}	
 	
 	protected function tablesEDI() {
 		
@@ -488,8 +471,8 @@ class rceditables  {
 	protected function show_table($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
 		if (!$table = GetReq('edi')) return null;
 		
-	    $height = $height ? $height : 600;
-        $rows = $rows ? $rows : 25;
+	    $height = $height ? $height : 500;
+        $rows = $rows ? $rows : 21;
         $width = $width ? $width : null; //wide	
 		$mode = $mode ? $mode : 'r';
 		$noctrl = $noctrl ? 0 : 1;	
@@ -526,8 +509,8 @@ class rceditables  {
 	protected function edit_table($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
 		if (!$table = GetReq('edi')) return null;
 		
-	    $height = $height ? $height : 600;
-        $rows = $rows ? $rows : 25;
+	    $height = $height ? $height : 500;
+        $rows = $rows ? $rows : 21;
         $width = $width ? $width : null; //wide	
 		$mode = $mode ? $mode : 'r';
 		$noctrl = $noctrl ? 0 : 1;	
@@ -564,6 +547,41 @@ class rceditables  {
 		   
         return ($out); 
 	}	
+	
+	protected function tableDIFLOG() {
+		
+		$out = $this->diflog_table(null,null,null, 'r', true);	
+		return ($out);
+	}	
+	
+	protected function diflog_table($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
+	    $height = $height ? $height : 500;
+        $rows = $rows ? $rows : 21;
+        $width = $width ? $width : null; //wide	
+		$mode = $mode ? $mode : 'r';
+		$noctrl = $noctrl ? 0 : 1;	
+	    $lan = getlocal() ? getlocal() : 0;  
+		$title = str_replace(' ', '_', localize('_history',$lan));		
+
+	    if (defined('MYGRID_DPC')) {
+
+			$fields = array('id','code','datein','flag','ypoloipo1','price0','price1','price2','pricepc','weight','volume');
+				
+			$sSQL = "select * from (";
+			$sSQL.= "SELECT " . implode(',',$fields) . " from difprodlogs";
+			$sSQL .= ') as o'; 
+			
+			foreach ($fields as $i=>$f)
+				_m("mygrid.column use grid1+$f|". localize($f, $lan)."|10|0|");	
+				
+			$out = _m("mygrid.grid use grid1+difprodlogs+$sSQL+$mode+$title+id+$noctrl+1+$rows+$height+$width+0+1+1+1");
+	    }
+		else 
+		   $out = 'Initialize jqgrid.';
+		   
+        return ($out); 
+	}	
+	
 	
 	protected function createButton($name=null, $urls=null, $t=null, $s=null) {
 		$type = $t ? $t : 'primary'; //danger /warning / info /success

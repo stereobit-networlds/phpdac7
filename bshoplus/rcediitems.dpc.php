@@ -483,7 +483,7 @@ class rcediitems {
 					for ($i=2;$i<$_xc -5;$i++) { //2 to -5 = cat fields, replace with implode
 						$_f = $this->fields[$i];	
 						$_farr[] = $_f;
-						$_fields[] = is_numeric($rec[$_f]) ? $rec[$_f] : $db->qstr($rec[$_f]);
+						$_fields[] = is_numeric($rec[$_f]) ? $rec[$_f] : $db->qstr(addslashes($rec[$_f]));
 					}
 					$fields = implode(',', $_farr); //$this->etlfields;		
 					
@@ -643,7 +643,7 @@ class rcediitems {
 					$_fields = array(); //reset
 					for ($i=2;$i<$_xc -5;$i++) { //2 to -5 = cat fields, replace with implode
 						$_f = $this->fields[$i];	
-						$_fields[] = is_numeric($rec[$_f]) ? $_f . '=' . $rec[$_f] : $_f . '=' . $db->qstr($rec[$_f]);
+						$_fields[] = is_numeric($rec[$_f]) ? $_f . '=' . $rec[$_f] : $_f . '=' . $db->qstr(addslashes($rec[$_f]));
 					}
 				
 					$sSQL = "update products set ";

@@ -4975,9 +4975,8 @@ function addtocart(id,cartdetails)
 				$linkimage = seturl("t=$command&cat=$cat&id=".$param[0], "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);
 				
 				$data['cartstatus'] = ($this->status==0) ? 0 : $this->status;//$linkimage : $aa; // . "&nbsp;" . $param[0];
-
+				/*
 				$details = null; //$this->cartlinedetails ? ($param[6] ? '&nbsp;' . $this->replace_cartchars($param[6], true) : null) : null;	 
-				
 				switch ($this->status) {
 					case 3  :  
 					case 2  : 
@@ -4985,30 +4984,31 @@ function addtocart(id,cartdetails)
 					case 0  : 
 					default :	 $data['itmcarturldetails'] = $link . $details;  break; //$param[0] . "<br/>" . 					
 				}
-
-				$data['itmcartremove'] = ($this->status) ? null : $this->showsymbol($product,1);//<<allow remove here
+				*/
+				$data['itmcartremove'] = "remcart/".$param[0]."/"; //($this->status) ? null : $this->showsymbol($product,1);//<<allow remove here
 
 				$price = floatval(str_replace(",",".",$param[8]));
 				$sumtotal = ($param[9] * $price);
 				$qty_total += $param[9];	 
 				$total += $sumtotal;
 			   
-				$data['itmcartprice'] = number_format($price,$this->dec_num,',','.') . $this->moneysymbol;
+				$data['itmcartprice'] = number_format($price,$this->dec_num,',','.');// . $this->moneysymbol;
+				$data['itmcartqty'] = $param[9];
 
 				$options = $this->setquantity("Product$aa",$param[9]);
 				if (($this->uniname2) && ($param[11]))
 					$options .= $this->setuniname("Uniname$aa",$param[10],$param[10],$param[11]);
 				$data['itmcartuni'] = $options;
 
-				$data['itmcarttotal'] = $this->settotal("Product$aa",$price,$param[9]) . $this->moneysymbol;
+				$data['itmcarttotal'] = $this->settotal("Product$aa",$price,$param[9]);// . $this->moneysymbol;
 				
 				$data['itmcarturl'] = _m("cmsrt.url use t=$command&cat=$cat&id=" . $param[0]);
 				$data['itmcarttitle'] = $utitle;
 				$data['itmcartphoto'] = $itemphoto;
 				$data['itmcartcode'] = $param[0];
-				$data['itmcartcode'] = $aa;
+				$data['itmcartaa'] = $aa;
                
-			    $loopout[] = $data; //$this->combine_tokens($myloopcarttemplate,$data,true);
+			    $loopout[] = $data; 
 				  
 	            unset ($data);
 		        unset ($param);
@@ -5016,7 +5016,7 @@ function addtocart(id,cartdetails)
 			$cartsumitems = $aa; //sum of cart items
 	    }
 	   	   
-	    return (json_encode($loopout));  	 	
+	    return ($loopout);  	 	
 	}	
 
 };

@@ -144,7 +144,7 @@ class appkey {
 		
 		$number = ""; 
 		for($i=0; $i<strlen($string); $i++) { 
-			$number .= str_pad(base_convert(ord($string{$i}), 10, 2), 8, "0", STR_PAD_LEFT); 
+			$number .= str_pad(base_convert(ord($string[$i]), 10, 2), 8, "0", STR_PAD_LEFT); 
 		} 
 		return base_convert($number, 2, $to_base); 
 	}  

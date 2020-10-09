@@ -182,9 +182,9 @@ class cipherSaber
     $ii=0;
     $ret = '';
     
-    while (isset($d{$ii}))
+    while (isset($d[$ii]))
     {
-      $c=$d{$ii};
+      $c=$d[$ii];
       $ii++;
       $i = ($i + 1) & 0xff;
       $j = ($j + $S[$i]) & 0xff;

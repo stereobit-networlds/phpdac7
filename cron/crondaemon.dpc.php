@@ -2,23 +2,44 @@
 
 class crondaemon {
 	
-	var $name, $prpath;
+	var $name, $prpath, $masterEnv;
 	var $dac7, $indac7, $dacEnv;
 
-    function __construct($name=null) {
+    function __construct(& $env=null, $name=null) {
 
 		$this->name = $name ? $name : 'cdaemon';
 		$this->prpath = paramload('SHELL','prpath');
 		
 		$this->dac7 = _m('cmsrt.isDacRunning');
 		$this->indac7 = _m('cmsrt.runningInsideDac');
-		$this->dacEnv = GetGlobal('controller')->env;			
+		//$this->dacEnv = GetGlobal('controller')->env;			
+		
+		$this->masterEnv = $env; //run inside dac		
     }
 
     public function run() {
-
+		
+		//if (class_exists('pcntlui', true)) {
+		if ($this->indac7) {
+			//if (method_exists($this->dacEnv, '_say')) {	
+			if ((is_object($this->masterEnv)) && (method_exists($this->masterEnv, '_say'))) {
+				
+				//$this->_echo('Environment is valid!', 'TYPE_IRON');
+				
+				$this->_processCronTabs();
+				$this->_startJobs();
+				
+				return true;
+			}	
+			//else
+			$this->_echo('INVALID ENV!', 'TYPE_DOG');
+			return false;
+		}
+		//else exec jobs outside dacEnv	
      	$this->_processCronTabs();
        	$this->_startJobs();
+		
+		return true;
     }
 	
     protected function _processCronTabs() {
@@ -72,11 +93,11 @@ class crondaemon {
 		
     	foreach($jobs as $jid=>$job) {
 			
-			$this->storeMessage('Cron job started');
+			$this->storeMessage("Cron job $jid started");
     	
 	    	if (!empty($job->code)) {
 				
-				$script = new cronscript();
+				$script = new cronscript($this->masterEnv);
 				$results = $script->run($job->code, true);
 			}
 
@@ -142,8 +163,10 @@ class crondaemon {
 		
 		if ($this->indac7==true) { 
 		
-			if (method_exists($this->dacEnv, '_say'))
-				$this->dacEnv->_say($message, $type);				
+			//if (method_exists($this->dacEnv, '_say'))
+				//$this->dacEnv->_say($message, $type);
+			if ((is_object($this->masterEnv)) && (method_exists($this->masterEnv, '_say')))	
+				$this->masterEnv->_say($message, $type);				
 			else
 				echo '[----]' . $message . PHP_EOL;
 			

@@ -380,9 +380,10 @@ class rcediimport {
 			@unlink($logfile);
 			@unlink($errfile);
 		}	
+		//error handler
+		$errhandle = fopen($errfile, "w");
 		
-		//$sqlarray = file($this->currFile(true));
-		
+		//support multiple sql separated by ;;
 		$line_delimiter =  ';;'; //DOUBLE COLLON	//');;' . PHP_EOL;
 		$sqlarray = explode($line_delimiter, file_get_contents( $this->currFile(true)));
 		
@@ -441,6 +442,9 @@ class rcediimport {
 							}
 							else 
 							{
+								//save to err file
+								fwrite($errhandle, $runSQL . PHP_EOL);
+								
 								//$this->messages[] = $runSQL . " (" . $db->error . ")";
 								$this->_echo('Error: ' . $runSQL . " (" . $db->error . ")");
 								$errmsg += 1;
@@ -473,6 +477,7 @@ class rcediimport {
 		//if (GetParam('logset'))		
 			file_put_contents($logfile, implode(PHP_EOL, $this->messages), LOCK_EX);
 	
+		fclose($errhandle);
 		return true;	
 	}		
 
@@ -488,7 +493,9 @@ class rcediimport {
 			@unlink($cntfile);
 			@unlink($logfile);
 			@unlink($errfile);
-		}		
+		}
+		//error handler
+		$errhandle = fopen($errfile, "w");	
       
 	  	$name = $this->currFile(); //override  
 		$scenario = 'import_' . $name . '.ini';
@@ -563,6 +570,9 @@ class rcediimport {
 											$ix+=1;
 										}
 										else {
+											//save to err file
+											fwrite($errhandle, $sSQL . PHP_EOL);  
+											
 											//$this->messages[] = $sSQL . " (" . $db->error . ")";
 											$this->_echo($sSQL . " (" . $db->error . ")");
 											$errmsg += 1;
@@ -577,6 +587,9 @@ class rcediimport {
 											$ix+=1;
 										}
 										else {
+											//save to err file
+											fwrite($errhandle, $sSQL . PHP_EOL);  
+											
 											//$this->messages[] = $sSQL . " (" . $db->error . ")";
 											$this->_echo($sSQL . " (" . $db->error . ")");
 											$errmsg += 1;			
@@ -604,6 +617,9 @@ class rcediimport {
                                         $ix+=1;									  			
 									  }
 									  else {
+										//save to err file
+										fwrite($errhandle, $sSQL . PHP_EOL);  
+										  
 										//$this->messages[] = $sSQL . " (" . $db->error . ")";
 										$this->_echo($sSQL . " (" . $db->error . ")");
 										$errmsg += 1;		   
@@ -642,6 +658,7 @@ class rcediimport {
 		//if (GetParam('logset'))
 			file_put_contents($logfile, implode(PHP_EOL, $this->messages), LOCK_EX);	
 		
+		fclose($errhandle);		
 		return true; 	
 	} 
 

@@ -57,7 +57,7 @@
             <div class="row-fluid">
                 <div class="span12">
 				
-					<!--METRO/INDEX-->
+					<?METRO/INDEX?>
 										
                     <div class="widget box purple">
                         <div class="widget-title">
@@ -72,6 +72,7 @@
                             <form id="tForm" method="post" action="cpimgitems.php?t=cpsaveimgitems" class="form-horizontal">
 								<input type="hidden" name="FormName" value="saveimgitems" />
 								<input type="hidden" name="FormAction" value="cpsaveimgitems" />
+								<input type="hidden" name="mode" value="<phpdac>rcimgitems.currentMode</phpdac>" />
 								
 								<input type="hidden" name="flt" value="<phpdac>rcimgitems.getFilter use 1</phpdac>" />
 								<input type="hidden" name="val" value="<phpdac>rcimgitems.getFilter</phpdac>" />
@@ -221,11 +222,11 @@
             </div>
             <!-- END PAGE CONTENT-->
 
-             <div class="row-fluid">
+             <!--div class="row-fluid">
                  <div class="span12">
-                    <?METRO/INDEX?>					 
+                    <METRO/INDEX>					 
                  </div>	 
-             </div>			
+             </div-->			
 
          </div>
          <!-- END PAGE CONTAINER-->
