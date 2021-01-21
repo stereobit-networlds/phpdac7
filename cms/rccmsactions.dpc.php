@@ -65,8 +65,8 @@ class rccmsactions extends cmsplus  {
 
 
 	protected function show_actions($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
-	    $height = $height ? $height : 600;
-        $rows = $rows ? $rows : 25;
+	    $height = $height ? $height : 400;
+        $rows = $rows ? $rows : 18;
         $width = $width ? $width : null; //wide	
 		$mode = $mode ? $mode : 'r';
 		$noctrl = $noctrl ? 0 : 1;	

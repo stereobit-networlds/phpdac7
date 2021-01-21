@@ -9,6 +9,12 @@ class c_dacstream {
    
    var $path, $dpcmem;
 
+   //php 7.4 combatibility
+   public function stream_set_option() {
+		return false;
+   }
+  
+
    public function stream_open($_url,$mode,$options,&$opened_path) {
    
 		$url = parse_url($_url);   

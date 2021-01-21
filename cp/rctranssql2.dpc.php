@@ -555,8 +555,8 @@ class rctranssql2 extends rcsyncsql {
 
 	
 	function show_graph($xmlfile,$title,$url=null,$ajaxid=null,$xmax=null,$ymax=null) {
-	  $gx = $this->graphx?$this->graphx:$xmax?$xmax:550;
-	  $gy = $this->graphy?$this->graphy:$ymax?$ymax:250;	
+	  $gx = $this->graphx ? $this->graphx : ($xmax ? $xmax : 550);
+	  $gy = $this->graphy ? $this->graphy : ($ymax ? $ymax : 250);	
 	
 	  $ret = $title; 	
 	  $ret .= $this->charts->show_chart($xmlfile,$gx,$gy,$url,$ajaxid);

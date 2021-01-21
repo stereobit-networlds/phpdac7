@@ -12,11 +12,12 @@ require_once(_r('jsdialog/jsdialogStreamSrv.dpc.php'));
 $__EVENTS['RCPMENU_DPC'][1]='cpmenu';
 $__EVENTS['RCPMENU_DPC'][2]='cpmenu1';
 $__EVENTS['RCPMENU_DPC'][3]='cpmenu2';
+$__EVENTS['RCPMENU_DPC'][4]='cpajax';
 
 $__ACTIONS['RCPMENU_DPC'][1]='cpmenu';
 $__ACTIONS['RCPMENU_DPC'][2]='cpmenu1';
 $__ACTIONS['RCPMENU_DPC'][3]='cpmenu2';
-
+$__ACTIONS['RCPMENU_DPC'][4]='cpajax';
 
 $__LOCALE['RCPMENU_DPC'][0]='RCPMENU_CNF;Cp Menu;Cp Menu';	   
 
@@ -179,9 +180,10 @@ class rcpmenu {
 
 	var $path, $urlpath, $inpath, $menufile;
 	var $delimiter, $dropdown_class, $dropdown_class2;  
-
 	var $seclevid, $turl, $cpGet, $turldecoded;
-
+	
+	private $log, $updateTime, $maxSizeToLoad;
+	private $logpath, $filepath;
 	static $staticprpath;
 	
 	public function __construct() {
@@ -195,22 +197,35 @@ class rcpmenu {
 	  
         $this->menufile = $this->path . 'menucp.ini';
 	    $this->delimiter = ',';
+	    
+		$this->updateTime = 2000;
+        $this->maxSizeToLoad = 2097152;		
+        //$this->log = array();
+        $this->logpath = '/var/stereobit/phpdac7/';
+        $this->filepath = '/var/stereobit/phpdac7/www7/cp/html'; //no / at end
+        $this->log = json_decode($this->getEngineTailsList(20, null,null,1), true);	       
 
         $this->dropdown_class = remote_paramload('RCPMENU','dropdownclass',$this->path);	   
 	    $this->dropdown_class2 = remote_paramload('RCPMENU','dropdownclass2',$this->path); 
 
 	    //$this->seclevid = $GLOBALS['ADMINSecID'] ? $GLOBALS['ADMINSecID'] : $_SESSION['ADMINSecID'];		
 			   
-        $this->getTURL();	   
+        $this->getTURL();	
+
+        //$this->jAjaxRead(); //set js	//moved inside html		
     }
    
 
     public function event($event=null) {
-   
+        
 		switch ($event) {
+			
+		    case 'cpajax'        : //echo $this->jAjax($_GET['file'], $_GET['lastsize'], $_GET['grep'], $_GET['invert']);
+								   //die(); //CCPP MEMORY ERR !!
+							       break;			
 
 			case 'cpmenu'        :	
-			default              : 						
+			default              : 				
 		}
 	}
    
@@ -218,6 +233,10 @@ class rcpmenu {
 	public function action($action=null) {
 
 		switch ($action) {
+			
+		    case 'cpajax'        : echo $this->jAjax($_GET['file'], $_GET['lastsize'], $_GET['grep'], $_GET['invert']);
+								   die();
+							       break;	
 
 			case 'cpmenu'        :						
 			default              : 
@@ -310,7 +329,7 @@ class rcpmenu {
 		return ($ret);
 	}
    
-	protected function readINI() {
+	protected function readINI($inifile=null) {
 		$m = null;	
 
         if (defined('CCPP_VERSION')) { //override, customized per line
@@ -323,11 +342,18 @@ class rcpmenu {
 							'ADMIN'=>$this->parse_userSecurity(),
 							);
 			//print_r($config);
-			/*
-			if (is_readable($this->menufile)) {
-				$sini = @file_get_contents($this->menufile);
-			*/
-			if ($sini = trim(self::streamfile_contents($this->menufile))) {
+			
+			//custom ini file or standart ini file
+			//if (($inifile) && ($sini = @file_get_contents($this->path . $inifile))) {
+			if (($inifile) && ($sini = self::streamfile_contents($this->path . $inifile))) {	
+				$preprocessor = new CCPP($config, true); //new ccpp
+				$rawini = $preprocessor->execute($sini, 0, true, true);
+				unset($preprocessor);
+				//echo $rawini;
+				$m = parse_ini_string($rawini,1,INI_SCANNER_RAW);
+				return ($m);
+			}
+			elseif ($sini = trim(self::streamfile_contents($this->menufile))) {
 				//echo $sini;
 			    
 				$preprocessor = new CCPP($config, true); //new ccpp
@@ -339,15 +365,13 @@ class rcpmenu {
 			}
 		}
         else {
-			//echo $this->menufile;
-			/*
-			if (is_readable($this->menufile)) {
-				$m = parse_ini_file($this->menufile,1,INI_SCANNER_RAW);			
+			//custom ini file or standart ini file
+			//if (($inifile) && ($sini = @file_get_contents($this->path . $inifile))) {
+			if (($inifile) && ($sini = streamfile_contents($this->path . $inifile))) {	
+				$m = parse_ini_string($sini,1,INI_SCANNER_RAW);
 				return ($m);
-			}	
-			*/
-			
-			if ($sini = trim(self::streamfile_contents($this->menufile))) {
+			}
+			elseif ($sini = trim(self::streamfile_contents($this->menufile))) {
 				$m = parse_ini_string($sini,1,INI_SCANNER_RAW);
 				return ($m);
 			}
@@ -374,12 +398,14 @@ class rcpmenu {
 	}	
    			
 
-	public function render($menu_template=null,$glue_tag=null,$submenu_template=null) {
+	public function render($menu_template=null,$glue_tag=null,$submenu_template=null, $linkclass=null, $inifile=null) {
         $lan = getlocal() ? getlocal() : '0';
 		$this->seclevid = $_SESSION['ADMINSecID'] ? $_SESSION['ADMINSecID'] : $GLOBALS['ADMINSecID'];
 		$sl = ($this->seclevid>1) ? intval($this->seclevid)-1 : 1;		
+		$lnclass = $linkclass ? "class='{$linkclass}' " : null; //new menu ajax call feature
+		//$lnclass = "class='cplink' "; //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  
-	    $m = $this->readINI();
+	    $m = $this->readINI($inifile);
 		if (!$m) return false;
 		  
 		//print_r($m);
@@ -418,13 +444,13 @@ class rcpmenu {
             foreach ($menu as $name=>$url) {
 				
 			    $tokens = array(); 
-			    $murl = $url ? $this->make_link($url) : '#';
+			    $murl = $url ? $this->make_link($url) : '#'; //.$name;
 				$name_space = $name;  	
                     
                 if ($sub_menu = $smu[$name.'-submenu']) {
 					
 					$_smenu = (array) $m[$sub_menu];
-					$ret2 = $this->render_submenu($_smenu, $submenu_template, $glue_tag);
+					$ret2 = $this->render_submenu($_smenu, $submenu_template, $glue_tag, $lnclass);
 					$tokens[] = $this->dropdown_class;
 					   
 					if ($tmpl) {
@@ -434,7 +460,7 @@ class rcpmenu {
 						$ret .= $this->combine_tokens($tmpl,$tokens,true);
 					}
 					else {
-						$line = "<a href='$murl'>$name</a>";
+						$line = "<a {$lnclass}href='$murl'>$name</a>";
 						$ret .= $gstart . $line . $gend;							
 					}
                 } 					
@@ -447,7 +473,7 @@ class rcpmenu {
 						$ret .= $this->combine_tokens($tmpl, $tokens, true);
 					}
 					else {
-						$line = "<a href='$murl'>$name</a>";
+						$line = "<a {$lnclass}href='$murl'>$name</a>";
 						$ret .= $gstart . $line . $gend;
 					}							
 				}   
@@ -456,7 +482,7 @@ class rcpmenu {
 		}
 	}
    
-	protected function render_submenu($smenu=null,$template=null,$glue_tag=null) { 
+	protected function render_submenu($smenu=null,$template=null,$glue_tag=null, $lnclass=null) { 
         $lan = getlocal() ? getlocal() : '0';
 		$sl = ($this->seclevid>1) ? intval($this->seclevid)-1 : 1;		
         if (empty($smenu)) return;
@@ -487,7 +513,7 @@ class rcpmenu {
 		}
 		else {		
 			foreach ($subm_titles as $t=>$title) {
-				$line = "<a href='$subm_links[$t]'>$title</a>";
+				$line = "<a {$lnclass}href='$subm_links[$t]'>$title</a>";
 				$out .= $gstart . $line . $gend;
 			}
 		}		
@@ -649,7 +675,681 @@ class rcpmenu {
 		
 		return ($ret);
 	}
-   
+	
+	//read array of phpdac7 engine screrenlog.n files to read
+	public function getEngineTailsList($tmax=null, $template=null, $tpath=null, $json=false) {
+		$max = $tmax ?? 10;
+		$path = $tpath ? $tpath : $this->logpath;
+		$t = $template ? $template : '<li><a class="cpfile" href="#$0$">$0$</a></li>';
+		$screenarray = array();
+		$tokens = array();
+		
+		for ($i=0;$i<$max;$i++) {
+			$sf = $path . "screenlog." . strval($i);
+			if (is_readable($sf)) {
+				$index = 'Worker-' . strval($i);
+				$screenarray[$index] = $sf;
+				$tokens[] = $index; 
+				$ret .= str_replace('$0$', $index, $t);//"<li><a class='cpfile' href='#$index'>$index</a></li>"); 
+			}	
+			//echo '>'.$sf;
+		}
+		
+		//test
+		/*$screenarray = array(
+					'html-1'=>'/var/www/html/cp/admin/bootstrap-ajax-dashboard.html',
+					'html-2'=>'/var/www/html/cp/admin/bootstrap-theme-ajax-fetch.html',
+					'html-3'=>'/var/www/html/cp/admin/bootstrap-ajax-json.html'
+						);	
+		foreach ($screenarray as $i=>$s)
+			$ret .= "<li><a class='cpfile' href='#$i'>$i</a></li>";
+		*/
+		//echo '----' . $ret;
+		if (!empty($screenarray))
+			return $json ?  json_encode($screenarray) : $ret;
+							//$this->combine_tokens($t, $tokens, true);
+							
+		return false;					
+	}	
+	
+    /**
+     * This function is in charge of retrieving the latest lines from the log file
+     * @param string $lastFetchedSize The size of the file when we lasted tailed it.
+     * @param string $grepKeyword The grep keyword. This will only return rows that contain this word
+     * @return Returns the JSON representation of the latest file size and appended lines.
+     */
+    public function getNewLines($file, $lastFetchedSize=0, $grepKeyword='', $invert=0) {
+		
+		//log file called directly and its path starting with /somepath/file.html 
+		if (strstr($file, '/')) {
+			//echo $this->filepath . $file , '>>>>';
+			
+			//parse file as url to get / sep params after ?
+			$url = 'http://localhost:80' . $file;
+			$purl = parse_url($url);		
+			$_file = $purl['path']; 
+			if (strpos($purl['query'], '/')) parse_str(str_replace('/','&',$purl['query']), $_REQUEST);
+			else parse_str($purl['query'], $_REQUEST); 
+			
+			//process async ..
+			//$my_async_data = phpdac\getT('/pparse'. $this->filepath . $_file)); 
+			//$data[] = $my_async_data; 
+			
+			//process sync
+			$t = new ktimer;
+			
+			//1st step: read html file
+			$t->start('compile');
+			/*if (!$my_sync_data = file_get_contents($this->filepath . $_file)) {
+				$t->stop('compile');
+				return null;
+			}*/	
+			$my_sync_data = @file_get_contents($this->filepath . $_file);	
+			//echo $my_sync_data;		
+	  
+			//2nd step: compile its phpdac tags based on samename.php file or default script
+			$t->start('compile',1);	
+			$standartscript = <<<EOF
+\$subpage = new pcntl('
+super javascript;
+load_extension adodb refby _ADODB_; 
+super database;
+use i18n.i18n;
+public cms.cmsrt;
+public bshop.rckategories;
+public cms.rcmenu;
+public cp.rccontrolpanel;
+public i18n.i18nL;
+
+',1);
+EOF;
+			$evalret = null;
+			if ($script = @file_get_contents($this->filepath . str_replace('.html','.php', $_file)))
+				$evalret = eval($script); //remove php tag	
+			else
+				$evalret = eval($standartscript); 
+			//include($this->filepath . str_replace('/metro2','/metro2/scripts', $_file));
+		    $t->stop('compile');
+			//echo "<!-- compile " . $t->value('compile') . ' sec -->';  
+			
+			//3nd step: replace/preg its phpdac tags based on script
+			$t->start('include');
+			if ($my_sync_data) { 
+				//html data has readed and exists
+				$pattern = "@<phpdac.*?>(.*?)</phpdac>@s";				
+				preg_match_all($pattern, $my_sync_data , $matches, PREG_PATTERN_ORDER);
+
+				foreach ($matches[1] as $r=>$cmd) {
+					$_cmd = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", "", $cmd)));
+					//$ret = _m($_cmd); //,1); //no error stop 					 
+					$my_sync_data = str_replace("<phpdac>".$cmd."</phpdac>", _m($_cmd), $my_sync_data);
+					//echo $_cmd .'<br>';
+				}
+				//final replace main output INDEX tag
+				$my_sync_data = str_replace('<!--INDEX-->', $evalret, $my_sync_data);
+			}
+			else {
+				//if html data does not exist return script output as is
+				$my_sync_data = $evalret;
+			}
+			$t->stop('include');
+			//echo "<!-- include " . $t->value('include') . ' sec -->'; 			
+			
+			//if debug
+			//$my_sync_data .= var_export($purl, true) .'<br/>'. $_file .'<br/>'. var_export($_REQUEST, true) .'<br/>';
+			//$my_sync_data .= '<button onclick="goBack()">Go Back</button>';
+			
+			//make output array element
+			$data[] = $my_sync_data; 
+			return json_encode(array("size" => $fsize, "file" => $_file, "data" => $data));		
+		}		
+		//************************************
+		//else fetch new lines from log files
+		
+        /**
+         * Clear the stat cache to get the latest results
+         */
+        clearstatcache();
+        /**
+         * Define how much we should load from the log file
+         * @var
+         */
+        if(empty($file)) {
+            $file = key(array_slice($this->log, 0, 1, true));
+        }
+        $fsize = filesize($this->log[$file]);
+        $maxLength = ($fsize - intval($lastFetchedSize));
+		//echo $fsize,'--', $maxLength;
+		
+        /**
+         * Verify that we don't load more data then allowed.
+         */
+        if($maxLength > $this->maxSizeToLoad) {
+            $maxLength = ($this->maxSizeToLoad / 2);
+        }
+        /**
+         * Actually load the data
+         */
+        $data = array();
+        if($maxLength > 0) {
+
+            $fp = fopen($this->log[$file], 'r');
+            fseek($fp, -$maxLength , SEEK_END);
+            $data = explode("\n", fread($fp, $maxLength));
+
+        }
+		//* ***************************** byme, remove ansi colors ////// */
+		$data = preg_replace('#\\x1b[[][^A-Za-z]*[A-Za-z]#', '', $data); 
+		
+        /**
+         * Run the grep function to return only the lines we're interested in.
+         */
+        if($invert == 0) {
+            $data = preg_grep("/$grepKeyword/",$data);
+        }
+        else {
+            $data = preg_grep("/$grepKeyword/",$data, PREG_GREP_INVERT);
+        }
+        /**
+         * If the last entry in the array is an empty string lets remove it.
+         */
+        if(end($data) == "") {
+            array_pop($data);
+        }
+		
+		//$data = file($this->log[$file]);
+        return json_encode(array("size" => $fsize, "file" => $this->log[$file], "data" => $data));
+    }
+
+
+    //event this run version (no 2nd step, use this dac7.php script)
+    public function jAjax($file, $lastFetchedSize=0, $grepKeyword='', $invert=0) {
+		
+		//log file called directly and its path starting with /somepath/file.html 
+		if (strstr($file, '/')) {
+			//echo $this->filepath . $file , '>>>>';
+			
+			//parse file as url to get / sep params after ?
+			$url = 'http://localhost:80' . $file;
+			$purl = parse_url($url);		
+			$_file = $purl['path']; 
+			if (strpos($purl['query'], '/')) parse_str(str_replace('/','&',$purl['query']), $_REQUEST);
+			else parse_str($purl['query'], $_REQUEST); 
+			
+			//process async ..
+			//$my_async_data = phpdac\getT('/pparse'. $this->filepath . $_file)); 
+			//$data[] = $my_async_data; 
+			
+			//process sync
+			$t = new ktimer;
+			
+			//1st step: read html file
+			$t->start('compile');
+			/*if (!$my_sync_data = file_get_contents($this->filepath . $_file)) {
+				$t->stop('compile');
+				return null;
+			}*/	
+			if (!$my_sync_data = @file_get_contents($this->filepath . $_file))
+				$my_sync_data = '<!--INDEX-->'; //standart page		
+			//echo $my_sync_data;		
+	  
+			//2nd step: compile its phpdac tags based on samename.php file or default script
+			$t->start('compile',1);	
+			$standartscript = <<<EOF
+\$subpage = new pcntl('
+super javascript;
+load_extension adodb refby _ADODB_; 
+super database;
+use i18n.i18n;
+public cms.cmsrt;
+public bshop.rckategories;
+public cms.rcmenu;
+public cp.rccontrolpanel;
+public i18n.i18nL;
+
+',1);
+EOF;
+			$evalret = null;
+			if ($script = @file_get_contents($this->filepath . str_replace('.html','.php', $_file)))
+				$evalret = eval($script); //remove php tag	
+			else
+				$evalret = eval($standartscript); 
+			//include($this->filepath . str_replace('/metro2','/metro2/scripts', $_file));
+		    $t->stop('compile');
+			//echo "<!-- compile " . $t->value('compile') . ' sec -->';  
+			
+			//3nd step: replace/preg its phpdac tags based on script
+			$t->start('include');
+			if ($my_sync_data) { 
+				//html data has readed and exists
+				$pattern = "@<phpdac.*?>(.*?)</phpdac>@s";				
+				preg_match_all($pattern, $my_sync_data , $matches, PREG_PATTERN_ORDER);
+
+				foreach ($matches[1] as $r=>$cmd) {
+					$_cmd = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", "", $cmd)));
+					//$ret = _m($_cmd); //,1); //no error stop 					 
+					$my_sync_data = str_replace("<phpdac>".$cmd."</phpdac>", _m($_cmd), $my_sync_data);
+					//echo $_cmd .'<br>';
+				}
+				//final replace main output INDEX tag
+				$my_sync_data = str_replace('<!--INDEX-->', $evalret, $my_sync_data);
+			}
+			else {
+				//if html data does not exist return script output as is
+				$my_sync_data = $evalret;
+			}
+			$t->stop('include');
+			//echo "<!-- include " . $t->value('include') . ' sec -->'; 			
+			
+			//if debug
+			//$my_sync_data .= var_export($purl, true) .'<br/>'. $_file .'<br/>'. var_export($_REQUEST, true) .'<br/>';
+			//$my_sync_data .= '<button onclick="goBack()">Go Back</button>';
+			
+			//make output array element
+			$data[] = $my_sync_data; 
+			return json_encode(array("size" => $fsize, "file" => $_file, "data" => $data));		
+		}		
+		//************************************
+		//else fetch new lines from log files
+		
+        /**
+         * Clear the stat cache to get the latest results
+         */
+        clearstatcache();
+        /**
+         * Define how much we should load from the log file
+         * @var
+         */
+        if(empty($file)) {
+            $file = key(array_slice($this->log, 0, 1, true));
+        }
+        $fsize = filesize($this->log[$file]);
+        $maxLength = ($fsize - intval($lastFetchedSize));
+		//echo $fsize,'--', $maxLength;
+		
+        /**
+         * Verify that we don't load more data then allowed.
+         */
+        if($maxLength > $this->maxSizeToLoad) {
+            $maxLength = ($this->maxSizeToLoad / 2);
+        }
+        /**
+         * Actually load the data
+         */
+        $data = array();
+        if($maxLength > 0) {
+
+            $fp = fopen($this->log[$file], 'r');
+            fseek($fp, -$maxLength , SEEK_END);
+            $data = explode("\n", fread($fp, $maxLength));
+
+        }
+		//* ***************************** byme, remove ansi colors ////// */
+		$data = preg_replace('#\\x1b[[][^A-Za-z]*[A-Za-z]#', '', $data); 
+		
+        /**
+         * Run the grep function to return only the lines we're interested in.
+         */
+        if($invert == 0) {
+            $data = preg_grep("/$grepKeyword/",$data);
+        }
+        else {
+            $data = preg_grep("/$grepKeyword/",$data, PREG_GREP_INVERT);
+        }
+        /**
+         * If the last entry in the array is an empty string lets remove it.
+         */
+        if(end($data) == "") {
+            array_pop($data);
+        }
+		
+		//$data = file($this->log[$file]);
+        return json_encode(array("size" => $fsize, "file" => $this->log[$file], "data" => $data));
+    }	
+	
+	
+	//log /file to load js
+	public function jread($retjs=false, $interval=null, $callback1=null, $callback2=null) {
+		$_interval = $interval ? $interval : $this->updateTime;
+		
+		$ret = <<<EOF
+    /* <![CDATA[ */
+    
+    intrvID = null;
+    
+    //Last know size of the file
+    lastSize = 0;
+    //Grep keyword
+    grep = "";
+    //Should the Grep be inverted?
+    invert = 0;
+    //Last known document height
+    documentHeight = 0;
+    //Last known scroll position
+    scrollPosition = 0;
+    //Should we scroll to the bottom?
+    scroll = true;
+    lastFile = window.location.hash != "" ? window.location.hash.substr(1) : "";
+    //console.log(lastFile);
+    $(document).ready(function() {
+    
+        //toastr.info('file: '+lastFile);	
+
+        // Setup the settings dialog
+        /*$("#settings").dialog({
+            modal : true,
+            resizable : false,
+            draggable : false,
+            autoOpen : false,
+            width : 590,
+            height : 270,
+            buttons : {
+                Close : function() {
+                    $(this).dialog("close");
+                }
+            },
+            open : function(event, ui) {
+                scrollToBottom();
+            },
+            close : function(event, ui) {
+                grep = $("#grep").val();
+                invert = $('#invert input:radio:checked').val();
+                $("#results").text("");
+                lastSize = 0;
+                $("#grepspan").html("Grep keyword: \"" + grep + "\"");
+                $("#invertspan").html("Inverted: " + (invert == 1 ? 'true' : 'false'));
+            }
+        });
+        //Close the settings dialog after a user hits enter in the textarea
+        $('#grep').keyup(function(e) {
+            if (e.keyCode == 13) {
+                $("#settings").dialog('close');
+            }
+        });
+        //Focus on the textarea
+        $("#grep").focus();
+        //Settings button into a nice looking button with a theme
+        //Settings button opens the settings dialog
+        $("#grepKeyword").click(function() {
+            $("#settings").dialog('open');
+            $("#grepKeyword").removeClass('ui-state-focus');
+        });
+        */
+		//click at log files (local scope)
+        $(".cpfile").click(function(e) {
+            $("#results").text("");
+            lastSize = 0;
+			//console.log(e);
+            //lastFile = e.target ? $(e.target).text() : 'unknown!';
+			lastFile = $(e.target).text();
+			
+			intrvID = setInterval("updateLog()", {$_interval});
+        });
+        
+		//click at cp pages (local scope)
+        $(".cplink").click(function(e) {
+            $("#results").text("");
+            lastSize = 0;
+			//console.log(e);
+            //lastFile = e.target.hash ? e.target.hash.substr(1) : 'unknown!';
+            lastFile = e.target.hash.substr(1);
+            //console.log(e.target.hash);
+			//console.dir(e.target);
+			//console.log(lastFile);
+			
+			if (intrvID) clearInterval(intrvID);
+
+			if (lastFile.indexOf("/")>=0) 
+				updateLog();				
+        });		
+        
+        //when page loads (global scope)
+		if (lastFile.indexOf("/")>=0) 	
+			updateLog();
+		else //It is a log file. Set up an interval for updating the log.
+			intrvID = setInterval("updateLog()", {$_interval});
+		
+        //Some window scroll event to keep the menu at the top
+        $(window).scroll(function(e) {
+            if ($(window).scrollTop() > 0) {
+                $('.float').css({
+                    position : 'fixed',
+                    top : '0',
+                    left : 'auto'
+                });
+            } else {
+                $('.float').css({
+                    position : 'static'
+                });
+            }
+        });
+        //If window is resized should we scroll to the bottom?
+        $(window).resize(function() {
+            if (scroll) {
+                scrollToBottom();
+            }
+        });
+        //Handle if the window should be scrolled down or not
+        $(window).scroll(function() {
+            documentHeight = $(document).height();
+            scrollPosition = $(window).height() + $(window).scrollTop();
+            if (documentHeight <= scrollPosition) {
+                scroll = true;
+            } else {
+                scroll = false;
+            }
+        });
+        scrollToBottom();
+
+    });
+    //This function scrolls to the bottom
+    function scrollToBottom() {
+        $("html, body").animate({scrollTop: $(document).height()}, "fast");
+    }
+    //This function queries the server for updates.
+    function updateLog() {
+		//console.log(lastFile+'-'+lastSize);
+        $.getJSON('?t=ajax&file=' + lastFile + '&lastsize=' + lastSize + '&grep=' + grep + '&invert=' + invert, function(data) {
+
+			lastSize = data.size;
+			if (lastFile.indexOf("/")>=0) { 	
+				htmldata = '';//data.data.join();
+				$.each(data.data, function(key, value) {
+					//$("#results").append('' + value + '<br/>');
+					htmldata = htmldata + value;
+				});
+				$("#results").html(htmldata);
+				
+				{$callback1}			
+			}
+			else {					
+				//$("#current").text(data.file);
+				$.each(data.data, function(key, value) {
+					$("#results").append('' + value + '<br/>');
+				});
+				//toastr.info('file: '+ data.file);
+			}			
+			
+            if (scroll) {
+                scrollToBottom();
+            }
+        }).done(function(data){
+					//console.log('success!!');
+					{$callback2}
+				});
+        
+        /*
+		$(document).ajaxComplete(function( event, xhr, settings ) {
+			console.log( settings.url );
+			if (settings.url.indexOf("/")>=0) {	
+                {$callback2}	
+            }    
+        });
+        */      
+    }
+    /* ]]> */
+EOF;
+		
+		if ($retjs)
+			return $ret;
+		
+		if (defined('JAVASCRIPT_DPC')) {
+		   $js = new jscript;
+           $js->load_js($ret,"",1);			   
+		   unset ($js);
+		}		
+	}
+	
+	//version 2 
+	public function jAjaxRead($retjs=false, $interval=null, $callback1=null, $callback2=null) {
+		$_interval = $interval ? $interval : $this->updateTime;
+		
+		$ret = <<<EOF
+    /* <![CDATA[ */
+    
+    intrvID = null;
+    
+    //Last know size of the file
+    lastSize = 0;
+    //Grep keyword
+    grep = "";
+    //Should the Grep be inverted?
+    invert = 0;
+    //Last known document height
+    documentHeight = 0;
+    //Last known scroll position
+    scrollPosition = 0;
+    //Should we scroll to the bottom?
+    scroll = false;
+    lastFile = window.location.hash != "" ? window.location.hash.substr(1) : "";
+    //console.log(lastFile);
+    $(document).ready(function() {
+    
+        toastr.info('file: '+lastFile);	
+
+		//click at log files (local scope)
+        $(".cpfile").click(function(e) {
+            $("#results").text("");
+            lastSize = 0;
+			lastFile = $(e.target).text();
+			
+			intrvID = setInterval("updateLog()", {$_interval});
+        });
+        
+		//click at cp pages (local scope)
+        $(".cplink").click(function(e) {
+            $("#results").text("");
+            lastSize = 0;
+            lastFile = e.target.hash.substr(1);
+			
+			if (intrvID) clearInterval(intrvID);
+
+			if (lastFile.indexOf("/")>=0) 
+				updateLog();				
+        });		
+        
+        //when page loads (global scope)
+		if (lastFile.indexOf("/")>=0) 	
+			updateLog();
+		//else //DISABLE WHEN NOT A SELECTED LOG FILE
+		else if (lastFile) //IF SELECTEDIt is a log file. Set up an interval for updating the log.
+			intrvID = setInterval("updateLog()", {$_interval});
+		
+        //Some window scroll event to keep the menu at the top
+        $(window).scroll(function(e) {
+            if ($(window).scrollTop() > 0) {
+                $('.float').css({
+                    position : 'fixed',
+                    top : '0',
+                    left : 'auto'
+                });
+            } else {
+                $('.float').css({
+                    position : 'static'
+                });
+            }
+        });
+        //If window is resized should we scroll to the bottom?
+        $(window).resize(function() {
+            if (scroll) {
+                scrollToBottom();
+            }
+        });
+        //Handle if the window should be scrolled down or not
+        $(window).scroll(function() {
+            documentHeight = $(document).height();
+            scrollPosition = $(window).height() + $(window).scrollTop();
+            if (documentHeight <= scrollPosition) {
+                scroll = true;
+            } else {
+                scroll = false;
+            }
+        });
+		if (scroll) {
+			scrollToBottom();
+		}
+		else
+			scrollToTop();	
+    });
+    //This function scrolls to the bottom
+    function scrollToBottom() {
+        $("html, body").animate({scrollTop: $(document).height()}, "fast");
+    }
+	//This function scrolls to the top
+    function scrollToTop() {
+        $("html, body").animate({scrollTop: 0}, "fast");
+    }
+    //This function queries the server for updates.
+    function updateLog() {
+		//console.log(lastFile+'-'+lastSize);
+        $.getJSON('?t=cpajax&file=' + lastFile + '&lastsize=' + lastSize + '&grep=' + grep + '&invert=' + invert, function(data) {
+
+			lastSize = data.size;
+			if (lastFile.indexOf("/")>=0) { 	
+				htmldata = '';//data.data.join();
+				$.each(data.data, function(key, value) {
+					//$("#results").append('' + value + '<br/>');
+					htmldata = htmldata + value;
+				});
+				$("#results").html(htmldata);
+				
+				{$callback1}	
+
+				scroll = false;	
+			}
+			else {					
+				//$("#current").text(data.file);
+				$.each(data.data, function(key, value) {
+					$("#results").append('' + value + '<br/>');
+				});
+				//toastr.info('file: '+ data.file);
+				scroll = true;
+			}			
+			
+            if (scroll) {
+                scrollToBottom();
+            }
+			else
+				scrollToTop();	
+			
+        }).done(function(data){
+					//console.log('success!!');
+					{$callback2}
+				});    
+    }
+    /* ]]> */
+EOF;
+		
+		if ($retjs)
+			return $ret;
+		
+		if (defined('JAVASCRIPT_DPC')) {
+		   $js = new jscript;
+           $js->load_js($ret,"",1);			   
+		   unset ($js);
+		}		
+	}	
+		   
 };
 }
 ?>

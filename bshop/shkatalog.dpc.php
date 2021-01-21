@@ -3767,14 +3767,14 @@ function agentDiv(n, px) { return false; }
 	}
 		
 	protected function replace_spchars($string, $reverse=false) {
-		
+		/*
 		$rp = null;//_v('shkategories.replacepolicy'); DISABLE POLICY
 	
 		switch ($rp) {	
 	
 			case '_' : $ret = $reverse ?  str_replace('_',' ',$string) : str_replace(' ','_',$string); break;
 			case '-' : $ret = $reverse ?  str_replace('-',' ',$string) : str_replace(' ','-',$string);break;
-			default :	
+			default :	*/
 			if ($reverse) {
 				$g1 = array("'",',','"','+','/',' ',' & ');
 				$g2 = array('_','~',"*","plus",":",'-',' n ');		  
@@ -3785,7 +3785,7 @@ function agentDiv(n, px) { return false; }
 				$g2 = array('_','~',"*","plus",":",'-','-n-');		  
 				$ret = str_replace($g1,$g2,$string);
 			}	
-	    }
+	    /*} */
 		return ($ret);
 	}
 	
@@ -3832,7 +3832,7 @@ function agentDiv(n, px) { return false; }
 	
 	protected function getkategoriesS($categories) {	
 		$c = $this->sep();
-					
+		/*			
 		//$rp = _v('shkategories.replacepolicy');	//!!!!!!!		
 		$rp =null;
 		//switch ($this->replacepolicy) { //DISABLE POLICY
@@ -3840,10 +3840,10 @@ function agentDiv(n, px) { return false; }
 			
 			case '_' : $g1 = ' '; $g2 ='_'; break;
 			case '-' : $g1 = ' '; $g2 ='-'; break;			
-			default :
+			default :*/
 					$g1 = array("'",',','"','+','/',' ','-&-');
 					$g2 = array('_','~',"*","plus",":",'-','-n-');		
-		}
+		/*}*/
 		
 		if (empty($categories)) return null;
 		foreach ($categories as $i=>$cat)

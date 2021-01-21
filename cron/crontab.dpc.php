@@ -313,7 +313,7 @@ class crontab {
 		if (empty($data)) return;
 
 		$data = date('d-m-Y H:i:s')."\r\n" . $data . "\r\n----\r\n";
-		$ret = file_put_contents($this->prpath . '/cron.log', $data, FILE_APPEND | LOCK_EX);
+		$ret = file_put_contents($this->prpath . 'cron.log', $data, FILE_APPEND | LOCK_EX);
 		
 		return $ret;
 	}		

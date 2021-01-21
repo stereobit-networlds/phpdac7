@@ -1502,12 +1502,12 @@ class shkategories {
     }
 	
 	public function replace_spchars($string, $reverse=false) {
-		$pc = null; //$this->replacepolicy; //DISABLE POLICY
+		/*$pc = null; //$this->replacepolicy; //DISABLE POLICY
 		
 		switch ($pc) {	
 			case '_' : 	$ret = $reverse ?  str_replace('_',' ',$string) : str_replace(' ','_',$string); break;
 			case '-' :	 $ret = $reverse ?  str_replace('-',' ',$string) : str_replace(' ','-',$string);break;
-			default  :
+			default  :*/
 						if ($reverse) {
 							$g1 = array("'",'"','+','/',' ',' & ');
 							$g2 = array('_',"*","plus",":",'-',' n ');		  
@@ -1518,7 +1518,7 @@ class shkategories {
 							$g2 = array('_',"*","plus",":",'-','-n-');		  
 							$ret = str_replace($g1,$g2,$string);
 						}	
-		}
+		/*} */
 		return ($ret);
 	}
 	

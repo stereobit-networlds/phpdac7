@@ -1704,13 +1704,13 @@ EOF;
 	}		
 
 	public function replace_spchars($string, $reverse=false, $rep=null) {
-		$repl = $rep ? $rep : null; //$this->replacepolicy; DISABLE POLICY
+		/*$repl = $rep ? $rep : null; //$this->replacepolicy; DISABLE POLICY
 		
 		switch ($repl) {	
 	
 			case '_' : $ret = $reverse ?  str_replace('_',' ',$string) : str_replace(' ','_',$string); break;
 			case '-' : $ret = $reverse ?  str_replace('-',' ',$string) : str_replace(' ','-',$string);break;
-			default  :	
+			default  :	*/
 			if ($reverse) {
 				$g1 = array("'",',','"','+','/',' ',' & ');
 				$g2 = array('_','~',"*","plus",":",'-',' n ');		  
@@ -1721,20 +1721,10 @@ EOF;
 				$g2 = array('_','~',"*","plus",":",'-','-n-');		  
 				$ret = str_replace($g1,$g2,$string);
 			}	
-	    }
+	    /*}*/
 		return ($ret);
 	}
 	
-	//update `products` set p5=replace(replace(replace(replace(replace(replace(replace(replace(itmname,"'",'-'),'"','-'),',','-'),'+','-'),'/','-'),'&','-'),'.','-'),' ','-') where code5='66001'
-	/*public function stralias($string) {
-		if (!$string) return null;
-		$g1 = array("'",',','"','+','/',' ','&','.');
-		$g2 = array('-','-',"-","-","-",'-','-','-');
-		
-		$regstr = trim(preg_replace('/\s\s+/', '-', $string)); //double spaces  
-		$str = str_replace($g1,$g2,$regstr);
-		return ($str);
-	}*/
 	public function stralias($string) {
 		if (!$string) return null;
 

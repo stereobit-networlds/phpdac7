@@ -108,7 +108,7 @@ class pcntl extends controller {
 			//ob_clean (); //clean phpdac5 prompts after event		
 		
 		if ($this->debug) 
-			echo "<!-- construct elapsed " . $this->getthemicrotime() - $xtime . " sec -->"; 	   	  		
+			echo "<!-- construct elapsed " . ($this->getthemicrotime() - $xtime) . " sec -->"; 	   	  		
 	}
 	
 	public function getName($localize=false) {
@@ -857,7 +857,7 @@ parse_ini_string_m:
     }	
 	
 	//override
-    protected function action($action) {  
+    public function action($action) {  
 		if (!$action) return null;
 	    $__DPCMEM = GetGlobal('__DPCMEM');
 	    $__DPC = GetGlobal('__DPC');		 
@@ -1105,7 +1105,7 @@ parse_ini_string_m:
 	public function __destruct() {		  
 	  
 		if ($this->debug) 
-			echo "<!-- Time elapsed " . $this->getthemicrotime() - $this->mytime . " sec -->"; 
+			echo "<!-- Time elapsed " . ($this->getthemicrotime() - $this->mytime) . " sec -->"; 
 		controller::__destruct();   
 	}
    

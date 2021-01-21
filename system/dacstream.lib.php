@@ -11,6 +11,12 @@ class dacstream {
    //var $current_dpc_name;
    //var $current_dpc_size;
 
+   //php 7.4 combatibility
+   public function stream_set_option() {
+		return false;
+   }
+
+
    function stream_open($path,$mode,$options,&$opened_path) {
 
 		$url = parse_url($path);

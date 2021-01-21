@@ -187,15 +187,15 @@ class fronthtmlpage {
 			foreach ($extraTokens as $n=>$v) //push tokens
 				$tokens[$n] = $v;
 		}	
-					
-		if ($this->htmlfile) {
+		
+		if (isset($_html)) {
+			$htmdata = $_html;
+		}			
+		elseif ($this->htmlfile) {
 			//$htmdata = file_get_contents($this->htmlfile);
 			//$htmdata = GetGlobal('controller')::streamfile_contents($this->htmlfile);
 			$htmdata = self::streamfile_contents($this->htmlfile); //ver 5
 		}
-		elseif (isset($_html)) {
-			$htmdata = $_html;
-		}	
 		else {
 			$hfile = $this->htmlfile ? $this->htmlfile : 'none';	
 			return "Undefined template data ($hfile)";

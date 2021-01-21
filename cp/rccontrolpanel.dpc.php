@@ -378,7 +378,7 @@ class rccontrolpanel {
 	}
 	
 	protected function load_javascript() {
-        if (iniload('JAVASCRIPT')) {
+        if (defined('JAVASCRIPT_DPC')) {
 
 			$code = $this->javascript();
 		   

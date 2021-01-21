@@ -346,8 +346,8 @@ class rcmessages extends cpdac7 {
 	}
 
 	protected function showMessages($width=null, $height=null, $rows=null, $mode=null, $noctrl=false) {
-	    $height = $height ? $height : 600;
-        $rows = $rows ? $rows : 25;
+	    $height = $height ? $height : 400;
+        $rows = $rows ? $rows : 18;
         $width = $width ? $width : null; //wide	
 		$mode = $mode ? $mode : 'r';
 		$noctrl = $noctrl ? 0 : 1;	
@@ -358,7 +358,7 @@ class rcmessages extends cpdac7 {
 		   	
 		if (defined('MYGRID_DPC')) {
 		   
-			$sSQL = "select * from (SELECT id,date,type,msg FROM cpmessages where type='system' or type='cron' or type= 'analyzer' order by id desc";
+			$sSQL = "select * from (SELECT id,date,type,msg FROM cpmessages "; //where type='system' or type='cron' or type= 'analyzer' order by id desc";
             $sSQL.= ') as o';  				
 
 		    _m("mygrid.column use grid9+id|".localize('_id',getlocal())."|5|1|");

@@ -823,7 +823,7 @@ parse_ini_string_m:
     }	
 	
 	//override
-    protected function action($action) {  
+    public function action($action) {  
 		if (!$action) return null;
 	    $__DPCMEM = GetGlobal('__DPCMEM');
 	    $__DPC = GetGlobal('__DPC');		 

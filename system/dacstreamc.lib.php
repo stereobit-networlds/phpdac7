@@ -8,6 +8,12 @@ class c_dacstream {
    var $DPCEOF;
    var $size;
 
+   //php 7.4 combatibility
+   public function stream_set_option() {
+		return false;
+   }
+
+
    function stream_open($_url,$mode,$options,&$opened_path) {
    
 		$url = parse_url($_url);   
