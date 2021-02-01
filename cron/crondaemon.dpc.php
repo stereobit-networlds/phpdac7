@@ -19,7 +19,6 @@ class crondaemon {
 
     public function run() {
 		
-		//if (class_exists('pcntlui', true)) {
 		if ($this->indac7) {
 			//if (method_exists($this->dacEnv, '_say')) {	
 			if ((is_object($this->masterEnv)) && (method_exists($this->masterEnv, '_say'))) {

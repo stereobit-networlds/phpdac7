@@ -1,0 +1,14 @@
+﻿<item> 
+<id>$10$</id>
+<title><![CDATA[$16$]]></title>
+<description><![CDATA[$1$]]></description>
+<link><![CDATA[$11$]]></link>
+<image_link><![CDATA[$14$]]></image_link>
+<fb_product_category><![CDATA[$17$]]></fb_product_category>
+<google_product_category><![CDATA[$17$]]></google_product_category>
+<price><phpdac>cmsrt.dotnum use $47$</phpdac></price>
+<brand><![CDATA[<phpdac>frontpage.nvltokens use $39$+$39$+OEM+</phpdac>]]></brand>
+<mpn><phpdac>cmsrt.nvltokens use $43$+$43$+$10$+</phpdac></mpn>
+<phpdac>cmsrt.nvltokens use $50$+<condition>$50$</condition>+<condition>new</condition>+</phpdac>
+<availability><phpdac>cmsrt.nvltokens use $46$+in stock+out of stock+1</phpdac></availability>
+</item>

@@ -12,7 +12,7 @@
     <div class="container">
         <div class="col-xs-12 no-margin">
             
-            <?MEDIA-CENTER/INDEX?>
+            <?XBODY?>
 
             <section id="your-order">
                 <phpdac>frontpage.nvl use qty_total+<h2 class='border h1'>Το καλάθι σας</h2>++</phpdac>

@@ -17,9 +17,7 @@
     <link href="css/style-responsive.css" rel="stylesheet" />
     <link href="css/style-default.css" rel="stylesheet" id="style_color" />
 
-    <link href="assets/dropzone/css/dropzone.css" rel="stylesheet"/>
-	
-    <script src="https://www.stereobit.gr/ckeditor/ckeditor.js"></script>	
+    <link href="assets/dropzone/css/dropzone.css" rel="stylesheet"/>	
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
@@ -45,29 +43,18 @@
                     <!-- BEGIN SAMPLE FORMPORTLET-->
                     <div class="widget red">
                         <div class="widget-title">
-                            <h4><i class="icon-asterisk"></i> Dropzone File Upload</h4>
+                            <h4><i class="icon-asterisk"></i> <phpdac>cmsrt.slocale use _dropzone</phpdac></h4>
                             <span class="tools">
                             <a href="javascript:;" class="icon-chevron-down"></a>
-                            <a href="javascript:;" class="icon-remove"></a>
                             </span>
+                            <div class="update-btn">
+                                <a href="cpmhtmleditor.php?t=cpmedititem&id=<phpdac>fronthtmlpage.getParam use id</phpdac>" class="btn update-easy-pie-chart"><i class="icon-repeat"></i> <phpdac>cmsrt.slocale use _modify</phpdac></a>
+                            </div>							
                         </div>
                         <div class="widget-body form">
                             <form action="cpmhtmleditor.php?t=cpmdropzone&title=<phpdac>fronthtmlpage.getParam use title</phpdac>" class="dropzone" id="my-awesome-dropzone"></form>
                         </div>
-                    </div>
-                    <!-- END SAMPLE FORM PORTLET-->
-                     <!--div class="widget green">
-                         <div class="widget-title">
-                             <h4><i class="icon-edit"></i> CK Editor </h4>
-                           <span class="tools">
-                               <a href="javascript:;" class="icon-chevron-down"></a>
-                               <a href="javascript:;" class="icon-remove"></a>
-                           </span>
-                         </div>
-                         <div class="widget-body">
-                             <-METRO/INDEX->
-                         </div>
-                     </div-->					
+                    </div>					
                 </div>
             </div>
             <!-- END PAGE CONTENT-->

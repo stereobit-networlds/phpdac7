@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+<created_at>$0$</created_at>
+<title><phpdac>cms.paramload use INDEX+title</phpdac></title>
+<link><phpdac>cms.paramload use SHELL+urlbase</phpdac></link>
+<description><phpdac>cms.paramload use INDEX+subtitle</phpdac></description>
+<channel>
+$1$
+</channel>
+</rss>

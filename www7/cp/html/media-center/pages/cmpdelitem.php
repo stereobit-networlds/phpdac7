@@ -11,7 +11,7 @@
 			<div class="items-holder">
 				<div class="container-fluid wishlist_table">
 				 				
-                <?MEDIA-CENTER/INDEX?>
+                <?XBODY?> 
 
 				</div><!-- /.wishlist-table -->
 			</div><!-- /.items-holder -->

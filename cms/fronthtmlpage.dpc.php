@@ -22,10 +22,10 @@ class fronthtmlpage {
 	var $language, $isolanguage;
 	
 	var $anel, $anel_signin;
-	var $template, $cptemplate;
+	var $template, $cptemplate, $bodyname;
 	var $preprocess;
 	
-	static $staticpath, $staticprpath, $cmsTemplates;
+	static $staticpath, $staticprpath, $cmsTemplates, $localpath;
 	 
 	public function __construct($file=null, $theme=null) { 
         $UserSecID = GetGlobal('UserSecID');			
@@ -92,7 +92,18 @@ class fronthtmlpage {
 		self::$staticprpath = paramload('SHELL','prpath');
 		
 		$this->template = remote_paramload('FRONTHTMLPAGE','template',$this->prpath);
-		$this->cptemplate = remote_paramload('FRONTHTMLPAGE','cptemplate',$this->prpath);		
+		$this->cptemplate = remote_paramload('FRONTHTMLPAGE','cptemplate',$this->prpath);
+		
+		//body name is the taged name inside template files which replace MEDIA_CENTER/INDEX
+		$this->bodyname =   strstr($_SERVER['REQUEST_URI'], 'cp/') ? //is in cp
+								null : //old method when in cp
+								remote_paramload('FRONTHTMLPAGE','bodyname',$this->prpath);
+        //when dac =true means that all is inside a phar stream file or fetched from phpdac7 stream	
+        //then when localpath =true fetch templates from local project path		
+		$_localp =  strstr($_SERVER['REQUEST_URI'], 'cp/') ? //is in cp
+						null : //old method when in cp
+						remote_paramload('FRONTHTMLPAGE','localpath',$this->prpath);
+		self::$localpath = $_localp ? true : false;
 		
 		$this->BASE_URL = $this->baseURL();
 		$this->MC_TEMPLATE = $theme ? $theme : 
@@ -204,7 +215,9 @@ class fronthtmlpage {
 		//htmdata exists		
 		$this->process_javascript($htmdata, $pageout);		
 		$ret = $this->process_commands($pageout);
-		$ret = str_replace("<?". $this->argument ."?>",$data,$ret);					
+		$_ARG = $this->bodyname ? $this->bodyname : $this->argument; //"XDATA";		
+		//echo $_ARG;	
+		$ret = str_replace("<?". $_ARG ."?>",$data,$ret);					
 		
 		if (!empty($_tokens)) {
 			$ret = $this->process_loop($ret, $_tokens, $tokensLoop); //ret tokens
@@ -943,7 +956,7 @@ EOF;
 
 	public function include_part($fname=null, $args=null, $uselans=null, $tmplname=null) {	
 	    $tmpln = $tmplname ? $this->mcRoot($tmplname) . $fname : 
-		                     $this->MC_TEMPLATE . $fname;
+		                     $this->mcRoot($this->MC_TEMPLATE) . $fname;
 	    //echo 'INCLUDE_PART:'.$tmpln;
 		$pattern = "@<(.*?)>@"; /*search for content params*/
 		$arguments = explode('|',$args);
@@ -1000,7 +1013,7 @@ EOF;
 	    }	
 	
 	    $tmpln = $tmplname ? $this->mcRoot($tmplname) . $fname_arg : 
-		                     $this->MC_TEMPLATE . $fname_arg;
+		                     $this->mcRoot($this->MC_TEMPLATE) . $fname_arg;
 	    //echo 'INCLUDE_PART_ARG:'.$tmpln;
 		$arguments = explode('|',$args);
 		
@@ -1125,7 +1138,7 @@ EOF;
 		
 			$sSQL = 'select mcname from wftmpl where ';
 			$sSQL.= ($pageid) ? 'mcid=' . '"' . $pageid . '" ' : 'mcid=' . '"' . $mc_page . '" ';
-			$sSQL.= 'and mctmpl='. '"' . $mctmpl . '" ';
+			//$sSQL.= 'and mctmpl='. '"' . $mctmpl . '" ';
 
             //echo $sSQL;			  
 			$result = $db->Execute($sSQL,2);
@@ -1346,7 +1359,7 @@ function cc(name,value,days) {
 		if (!$f) return null;
 		global $dac, $st;
 		//echo $dac, ':', $st, '-------------------------------------' . PHP_EOL;
-		if ($dac) { 
+		if (($dac) && (self::$localpath==false)) { 
 			$fp = str_replace(self::$staticprpath, '/cp/', $f);
 			//phpdac7\__log('fetch remote:' . $fp); //dac7 not comaptible
 			//echo "$st/www7" . $fp . PHP_EOL;

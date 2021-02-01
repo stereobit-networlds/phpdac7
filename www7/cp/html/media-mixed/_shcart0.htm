@@ -1,0 +1,150 @@
+  	<form name='cartview' method='POST' action='$0$'>     
+	   <!-- ========================================= CONTENT ========================================= -->
+        <div class="col-xs-12 col-md-9 items-holder no-margin">
+			$0$				
+	        $3$
+	        <!--4-->  
+			
+			<!-- 2 user data-->			
+
+			<!-- buttons -->
+
+            <phpdac>
+				cmsrt.nvl use shcart.status++
+					<?php
+						if ($cat = GetReq('cat')) {
+							$title =  localize('_CONTINUESHOP', getlocal());	
+							$link = _v('shcart.baseurl') . "/klist/$cat/";							
+							$continue = _v('shcart.agentIsIE') ? 
+										"<a href='$link'>$title</a>" :
+							            "<a href='$link'><input type='button' class='le-button' value='$title'></a>";
+						}
+						else
+							$continue = null;	
+							
+						$title =  localize('_CLEARCARTITEMS', getlocal());	
+						$link = _v('shcart.baseurl') . '/clearcart/';	
+						$clearcart = _v('shcart.agentIsIE') ? 
+									"<a href='$link'>$title</a>" :
+									"<a href='$link'><input type='button' class='le-button' value='$title'></a>";
+						
+						$title = localize('_FASTPICK', getlocal());
+						$link = _v('shcart.baseurl') . "/fastpick/";
+						$fastpick = _v('shcart.agentIsIE') ? 
+									"<a href='$link'>$title</a>" :
+									"<a href='$link'><input type='button' class='le-button' value='$title'></a>"; 
+						
+						$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.checkout') . '">';
+						
+						return $continue . '&nbsp;' . $clearcart . '&nbsp;' . $fastpick . '&nbsp;' .$submit;
+					?>
+				+
+			</phpdac>
+			
+            <phpdac>
+				cmsrt.nvl use shcart.status+
+					<?php
+						$cancel = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.cancel') . '">';
+						$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.order') . '">';
+						return $cancel . '&nbsp;' .$submit;
+					?>
+				++1
+			</phpdac>			
+			
+            <phpdac>
+				cmsrt.nvl use shcart.status+
+					<?php
+						$cancel = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.cancel') . '">';
+						$submit = '<input type="submit" class="le-button" name="FormAction" value="' . _v('shcart.submit') . '">';
+						return $cancel . '&nbsp;' .$submit;
+					?>
+				++2
+			</phpdac>
+			
+			<!-- terms -->
+            <phpdac>
+				cmsrt.nvl use shcart.status+
+					<h2 class='border'>Warning:</h2>
+					By submitting this form you confirm that you have read and agree to the <a href='terms.php'>Terms of Use</a>
+				+
+					<?php 
+						/*if (_v('shcart.status')==0) $x='a'; else $x='b'; test */ 
+						return '';/*"<p>$x</p>"; */
+					?>
+				+2
+			</phpdac>			
+			
+			<phpdac>
+				cmsrt.nvldac2 use shcart.status+
+					cmsrt.echostr:<h2 class='border'>::
+					cmsrt.slocaleParam:roadway::
+					cmsrt.echostr:</h2>
+				+
+				cmsrt.phpcode:
+					<?php 
+						return '';/*'b</p>'; test*/
+					?>
+				+2
+			</phpdac>
+			
+			<phpdac>
+				cmsrt.nvldac2 use shcart.status+
+					cmsrt.nvl:roadway|Ιδανικότερη για δέματα με μεγάλο βάρος ή/και όγκο. Στην περίπτωση αυτή δεν υπάρχει η δυνατότητα αντικαταβολής.||Logistics::
+					cmsrt.nvl:roadway|Έξοδα αποστολής 3€ για κάθε δέμα έως 5 κιλά και για κάθε επιπλέον κιλό η χρέωση είναι 1€/κιλό. Η χρέωση της αντικαταβολής είναι 2€. 
+									  Τα έξοδα αυτά μπορεί να διαφοροποιηθούν λόγω του όγκου των προιόντων ή σε περίπτωση που η περιοχή σας χαρακτηρίζεται δυσπρόσιτη απο τις εταιρείες courier. 
+									  Εάν υπάρχει αλλαγή στη χρέωση των μεταφορικών θα σας ενημερώσουμε τηλεφωνικά. (Στις τιμές δεν συμπεριλαμβάνεται ΦΠΑ 23%)||Courier::
+					cmsrt.nvl:roadway|Παραλαμβάνετε την παραγγελία σας από το κατάστημά μας καθημερινά από τις 8πμ έως τις 6μμ και το Σάββατο από τις 9πμ έως τις 2μμ.||CustomerDelivery::
+					cmsrt.nvl:roadway|Παραλαμβάνετε την παραγγελία σας μεσω του δικτύου διανομής μας.||CompanyDelivery
+				++2
+			</phpdac>
+			
+			<phpdac>
+				cmsrt.nvldac2 use shcart.status+
+					cmsrt.echostr:<h2 class='border'>::
+					cmsrt.slocaleParam:payway::
+					cmsrt.echostr:</h2>
+				++2
+			</phpdac>
+			
+			<phpdac>
+				cmsrt.nvldac2 use shcart.status+
+					cmsrt.nvl:payway|Εξοφλήστε την παραγγελία σας κατά την παράδοση των προϊόντων στο χώρο σας. Δωρεάν αντικαταβολή για παραδόσεις εντός Θεσσαλονίκης.<br/><br/>
+									 Η δυνατότητα αυτόματου υπολογισμού του κόστους αποστολής θα παρέχεται σύντομα από το ηλεκτρονικό μας κατάστημα. Έως τότε δεν μπορεί να συμπεριληφθεί το κόστος μεταφορικών στο ποσό πληρωμής  και θα πρέπει να καταβάλεται την στιγμή της παράδοσης. Παρακαλούμε συμβουλευτείτε τους <a href='transportation.php'>τρόπους αποστολής</a> ή επικοινωνήστε μαζί μας.||PayOndelivery::
+					cmsrt.nvl:payway|Μπορείτε να καταθέσετε το αντίτιμο της παραγγελίας σας σε έναν από τους κάτωθι λογαριασμούς.<br/><br/>
+									 ΕΘΝΙΚΗ ΤΡΑΠΕΖΑ, IBAN GR47 0110 8940 0000 89447015267, Αριθμός λογαριασμού 894/470152-67<br/>
+									 EUROBANK, IBAN GR490 2601 9100 0002 0200440769, Αριθμός λογαριασμού 0026.0191.02.0200440769<br/>
+									 ALPHA BANK, IBAN GR84 0140 4870 4870 0233 0000 334, Αριθμός λογαριασμού 487 00 2330 000334<br/><br/>
+									 Στείλτε μας μέσω fax στο 2310-682722 ή με e-mail στο info@e-basis.gr το καταθετήριο, στο οποίο θα πρέπει να αναφέρεται ως αιτιολογία ο αριθμός παραγγελίας και θα εκτελέσουμε την παραγγελία σας.<br/><br/>
+									 Η δυνατότητα αυτόματου υπολογισμού του κόστους αποστολής θα παρέχεται σύντομα από το ηλεκτρονικό μας κατάστημα. Έως τότε δεν μπορεί να συμπεριληφθεί το κόστος μεταφορικών στο ποσό πληρωμής  και θα πρέπει να καταβάλεται την στιγμή της παράδοσης. Παρακαλούμε συμβουλευτείτε τους <a href='transportation.php'>τρόπους αποστολής</a> ή επικοινωνήστε μαζί μας.||BankTransfer::
+					cmsrt.nvl:payway|Παραλαμβάνετε και πληρώνετε την παραγγελία σας στο κατάστημά μας καθημερινά από τις 8πμ έως τις 6μμ και το Σάββατο από τις 9πμ έως τις 2μμ.||PayOnsite::
+					cmsrt.nvl:payway|Η δυνατότητα αυτόματου υπολογισμού του κόστους αποστολής θα παρέχεται σύντομα από το ηλεκτρονικό μας κατάστημα. Έως τότε δεν μπορεί να συμπεριληφθεί το κόστος μεταφορικών στο ποσό πληρωμής  και θα πρέπει να καταβάλεται την στιγμή της παράδοσης. Παρακαλούμε συμβουλευτείτε τους <a href='transportation.php'>τρόπους αποστολής</a> ή επικοινωνήστε μαζί μας.||Eurobank
+				++2
+			</phpdac>			
+        </div>
+        <!-- ========================================= CONTENT : END ========================================= -->
+
+        <!-- ========================================= SIDEBAR ========================================= -->
+
+        <div class="col-xs-12 col-md-3 no-margin sidebar ">
+            <div class="widget cart-summary">
+                <h1 class="border">shopping cart</h1>
+				<div class="body">
+					$4$
+                </div>
+            </div><!-- /.widget -->
+
+            <div id="cupon-widget" class="widget">
+                <h1 class="border">use coupon</h1>
+                <div class="body">
+                    <!--form-->
+                        <div class="inline-input">
+                            <input data-placeholder="enter coupon code" type="text" name="coupon" />
+                            <button class="le-button" type="submit">Apply</button>
+                        </div>
+                    <!--/form-->
+                </div>
+            </div><!-- /.widget -->
+        </div><!-- /.sidebar -->
+
+        <!-- ========================================= SIDEBAR : END ========================================= -->	
+	</form>		

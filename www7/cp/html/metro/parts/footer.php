@@ -1,5 +1,5 @@
    <div id="footer">
-       2017 &copy; stereobit.networlds metro dashboard
+       2020 &copy; X3studio Dashboard
 	   &nbsp;
 	   <phpdac>cmsrt.nvl use locale+EL+EN+2</phpdac>
    </div>

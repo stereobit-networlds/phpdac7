@@ -4,7 +4,7 @@
 		<div class="row">
 			
 			<div class="col-md-6">
-                <?MEDIA-CENTER/INDEX?>
+                <?XBODY?>
 			</div><!-- /.col -->
 
 			<div class="col-md-6">

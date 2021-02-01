@@ -66,7 +66,7 @@
 								<?php return(localize('_AVAILABLE', getlocal())) ?>
 								+0
 								+
-								$22$
+								$54$
 						</phpdac>
 						</span></div>
 
@@ -82,7 +82,9 @@
 							<p>$1$</p>
 						</div>
 						
-						$25$
+						<!--25-->
+						<div class="fb-like" data-href="<phpdac>cmsrt.php_self use 1</phpdac>" data-width="100" data-height="10" data-colorscheme="light" data-layout="button_count" data-action="like" data-show-faces="false" data-send="true"></div>	
+
 						<!--div class="social-row">
 							<span class="st_facebook_hcount"></span>
 							<span class="st_twitter_hcount"></span>
@@ -169,26 +171,26 @@
                     <p>					
 						$53$
 					</p>		
-                    <div class="meta-row">
+					<div class="meta-row">
                         <div class="inline">
                             <label>SKU:</label>
-                            <span><phpdac>cms.nvl use $29$+$29$+$10$+</phpdac></span>
-                        </div>
+                            <span><phpdac>cms.nvl use $29$+$10$+$29$+</phpdac></span>
+                        </div><!-- /.inline -->
 
-                        <span class="seperator">/</span>
+                        <!--span class="seperator">/</span-->
 
                         <div class="inline">
-                            <label><phpdac>cms.slocale use SHKATEGORIES_DPC</phpdac>:</label>
+                            <label><phpdac>cms.slocale use CATEGORY</phpdac>:</label>
                             <span><a href="$14$">$15$</a></span>
-                        </div>
+                        </div><!-- /.inline -->
 
-                        <span class="seperator">/</span>
+                        <!--span class="seperator">/</span-->
 
                         <div class="inline">
-                            <label><phpdac>cms.slocale use _TAG</phpdac>:</label>
-							$47$
-                        </div>
-                    </div>
+                            <label><phpdac>cms.slocale use _TAGS</phpdac>:</label>
+                            $47$
+                        </div><!-- /.inline -->
+                    </div><!-- /.meta-row -->
                 </div><!-- /.tab-pane #description -->			
 
                 <div class="tab-pane" id="additional-info">
@@ -224,20 +226,20 @@
                     <div class="meta-row">
                         <div class="inline">
                             <label>SKU:</label>
-                            <span><phpdac>cms.nvl use $29$+$29$+$10$+</phpdac></span>
+                            <span><phpdac>cms.nvl use $29$+$10$+$29$+</phpdac></span>
                         </div><!-- /.inline -->
 
-                        <span class="seperator">/</span>
+                        <!--span class="seperator">/</span-->
 
                         <div class="inline">
-                            <label><phpdac>cms.slocale use SHKATEGORIES_DPC</phpdac>:</label>
+                            <label><phpdac>cms.slocale use CATEGORY</phpdac>:</label>
                             <span><a href="$14$">$15$</a></span>
                         </div><!-- /.inline -->
 
-                        <span class="seperator">/</span>
+                        <!--span class="seperator">/</span-->
 
                         <div class="inline">
-                            <label><phpdac>cms.slocale use _TAG</phpdac>:</label>
+                            <label><phpdac>cms.slocale use _TAGS</phpdac>:</label>
                             $47$
                         </div><!-- /.inline -->
                     </div><!-- /.meta-row -->

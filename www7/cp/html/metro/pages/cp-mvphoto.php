@@ -46,10 +46,9 @@
                     <!-- BEGIN SAMPLE FORMPORTLET-->
                     <div class="widget green">
                         <div class="widget-title">
-                            <h4><i class="icon-camera"></i> Gallery</h4>
+                            <h4><i class="icon-camera"></i> <phpdac>cmsrt.slocale use _gallery</phpdac></h4>
                             <span class="tools">
                             <a href="javascript:;" class="icon-chevron-down"></a>
-                            <a href="javascript:;" class="icon-remove"></a>
                             </span>
                         </div>
                         <div class="widget-body">
@@ -81,10 +80,9 @@
 					<!-- BEGIN DROPZONE -->
 					<div class="widget red">
                         <div class="widget-title">
-                            <h4><i class="icon-asterisk"></i> Dropzone File Upload</h4>
+                            <h4><i class="icon-asterisk"></i> <phpdac>cmsrt.slocale use _dropzone</phpdac></h4>
                             <span class="tools">
                             <a href="javascript:;" class="icon-chevron-down"></a>
-                            <a href="javascript:;" class="icon-remove"></a>
                             </span>
 							<div class="update-btn">
                                 <a href="cpmhtmleditor.php?t=cpmvphoto&id=<phpdac>fronthtmlpage.getParam use id</phpdac>" class="btn update-easy-pie-chart"><i class="icon-repeat"></i> Refresh</a>

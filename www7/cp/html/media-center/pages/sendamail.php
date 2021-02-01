@@ -25,7 +25,7 @@
 				<section class="section leave-a-message">
 					<h2 class="bordered"><phpdac>i18nL.translate use contactform+RCCONTROLPANEL</phpdac></h2>
 					<p><phpdac>cmsrt.nvldac2 use cmsform.msg+cmsrt.echostr:cmsform.msg++</phpdac></p>
-                    <?MEDIA-CENTER/INDEX?>
+                    <?XBODY?>
 				</section><!-- /.leave-a-message -->
 			</div><!-- /.col -->
 

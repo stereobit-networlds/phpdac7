@@ -12,7 +12,7 @@
             </div>
 			
 			<div id="page-<phpdac>shkategories.getcurrentkategory use ++1</phpdac>">			
-			<?MEDIA-CENTER/INDEX?>
+			<?XBODY?> 
 			</div>
             
         </div><!-- /.col -->
@@ -21,15 +21,15 @@
         <!-- ========================================= SIDEBAR ========================================= -->
         <div class="col-xs-12 col-sm-3 no-margin sidebar narrow">
 
-            <phpdac>frontpage.include_part use /parts/widgets/sidebar/product-filter.php+++media-center</phpdac>
+            <phpdac>frontpage.include_part use /parts/widgets/sidebar/product-filter.php</phpdac>
 
-            <phpdac>frontpage.include_part use /parts/widgets/sidebar/category-tree.php+++media-center</phpdac>
+            <phpdac>frontpage.include_part use /parts/widgets/sidebar/category-tree.php</phpdac>
 
-            <phpdac>frontpage.include_part use /parts/widgets/sidebar/le-links.php+++media-center</phpdac>
+            <phpdac>frontpage.include_part use /parts/widgets/sidebar/le-links.php</phpdac>
 
-            <phpdac>frontpage.include_part use /parts/widgets/sidebar/sidebar-banner.php+++media-center</phpdac>
+            <phpdac>frontpage.include_part use /parts/widgets/sidebar/sidebar-banner.php</phpdac>
 
-            <phpdac>frontpage.include_part use /parts/widgets/sidebar/featured-products.php+++media-center</phpdac>
+            <phpdac>frontpage.include_part use /parts/widgets/sidebar/featured-products.php</phpdac>
 
         </div>
         <!-- ========================================= SIDEBAR : END ========================================= -->		

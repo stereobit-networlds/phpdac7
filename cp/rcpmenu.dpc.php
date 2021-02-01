@@ -678,8 +678,13 @@ class rcpmenu {
 	
 	//read array of phpdac7 engine screrenlog.n files to read
 	public function getEngineTailsList($tmax=null, $template=null, $tpath=null, $json=false) {
+		$dac7 = _m('cmsrt.isDacRunning');
+		if ($dac7==false) return false;
+		
 		$max = $tmax ?? 10;
 		$path = $tpath ? $tpath : $this->logpath;
+		if (!is_dir($path)) return false;
+		
 		$t = $template ? $template : '<li><a class="cpfile" href="#$0$">$0$</a></li>';
 		$screenarray = array();
 		$tokens = array();

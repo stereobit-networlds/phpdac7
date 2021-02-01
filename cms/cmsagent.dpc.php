@@ -6,9 +6,6 @@ define("CMSAGENT_DPC",true);
 
 $__DPC['CMSAGENT_DPC'] = 'cmsagent';
 
-$a = GetGlobal('controller')->require_dpc('cms/cmsagent.dpc.php');
-require_once($a);
- 
 $__EVENTS['CMSAGENT_DPC'][0]='cmsagent';
 $__EVENTS['CMSAGENT_DPC'][1]='jsdcode';
 $__EVENTS['CMSAGENT_DPC'][2]='jsdecode';

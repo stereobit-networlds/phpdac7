@@ -77,6 +77,7 @@ class rckategories extends shkategories {
 	var $post, $msg;
 	var $urlbase;	
 	//var $cptemplate;
+	var $ckeditor4, $cke4_inline, $ckjs;
 
 	public function __construct() {
 	
@@ -96,6 +97,13 @@ class rckategories extends shkategories {
 	
 		//$this->ajaxLink = seturl('t=cpvstatsshow&statsid=');
 		//$this->cptemplate = remote_paramload('FRONTHTMLPAGE','cptemplate',$this->path);	  
+		
+		$this->ckeditor4 = remote_paramload('CKEDITOR','ckeditor4',$this->path);
+		$this->cke4_inline = $this->ckeditor4 ? true/*false*/ : false; 
+
+		$ckeditorurl = remote_paramload('CKEDITOR','ckeditorurl',$this->path);		
+		$ckeditor4url = remote_paramload('CKEDITOR','ckeditor4url',$this->path);		
+		$this->ckjs = $this->ckeditor4 ? $ckeditor4url : $ckeditorurl;		
 	}
 	
 	public function event($event=null) {
@@ -910,6 +918,11 @@ class rckategories extends shkategories {
 			return ($result);
         }		
 	}
+	
+	public function getVar($var=null) {
+		if (!$var) return null;
+		return ($this->{$var});
+	}	
   
 };
 }

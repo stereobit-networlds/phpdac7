@@ -44,7 +44,7 @@ class maildbqueue  {
 	
 	var $cpanelmailpath;
 
-	function maildbqueue() {
+	function __construct() {
 		$UserSecID = GetGlobal('UserSecID'); 	
 		$this->userLevelID = (((decode($UserSecID))) ? (decode($UserSecID)) : 0);	 
 	  

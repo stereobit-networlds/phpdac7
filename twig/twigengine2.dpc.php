@@ -5,6 +5,11 @@ define("TWIGENGINE2_DPC",true);
 $__DPC['TWIGENGINE2_DPC'] = 'twigengine2';
 
 //!!!!!!!!!!!!!!!!!!!!1 preload twig classes for phar inclusion
+require_once(_r('twig/Twig/Error.php'));
+require_once(_r('twig/Twig/Error/Loader.php'));
+require_once(_r('twig/Twig/Error/Runtime.php'));
+require_once(_r('twig/Twig/Error/Syntax.php'));
+
 require_once(_r('twig/Twig/LoaderInterface.php'));
 require_once(_r('twig/Twig/Loader/Filesystem.php'));
 require_once(_r('twig/Twig/Environment.php'));

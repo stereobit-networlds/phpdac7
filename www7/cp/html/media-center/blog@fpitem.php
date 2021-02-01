@@ -21,12 +21,12 @@
 	            <div class="post-content">
 					<h2 class="post-title">$0$</h2>
 					<ul class="meta">
-						<!--li>Posted By : Admin</li-->
+						<!--li>Posted By: Admin</li-->
 						<li>$35$ $37$, $33$</li>
 						<!--li><a href="#">OffTopic</a>, <a href="#">Announcements</a></li-->
-						<li><a href="#comments"><span class="fb-comments-count" data-href="<phpdac>cmsrt.paramload use SHELL+urlbase</phpdac><phpdac>cmsrt.php_self</phpdac>"></span> Comments</a></li>
+						<li><a href="#comments"><span class="fb-comments-count" data-href="<phpdac>cmsrt.php_self use 1</phpdac>"></span> Comments</a></li>
 					</ul><!-- /.meta -->
-					$13$									
+					$53$									
 				</div><!-- /.post-content -->
 				
 	 		</div><!-- /.post-entry -->
@@ -44,11 +44,11 @@
 			<!--hpdac>frontpage.include_part use /parts/section/blog-single-comments.php+++media-center</phpda-->
 			<section id="comments" class="inner-bottom-xs">
 				<h3>
-					<span class="fb-comments-count" data-href="<phpdac>cmsrt.paramload use SHELL+urlbase</phpdac><phpdac>cmsrt.php_self</phpdac>"></span> 
+					<span class="fb-comments-count" data-href="<phpdac>cmsrt.php_self use 1</phpdac>"></span> 
 					Comments
 				</h3>
 	
-				<div class="fb-comments" data-href="<phpdac>cmsrt.paramload use SHELL+urlbase</phpdac><phpdac>cmsrt.php_self</phpdac>#configurator" data-numposts="99"></div>
+				<div class="fb-comments" data-href="<phpdac>cmsrt.php_self use 1</phpdac>#configurator" data-numposts="99"></div>
 			</section>
 
 			<!--hpdac>cms.include_part use /parts/section/blog-single-reply.php+++media-center</phpda-->

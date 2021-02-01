@@ -37,7 +37,7 @@ class shkategories {
 	var $cseparator, $cat_result, $replacepolicy, $encodeimageid;
 	var $imagex, $imagey, $wordlength, $aliasID, $aliasExt,$userLevelID;
 	var $mobile, $pageName, $phpName, $treeajax, $klistcmd, $kshowcmd;
-	var $_catAllSearch;
+	var $_catAllSearch, $tmpath;
 
 	public function __construct() {	
 		$UserSecID = GetGlobal('UserSecID');	
@@ -107,6 +107,8 @@ class shkategories {
 
 		//default phrase, a character when click for a category search without a phrase
 		$this->_catAllSearch = _m('cmsrt.paramload use ESHOP+searchallkeyword') ?: 'all'; //'*' 		
+		
+		$this->tmpath =  _v('cmsrt.mythemePath');
 		
 		//on all pages
 		$this->search_javascript();		  
@@ -1528,9 +1530,16 @@ class shkategories {
 		if (!$tfile) return;
 	  
 		if ($cat) {
+			
 			$pcats = explode($this->cseparator,$cat);
 			foreach ($pcats as $c) {
-				if ($mytemplate = _m('cmsrt.select_template use ' . $c.'@'. str_replace('.htm', '', $tfile))) 
+				
+				$cname = $c.'@'. str_replace('.htm', '', $tfile);
+				if (@file_exists($this->tmpath . $cname)) {
+					//echo $this->tmpath . $cname . '<br>';
+					return file_get_contents($this->tmpath . $cname);
+				}	
+				elseif ($mytemplate = _m('cmsrt.select_template use ' . $cname)) 
 					return ($mytemplate); 
 			}
 		} 

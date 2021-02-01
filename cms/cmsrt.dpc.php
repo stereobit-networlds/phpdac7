@@ -36,6 +36,9 @@ $__DPCATTR['CMSRT_DPC']['setlanguage'] = 'setlanguage,0,0,0,0,0,0,0,0,0,0,0';
 
 $__LOCALE['CMSRT_DPC'][0]='SHLANGS_DPC;Languanges;Γλώσσα';
 $__LOCALE['CMSRT_DPC'][1]='_HOME;Home;Αρχική';
+$__LOCALE['CMSRT_DPC'][2]='_company;Company;Εταιρία';
+$__LOCALE['CMSRT_DPC'][3]='_contact;Contact;Επικοινωνία';
+$__LOCALE['CMSRT_DPC'][4]='_activatemsg;Action required to activate your account after the registration process;Μετά την εγγραφή σας θα λάβετε email επιβεβαίωσης και ενεργοποίησης του λογαριασμού';
 
 //$a = GetGlobal('controller')->require_dpc('cms/cms.dpc.php');
 require_once(_r('cms/cms.dpc.php')); 
@@ -54,6 +57,8 @@ class cmsrt extends cms  {
 	var $ogTags, $twigTags, $siteTitle, $siteTwiter, $siteFb, $httpurl;	
 	var $mtrack, $mbody, $scrollid, $load_mode;
 	var $klistcmd, $kshowcmd, $itemID, $catID;
+	var $themePath, $mythemePath, $cpmythemePath;
+	var $mjetapikey, $mjetapisecret, $mjetfrom;
 	
 	public function __construct() {
 	
@@ -62,6 +67,10 @@ class cmsrt extends cms  {
 		$this->owner = GetSessionParam('LoginName');	
 		$this->path = paramload('SHELL','prpath');
 		$this->prpath = paramload('SHELL','prpath');
+		
+		$this->themePath = $this->prpath . $this->tpath .'/';
+		$this->mythemePath = $this->prpath . $this->tpath .'/'. $this->template . '/';
+		$this->cpmythemePath = $this->prpath . $this->tpath .'/'. $this->cptemplate . '/';		
 		
 		$this->map_t = remote_arrayload('RCITEMS','maptitle',$this->prpath);	
 		$this->map_f = remote_arrayload('RCITEMS','mapfields',$this->prpath);	
@@ -143,6 +152,10 @@ class cmsrt extends cms  {
 			
 		$this->klistcmd = $this->paramload('ESHOP', 'klistcmd') ?: 'klist'; //products
 		$this->kshowcmd = $this->paramload('ESHOP', 'kshowcmd') ?: 'kshow'; //product	
+		
+		$this->mjetfrom = $this->paramload('CMS', 'mjetfrom');
+		$this->mjetapikey = $this->paramload('CMS', 'mjetapikey');
+		$this->mjetapisecret = $this->paramload('CMS', 'mjetapisecret');			
 
 		$this->itemID = GetReq('id') ?: 0;
 		$this->catID = GetReq('cat') ?: 0;	
@@ -1552,11 +1565,13 @@ EOF;
 	
 	public function select_template($tfile=null, $iscp=false, $theme=null) {
 		if (!$tfile) return;
+		/* //DISABLE theme arg
 		$themePath = $this->prpath . $this->tpath .'/';
 	  
 	    $path = $iscp ? ($theme ? $theme . '/' : ($themePath . $this->cptemplate . '/')) : 
 		                ($theme ? $theme . '/' : ($themePath . $this->template . '/')) ; 
-
+		*/
+		$path = $iscp ? $this->cpmythemePath : $this->mythemePath;
 		$phptml = $path . $tfile . '.php';
 		$phpmtml = $path . 'mob@'.$tfile . '.php';
 		
@@ -1812,6 +1827,9 @@ EOF;
 	}	
 	
 	//cron func
+	//update products set p5 =
+	//replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(LOWER(TRIM(itmname)),'#','-'),"'",'-'),'\"','-'),',','-'),'+','-'),'/','-'),'&','-'),'.','-'),' ','-'),')','-'),'(','-') 
+	//where code5='1';
 	public function replaceAliasCode($csvItems=null, $isStr=false) {
 		$db = GetGlobal('db');
 		if (!$csvItems) return false;
@@ -1916,6 +1934,59 @@ EOF;
 		  
 		return ($mailerror);	   	
 	}
+	
+	//mailjet mail
+	public function cmsMailjet($from=null,$to=null,$subject=null,$body=null,$tid=null,$origin=null) {
+	    $from = ($this->validMail($from)) ? $from : $this->paramload('INDEX','e-mail');		
+		if (!$this->validMail($to)) echo "Mail not send!";
+		
+		if (($this->mjetapisecret) && ($this->mjetapikey) && ($from = $this->mjetfrom)) {
+		
+			$mailjetApiKey = $this->mjetapikey;
+			$mailjetApiSecret = $this->mjetapisecret;
+		
+			$mailfrom = $this->mjetfrom ?? $from;
+		
+			$messageData = [
+			'Messages' => [
+			[
+				'From' => [
+					'Email' => $mailfrom,
+					'Name' => remote_paramload('INDEX','company-name',$this->prpath)
+				],
+				'To' => [
+					[
+						'Email' => $to,
+						'Name' => remote_paramload('INDEX','title',$this->prpath)
+					]
+				],
+				'Subject' => $subject,
+				'TextPart' => 'Mailjet body email message',
+				'HTMLPart' => $body
+			]
+			]
+			]; 
+		
+			$jsonData = json_encode($messageData);
+			$ch = curl_init('https://api.mailjet.com/v3.1/send');
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+			curl_setopt($ch, CURLOPT_USERPWD, "{$mailjetApiKey}:{$mailjetApiSecret}");
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, [
+				'Content-Type: application/json',
+				'Content-Length: ' . strlen($jsonData)
+			]);
+			$response = json_decode(curl_exec($ch));
+			//var_dump($response);
+			if ($response->status==='success') {
+				$this->saveMail($from, $to, $subject, $body, $trackid, $origin);	
+				return true;
+			}		
+		
+		}
+		return false;
+	}	
 	
 	public function setMailBody($text=null) {
 		
@@ -2091,13 +2162,14 @@ EOF;
 	}	
 	
 	/* db based include part */
-	public function include_partDb($fname=null, $args=null, $uselans=null, $tmplname=null) {	
+	public function include_partDb($fname=null, $args=null, $uselans=null, $tmplname=null, $elsesay=null) {	
 		$db = GetGlobal('db'); 	
 		$pattern = "@<(.*?)>@"; /*search for content params*/
 		$arguments = explode('|',$args);		
 
 		$sSQL = "select data from cmstemplates where name=" . $db->qstr($fname);
-		$sSQL.= isset($tmplname) ? " and class=" . $db->qstr($tmplname) : null;
+		$sSQL.= $tmplname ? " and class=" . $db->qstr($tmplname) : null;
+		//echo $sSQL;
 		$res = $db->Execute($sSQL);				
 		$ret = base64_decode($res->fields['data']);	
 		if (isset($res->fields['data'])) {			
@@ -2119,7 +2191,7 @@ EOF;
 			return ($ret);			
 		}	
 		else
-			$ret = null;
+			$ret = $elsesay ?? null;
 		
 		return $ret;			
 	}	

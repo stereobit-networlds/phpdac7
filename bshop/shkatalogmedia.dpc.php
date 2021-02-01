@@ -89,7 +89,7 @@ $__LOCALE['SHKATALOGMEDIA_DPC'][36]='_all;All;Ολα';
 $__LOCALE['SHKATALOGMEDIA_DPC'][37]='_nofound;Items not found;Δεν βρέθηκαν εγγραφές';
 $__LOCALE['SHKATALOGMEDIA_DPC'][38]='_title;Title;Περιγραφή';
 $__LOCALE['SHKATALOGMEDIA_DPC'][39]='_norecs;Record set is empty;Οι εγγραφές δεν υπάρχουν';
-$__LOCALE['SHKATALOGMEDIA_DPC'][40]='_norec;Record not exist;Η εγγραφή δεν υπάρχει';
+$__LOCALE['SHKATALOGMEDIA_DPC'][40]='_norec;The page you are looking for does not exist;Η πληροφορία που ζητήσατε δεν είναι διαθέσιμη';
 $__LOCALE['SHKATALOGMEDIA_DPC'][41]='_lockrec;Locked record;Η εγγραφή είναι κλειδωμένη';
 $__LOCALE['SHKATALOGMEDIA_DPC'][42]='_brands;Brands;Κατασκευαστές';
 $__LOCALE['SHKATALOGMEDIA_DPC'][43]='_price;Price;Τιμή';
@@ -103,45 +103,27 @@ $__LOCALE['SHKATALOGMEDIA_DPC'][49]='_NEWEST;Newest;Νεότερα;';
 class shkatalogmedia {
 	
     var $max_items, $result, $path, $urlpath, $inpath;
-	var $map_t, $map_f;
-	var $pprice, $codetype;
-	var $availability;	
-    var $userLevelID;	
-	var $is_reseller, $htmlpath;
-	var $listcontrols;
-	var $carthandler;	
-	var $max_selection;
+	var $map_t, $map_f, $pprice, $codetype, $availability;	
+    var $userLevelID, $is_reseller, $htmlpath, $listcontrols, $carthandler, $max_selection;
 	
 	var $itemfimagex,$itemfimagey,$imagex,$imagey, $itemimagex, $itemimagey;	
-	var $imageclick, $linemax;
-	var $thubpath_large, $thubpath_medium, $thubpath_small;
+	var $imageclick, $linemax, $thubpath_large, $thubpath_medium, $thubpath_small;
 	var $myorderby, $asc, $deforder, $defasc;
-    var $global_hide_asceding;
-	var $addfx, $addfy;	
-	var $asccombostyle;
-	var $decimals;
+    var $global_hide_asceding, $addfx, $addfy, $asccombostyle, $decimals;
 	var $toggler, $catbanner, $itemlockparam, $itemlockgoto, $isitemlocked;	
 	
-    var $title;
-	var $allow_show_resource;
-	var $url;
-	var $onlyincategory;
-	var $oneitemlist, $my_one_item;
-	var $photodb;
-	var $encoding, $feed_on;
-	var $noloadjslightbox, $additional_files_perline;
-	var $notreebrowser, $encodeimageid, $default_pager;
-	var $asceding_class, $nav_on;
-	var $pager_current_class;
-	var $orderid, $sortdef, $bypass_order_list;
+    var $title, $allow_show_resource, $url, $onlyincategory,$oneitemlist, $my_one_item;
+	var $photodb, $encoding, $feed_on, $noloadjslightbox, $additional_files_perline;
+	var $notreebrowser, $encodeimageid, $default_pager, $asceding_class, $nav_on;
+	var $pager_current_class, $orderid, $sortdef, $bypass_order_list;
 	var $isListView, $imgLargeDB, $imgMediumDB, $imgSmallDB;
 	var $ogTags, $siteTitle, $httpurl, $mobile;
-	var $selectSQL, $fcode, $lastprice, $itmname, $itmdescr, $lan, $itmplpath, $myorder;
+	var $selectSQL, $fcode, $lastprice, $itmname, $itmdescr, $lan, $itmplpath, $myorder, $myasc;
 	var $realID, $max_price, $min_price, $loyalty;
 	var $filterajax, $pageName, $phpName, $klistcmd, $kshowcmd;
 	var $fpx, $rtl, $_catAllFilter, $filter_records_in_products_table, $max_result_price;	
 	var $gotoJS, $gridORlist, $apiKeyApprove, $apiKeyCmd, $_key;
-	var $disabledAgentDiv, $facebookApp, $TwiterApp;
+	var $disabledAgentDiv, $facebookApp, $TwiterApp, $AZlower, $feedpath;
 
 	public function __construct() {	
 		$UserSecID = GetGlobal('UserSecID');	
@@ -159,6 +141,8 @@ class shkatalogmedia {
 		$this->post = null;		  
 		$this->result = null;				
 
+		$this->feedpath = $this->urlpath . remote_paramload('RCXMLFEEDS','savepath',$this->path);		
+		
 		$this->imgpath = $this->inpath . '/images/uphotos/';  	  
 		$this->thubpath = $this->inpath . '/images/thub/';
 		$photo_bg = remote_paramload('SHKATALOG','photobgpath',$this->path);		  
@@ -203,12 +187,7 @@ class shkatalogmedia {
 	  	  
 		$this->is_reseller = GetSessionParam('RESELLER'); 
 		$this->carthandler = remote_paramload('SHKATALOG','carthandler',$this->path);	
-		$this->one_attachment = remote_paramload('SHKATALOG','oneattach',$this->path);
-		$this->max_selection = null;	  
-		$this->deforder = remote_paramload('SHKATALOG','deforder',$this->path);	
-		$this->defasc = remote_paramload('SHKATALOG','defasc',$this->path);  
-		$this->global_hide_asceding = remote_paramload('SHKATALOG','hideasc',$this->path);  
-		$this->asccombostyle = remote_paramload('SHKATALOG','asccombostyle',$this->path);	
+		$this->one_attachment = remote_paramload('SHKATALOG','oneattach',$this->path);	
 
 		$cb = remote_arrayload('SHKATALOG','categorybanner',$this->path);	 
 		$this->catbanner = is_array($cb)?(array)$cb : remote_paramload('SHKATALOG','categorybanner',$this->path);	  
@@ -247,26 +226,33 @@ class shkatalogmedia {
 		$this->notreebrowser = remote_paramload('SHKATALOGMEDIA','notreebrowser',$this->path);
 		$this->encodeimageid = remote_paramload('SHKATALOGMEDIA','encodeimageid',$this->path);
 		$this->default_pager = remote_paramload('SHKATALOG','pager',$this->path);	 
+		
 		$aclass = remote_paramload('SHKATALOGMEDIA','ascedingclass',$this->path);
 		$this->asceding_class = $aclass ? $aclass : 'myf_select_small';	  
 		$this->nav = remote_paramload('SHKATALOGMEDIA','catnav',$this->path);
 		$pagecurrentclass = remote_paramload('SHKATALOGMEDIA','pagecurrentclass',$this->path);
 		$this->pager_current_class = $pagecurrentclass ? $pagecurrentclass : ' class="current"';
 	  
-		$sort = remote_paramload('SHKATALOGMEDIA','sortdef',$this->path);   
+		$this->deforder = remote_paramload('SHKATALOG','deforder',$this->path);	 	  
+		$this->defasc = remote_paramload('SHKATALOG','defasc',$this->path); 	  
+		$_sd = remote_paramload('SHKATALOGMEDIA','sortdef',$this->path);
+		$sort =  $_sd ? $_sd : (($this->defasc<0) ? 'DESC' : 'ASC'); 
 		$asc = GetReq('asc') ? GetReq('asc') : GetSessionParam('asc');
 		switch ($asc) {
 			case 1  : $this->sortdef = 'ASC'; break;
 			case 2  : $this->sortdef = 'DESC'; break;
 			default : $this->sortdef = $sort ? $sort : 'ASC';
 		}	
+		$this->myorder = null;
+		$this->myasc = null;
+		$this->max_selection = null;	  
+		$this->global_hide_asceding = remote_paramload('SHKATALOG','hideasc',$this->path);  
+		$this->asccombostyle = remote_paramload('SHKATALOG','asccombostyle',$this->path);		
 
 		$this->fcode = $this->getmapf('code');
-		$this->lastprice = $this->getmapf('lastprice') ? ','.$this->getmapf('lastprice') : ',xml';
-	  
+		$this->lastprice = $this->getmapf('lastprice');
 		$this->itmname = $this->lan ? 'itmname' : 'itmfname';
 		$this->itmdescr = $this->lan ? 'itmdescr' : 'itmfdescr';
-		$this->myorder = null;	
 	  
 		$oid = remote_paramload('SHKATALOGMEDIA','orderid',$this->path);
 		$this->orderid = $oid ? $oid . ' ' . $this->sortdef : 'orderid ' . $this->sortdef;	  	  
@@ -320,10 +306,12 @@ class shkatalogmedia {
 		//values: 0 or header/stick-position/stick-element/..other div id (default the cat/item div id)
 		$this->gotoJS = _m('cmsrt.paramload use ESHOP+gotojskatalog') ?: $this->pageName;
 
-		$this->selectSQL = "select id,sysins,code1,pricepc,price2,itmname,itmfname,uniname1,uniname2,active,code4," .
+		$xfields = $this->fcode . ',';
+		$xfields.= $this->lastprice ? $this->lastprice . ',' : null;
+		$this->selectSQL = "select id,sysins,sysupd,code1,pricepc,price2,itmname,itmfname,uniname1,uniname2,active,code4," .
 							"price0,price1,cat0,cat1,cat2,cat3,cat4,itmdescr,itmfdescr,itmremark,ypoloipo1,resources,".
-							$this->fcode. $this->lastprice . ",weight,volume,dimensions,size,color,manufacturer,orderid,YEAR(sysins) as year,MONTH(sysins) as month,DAY(sysins) as day, DATE_FORMAT(sysins, '%h:%i') as time, DATE_FORMAT(sysins, '%b') as monthname," .
-							"template,owner,itmactive,p1,p2,p3,p4,p5,code2,code3,datein from products ";	
+							$xfields . "xml,weight,volume,dimensions,size,color,manufacturer,orderid,YEAR(sysins) as year,MONTH(sysins) as month,DAY(sysins) as day, DATE_FORMAT(sysins, '%h:%i') as time, DATE_FORMAT(sysins, '%b') as monthname," .
+							"template,owner,itmactive,p1,p2,p3,p4,p5,code2,code3,datein,availalt,cond from products ";	
 
 		//matching filter fields that exists at products table
 		$this->filter_records_in_products_table = array('manufacturer'=>'manufacturer', 
@@ -331,6 +319,8 @@ class shkatalogmedia {
 														'size'=>'size',
 														'dimensions'=>'dimensions',
 														);							
+														
+		$this->AZlower = _m('cmsrt.paramload use CMS+AZlower') ? true : false;												
 		
 		$this->facebookApp = _m('cmsrt.paramload use CMS+facebookApp') ?: false;
 		$this->twitterApp = _m('cmsrt.paramload use CMS+twitterApp') ?: false;
@@ -1005,13 +995,17 @@ function agentDiv(n, px) { return false; }
 	}	
 	
 	protected function orderSQL($myorder=null, $myasc=null) {
-		$order = $myorder ? $myorder : (GetReq('order') ? GetReq('order') : GetSessionParam('order'));	
+		//$order = $myorder ? $myorder : (GetReq('order') ? GetReq('order') : GetSessionParam('order'));
+		$_sessionord = GetReq('order') ? GetReq('order') : (GetSessionParam('order') ? GetSessionParam('order') : $this->deforder);
+		$order = $myorder ? $myorder : $_sessionord; //(GetReq('order') ? GetReq('order') : GetSessionParam('order'));
+		
 		$asc = $myasc ? (($myasc==2) ? 'DESC':'ASC') : $this->sortdef;
 		$ppolicy = $this->is_reseller ? 'price0' : 'price1';
 		
 		if ($this->myorder) { //phpdac hack
 			$sSQL = " ORDER BY ";	
 			$sSQL .= $this->myorder .' '. ($this->myasc ? $this->myasc : $this->sortdef);		
+			//echo '0000:'.$sSQL;
 			return ($sSQL);			
 		}
 		
@@ -1447,18 +1441,20 @@ function agentDiv(n, px) { return false; }
 	       default : $tpath = $this->thubpath;	
                      $stype = '';		   
 		}
-	  
-		if ($this->photodb) { 
+		/*
+		if (isset($this->photodb)) { 
 			if (is_numeric($this->photodb))	  
 				$photo = _m("cmsrt.seturl use t=showimage&id=$code&type=$stype");
 			else  
 				$photo = '/' . $this->photodb . '?id='.$code.'&type='.$stype;
 		}
-		else {//ordinal image
+		else {//ordinal image */
 			$pfile = $this->encode_image_id($code); //_m('shkategories.encode_image_id use '.$code);
 			$photo_file = $this->urlpath . '/' .$tpath . $pfile . $this->restype;	  
 			$photo = (file_exists($photo_file)) ? $tpath . $pfile . $this->restype : $tpath . 'nopic' . $this->restype; 
-	    }
+		/*	
+	    } 
+		*/
 	   
 	    return ($photo);	 	
 	}	
@@ -2013,7 +2009,8 @@ function agentDiv(n, px) { return false; }
 
 		$url = $this->pSortUrl('asc');
 		$selected_asc = GetReq('asc') ? GetReq('asc') : 
-				(GetSessionParam('asc') ? GetSessionParam('asc') : $do);   
+				(GetSessionParam('asc') ? GetSessionParam('asc') : $da);   
+		//echo '--------------->' . $selected_asc;		
 		$combo_asceding = $this->make_combo($url,$data,null,$selected_asc,$style);
 	   
 		//pager
@@ -2170,11 +2167,16 @@ function agentDiv(n, px) { return false; }
 	
 				$caturl = $aliasID ? $this->httpurl .'/' . $cat . $aliasExt : $this->httpurl .'/'.$this->klistcmd.'/'. $cat . '/';
 				$catarray = explode($this->sep(), $tokens[17]);
+				$_category = (is_array($catarray)) ? array_pop($catarray) : $tokens[17];
+				$sku = $this->replace_spchars($_category);
 				$this->ogTags = $this->openGraphTags(array(0=>$this->siteTitle,
-														1=>array_pop($catarray),
+														1=>$_category,
 														2=>$tokens[17],														
 														3=>$caturl,
 														4=>$ogimage, /*array of images*/
+														5=>'4', /*rating*/
+														6=>$_category, /*brand */
+														7=>$sku /*sku code1 or code5*/
 													));	
 				/* js ref analytics */ 
 				$cmdtype = ($cmd==$this->klistcmd) ? 'category' : 'searchresults';
@@ -2190,7 +2192,8 @@ function agentDiv(n, px) { return false; }
              		  
 	    }//empty result
 		else {
-			if ($template = _m('cmsrt.select_template use emptyrecs')) {
+			//if ($template = _m('cmsrt.select_template use emptyrecs')) {
+			if ($template = $this->select_template('emptyrecs')) {	
 				
 				$filters = $this->show_filtering();
 				$msg = localize('_norec',$this->lan);
@@ -2229,11 +2232,16 @@ function agentDiv(n, px) { return false; }
 
 			$caturl = $aliasID ? $this->httpurl .'/' . $cat . $aliasExt : $this->httpurl .'/'.$this->klistcmd.'/'. $cat . '/';
 			$catarray = explode($this->sep(), $tokens[0]['category']);
+			$_category = array_pop($catarray);
+			$sku = $this->replace_spchars($_category);
 			$this->ogTags = $this->openGraphTags(array(0=>$this->siteTitle,
-													1=>array_pop($catarray),
+													1=>$_category,
 													2=>$tokens[0]['category'],														
 													3=>$caturl,
 													4=>$this->httpurl . $this->get_photo_url($rec[$this->fcode],2), //$ogimage, /*array of images*/
+													5=>'4',
+													6=>$_category, 
+													7=>$sku 
 													));	
 			/* js ref analytics */ 
 			/*$cmdtype = ($cmd==$this->klistcmd) ? 'category' : 'searchresults';
@@ -2305,6 +2313,8 @@ function agentDiv(n, px) { return false; }
 			 
 			$tokens = $this->tokenizeRecordItem($rec, $pp, true, $aliasID, 2, false);			
 			//print_r($tokens);
+			$itemdescr = $tokens[1] ?? $tokens[0];
+			$sku = $tokens[29] ?? $tokens[10];
 			
 		 	if ($itmpl = $rec['template']) {
 				
@@ -2318,9 +2328,12 @@ function agentDiv(n, px) { return false; }
 			 
 			$this->ogTags = $this->openGraphTags(array(0=>$this->siteTitle,
 													1=>$tokens[0],
-													2=>$tokens[1] ?? $tokens[0],		
+													2=>$itemdescr,		
 													3=>$tokens[14],
 													4=>$tokens[18], 
+													5=>'4',
+													6=>$tokens[32], 
+													7=>$sku
 													));				 
 			/* js ref analytics */ 
 			$this->analytics(/*$this->kshowcmd*/ 'kshow', $tokens);
@@ -2363,14 +2376,19 @@ function agentDiv(n, px) { return false; }
 			 
 				$tokens[$n] = $this->tokenizeRecordItemApi($rec, $pp, true, $aliasID, 2, false);			
 				//print_r($tokens); //test
+				$itemdescr = $tokens[0]['itmdescr'] ?? $tokens[0]['itmname'];
+				$sku = $tokens[29] ?? $tokens[10];
 			 
 				//$ogimage[] = $this->get_photo_url($rec[$this->fcode],2);
 			 
 				$this->ogTags = $this->openGraphTags(array(0=>$this->siteTitle,
 													1=>$tokens[0]['itmname'],
-													2=>$tokens[0]['itmdescr'] ? $tokens[0]['itmdescr'] : $tokens[0]['itmname'],														
+													2=>$itemdescr,														
 													3=>$tokens[0]['itmurl'],
 													4=>$tokens[0]['photo2'], 
+													5=>'4', 
+													6=>$tokens[39], 
+													7=>$sku
 													));				 
 				/* js ref analytics */ 
 				//$this->analytics('api', $tokens);
@@ -2402,7 +2420,9 @@ function agentDiv(n, px) { return false; }
          
         $slide_index = 1; //start at 1, 1=main image 		 
 		//multiple images
-		for($i='A';$i<='Z';$i++) {
+		$_A = ($this->AZlower==true) ? 'a' : 'A';
+		$_Z = ($this->AZlower==true) ? 'z' : 'Z';
+		for($i=$_A; $i<=$_Z; $i++) {
 		 
 			$slide_index+=1;		 
 		   
@@ -2839,8 +2859,8 @@ function agentDiv(n, px) { return false; }
 			}
 		}
 
-		if ($template = _m('cmsrt.select_template use emptyrec')) {
-				
+		//if ($template = _m('cmsrt.select_template use emptyrec')) {
+		if ($template = $this->select_template('emptyrec')) {		
 			$tokens = array(0=>'');//localize('_norec',$this->lan));
 			$out = $this->combine_tokens($template, $tokens, true);
 			return ($out);
@@ -3563,10 +3583,18 @@ function agentDiv(n, px) { return false; }
 	protected function xml_feed() {  
 		$format = GetReq('format') ? GetReq('format') : 'sitemap';			
 		$ret = null;
-		$items = array();		
+		$items = array();	
 
-		$xmltemplate = _m("cmsrt.select_template use $format");
-		$xmltemplate_products = _m("cmsrt.select_template use $format" . '-items');
+	    if (is_readable($this->feedpath .'/'. $format .'.xht')) {
+			//get the file from filesystem
+	        $xmltemplate = file_get_contents($this->feedpath . '/'. $format .'.xht');
+			$xmltemplate_products = file_get_contents($this->feedpath .'/'. $format .'.xhm');
+		}
+        else {		
+		    //get the file form stream or compliled phar
+			$xmltemplate = _m("cmsrt.select_template use $format");
+			$xmltemplate_products = _m("cmsrt.select_template use $format" . '-items');
+		}
 		$imgxmlPath = _m('cmsrt.paramload use CMS+xmlpics'); //else use img token	
 		
 		//$aliasID = _m("cmsrt.useUrlAlias");
@@ -3575,7 +3603,7 @@ function agentDiv(n, px) { return false; }
 	    	
 		foreach ($this->result as $n=>$rec) {	
 			
-			$tokens = $this->tokenizeRecord($rec, $pp, true, $aliasID, 2, $imgxmlPath);
+			$tokens = $this->tokenizeRecord($rec, $pp, true, $aliasID, 3, $imgxmlPath);
 			//if ($n==0) print_r($tokens);
 			$items[] = $this->combine_tokens($xmltemplate_products, $tokens, true);					
 			unset($tokens);
@@ -3695,6 +3723,8 @@ function agentDiv(n, px) { return false; }
 		$tokens[] = number_format($pwt, $this->decimals,',','.'); //(floatval($price)*24/100)+floatval($price)
 		
 		$tokens[] = $rec['datein'] ; //48
+		$tokens[] = $rec['availalt']; //alt availabillity text
+		$tokens[] = $rec['cond'];		
 				
 		return ($tokens);
 	}	
@@ -3812,6 +3842,8 @@ function agentDiv(n, px) { return false; }
 		$tokens['monthname'] = $rec['monthname']; 
 			  			
 		$tokens['datein'] = $rec['datein'] ; //48
+		$tokens['availalt'] = $rec['availalt']; //alt availabillity text
+		$tokens['condition'] = $rec['cond'];
 				
 		return ($tokens);
 	}	
@@ -3891,7 +3923,7 @@ function agentDiv(n, px) { return false; }
 		$tokens[] = $rec['size'];
 		$tokens[] = $rec['color'];	
 			 
-		$tokens[] = $this->get_xml_links(); 
+		$tokens[] = null;// $this->get_xml_links(); //DISABLED
         $tokens[] = $this->item_has_discount($rec[$this->fcode]);
         //$tokens[] = $this->httpurl . "/addcart/{$rec[$this->fcode]};$cart_title;;;$cat;0;;{$rec[$this->fcode]};$price;1/$cat/1/";				  
 		$tokens[] = $this->httpurl . "/addcart/{$rec[$this->fcode]}/$cat/1/";				  
@@ -3943,6 +3975,9 @@ function agentDiv(n, px) { return false; }
 		
 		//item html text -53	
 		$tokens[] = $this->show_aditional_html_files($rec[$this->fcode]);						
+		
+		$tokens[] = $rec['availalt']; //alt availabillity text
+		$tokens[] = $rec['cond'];
 
 		return ($tokens);		
 	}
@@ -4071,7 +4106,9 @@ function agentDiv(n, px) { return false; }
 		$tokens['time'] = $rec['time'];
 		$tokens['monthname'] = $rec['monthname'];		
 
-		$tokens['datein'] = $rec['datein'] ; 				
+		$tokens['datein'] = $rec['datein'] ; 
+        $tokens['availalt'] = $rec['availalt']; //alt availabillity text
+		$tokens['condition'] = $rec['cond'];
 								
 		return ($tokens);		
 	}	
@@ -4763,7 +4800,8 @@ function agentDiv(n, px) { return false; }
 		return ($out);	
 	}		
 
-	public function get_xml_links($mylan=null,$feed_id=null,$dpcfeed=null) {
+    //disabled
+	/*public function get_xml_links($mylan=null,$feed_id=null,$dpcfeed=null) {
 		$lan = $mylan ? $mylan : getlocal();
 		$lnk = array();
 		$id = $this->realID; //GetReq('id');
@@ -4813,7 +4851,7 @@ function agentDiv(n, px) { return false; }
 		}
 
 		return ($out);  
-	}	
+	}	*/
 	
 	//set ordersing online using <phpdac>
 	public function set_order($orderby=null,$asc=null) {
@@ -4941,6 +4979,7 @@ function agentDiv(n, px) { return false; }
 	protected function openGraphTags($tokens=null) {
 		if (!$tokens) return null;
 		$localization = ($this->lan==1) ? 'el_gr' : 'en_us';
+		//print_r($tokens);
 		
 		//multiple images
 		if (is_array($tokens[4])) { 
@@ -4975,7 +5014,13 @@ EOF;
 				$this->twitterTags(array(0=>$tokens[0],1=>$tokens[1],2=>$tokens[2],3=>$tokens[3],4=>$img)) : 
 				null;
 		
-		$ret .= $this->ldTags(array(0=>$tokens[0],1=>$tokens[1],2=>$tokens[2],3=>$tokens[3],4=>$img)) ;
+		$ret .= $this->ldTags(array(0=>$tokens[0],
+									1=>$tokens[1],
+									2=>$tokens[2],
+									3=>$tokens[3],
+									4=>$img,
+									5=>$tokens[6],
+									6=>$tokens[7]), $tokens[5]) ;
 		
         return $ret;
 	}
@@ -5025,12 +5070,16 @@ EOF;
         return $ret;
 	}	
 	
-	protected function ldTags($tokens=null) {
+	protected function ldTags($tokens=null, $rvalue=null) {
 		if (!$tokens) return null;
+		$ratingv = $rvalue ? $rvalue : 1;
+		//print_r($tokens);
 		
 		//$kw = _m('shtags.get_page_info use keywords');
 		//$keywords = str_replace(',""','' , '"' . str_replace(',', '","', $kw) . '"');
 		$keywords = '"'. str_replace($this->sep(), '","', $tokens[2]) . '"';
+		
+		//"keywords": [$keywords],
 		
 		$ret = <<<EOF
 		
@@ -5039,10 +5088,23 @@ EOF;
 		"@context": "http://schema.org",
 		"@type": "Product",
 		"name": "$tokens[1]",
-		"description: "$tokens[2]",
-		"image:" "$tokens[4]", 
+		"description": "$tokens[2]",
+		"image": "$tokens[4]", 
 		"url": "$tokens[3]",
-		"keywords": [$keywords]
+		"review": {
+			"@type": "Review",
+			"reviewRating": {
+				"@type": "Rating",
+				"ratingValue": "$ratingv",
+				"bestRating": "5"
+				},
+			"author": {
+				"@type": "Person",
+				"name": "stereobit"
+				}	
+			},
+		"brand": "$tokens[5]",
+		"SKU": "$tokens[6]"	
 		}
 		</script>	
 EOF;
@@ -5191,7 +5253,8 @@ EOF;
 
 		//$ret = _m("cmsrt._ct use $tmplbody+" . serialize($tokens) . '+1');			
 		//return ($ret);			
-		if ($template = _m("cmsrt.select_template use $tmplbody")) 
+		//if ($template = _m("cmsrt.select_template use $tmplbody")) 
+		if ($template = $this->select_template($tmplbody)) 	
 			return $this->combine_tokens($template, $tokens, true);		
 	}
 	

@@ -620,12 +620,17 @@ parse_ini_string_m:
    
     public function render($theme=null,$lan=null,$cl=null,$fp=null) {      
    
-		$atime = $this->getthemicrotime();  
+		$atime = $this->getthemicrotime(); 
+
+		//get the template name/path and get index file as default
+		$tmpl = _v('cmsrt.MC_TEMPLATE'); 
+		//echo $tmpl . '/index.php';
+		$_fp = $fp ? $fp : $tmpl . '/index.php';		
 	  	  
 		//$this->pre_render($theme,$lan,$cl,$fp);
 		$data = $this->action($this->myaction);
 	  
-	    $hfp = new fronthtmlpage($fp, $theme);  
+	    $hfp = new fronthtmlpage($_fp, $theme);  
 	    $ret = $hfp->render($data); //this->data);
 	    unset($hfp);
 

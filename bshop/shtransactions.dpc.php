@@ -119,6 +119,21 @@ class shtransactions extends transactions {
 		
 		return ($code);
 	}	
+	
+	//overwrite
+	public function generate_id() {
+		$db = GetGlobal('db');
+
+		//if ($this->storetype=='DB') {  //db
+	   
+			$sSQL = "select count('recid') from transactions";
+			$res = $db->Execute($sSQL,1);
+		  
+			$recid = $res->fields[0];//RecordCount()+1;
+		//}	
+		//echo 'RECID:' . $recid;
+		return $recid ? intval($recid) + 1 : 1;
+	}	
    
 	//overwrite
 	public function saveTransaction($data='',$user='',$payway=null,$roadway=null,$qty=null,$cost=null,$costpt=null) {

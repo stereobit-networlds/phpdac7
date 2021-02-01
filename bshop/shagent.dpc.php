@@ -6,15 +6,24 @@ define("SHAGENT_DPC",true);
 
 $__DPC['SHAGENT_DPC'] = 'shagent';
 
-$a = GetGlobal('controller')->require_dpc('cms/cmsagent.dpc.php');
-require_once($a);
+//$a = GetGlobal('controller')->require_dpc('cms/cmsagent.dpc.php');
+require_once(_r('cms/cmsagent.dpc.php'));
  
 GetGlobal('controller')->get_parent('CMSAGENT_DPC','SHAGENT_DPC');
-
 $__EVENTS['SHAGENT_DPC'][10]='divstart';
-
 $__ACTIONS['SHAGENT_DPC'][10]='divstart';
 
+/*
+$__EVENTS['SHAGENT_DPC'][0]='shagent';
+$__EVENTS['SHAGENT_DPC'][1]='jsdcode';
+$__EVENTS['SHAGENT_DPC'][2]='jsdecode';
+$__EVENTS['SHAGENT_DPC'][3]='divstart';
+
+$__ACTIONS['SHAGENT_DPC'][0]='shagent';
+$__ACTIONS['SHAGENT_DPC'][1]='jsdcode';
+$__ACTIONS['SHAGENT_DPC'][2]='jsdecode';
+$__ACTIONS['SHAGENT_DPC'][3]='divstart';
+*/
 $__DPCATTR['SHAGENT_DPC']['shagent'] = 'shagent,1,0,0,0,0,0,0,0,1,1,1,1';
 
 $__LOCALE['SHAGENT_DPC'][0]='SHAGENT_DPC;Shop Agent;Shop Agent';

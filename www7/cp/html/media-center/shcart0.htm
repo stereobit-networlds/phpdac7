@@ -307,8 +307,8 @@
 					</phpdac>					
 					
                     <div class="buttons-holder">					
-                        <!--a class="le-button big" href="http://localhost/~ibrahim/themeforest/HTML/mediacenter/upload/PHP/checkout" >checkout</a>
-                        <a class="simple-link block" href="http://localhost/~ibrahim/themeforest/HTML/mediacenter/upload/PHP/home" >continue shopping</a-->
+                        <!--a class="le-button big" href="#" >checkout</a>
+                        <a class="simple-link block" href="#" >continue shopping</a-->
 					<!--hpdac>
 						cmsrt.phpcode use
 					<-php	
@@ -343,7 +343,24 @@
             </div><!-- /.widget -->';
 				?>
 				++0|1
-			</phpdac>			
+			</phpdac>	
+
+			<!-- click away 0/1 -->
+			<phpdac>
+				cmsrt.nvl use shcart.status+
+					<?php return _m('shcart.validCoupon') ? null : '	
+            <div id="cupon-widget" class="widget">
+                <h1 class="border">Click Away</h1>
+                <div class="body">
+                    <div class="inline-input">
+                        <input data-placeholder="Insert code" type="text" name="clickawaycode" />
+                        <button class="le-button" type="submit">Ok</button>
+                    </div>
+                </div>
+            </div><!-- /.widget -->';
+				?>
+				++0|1
+			</phpdac>				
         </div><!-- /.sidebar -->
 
         <!-- ========================================= SIDEBAR : END ========================================= -->	

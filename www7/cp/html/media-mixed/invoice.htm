@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html lang="{{phpdac._var(frontpage.iso_language)}}" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Invoice</title>
+
+  <style type="text/css">
+    /* Custom CSS code */
+    table {border-spacing:0; border-collapse: collapse;}
+    ul {list-style-type: none; padding-left:0;}
+    body, input, textarea { font-family:helvetica,sans-serif; font-size:8pt; }
+    body { color:#464648; margin:2cm 1.5cm; }
+    h2   { color:#535255; font-size:16pt; font-weight:normal; line-height:1.2em; border-bottom:1px solid #DB4823; margin-right:220px }
+    h3   { color:#9A9A9A; font-size:13pt; font-weight:normal; margin-bottom: 0em}
+
+    table th.right,
+    table td.right              { text-align:right; }
+
+    .customer-data              { padding:1em 0; }
+    .customer-data table        { width:100%;       }
+    .customer-data table td     { width:50%;        }
+    .customer-data td span      { display:block; margin:0 0 5pt; padding-bottom:2pt; border-bottom:1px solid #DCDCDC; }
+    .customer-data td span.left { margin-right:1em; }
+    .customer-data label        { display:block; font-weight:bold; font-size:8pt; }
+    .payment-data               { padding:1em 0;    }
+    .payment-data table         { width:100%;       }
+    .payment-data th,
+    .payment-data td            { line-height:1em; padding:5pt 8pt 5pt; border:1px solid #DCDCDC; }
+    .payment-data thead th      { background:#FAFAFA; }
+    .payment-data th            { font-weight:bold; white-space:nowrap; }
+    .payment-data .bottomleft   { border-color:white; border-top:inherit; border-right:inherit; }
+    .payment-data span.tax      { display:block; white-space:nowrap; }
+    .terms, .notes              { padding:9pt 0 0; font-size:7pt; line-height:9pt; }
+
+    .section                    { margin-bottom: 1em; }
+    .logo                       { text-align: right; }
+  </style>
+
+  <style type="text/css">
+    /* CSS code for printing */
+    @media print {
+      body           { margin:auto; }
+      .section       { page-break-inside:avoid; }
+      div#sfWebDebug { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+      <img src="http://{{phpdac._conf('INDEX.domain-name')}}/images/logo.png" alt="{{phpdac._var('shcart.print_title')}}" />
+  </div>
+  <div class="logo">
+    <div class="company-data">
+	  <!--h1>{{phpdac._conf('INDEX.company-name')}}</h1-->
+      <ul>
+        <li>{{phpdac._conf('INDEX.address')}} </li>
+		<li>{{phpdac._conf('INDEX.tel1')}}, {{phpdac._conf('INDEX.tel2')}} | Email: {{phpdac._conf('INDEX.e-mail')}} | www. {{phpdac._conf('INDEX.domain-name')}}</li>
+      </ul>
+	  <!--h1>{{phpdac._var('shcart.print_title')}}</h1-->
+    </div>
+  </div>     
+  
+  <div class="section">
+    
+  <div class="terms"> Τύπος Παραστατικού - Document Type - Invoice | Αριθμός - 
+    Invoice Νο | Ημερομηνία έκδοσης - Invoice date</div>
+  </div> 
+      
+  <div class="h2">
+  <h2>{{invoice}} | {{invoice.issue_date|date("d-m-Y h:i", "Europe/Athens")}}</h2>
+  </div>
+
+  <div class="section">
+    
+  <h3>Στοιχεία Πελάτη - Customer Details</h3>
+    {% set cusdata = phpdac._func('shcustomers.getcustomer') %}
+    <div class="customer-data">
+      <table cellspacing="0" cellpadding="0" width="100%">
+        <tr>
+          <td>
+            <span class="left">
+              
+          <label>Κωδικός, Πελάτης - Customer code, Customer title:</label>
+              <h3>{{cusdata|_1}}</h3>
+            </span>
+          </td>
+          <td>
+            <span class="right">
+              
+          <label>ΑΦΜ / ΔΟΥ - VAT Number:</label>
+              <h3>{{cusdata|_2}}  {{cusdata|_3}}</h3>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="left">
+              
+          <label>Επάγγελμα - Activities:</label>
+              <h3>{{cusdata|_4}}</h3>
+            </span>
+          </td>
+          <td>
+            <span class="right">
+              <label>Email:</label>
+              <h3>{{cusdata|_11}}</h3>
+             </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="left">
+              
+          <label>Διεύθυνση - Address:</label>
+              <h3>{{cusdata|_5}} {{cusdata|_6}} {{cusdata|_7}}<br/>
+			  {{cusdata|_8}} {{cusdata|_9}}  {{cusdata|_10}}</h3>
+            </span>
+          </td>
+          <td>
+            <span class="right">
+              
+          <label>Διεύθυνση Αποστολής - Shipping address:</label>
+		    <h3>{{phpdac._svar('addressway')|replace({'<br>':' '})}}</h3>
+            </span>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <!--h3>Λεπτομέριες πληρωμής</h3-->
+    <div class="payment-data">
+      <table>
+        <thead>
+          <tr>
+          <th width="10%">Κωδικός - Item code</th>  
+          <th width="60%">Περιγραφή - Description - Item</th>
+          <th class="right">Ποσ - Qty</th>		  
+          <th class="right">Τιμή - Unit Price</th>
+		  <!--{% if phpdac._var('shcart.tax') %}
+          <th class="right">Φόροι-Tax</th>
+		  {% endif %}-->
+            {# show discounts only if there is some discount #}
+            {% if phpdac._var('shcart.mydiscount') %}
+          <th class="right">Έκπτωση - Discount</th>
+            {% endif %}
+          <th class="right">Αξία - Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in phpdac._var('shcart.buffer') %}
+            <tr>
+              <td>{{item|_1}}</td>			
+              <td>{{item|_2}}</td>
+			  {% set qty = item|_10 %}
+              <td class="right">{{qty}}</td>			  
+			  {% set price = item|_9 %}
+              <td class="right">{{price|nformat}}</td>
+			  <!--{% if phpdac._var('shcart.tax') %}
+              <td class="right">{{phpdac._var('shcart.tax')}}</td>
+			  {% endif %}-->
+              {% if phpdac._var('shcart.mydiscount') %}
+              <td class="right">{{phpdac._var('shcart.mydiscount')}}</td>
+              {% endif %}
+			  {% set itemtotal = (qty * price) %}
+              <td class="right">{{itemtotal|nformat}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td class="bottomleft" colspan="{% if phpdac._var('shcart.mydiscount') %}4{% else %}3{% endif %}"></td>
+            
+          <th class="right">Αξία προ έκπ. - Total Net</th>
+            <td class="right">{{ phpdac._var('shcart.total')|nformat }}</td>
+          </tr>
+          {% if phpdac._var('shcart.mydiscount') %}
+          <tr>
+            <td class="bottomleft" colspan="{% if phpdac._var('shcart.mydiscount') %}4{% else %}3{% endif %}"></td>
+            
+          <th class="right">Έκπτωση - Discount</th>
+            <td class="right">{{ phpdac._var('shcart.mydiscount')|nformat }}</td>
+          </tr>
+          {% endif %}
+          {% if phpdac._var('shcart.shippingcost') %}
+          <tr>
+            <td class="bottomleft" colspan="{% if phpdac._var('shcart.mydiscount') %}4{% else %}3{% endif %}"></td>
+            
+          <th class="right">Μεταφορικά - Shipping Cost</th>
+            <td class="right">{{ phpdac._var('shcart.shippingcost')|nformat }}</td>
+          </tr>
+          {% endif %}		  
+		  {% if phpdac._var('shcart.tax') %}
+          <tr>
+            <td class="bottomleft" colspan="{% if phpdac._var('shcart.mydiscount') %}4{% else %}3{% endif %}"></td>
+            
+        <th class="right">Καθαρή αξία - Total Net </th>
+            <td class="right">{{ phpdac._var('shcart.total')|nformat }}</td>
+          </tr>
+          <tr>
+            <td class="bottomleft" colspan="{% if phpdac._var('shcart.mydiscount') %}4{% else %}3{% endif %}"></td>
+            
+        <th class="right">ΦΠΑ - Total VAT</th>
+            <td class="right">{{ phpdac._var('shcart.mytaxcost')|nformat }}</td>
+          </tr>
+		  {% endif %}
+          <tr class="strong">
+            <td class="bottomleft" colspan="{% if phpdac._var('shcart.mydiscount') %}4{% else %}3{% endif %}"></td>
+            
+        <th class="right">ΣΥΝΟΛΟ - ORDER TOTAL</th>
+            <td class="right">{{ phpdac._var('shcart.myfinalcost')|nformat }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    {% if phpdac._var('shcart.mytaxcost') %}
+    <h3>Ανάλυση Υπολογισμού ΦΠΑ - VAT Analysis</h3>
+    <div class="terms">
+	Καθαρή Αξία - Total Net Value: {{phpdac._var('shcart.total')|nformat}} | ΦΠΑ(%) - VAT(%): {{phpdac._var('shcart.tax')}} | Αξία ΦΠΑ - VAT Value: {{phpdac._var('shcart.mytaxcost')|nformat}}
+    </div>
+	{% endif %}
+  </div>  
+  
+  <div class="section">
+    <h3>Παρατηρήσεις - Notes</h3>
+    <div class="terms">
+	<h3
+	  {{phpdac._slocalize('invway')}}<br/>	
+	  {{phpdac._slocalize('payway')}}<br/>
+	  {{phpdac._slocalize('roadway')}}<br/>
+	  {{phpdac._svar('addressway')|replace({'<br>':'-'})}}<br/>
+	  {{phpdac._svar('sxolia')}}<br/>
+	  <br/>
+      {{invoice.terms|format}}
+	</h3>  
+    </div>
+  </div>
+  
+  <div class="logo">
+ 	<!--h3> Παραλαβή   |  Έκδοση</h3--> 
+    
+  <div class="company-data"><!--img src="http://stereobit.gr/images/sign.jpg"/--> 
+  </div>
+  </div> 
+<!--img src="http://stereobit.gr/images/digisign.png"/-->   
+</body>
+</html>

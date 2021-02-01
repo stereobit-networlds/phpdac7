@@ -182,7 +182,7 @@ class rcbulkmail {
 	
 	var $userDemoIds, $crmLevel, $maxinpvars, $batchid, $ckeditver, $ckjsurl;
 	var $newtemplatebody, $saved, $savedname, $newsubtemplatebody, $newpatternbody;
-	var $_OPT, $exitCode, $cryptPost;
+	var $_OPT, $exitCode, $cryptPost, $mjetapikey, $mjetapisecret, $mjetfrom;
 		
     public function __construct() {
 	  
@@ -279,6 +279,10 @@ class rcbulkmail {
 
 		$this->cryptPost = defined('CRYPTOPOST_DPC') ? true : false;	
 		//echo '>'.$this->cryptPost;
+		
+		$this->mjetfrom = remote_paramload('RCBULKMAIL','mjetfrom', $this->prpath);
+		$this->mjetapikey = remote_paramload('RCBULKMAIL','mjetapikey', $this->prpath);
+		$this->mjetapisecret = remote_paramload('RCBULKMAIL','mjetapisecret', $this->prpath);		
 	}	
 	
     public function event($event=null) {
@@ -2106,7 +2110,7 @@ EOF;
 		$result = $db->Execute($sSQL,1);			 
 		$ret = $db->Affected_Rows();   		
 
-		$ret = $this->sendmail($from,$to,$subject,$body,$this->ishtml,$user,$pass,$name,$server);		
+		$ret = $this->sendmail($from,$to,$subject,$body,$this->ishtml);		
  
 		return ($ret);			 
 	}	
@@ -2116,12 +2120,32 @@ EOF;
 		$err = null; 
 
 		if (($this->_checkmail($to)) && ($subject)) {//echo $to,'<br>';
+		
+		    if (($this->mjetapisecret) && ($this->mjetapikey) && ($from = $this->mjetfrom)) {	
+
+				//echo 'Method Mailjet';
+				
+				$response = null;				
+				$_jsend = $this->sendmailjet($from,$to,$subject,$mail_text,null,null,null,$response);
+				
+				if ($_jsend===true) {
+					
+					$this->messages[] = "Mailjet status: " . $response->status;
+					$this->messages[] = localize('_msgsuccess',getlocal());	//send message ok
+					return true;
+				}         
+				else 
+					$this->messages[] = "Mailjet status: " . $response->status;	//error
+				
+				return false;
+		    }	
+		    //else	
 	   
 			$smtpm = new smtpmail($this->encoding,$this->mailuser,$this->mailpass,$this->mailname,$this->mailserver);
 		   	   
 			if ((SMTP_PHPMAILER=='true') || ($method=='SMTP')) {
 				
-				echo 'Method SMTP ';
+				//echo 'Method SMTP ';
 				
 				$smtpm->from($from,$this->mailname);		   
 				$smtpm->to($to);  
@@ -2130,7 +2154,7 @@ EOF;
 			}
 			elseif ((SENDMAIL_PHPMAILER=='true') || ($method=='SENDMAIL')) {	  	   
 			
-				echo 'Method SENDMAIL ';
+				//echo 'Method SENDMAIL ';
 			
 				$smtpm->from($from,$this->mailname);		   
 				$smtpm->to($to);  			    
@@ -2139,7 +2163,7 @@ EOF;
 			} 
 			else {
 				
-				echo 'Method DF ';
+				//echo 'Method DF ';
 				
 				$smtpm->to($to); 
 				$smtpm->from($from); 
@@ -2161,7 +2185,60 @@ EOF;
 			$this->messages[] = localize('_msgerror',getlocal());
 		 
 	   return (false);	  	   
-    } 	
+    } 
+
+	//mailjet mail
+	public function sendmailjet($from, $to, $subject, $mail_html=null, $mail_text=null, $namefrom=null, $nameto=null, &$response=null) {
+	    if (($this->_checkmail($to)) && ($subject)) {
+		
+			$mailjetApiKey = $this->mjetapikey; 
+			$mailjetApiSecret = $this->mjetapisecret; 
+			$mailfrom = $this->mjetfrom ?? $from; 
+			
+			$nfrom = $namefrom ?? remote_paramload('INDEX','company-name',$this->prpath);
+			$nto = $nameto ?? 'Undisclosed recipients';
+			
+			$mailText = $mail_text ?? remote_paramload('INDEX','title',$this->prpath);//'Mailjet test body email message';
+		
+			$messageData = [
+			'Messages' => [
+			[
+				'From' => [
+					'Email' => $mailfrom,
+					'Name' => $nfrom
+				],
+				'To' => [
+					[
+						'Email' => $to,
+						'Name' => $nto
+					]
+				],
+				'Subject' => $subject,
+				'TextPart' => $mailText,
+				'HTMLPart' => $mail_html
+			]
+			]
+			]; 
+		
+			$jsonData = json_encode($messageData);
+			$ch = curl_init('https://api.mailjet.com/v3.1/send');
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+			curl_setopt($ch, CURLOPT_USERPWD, "{$mailjetApiKey}:{$mailjetApiSecret}");
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, [
+				'Content-Type: application/json',
+				'Content-Length: ' . strlen($jsonData)
+			]);
+			$response = json_decode(curl_exec($ch));
+			//var_dump($response);
+		
+			if ($response->status==='success') 	
+				return true;
+		}
+		
+		return false;
+	}		
 	
 	/*when web view hide texts */
 	protected function add_remarks_to_hide($text=null) {

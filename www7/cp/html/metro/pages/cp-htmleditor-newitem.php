@@ -5,7 +5,7 @@
 <!-- BEGIN HEAD -->
 <head>
    <meta charset="utf-8" />
-   <title>Edit item</title>
+   <title>New item</title>
    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
    <meta content="" name="description" />
    <meta content="" name="author" />
@@ -52,10 +52,9 @@
                      <!-- BEGIN BLANK PAGE PORTLET-->
                      <div class="widget red">
                          <div class="widget-title">
-                             <h4><i class="icon-edit"></i> Add item </h4>
+                             <h4><i class="icon-edit"></i> <phpdac>cmsrt.slocale use _additem</phpdac></h4>
                            <span class="tools">
                                <a href="javascript:;" class="icon-chevron-down"></a>
-                               <a href="javascript:;" class="icon-remove"></a>
                            </span>
                          </div>
                          <div class="widget-body">
@@ -64,27 +63,27 @@
                             <!-- BEGIN FORM-->
                             <form method="post" action="#" class="form-horizontal">
                             <div class="control-group">
-                                <label class="control-label">Title</label>
+                                <label class="control-label"><phpdac>cmsrt.slocale use _itemtitle</phpdac></label>
                                 <div id="edit_subject" class="controls">
                                     <input name="title" value="<phpdac>fronthtmlpage.nvldac2 use title+fronthtmlpage.echostr:title+cpmhtmleditor.getField:itmname+</phpdac>" type="text" class="span6 " />
-                                    <span class="help-inline">Insert a title </span>
+                                    <!--span class="help-inline">Insert a title </span-->
                                 </div>
                             </div>
                             <div class="control-group">
-                                <label class="control-label">Description</label>
+                                <label class="control-label"><phpdac>cmsrt.slocale use _itemdescr</phpdac></label>
                                 <div id="edit_descr" class="controls">
                                     <textarea class="span12" name="descr" rows="3"><phpdac>fronthtmlpage.nvldac2 use descr+fronthtmlpage.echostr:descr+cpmhtmleditor.getField:itmdescr+</phpdac></textarea>
                                 </div>
                             </div>							
 							<div class="control-group">
-								<label class="control-label">Text</label>
+								<label class="control-label"><phpdac>cmsrt.slocale use _itemtext</phpdac></label>
 								<div class="controls">
 									<!--textarea class="span12 ckeditor" name="htmltext" rows="6"><-hpdac>cpmhtmleditor.itemText</phpda-></textarea-->
 									<phpdac>cpmhtmleditor.itemEditor</phpdac>
 								</div>
 							</div>	
                             <div class="control-group">
-                                <label class="control-label">Active</label>
+                                <label class="control-label"><phpdac>cmsrt.slocale use _itemactive</phpdac></label>
                                 <div class="controls">
                                             <div id="normal-toggle-button">
                                                 <input name="active" type="checkbox" <phpdac>cpmhtmleditor.getField use active+1</phpdac> />
@@ -92,47 +91,37 @@
                                             <div id="info-toggle-button">
                                                 <input name="itmactive" type="checkbox" class="toggle" <phpdac>cpmhtmleditor.getField use itmactive+1</phpdac> />
                                             </div>
-                                            <!--div id="success-toggle-button">
-                                                <input type="checkbox" class="toggle" checked="checked" />
-                                            </div>
-                                            <div id="warning-toggle-button">
-                                                <input type="checkbox" class="toggle" checked="checked" />
-											</div-->
                                 </div>
                             </div>								
 							<div class="control-group">
-                                    <label class="control-label">Tags</label>
-                                    <div id="edit_to" class="controls">
-										<!--div class="input-icon left">
-											<i class="icon-envelope"></i>
-											<input name="to" value="<phpdac>fronthtmlpage.nvldac2 use submail+fronthtmlpage.echostr:submail++</phpdac>" class=" " type="text"  />
-											<span class="help-inline">
-											Insert e-mail in order to test before sending	
-											</span>
-										</div-->	
+                                    <label class="control-label"><phpdac>cmsrt.slocale use _tags</phpdac></label>
+                                    <!--div id="edit_to" class="controls">	
 										<input id="tags_1" name="tags" type="text" class="tags" value="<phpdac>cphtmleditor.cpGet</phpdac>" />									
-                                    </div>
+                                    </div-->
+									<div id="edit_to" class="controls">
+										<input id="tags" name="tags" type="text" class="span12" value="" />
+									</div>	
                             </div>								
 							<div id="select_template" class="control-group">
-                                <label class="control-label">Article template</label>
+                                <label class="control-label"><phpdac>cmsrt.slocale use _articletmpl</phpdac></label>
                                 <div id="template_page" class="controls">
                                     <select name="mctemplate" class="span6 chzn-select" data-placeholder="Choose a template" tabindex="1">
-                                        <option value="">Select...</option>
+                                        <option value=""><phpdac>cmsrt.slocale use _select</phpdac></option>
 										<phpdac>cpmhtmleditor.templates</phpdac>
                                     </select>
                                 </div>							
                             </div>	
 							<div id="select_page" class="control-group">
-                                <label class="control-label">Page Template</label>
+                                <label class="control-label"><phpdac>cmsrt.slocale use _pagetmpl</phpdac></label>
                                 <div id="mc_page" class="controls">
                                     <select name="mcpage" class="span6 chzn-select" data-placeholder="Choose a page" tabindex="1">
-                                        <option value="">Select...</option>
+                                        <option value=""><phpdac>cmsrt.slocale use _select</phpdac></option>
 										<phpdac>cpmhtmleditor.mcpages</phpdac>
                                     </select>
                                 </div>								
                             </div>								
                             <div class="form-actions">
-                                <button type="submit" class="<phpdac>fronthtmlpage.nvl use cpmhtmleditor.postok+btn btn-success+btn btn-danger+</phpdac>">Submit</button>
+                                <button type="submit" class="<phpdac>fronthtmlpage.nvl use cpmhtmleditor.postok+btn btn-success+btn btn-danger+</phpdac>"><phpdac>cmsrt.slocale use _save</phpdac></button>
                                 <!--button type="button" class="btn">Cancel</button-->
 								<input type="hidden" name="FormName" value="newitem" />
 								<input type="hidden" name="FormAction" value="cpmnewitem" />
@@ -145,13 +134,13 @@
                             </div>							
 							<div>
 							<div id="exclude" class="control-group">
-								<label class="control-label">Categories</label>
+								<label class="control-label"><phpdac>cmsrt.slocale use _itemcategories</phpdac></label>
 								<div class="controls">							
                                     <table style="width: 100%;" class="">
                                         <tr>
                                             <td style="width: 35%">
                                                 <div class="d-sel-filter">
-                                                    <span>Filter:</span>
+                                                    <span><phpdac>cmsrt.slocale use _filter</phpdac>:</span>
                                                     <input type="text" id="box1Filter" />
                                                     <button type="button" class="btn" id="box1Clear">X</button>
                                                 </div>
@@ -177,7 +166,7 @@
                                             </td>
                                             <td style="width: 35%">
                                                 <div class="d-sel-filter">
-                                                    <span>Filter:</span>
+                                                    <span><phpdac>cmsrt.slocale use _filter</phpdac>:</span>
                                                     <input type="text" id="box2Filter" />
                                                     <button type="button" class="btn" id="box2Clear">X</button>
                                                 </div>
@@ -197,7 +186,7 @@
 								</div>	
                             </div>	
 							<div id="messages" class="control-group">
-								<label class="control-label">Messages</label>
+								<label class="control-label"><phpdac>cmsrt.slocale use _messages</phpdac></label>
 								<div class="controls">
 									<select id="messages" multiple="multiple" style="height:100px;width:100%;">
 										<phpdac>cpmhtmleditor.viewMessages</phpdac>

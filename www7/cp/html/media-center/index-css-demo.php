@@ -3,7 +3,11 @@
 	    
 	    <!-- Customizable CSS -->
 	    <link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/main.css</phpdac>">
-	    <link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/orange.css</phpdac>">
+		
+	    <!--link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/orange.css</phpdac>"-->
+		<!--link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/navy.css</phpdac>"-->
+	    <link rel="stylesheet" href="assets/css/<phpdac>cms.paramload use INDEX+color</phpdac>.css">
+		
 	    <link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/owl.carousel.css</phpdac>">
 		<link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/owl.transitions.css</phpdac>">
 		<link rel="stylesheet" href="assets/css/animate.min.css">

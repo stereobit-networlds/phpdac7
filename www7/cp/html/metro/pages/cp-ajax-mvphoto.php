@@ -73,13 +73,12 @@
 					<!-- BEGIN DROPZONE -->
 					<div class="widget red">
                         <div class="widget-title">
-                            <h4><i class="icon-asterisk"></i> Dropzone File Upload</h4>
+                            <h4><i class="icon-asterisk"></i> <phpdac>cmsrt.slocale use _dropzone</phpdac></h4>
                             <span class="tools">
                             <a href="javascript:;" class="icon-chevron-down"></a>
-                            <!--a href="javascript:;" class="icon-remove"></a-->
                             </span>
 							<div class="update-btn">
-                                <a href="cpmhtmleditor.php?t=cpmvphoto&ajax=1&id=<phpdac>fronthtmlpage.getParam use id</phpdac>" class="btn update-easy-pie-chart"><i class="icon-repeat"></i> Refresh</a>
+                                <a href="cpmhtmleditor.php?t=cpmvphoto&ajax=1&id=<phpdac>fronthtmlpage.getParam use id</phpdac>" class="btn update-easy-pie-chart"><i class="icon-repeat"></i> <phpdac>cmsrt.slocale use _refresh</phpdac></a>
                             </div>
                         </div>
                         <div class="widget-body form">

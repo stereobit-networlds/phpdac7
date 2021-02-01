@@ -28,14 +28,20 @@ class cryptopost {
     
     protected $opensslCnf; // Filename of the openssl.cnf config file.
     protected $RSAkeyLength;
+	
+	var $ocnfdebug;
     
     public function __construct($RSAkeyLength = 1024, $opensslCnf = '/openssl.cnf')
     {
 		$path = paramload('SHELL','prpath'); //getcwd()
+		$ocnf = paramload('SHELL','opensslcnf'); 
+		$this->ocnfdebug = paramload('SHELL','opensslcnfdebug') ? true : false; 
+		if ($this->ocnfdebug===true)
+			echo $ocnf . '<br/>';
 		
         // Create the session RSA key pair if doesn't exists.
         $this->RSAkeyLength = $RSAkeyLength;
-        $this->opensslCnf = $path . $opensslCnf;
+        $this->opensslCnf = $ocnf ?? $path . $opensslCnf;
 		//echo 'CNF:' . $this->opensslCnf;
         if (!isset($_SESSION['RSA_Private_key'])) $this->createSessionKeys();
     }
@@ -43,6 +49,9 @@ class cryptopost {
 	/*stereobit*/
 	public function getmyRSAPublicKey() 
 	{
+		if ($this->ocnfdebug===true)
+			echo "<br>call getmyRSAPublicKey():" . $_SESSION['RSA_Public_key'];
+		
 		return $_SESSION['RSA_Public_key'];
 	}
 	
@@ -58,6 +67,11 @@ class cryptopost {
             "private_key_bits" => $this->RSAkeyLength,
             "private_key_type" => OPENSSL_KEYTYPE_RSA
         );
+		
+		if ($this->ocnfdebug===true) {
+			echo "<br>call createKeys():";
+			//print_r($config);		
+		}	
         
         $privatekey = '';
         $keydetails = false;
@@ -66,12 +80,19 @@ class cryptopost {
         if ($pkey) $pkeyCreated = openssl_pkey_export($pkey, $privatekey, null, $config);
         if ($pkeyCreated) $keydetails = openssl_pkey_get_details($pkey);
         
-        if (!$keydetails) die("RSA key creation failed. -" . openssl_error_string() );
+        if (!$keydetails) die("RSA key creation failed. -" . openssl_error_string());
         
-        return array(
+		$retarray = array(
             "rsaPrivateKey" => $privatekey,
             "rsaPublicKeyHex" => bin2hex($keydetails['rsa']['n'])
         );
+		
+		if ($this->ocnfdebug===true) {
+			//print_r($retarray);	
+			$retarray["rsaPublicKeyHex"];	
+		}		
+		
+        return $retarray;
     }
     
     /**
@@ -84,6 +105,11 @@ class cryptopost {
         $keyArray = $this->createKeys();
         $_SESSION['RSA_Private_key'] = $keyArray['rsaPrivateKey'];
         $_SESSION['RSA_Public_key'] = $keyArray['rsaPublicKeyHex'];
+		
+		if ($this->ocnfdebug===true) {
+			echo "<br>call createSessionKeys():";
+			//print_r($keyArray);	
+		}	
     }
     
     /**
@@ -147,8 +173,11 @@ class cryptopost {
     */
     public function reset()
     {
+		if ($this->ocnfdebug===true) 
+			echo "<br>call reset() AES Key to reset:" . $_SESSION['aesKey'];	
+		
         unset($_SESSION['aesKey']);
-        $this->createSessionKeys();    
+        $this->createSessionKeys(); 		
     }
     
     /**
@@ -169,19 +198,34 @@ class cryptopost {
     */
     public function decodeForm()
     {   
+		if ($this->ocnfdebug===true) 
+			echo "<br>call decodeForm: a";	
+	
         if (!isset($_POST['cryptoPost'])) return false; // Nothing to decrypt
+		
+		if ($this->ocnfdebug===true) 
+			echo "b";		
         
         // Get and decrypt cryptoPost_key if present
         if (isset($_POST['cryptoPost_key'])){
+			
+			if ($this->ocnfdebug===true) 
+				echo "c";				
 			
             if (!isset($_SESSION['RSA_Private_key'])) die("RSA key not found");
             $rsaPrivateKey = openssl_pkey_get_private($_SESSION['RSA_Private_key']);
             $encrypted = pack('H*', $_POST['cryptoPost_key']);
             $aesKey = '';
 			
+			if ($this->ocnfdebug===true) 
+				echo "d";			
+			
             if (!openssl_private_decrypt($encrypted, $aesKey, $rsaPrivateKey)) return false;
             $_SESSION['aesKey'] = $aesKey;
             unset($_POST['cryptoPost_key']);
+			
+			if ($this->ocnfdebug===true) 
+				echo "e";			
         }
         
         if (!isset($_SESSION['aesKey'])) die("Decrypt: AES key not found");
@@ -215,12 +259,18 @@ class cryptopost {
     */
     public function encodeData($data=null, $formId)
     {
+		if ($this->ocnfdebug===true) 
+			echo "<br>call encodeData:" . $data . '---->' . $formId;			
+		
 		/*stereobit*/
 		$data = isset($data) ? $data : $_POST;
 		
         if (!$data || !$formId) return false;
         
         if (!isset($_SESSION['aesKey'])) die("Encrypt: AES key not found");
+		
+		if ($this->ocnfdebug===true) 
+			echo "<br>AES Key:" . $_SESSION['aesKey'];		
         
         // Serialize data and form id
         $union = '';

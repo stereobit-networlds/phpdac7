@@ -52,10 +52,9 @@
                      <!-- BEGIN BLANK PAGE PORTLET-->
                      <div class="widget red">
                          <div class="widget-title">
-                             <h4><i class="icon-edit"></i> Edit item </h4>
+                             <h4><i class="icon-edit"></i> <phpdac>cmsrt.slocale use _edititem</phpdac></h4>
                            <span class="tools">
                                <a href="javascript:;" class="icon-chevron-down"></a>
-                               <a href="javascript:;" class="icon-remove"></a>
                            </span>
                          </div>
                          <div class="widget-body">
@@ -64,26 +63,27 @@
                             <!-- BEGIN FORM-->
                             <form method="post" action="#" class="form-horizontal">
                             <div class="control-group">
-                                <label class="control-label">Title</label>
+                                <label class="control-label"><phpdac>cmsrt.slocale use _itemtitle</phpdac></label>
                                 <div id="edit_subject" class="controls">
                                     <input name="title" value="<phpdac>fronthtmlpage.nvldac2 use title+fronthtmlpage.echostr:title+cpmhtmleditor.getField:itmname+</phpdac>" type="text" class="span6 " />
                                 </div>
                             </div>
                             <div class="control-group">
-                                <label class="control-label">Description</label>
+                                <label class="control-label"><phpdac>cmsrt.slocale use _itemdescr</phpdac></label>
                                 <div id="edit_descr" class="controls">
                                     <textarea class="span12" name="descr" rows="3"><phpdac>fronthtmlpage.nvldac2 use descr+fronthtmlpage.echostr:descr+cpmhtmleditor.getField:itmdescr+</phpdac></textarea>
                                 </div>
                             </div>								
 							<div class="control-group">
-								<label class="control-label">Text</label>
+								<label class="control-label"><phpdac>cmsrt.slocale use _itemtext</phpdac></label>
 								<div class="controls">
 									<!--textarea class="span12 ckeditor" name="htmltext" rows="6"><-hpdac>cpmhtmleditor.itemText use 1</phpda-></textarea-->
 									<phpdac>cpmhtmleditor.itemEditor use 1</phpdac>
 								</div>
 							</div>	
+							
                             <div class="control-group">
-                                <label class="control-label">Active</label>
+                                <label class="control-label"><phpdac>cmsrt.slocale use _itemactive</phpdac></label>
                                 <div class="controls">
                                             <div id="normal-toggle-button">
                                                 <input name="active" type="checkbox" <phpdac>cpmhtmleditor.getField use active+1</phpdac> />
@@ -91,47 +91,157 @@
                                             <div id="info-toggle-button">
                                                 <input name="itmactive" type="checkbox" class="toggle" <phpdac>cpmhtmleditor.getField use itmactive+1</phpdac> />
                                             </div>
-                                            <!--div id="success-toggle-button">
-                                                <input type="checkbox" class="toggle" checked="checked" />
+                                </div>
+                            </div>	
+							
+							<div class="control-group">
+                                    <label class="control-label"><phpdac>cmsrt.slocale use _tags</phpdac></label>
+                                    <!--div id="edit_to" class="controls">	
+										<input id="tags_1" name="tags" type="text" class="tags" value="<phpdac>cphtmleditor.getTags</phpdac>" />
+                                    </div-->
+									<div id="edit_to" class="controls">
+										<input id="tags" name="tags" type="text" class="span12" value="<phpdac>cphtmleditor.getTags</phpdac>" />
+									</div>
+									
+                            </div>							
+
+							<div class="control-group">
+                                    <label class="control-label"><phpdac>cmsrt.slocale use _itemdetails</phpdac></label>
+                                    <div id="edit_to" class="controls">
+	
+										<label class="control-label"><phpdac>cmsrt.slocale use _WEIGHT</phpdac></label>
+										<input id="weight" name="weight" type="text" class="span12" value="<phpdac>cphtmleditor.getField use weight</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _VOLUME</phpdac></label>
+										<input id="volume" name="volume" type="text" class="span12" value="<phpdac>cphtmleditor.getField use volume</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _DIMENSIONS</phpdac></label>
+										<input id="dimensions" name="dimensions" type="text" class="span12" value="<phpdac>cphtmleditor.getField use dimensions</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _SIZE</phpdac></label>
+										<input id="size" name="size" type="text" class="span12" value="<phpdac>cphtmleditor.getField use size</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _COLOR</phpdac></label>
+										<input id="color" name="color" type="text" class="span12" value="<phpdac>cphtmleditor.getField use color</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _MANUFACTURER</phpdac></label>
+										<input id="manufacturer" name="manufacturer" type="text" class="span12" value="<phpdac>cphtmleditor.getField use manufacturer</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _CONDITION</phpdac></label>
+										<input id="cond" name="cond" type="text" class="span12" value="<phpdac>cphtmleditor.getField use cond</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _AVAILABILITY</phpdac></label>
+										<input id="availalt" name="availalt" type="text" class="span12" value="<phpdac>cphtmleditor.getField use availalt</phpdac>" />
+                                    </div>
+                            </div>		
+
+                            <div class="control-group">
+                                <label class="control-label"><phpdac>cmsrt.slocale use _itemxml</phpdac></label>
+                                <div class="controls">
+                                            <div id="info-toggle-button">
+                                                <input name="xml" type="checkbox" class="toggle" <phpdac>cpmhtmleditor.getField use xml+1</phpdac> />
                                             </div>
-                                            <div id="warning-toggle-button">
-                                                <input type="checkbox" class="toggle" checked="checked" />
-											</div-->
+                                </div>
+                            </div>								
+
+							<div class="control-group">
+                                    <label class="control-label"><phpdac>cmsrt.slocale use _itemoptions</phpdac></label>
+                                    <div id="edit_to" class="controls">
+	
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemp</phpdac> 1</label>
+										<input id="p1" name="p1" type="text" class="span12" value="<phpdac>cphtmleditor.getField use p1</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemp</phpdac> 2</label>
+										<input id="p2" name="p2" type="text" class="span12" value="<phpdac>cphtmleditor.getField use p2</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemp</phpdac> 3</label>
+										<input id="p3" name="p3" type="text" class="span12" value="<phpdac>cphtmleditor.getField use p3</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemp</phpdac> 4</label>
+										<input id="p4" name="p4" type="text" class="span12" value="<phpdac>cphtmleditor.getField use p4</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemp</phpdac> 5</label>
+										<input id="p5" name="p5" type="text" class="span12" value="<phpdac>cphtmleditor.getField use p5</phpdac>" />
+                                    </div>
+                            </div>	
+							
+							<div class="control-group">
+                                    <label class="control-label"><phpdac>cmsrt.slocale use _itemcodes</phpdac></label>
+                                    <div id="edit_to" class="controls">
+	
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemcode</phpdac> 1</label>
+										<input id="code1" name="code1" type="text" class="span12" value="<phpdac>cphtmleditor.getField use code1</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemcode</phpdac> 2</label>
+										<input id="code2" name="code2" type="text" class="span12" value="<phpdac>cphtmleditor.getField use code2</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemcode</phpdac> 3</label>
+										<input id="code3" name="code3" type="text" class="span12" value="<phpdac>cphtmleditor.getField use code3</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemcode</phpdac> 4</label>
+										<input id="code4" name="code4" type="text" class="span12" value="<phpdac>cphtmleditor.getField use code4</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemcode</phpdac> 5</label>
+										<input id="code5" name="code5" type="text" class="span12" value="<phpdac>cphtmleditor.getField use code5</phpdac>" />
+                                    </div>
+                            </div>	
+
+                            <div class="control-group">
+                                <label class="control-label"><phpdac>cmsrt.slocale use _iteminventory</phpdac></label>
+                                <div class="controls">
+									<label class="control-label"><phpdac>cmsrt.slocale use _uniname1</phpdac></label>
+									<input id="uniname1" name="uniname1" type="text" class="span12" value="<phpdac>cphtmleditor.getField use uniname1</phpdac>" />
+									<label class="control-label"><phpdac>cmsrt.slocale use _uniname2</phpdac></label>
+									<input id="uniname2" name="uniname2" type="text" class="span12" value="<phpdac>cphtmleditor.getField use uniname2</phpdac>" />								
+									
+									<label class="control-label"><phpdac>cmsrt.slocale use _uni1uni2</phpdac></label>
+									<input id="uni1uni2" name="uni1uni2" type="text" class="span12" value="<phpdac>cphtmleditor.getField use uni1uni2</phpdac>" />
+									<label class="control-label"><phpdac>cmsrt.slocale use _uni2uni1</phpdac></label>
+									<input id="uni2uni1" name="uni2uni1" type="text" class="span12" value="<phpdac>cphtmleditor.getField use uni2uni1</phpdac>" />									
+								
+									<label class="control-label"><phpdac>cmsrt.slocale use _ypoloipo1</phpdac></label>
+									<input id="ypoloipo1" name="ypoloipo1" type="text" class="span12" value="<phpdac>cphtmleditor.getField use ypoloipo1</phpdac>" />
+									<label class="control-label"><phpdac>cmsrt.slocale use _ypoloipo2</phpdac></label>
+									<input id="ypoloipo2" name="ypoloipo2" type="text" class="span12" value="<phpdac>cphtmleditor.getField use tpoloipo2</phpdac>" />
                                 </div>
                             </div>							
+
 							<div class="control-group">
-                                    <label class="control-label">Tags</label>
+                                    <label class="control-label"><phpdac>cmsrt.slocale use _itemprices</phpdac></label>
                                     <div id="edit_to" class="controls">
-										<!--div class="input-icon left">
-											<i class="icon-envelope"></i>
-											<input name="to" value="<phpdac>fronthtmlpage.nvldac2 use submail+fronthtmlpage.echostr:submail++</phpdac>" class=" " type="text"  />
-											<span class="help-inline">
-											Insert e-mail in order to test before sending	
-											</span>
-										</div-->	
-										<input id="tags_1" name="tags" type="text" class="tags" value="<phpdac>cphtmleditor.getTags</phpdac>" />									
+	
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemprice</phpdac> 0</label>
+										<input id="price0" name="price0" type="text" class="span12" value="<phpdac>cphtmleditor.getField use price0</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemprice</phpdac> 1</label>
+										<input id="price1" name="price1" type="text" class="span12" value="<phpdac>cphtmleditor.getField use price1</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemprice</phpdac> 2</label>
+										<input id="price2" name="price2" type="text" class="span12" value="<phpdac>cphtmleditor.getField use price2</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemprice</phpdac> PC</label>
+										<input id="pricepc" name="pricepc" type="text" class="span12" value="<phpdac>cphtmleditor.getField use pricepc</phpdac>" />									
                                     </div>
-                            </div>								
+                            </div>	
+
+							<div class="control-group">
+                                    <label class="control-label"><phpdac>cmsrt.slocale use _itemextras</phpdac></label>
+                                    <div id="edit_to" class="controls">
+
+									<label class="control-label">Resources</label>
+									<input id="resources" name="resources" type="text" class="span12" value="<phpdac>cphtmleditor.getField use resources</phpdac>" />
+									<label class="control-label">Synins</label>
+									<input id="sysins" name="sysins" type="text" class="span12" value="<phpdac>cphtmleditor.getField use sysins</phpdac>" readonly/>
+									<label class="control-label">Sysupd</label>
+									<input id="sysupd" name="susupd" type="text" class="span12" value="<phpdac>cphtmleditor.getField use sysupd</phpdac>" readonly/>
+                                    </div>
+                            </div>							
+							
 							<div id="select_template" class="control-group">
-                                <label class="control-label">Article Template</label>
+                                <label class="control-label"><phpdac>cmsrt.slocale use _articletmpl</phpdac></label>
                                 <div id="template_page" class="controls">
                                     <select name="mctemplate" class="span6 chzn-select" data-placeholder="Choose a template" tabindex="1">
-                                        <option value="">Select...</option>
+                                        <option value=""><phpdac>cmsrt.slocale use _select</phpdac></option>
 										<phpdac>cpmhtmleditor.templates</phpdac>
+										<option value="removeoption"><phpdac>cmsrt.slocale use _remselect</phpdac></option>										
                                     </select>
                                 </div>								
                             </div>	
 							<div id="select_page" class="control-group">
-                                <label class="control-label">Page Template</label>
+                                <label class="control-label"><phpdac>cmsrt.slocale use _pagetmpl</phpdac></label>
                                 <div id="mc_page" class="controls">
                                     <select name="mcpage" class="span6 chzn-select" data-placeholder="Choose a page" tabindex="1">
-                                        <option value="">Select...</option>
+                                        <option value=""><phpdac>cmsrt.slocale use _select</phpdac></option>
 										<phpdac>cpmhtmleditor.mcpages</phpdac>
+										<option value="removeoption"><phpdac>cmsrt.slocale use _remselect</phpdac></option>
                                     </select>
                                 </div>								
-                            </div>								
+                            </div>	
+							
                             <div class="form-actions">
-                                <button type="submit" class="<phpdac>fronthtmlpage.nvl use cpmhtmleditor.postok+btn btn-success+btn btn-danger+</phpdac>">Update</button>
+                                <button type="submit" class="<phpdac>fronthtmlpage.nvl use cpmhtmleditor.postok+btn btn-success+btn btn-danger+</phpdac>"><phpdac>cmsrt.slocale use _save</phpdac></button>
 								<input type="hidden" name="FormName" value="edititem" />
 								<input type="hidden" name="FormAction" value="cpmedititem" />
 								<input type="hidden" name="id" value="<phpdac>fronthtmlpage.echostr use id</phpdac>">
@@ -142,13 +252,13 @@
                             </div>							
 							<div>
 							<div id="exclude" class="control-group">
-								<label class="control-label">Categories</label>
+								<label class="control-label"><phpdac>cmsrt.slocale use _itemcategories</phpdac></label>
 								<div class="controls">							
                                     <table style="width: 100%;" class="">
                                         <tr>
                                             <td style="width: 35%">
                                                 <div class="d-sel-filter">
-                                                    <span>Filter:</span>
+                                                    <span><phpdac>cmsrt.slocale use _filter</phpdac>:</span>
                                                     <input type="text" id="box1Filter" />
                                                     <button type="button" class="btn" id="box1Clear">X</button>
                                                 </div>
@@ -174,7 +284,7 @@
                                             </td>
                                             <td style="width: 35%">
                                                 <div class="d-sel-filter">
-                                                    <span>Filter:</span>
+                                                    <span><phpdac>cmsrt.slocale use _filter</phpdac>:</span>
                                                     <input type="text" id="box2Filter" />
                                                     <button type="button" class="btn" id="box2Clear">X</button>
                                                 </div>
@@ -194,7 +304,7 @@
 								</div>	
                             </div>	
 							<div id="messages" class="control-group">
-								<label class="control-label">Messages</label>
+								<label class="control-label"><phpdac>cmsrt.slocale use _messages</phpdac></label>
 								<div class="controls">
 									<select id="messages" multiple="multiple" style="height:100px;width:100%;">
 										<phpdac>cpmhtmleditor.viewMessages</phpdac>
@@ -203,7 +313,7 @@
 							</div>	
 
 							<div class="form-actions">
-								<a href="cpmhtmleditor.php?t=cpmdelitem&id=<phpdac>fronthtmlpage.echostr use id</phpdac>" class="btn btn-danger">Delete</a>							
+								<a href="cpmhtmleditor.php?t=cpmdelitem&id=<phpdac>fronthtmlpage.echostr use id</phpdac>" class="btn btn-danger"><phpdac>cmsrt.slocale use _delete</phpdac></a>							
 							</div>	
                             </form>
                             <!-- END FORM-->							 

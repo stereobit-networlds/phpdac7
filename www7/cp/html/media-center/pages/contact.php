@@ -25,7 +25,7 @@
 				<section class="section leave-a-message">
 					<h2 class="bordered"><phpdac>i18nL.translate use contactform+RCCONTROLPANEL</phpdac></h2>
 					<p><phpdac>cmsrt.nvldac2 use cmsform.msg+cmsrt.echostr:cmsform.msg++</phpdac></p>
-                    <?MEDIA-CENTER/INDEX?>
+                    <?XBODY?> 
 				</section><!-- /.leave-a-message -->
 			</div><!-- /.col -->
 
@@ -33,9 +33,9 @@
 				<section class="our-store section inner-left-xs">
 					<h2 class="bordered">Το κατάστημα μας</h2>
 					<address>
-						<phpdac>rcserver.paramload use INDEX+address</phpdac> <br/>
-						(0030) <phpdac>rcserver.paramload use INDEX+tel1</phpdac> <br/>
-						(0030) <phpdac>rcserver.paramload use INDEX+tel2</phpdac>
+						<phpdac>cmsrt.paramload use INDEX+address</phpdac> <br/>
+						(0030) <phpdac>cmsrt.paramload use INDEX+tel1</phpdac> <br/>
+						(0030) <phpdac>cmsrt.paramload use INDEX+tel2</phpdac>
 					</address>
 					<h3>Ώρες λειτουργίας</h3>
 					<ul class="list-unstyled operation-hours">

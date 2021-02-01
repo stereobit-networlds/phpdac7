@@ -17,7 +17,8 @@
    <link href="css/style-responsive.css" rel="stylesheet" />
    <link href="css/style-default.css" rel="stylesheet" id="style_color" />
    
-   <script src="http://www.stereobit.gr/ckeditor/ckeditor.js"></script>
+   <!--script src="https://www.stereobit.gr/ckeditor/ckeditor.js"></script-->
+   <script src="<phpdac>cpmhtmleditor.getVar use ckjs</phpdac>"></script>
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->

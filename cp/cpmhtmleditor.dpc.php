@@ -34,6 +34,69 @@ $__LOCALE['CPMHTMLEDITOR_DPC'][1]='_submit;Save;Αποθήκευση';
 $__LOCALE['CPMHTMLEDITOR_DPC'][2]='_title;Subject;Θέμα';
 $__LOCALE['CPMHTMLEDITOR_DPC'][3]='_tags;Tags;Ετικέτες';
 $__LOCALE['CPMHTMLEDITOR_DPC'][4]='_subject;My subject;Το θέμα μου';
+$__LOCALE['CPMHTMLEDITOR_DPC'][5]='_additem;Add Item;Εισαγωγή είδους';
+$__LOCALE['CPMHTMLEDITOR_DPC'][6]='_edititem;Edit Item;Μεταβολή είδους';
+$__LOCALE['CPMHTMLEDITOR_DPC'][7]='_itemtitle;Title;Τίτλος';
+$__LOCALE['CPMHTMLEDITOR_DPC'][8]='_itemdescr;Description;Περιγραφή';
+$__LOCALE['CPMHTMLEDITOR_DPC'][9]='_itemtext;Item Text;Αναλυτική περιγραφή';
+
+$__LOCALE['CPMHTMLEDITOR_DPC'][10]='_AVAILABILITY;Availability;Διαθεσιμότητα';
+$__LOCALE['CPMHTMLEDITOR_DPC'][11]='_WEIGHT;Weight;Βάρος';
+$__LOCALE['CPMHTMLEDITOR_DPC'][12]='_VOLUME;Volume;Όγκος';
+$__LOCALE['CPMHTMLEDITOR_DPC'][13]='_DIMENSIONS;Dimensions;Διαστάσεις';
+$__LOCALE['CPMHTMLEDITOR_DPC'][14]='_SIZE;Size;Μέγεθος';
+$__LOCALE['CPMHTMLEDITOR_DPC'][15]='_COLOR;Color;Χρώμα';
+$__LOCALE['CPMHTMLEDITOR_DPC'][16]='_DESCRIPTION;Description;Περιγραφή';
+$__LOCALE['CPMHTMLEDITOR_DPC'][17]='_MANUFACTURER;Manufacturer;Κατασκευαστής';
+$__LOCALE['CPMHTMLEDITOR_DPC'][18]='_PRICE;Price;Τιμή';
+$__LOCALE['CPMHTMLEDITOR_DPC'][19]='_itemcategories;Categories;Κατηγορίες';
+$__LOCALE['CPMHTMLEDITOR_DPC'][20]='_articletmpl;Article Template;Υπόδειγμα άρθρου';
+$__LOCALE['CPMHTMLEDITOR_DPC'][21]='_pagetmpl;Page Template;Υπόδειγμα σελίδας';
+$__LOCALE['CPMHTMLEDITOR_DPC'][22]='_filter;Filter;Φίλτρο';
+$__LOCALE['CPMHTMLEDITOR_DPC'][23]='_messages;Messages;Μηνυματα';
+$__LOCALE['CPMHTMLEDITOR_DPC'][24]='_save;Save;Αποθήκευση';
+$__LOCALE['CPMHTMLEDITOR_DPC'][25]='_delete;Delete;Διαγραφή';
+$__LOCALE['CPMHTMLEDITOR_DPC'][26]='_select;Select;Επιλογή';
+$__LOCALE['CPMHTMLEDITOR_DPC'][27]='_itemactive;Active;Ενεργό';
+$__LOCALE['CPMHTMLEDITOR_DPC'][28]='_itemdetails;Item Details;Λεπτομέρειες';
+$__LOCALE['CPMHTMLEDITOR_DPC'][29]='_itemxml;Active XML;Ενεργό XML';
+$__LOCALE['CPMHTMLEDITOR_DPC'][30]='_itemoptions;Item Options;Χαρακτηριστικά';
+$__LOCALE['CPMHTMLEDITOR_DPC'][31]='_itemcodes;Item Codes;Κωδικοποίηση';
+$__LOCALE['CPMHTMLEDITOR_DPC'][32]='_iteminventory;Inventory Details;Αποθήκευση';
+$__LOCALE['CPMHTMLEDITOR_DPC'][33]='_itemprices;Item Prices;Τιμές';
+$__LOCALE['CPMHTMLEDITOR_DPC'][34]='_itemextras;Item Extras;Extras';
+$__LOCALE['CPMHTMLEDITOR_DPC'][35]='_itemcode;Code;Κωδικός';
+$__LOCALE['CPMHTMLEDITOR_DPC'][36]='_itemprice;Price;Τιμή';
+$__LOCALE['CPMHTMLEDITOR_DPC'][37]='_itemp;P;Χαρακτηριστικό';
+$__LOCALE['CPMHTMLEDITOR_DPC'][38]='_ypoloipo1;Remaining 1;Υπόλοιπο 1';
+$__LOCALE['CPMHTMLEDITOR_DPC'][39]='_ypoloipo2;Remaining 2;Υπόλοιπο 2';
+$__LOCALE['CPMHTMLEDITOR_DPC'][40]='_uniname1;Uniname 1;ΜΜ 1';
+$__LOCALE['CPMHTMLEDITOR_DPC'][41]='_uniname2;Uniname 2;ΜΜ 2';
+$__LOCALE['CPMHTMLEDITOR_DPC'][42]='_uni1uni2;U1 to U2;Μετατροπή u1 σε u2';
+$__LOCALE['CPMHTMLEDITOR_DPC'][43]='_uni2uni1;U2 to U1;Μετατροπή u2 σε u1';
+$__LOCALE['CPMHTMLEDITOR_DPC'][44]='_dropzone;Dropzone File Upload;Dropzone Ανέβασμα αρχείων';
+$__LOCALE['CPMHTMLEDITOR_DPC'][45]='_refresh;Refresh;Επαναφόρτωση';
+$__LOCALE['CPMHTMLEDITOR_DPC'][46]='_modify;Edit Item;Μεταβολή είδους';
+$__LOCALE['CPMHTMLEDITOR_DPC'][47]='_gallery;Gallery;Συλλογή εικόνων';
+$__LOCALE['CPMHTMLEDITOR_DPC'][48]='_remselect;Remove option;Αφαίρεση ιδιότητας';
+$__LOCALE['CPMHTMLEDITOR_DPC'][49]='_AVAILABILITY;Availability;Διαθεσιμότητα';
+$__LOCALE['CPMHTMLEDITOR_DPC'][50]='_CONDITION;Condition;Κατάσταση';
+
+/*
+update products set code4 =
+	replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(LOWER(TRIM(itmname)),'#','-'),"'",'-'),'\"','-'),',','-'),'+','-'),'/','-'),'&','-'),'.','-'),' ','-'),')','-'),'(','-') 
+;
+
+update products set code4 = replace(code4,'-----','-');
+update products set code4 = replace(code4,'----','-');
+update products set code4 = replace(code4,'---','-');
+update products set code4 = replace(code4,'--','-');
+
+return (str_replace(array('-----','----','---','--'),'-', strtolower(rtrim(ltrim($str,'-'),'-'))));
+
+cmsrt.stralias(str);
+cmsrt.slugstr(str)
+*/
 
 class cpmhtmleditor {
 
@@ -42,9 +105,9 @@ class cpmhtmleditor {
 	var $htmlfile, $ckeditor4, $cke4, $ckjs;
 	var $urlpath, $urlbase, $msg;
 	var $photodb, $restype, $cseparator, $map_t, $map_f, $encodeimageid;
-	var $itmplpath, $mcpagespath, $selectSQL;
+	var $itmplpath, $mcpagespath, $selectSQL, $fcode, $lastprice, $activecode;
 	
-	var $messages, $postok, $record;
+	var $messages, $postok, $record, $AZlower;
 
 	public function __construct() {
 	
@@ -82,7 +145,7 @@ class cpmhtmleditor {
 		$ckeditorurl = remote_paramload('CKEDITOR','ckeditorurl',$this->prpath);		
 		$ckeditor4url = remote_paramload('CKEDITOR','ckeditor4url',$this->prpath);		
 		$this->ckjs = $this->ckeditor4 ? $ckeditor4url : $ckeditorurl;
-		//$this->ckjs = $this->ckeditor4 ? "http://stereobit.gr/ckeditor4/ckeditor.js" : "http://stereobit.gr/ckeditor/ckeditor.js";
+		//$this->ckjs = $this->ckeditor4 ? "https://stereobit.gr/ckeditor4/ckeditor.js" : "http://stereobit.gr/ckeditor/ckeditor.js";
 	
 		$this->encodeimageid = remote_paramload('RCITEMS','encodeimageid',$this->path);
 	    $this->photodb = remote_paramload('RCITEMS','photodb',$this->prpath);
@@ -98,14 +161,26 @@ class cpmhtmleditor {
 		$this->mcpagespath = 'pages/';
 		
 		$this->activecode = $this->getmapf('code');
-		$this->selectSQL = "select id,sysins,code1,pricepc,price2,sysins,itmname,itmfname,uniname1,uniname2,active,code4," .
+		/*$this->selectSQL = "select id,sysins,code1,pricepc,price2,sysins,itmname,itmfname,uniname1,uniname2,active,code4," .
 							"price0,price1,cat0,cat1,cat2,cat3,cat4,itmdescr,itmfdescr,itmremark,ypoloipo1,resources,".
 							$this->activecode . ",weight,volume,dimensions,size,color,manufacturer,orderid," .
-							"template,owner,itmactive from products ";		
+							"template,owner,itmactive from products ";		*/
+							
+		$this->fcode = $this->getmapf('code');
+		$this->lastprice = $this->getmapf('lastprice');						
+
+		$xfields = $this->fcode . ',';
+		$xfields.= $this->lastprice ? $this->lastprice . ',' : null;		
+		$this->selectSQL = "select id,sysins,sysupd,code1,pricepc,price2,itmname,itmfname,uniname1,uniname2,active,code4," .
+							"price0,price1,cat0,cat1,cat2,cat3,cat4,itmdescr,itmfdescr,itmremark,ypoloipo1,resources,".
+							$xfields . "xml,weight,volume,dimensions,size,color,manufacturer,orderid,YEAR(sysins) as year,MONTH(sysins) as month,DAY(sysins) as day, DATE_FORMAT(sysins, '%h:%i') as time, DATE_FORMAT(sysins, '%b') as monthname," .
+							"template,owner,itmactive,p1,p2,p3,p4,p5,code2,code3,datein,availalt,cond from products ";							
 		
 		$this->record = null;
 		$this->messages = array();
 		$this->postok = false;	
+		
+		$this->AZlower = _m('cmsrt.paramload use CMS+AZlower') ? true : false;	
 	}	
 	
 	public function event($sEvent) {
@@ -226,12 +301,18 @@ class cpmhtmleditor {
 
 			if ($title = GetParam('title')) {
 				
-				$code = $this->replace_spchars($title);
+				//$code = $this->replace_spchars($title);
+				//$code =  _m('cmsrt.stralias use '. $title);
+				$code =  _m('cmsrt.slugstr use '. $title);
+				
 				$tags = GetParam('tags') ;
 				$text = GetParam('htmltext');
-				$descr = GetParam('descr') ? GetParam('descr') : substr(trim(strip_tags($text)),0,250).'...';
+				//$descr = GetParam('descr') ? GetParam('descr') : substr(trim(strip_tags($text)),0,250).'...';
+				$descr = GetParam('descr') ? GetParam('descr') : GetParam('title'); //descr as title
+				
 				$active = GetParam('active') ? '101' : '0';
 				$itmactive = GetParam('itmactive') ? '1' : '0';
+				
 				$template = GetParam('mctemplate');
 				$mcpage = GetParam('mcpage');
 				
@@ -269,11 +350,6 @@ class cpmhtmleditor {
 					$mydata = $this->has_attachment2db($code,$type,1);
 					$this->messages[] = "Save text:".$type;
 				}
-				
-				/*if ($mcpage = GetParam('mcpage')) {
-					$mydata = _m("fronthtmlpage.mcSavePage use ".$title."+".$mcpage); 			
-					$this->messages[] = "MCPAGE:".$mcpage;
-				}*///DISABLED
 			
 				$this->postok = $code; //active code
 				
@@ -315,9 +391,11 @@ class cpmhtmleditor {
 			if ($title = GetParam('title')) {
 			
 				$code = $id; 
+				
 				$tags = GetParam('tags') ;
 				$text = GetParam('htmltext');
 				$descr = GetParam('descr');// ? GetParam('descr') : substr(trim(strip_tags($text)),0,250).'...';
+				
 				$active = GetParam('active') ? '101' : '0';
 				$itmactive = GetParam('itmactive') ? '1' : '0';
 				$template = GetParam('mctemplate');
@@ -332,16 +410,64 @@ class cpmhtmleditor {
 				$cat = explode($this->cseparator, $category);
 
 				//update tags
-				$save_tags = $this->upd_tags_data($code,$title,$descr,$tags);
+				//if ($mytags = $this->getTags())
+				$mytags = null;
+				if ($this->getTagsSafe($code, $mytags)==true)	
+					$save_tags = $this->upd_tags_data($code,$title,$descr,$tags);
+				else
+					$save_tags = $this->add_tags_data($code,$title,$descr,$tags);
 				$this->messages[] = "Update tags:".$tags;				
 				
 				//update
 				$sSQL = "update products set $itmname=" . $db->qstr($title) . ",$itmdescr=" . $db->qstr($descr);
 				$sSQL.= ",itmactive=" . $itmactive . ",active=" . $active . ",template=". $db->qstr($template);
+				
+				$sSQL.= GetParam('weight') ? ",weight=" . floatval(str_replace(',','.',GetParam('weight'))) : ",weight=0"; 
+				$sSQL.= GetParam('volume') ? ",volume=" . floatval(str_replace(',','.',GetParam('volume'))) : ",volume=0";
+				$sSQL.= GetParam('dimensions') ? ",dimensions=" . $db->qstr(GetParam('dimensions')) : ",dimensions=''";  
+				$sSQL.= GetParam('size') ? ",size=" . $db->qstr(GetParam('size')) : ",size=''";
+				$sSQL.= GetParam('color') ? ",color=" . $db->qstr(GetParam('color')) : ",color=''";
+				$sSQL.= GetParam('manufacturer') ? ",manufacturer=" . $db->qstr(GetParam('manufacturer')) : ",manufacturer=''";
+				$sSQL.= ",availalt=" . $db->qstr(GetParam('availalt'));
+				$sSQL.= ",cond=" . $db->qstr(GetParam('cond'));
+				
+				$itmxml = GetParam('xml') ? '1' : '0';
+				$sSQL.= ",xml=" . $itmxml;
+				
+				$sSQL.= ",p1=" . $db->qstr(GetParam('p1'));
+				$sSQL.= ",p2=" . $db->qstr(GetParam('p2'));
+				$sSQL.= ",p3=" . $db->qstr(GetParam('p3'));
+				$sSQL.= ",p4=" . $db->qstr(GetParam('p4'));
+				$sSQL.= ",p5=" . $db->qstr(GetParam('p5'));
+				
+				$sSQL.= (GetParam('code1') && ($this->activecode!=='code1')) ? ",code1=" . $db->qstr(GetParam('code1')) : null;
+				$sSQL.= (GetParam('code2') && ($this->activecode!=='code2')) ? ",code2=" . $db->qstr(GetParam('code2')) : null;
+				$sSQL.= (GetParam('code3') && ($this->activecode!=='code3')) ? ",code3=" . $db->qstr(GetParam('code3')) : null;
+				$sSQL.= (GetParam('code4') && ($this->activecode!=='code4')) ? ",code4=" . $db->qstr(GetParam('code4')) : null;
+				$sSQL.= (GetParam('code5') && ($this->activecode!=='code5')) ? ",code5=" . $db->qstr(GetParam('code5')) : null;
+				
+				$sSQL.= GetParam('uniname1') ? ",uniname1=" . $db->qstr(GetParam('uniname1')) : ",uniname1=''";
+				$sSQL.= GetParam('uniname2') ? ",uniname2=" . $db->qstr(GetParam('uniname2')) : ",uniname2=''";
+				$sSQL.= GetParam('uni1uni2') ? ",uni1uni2=" . floatval(str_replace(',','.',GetParam('uni1uni2'))) : ",uni1uni2=0";
+				$sSQL.= GetParam('uni2uni1') ? ",uni2uni1=" . floatval(str_replace(',','.',GetParam('uni2uni1'))) : ",uni2uni1=0";
+				$sSQL.= GetParam('ypoloipo1') ? ",ypoloipo1=" . floatval(str_replace(',','.',GetParam('ypoloipo1'))) : ",ypoloipo1=0";
+				$sSQL.= GetParam('ypoloipo2') ? ",ypoloipo2=" . floatval(str_replace(',','.',GetParam('ypoloipo2'))) : ",ypoloipo2=0";
+				
+				$sSQL.= GetParam('price0') ? ",price0=" . floatval(str_replace(',','.',GetParam('price0'))) : ",price0=0";
+				$sSQL.= GetParam('price1') ? ",price1=" . floatval(str_replace(',','.',GetParam('price1'))) : ",price1=0";
+				$sSQL.= GetParam('price2') ? ",price2=" . floatval(str_replace(',','.',GetParam('price2'))) : ",price2=0";
+				$sSQL.= GetParam('pricepc') ? ",pricepc=" . floatval(str_replace(',','.',GetParam('pricepc'))) :",pricepc=0" ;
+				
+				$sSQL.= ",resources=" . $db->qstr(GetParam('resources'));
+				$sSQL.= ",sysupd=" . $db->qstr(date('Y-m-d h:m:s'));
+				
 				foreach($cat as $i=>$c) 
 					$sSQL .= ",cat{$i}=" . $db->qstr($c);
+					
 				$sSQL .= " WHERE {$this->activecode}=" . $db->qstr($id);
+				
 				$res = $db->Execute($sSQL);	
+				//echo $sSQL;
 				$this->messages[] = "Update record";				
 				
 				//read 
@@ -355,12 +481,7 @@ class cpmhtmleditor {
 					$save = $this->add_attachment_data($code,$type,$mytext); 			
 					$mydata = $this->has_attachment2db($code,$type,1);
 					$this->messages[] = "Save text:".$type;
-				}
-				
-				/*if ($mcpage = GetParam('mcpage')) {
-					$mydata = _m("fronthtmlpage.mcSavePage use ".$title."+".$mcpage); 			
-					$this->messages[] = "MCPAGE:".$mcpage;
-				}*///DISABLED				
+				}			
 			
 				$this->postok = $id; //active code
 			}
@@ -600,7 +721,11 @@ class cpmhtmleditor {
 		$realid = _m("cmsrt.getRealItemCode use " . $_GET['title']) ;//$cpGet['id']);		
 
 	    //$title = $_GET['title'] ? str_replace(' ','-',$_GET['title']) : 'title'; //posted item code
-		$title = $realid ? str_replace(' ','-',$realid) : 'title'; //real id
+		//$title = $realid ? str_replace(' ','-',$realid) : 'title'; //real id
+		
+		//$_code =  _m('cmsrt.stralias use '. $realid);
+		//$_code =  _m('cmsrt.slugstr use '. $realid)
+		$title = $realid ? _m('cmsrt.slugstr use '. $realid) : 'title'; //_code
 		
 		$ds = DIRECTORY_SEPARATOR;  
 		//$storeFolder = 'uploads'; 
@@ -644,7 +769,10 @@ class cpmhtmleditor {
 			
 			if (is_readable($targetMainFile.$restype)) { //look if pic exist
 			    //save at uphotos a,b,c..
-				for ($iz='A';$iz<'Z';$iz++) {
+				//for ($iz='A';$iz<'Z';$iz++) {
+				$_A = ($this->AZlower==true) ? 'a' : 'A';
+				$_Z = ($this->AZlower==true) ? 'z' : 'Z';
+				for($iz=$_A; $iz<=$_Z; $iz++) {	
 					if (!is_readable($targetSecFile.$iz.$restype))
 						break;
 				}
@@ -795,7 +923,12 @@ class cpmhtmleditor {
 		
 		$rp2 = remote_paramload('RCITEMS','adrespath',$this->prpath);
 		$rrp2 = $rp2 ? $rp2 : '/images/uphotos/';
-		for ($i='A';$i<'Z';$i++) {
+		
+		//for ($i='A';$i<'Z';$i++) {
+		$_A = ($this->AZlower==true) ? 'a' : 'A';
+		$_Z = ($this->AZlower==true) ? 'z' : 'Z';
+		for($i=$_A; $i<=$_Z; $i++) {			
+		
 		    $img = $rrp2 . $name . $i . $restype;
 			$img_uphoto = $this->urlpath . $img;
 			if (($img_uphoto) && is_readable($img_uphoto)) {
@@ -1301,7 +1434,9 @@ class cpmhtmleditor {
 				 ")"; 
         //echo $sSQL;
 		$result = $db->Execute($sSQL);
-        return ($result);		
+		
+        //return ($result);		
+		return true;
     }	
   
 	protected function upd_tags_data($code=null,$title=null,$descr=null,$keywords=null) {
@@ -1320,13 +1455,16 @@ class cpmhtmleditor {
 				 " where code=" . $db->qstr($code); 
         //echo $sSQL;
 		$result = $db->Execute($sSQL);
-        return ($result);		
+		
+        //return ($result);		
+		return true;
     }
 	
-	public function getTags() {
+	public function getTags($tcode=null) {
 		$cpGet = _v('rcpmenu.cpGet');
-		$code = GetParam('id') ? _m("cmsrt.getRealItemCode use " . GetParam('id')) : 
-								 _m("cmsrt.getRealItemCode use " . $cpGet['id']);	
+		$code = $tcode ? $tcode :
+				(GetParam('id') ? _m("cmsrt.getRealItemCode use " . GetParam('id')) : 
+								  _m("cmsrt.getRealItemCode use " . $cpGet['id']));	
         if (!$code) return;
 		
         $db = GetGlobal('db'); 
@@ -1334,9 +1472,36 @@ class cpmhtmleditor {
 	    $itmkeywords = $lan ? 'keywords' . $lan : 'keywords0';
   
         $sSQL = "select $itmkeywords from ptags where code=" . $db->qstr($code);
+		//echo $sSQL;
 		$result = $db->Execute($sSQL);
 		
         return ($result->fields[0]);		
+    }	
+
+    //getTags safe version when edit post
+	public function getTagsSafe($code=null, &$tags) {
+		/*$cpGet = _v('rcpmenu.cpGet');
+		$code = $tcode ? $tcode :
+				(GetParam('id') ? _m("cmsrt.getRealItemCode use " . GetParam('id')) : 
+								  _m("cmsrt.getRealItemCode use " . $cpGet['id']));	
+		*/						  
+        if (!$code) return false;
+		
+        $db = GetGlobal('db'); 
+	    $lan = getlocal();
+	    $itmkeywords = $lan ? 'keywords' . $lan : 'keywords0';
+  
+        $sSQL = "select id,$itmkeywords from ptags where code=" . $db->qstr($code);
+		//echo $sSQL;
+		$result = $db->Execute($sSQL);
+		
+		if ($id = $result->fields[0]) {
+			//return ($result->fields[1]);
+			$tags = $result->fields[1];
+			return true;
+		}	
+
+		return false;	
     }		
 	
 	protected function add_kategory_data($cat=null) {
@@ -1565,16 +1730,36 @@ class cpmhtmleditor {
 		if ((!$id) || (!$mcpage)) return false;	
 		$db = GetGlobal('db');
 		
-		$currentmcpage = $this->readMCPage($id, $templatename);
+		if ($mcpage=='removeoption')
+			return $this->removeMCPage($id, $templatename);
 		
-		if ($currentmcpage)
-			$sSQL = "update wftmpl set mcname=" . $db->qstr($mcpage);
+		if ($currentmcpage = $this->readMCPage($id, $templatename)) {
+			$sSQL = "update wftmpl set mcname=" . $db->qstr($mcpage) . ' WHERE mcid=' . $db->qstr($id);
+			$sSQL.= $templatename ? " AND mctmpl=" . $db->qstr($templatename) : null;
+		}
 		else
 			$sSQL = "insert into wftmpl (mcid,mcname,mctmpl) values ('$id','$mcpage', '$templatename')";
+		
 		//echo $sSQL;
 		$res = $db->Execute($sSQL);
 		
 		return true;
+	}	
+	
+	protected function removeMCPage($id=null, $templatename=null) {
+		if (!$id) return false;	
+		$db = GetGlobal('db');
+		
+		$currentmcpage = $this->readMCPage($id, $templatename);
+		
+		if ($currentmcpage) { 
+			$sSQL = "delete from wftmpl WHERE mcid=" . $db->qstr($id);
+			//echo $sSQL;
+			
+			$res = $db->Execute($sSQL);	
+			return true;
+		}
+		return false;	
 	}	
 	
 	//select mcpages to publish post with
@@ -1629,6 +1814,7 @@ class cpmhtmleditor {
 		    switch ($field) {				
 				case 'itmactive' : $ret = ($this->record[$field]>0) ? 'checked' : null; break;
 				case 'active'    : $ret = ($this->record[$field]>0) ? 'checked' : null; break;
+				case 'xml'       : $ret = ($this->record[$field]>0) ? 'checked' : null; break;
 				default 		 : $ret = $this->record[$field];
 			}
 		}
@@ -1674,25 +1860,25 @@ class cpmhtmleditor {
 			
         return $out;
 	}		
-
-	protected function replace_spchars($string, $reverse=false) {
 	
-		switch ($this->replacepolicy) {	
-	
-			case '_' : $ret = $reverse ?  str_replace('_',' ',$string) : str_replace(' ','_',$string); break;
-			case '-' : $ret = $reverse ?  str_replace('-',' ',$string) : str_replace(' ','-',$string);break;
-			default :	
-			if ($reverse) {
-				$g1 = array("'",',','"','+','/',' ',' & ');
-				$g2 = array('_','~',"*","plus",":",'-',' n ');		  
-				$ret = str_replace($g2,$g1,$string);
-			}	 
-			else {
-				$g1 = array("'",',','"','+','/',' ','-&-');
-				$g2 = array('_','~',"*","plus",":",'-','-n-');		  
-				$ret = str_replace($g1,$g2,$string);
-			}	
-	    }
+	public function replace_spchars($string, $reverse=false) {
+		/*$pc = null; //$this->replacepolicy; //DISABLE POLICY
+		
+		switch ($pc) {	
+			case '_' : 	$ret = $reverse ?  str_replace('_',' ',$string) : str_replace(' ','_',$string); break;
+			case '-' :	 $ret = $reverse ?  str_replace('-',' ',$string) : str_replace(' ','-',$string);break;
+			default  :*/
+						if ($reverse) {
+							$g1 = array("'",'"','+','/',' ',' & ');
+							$g2 = array('_',"*","plus",":",'-',' n ');		  
+							$ret = str_replace($g2,$g1,$string);
+						}	 
+						else {
+							$g1 = array("'",'"','+','/',' ','-&-');
+							$g2 = array('_',"*","plus",":",'-','-n-');		  
+							$ret = str_replace($g1,$g2,$string);
+						}	
+		/*} */
 		return ($ret);
 	}		
 

@@ -689,12 +689,17 @@ parse_ini_string_m:
 		if (($this->isLoggedIn()==false) && ($_cache) && ($_ca) && ($cachedret = $this->_cacheread($_capath)))
 			return $cachedret;
 		//else..
+		
+		//get the template name/path and get index file as default
+		$tmpl = _v('cmsrt.MC_TEMPLATE'); 
+		//echo $tmpl . '/index.php';
+		$_fp = $fp ? $fp : $tmpl . '/index.php';		
 
 		$data = $this->action($this->myaction);
 		/*if (($this->isLoggedIn()==false) && ($_cache) && ($_ca))
 			$this->_cachewriteEx($data);*/
 	  
-	    $hfp = new fronthtmlpage($fp, $theme);  
+	    $hfp = new fronthtmlpage($_fp, $theme);  
 	    $ret = $hfp->render($data); //this->data);
 	    unset($hfp);
 		

@@ -35,6 +35,7 @@ $__LOCALE['SHTAGS_DPC'][7]='price-max;maximum priceh;μεγιστη τιμή';
 $__LOCALE['SHTAGS_DPC'][8]='size;size;μέγεθος';
 $__LOCALE['SHTAGS_DPC'][9]='dimension;dimension;διάσταση';
 $__LOCALE['SHTAGS_DPC'][10]='search;search;αναζήτηση';
+$__LOCALE['SHTAGS_DPC'][11]='_TAGS;Tags;Tags';
 
 class shtags {
 

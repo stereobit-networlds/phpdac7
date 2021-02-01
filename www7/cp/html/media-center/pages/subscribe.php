@@ -11,7 +11,7 @@
 		<section class="section intellectual-property">
 			<h2><phpdac>frontpage.slocale use _SUBSCR</phpdac></h2>
 			<p>		
-			<?MEDIA-CENTER/INDEX?>
+			<?XBODY?>
 			</p>
 		</section>
 		
