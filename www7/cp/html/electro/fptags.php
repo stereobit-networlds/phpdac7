@@ -1,0 +1,1 @@
+<span><a href="search/$0$/">$0$</a></span>
