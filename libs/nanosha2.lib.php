@@ -64,9 +64,11 @@
  *       script will attempt to use the output from mhash prior to running
  *       the PHP code.
  */
-if (!class_exists('nanoSha2'))
-{
-    class nanoSha2
+if (!defined("NANOSHA2_DPC")) {
+define("NANOSHA2_DPC",true);
+
+$__DPC['NANOSHA2_DPC'] = 'nanosha2';
+    class nanosha2
     {
         // php 4 - 5 compatable class properties
         var     $toUpper;
@@ -383,15 +385,14 @@ if (!function_exists('str_split'))
  * check for input strings > 2^64 as the FIPS180-2 defines.
  */
 // 2009-07-23: Added check for function as the Suhosin plugin adds this routine.
-/*
 if (!function_exists('sha256')) {
     function sha256($str, $ig_func = false) {
-        $obj = new nanoSha2((defined('_NANO_SHA2_UPPER')) ? true : false);
+        $obj = new nanosha2((defined('_NANO_SHA2_UPPER')) ? true : false);
         return $obj->hash($str, $ig_func);
     }
 } else {
     function _nano_sha256($str, $ig_func = false) {
-        $obj = new nanoSha2((defined('_NANO_SHA2_UPPER')) ? true : false);
+        $obj = new nanosha2((defined('_NANO_SHA2_UPPER')) ? true : false);
         return $obj->hash($str, $ig_func);
     }
 }
@@ -410,5 +411,5 @@ if (!function_exists('hash'))
         }
     }
 }
-*/
+
 ?>

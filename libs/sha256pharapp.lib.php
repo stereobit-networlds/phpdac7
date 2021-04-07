@@ -64,9 +64,11 @@
  *       script will attempt to use the output from mhash prior to running
  *       the PHP code.
  */
-if (!class_exists('nanoSha2'))
-{
-    class nanoSha2
+if (!defined("SHA2PHARAPP_DPC")) {
+define("SHA2PHARAPP_DPC",true);
+
+$__DPC['SHA2PHARAPP_DPC'] = 'sha2pharapp';
+    class sha2pharapp
     {
         // php 4 - 5 compatable class properties
         var     $toUpper;
@@ -334,13 +336,10 @@ if (!class_exists('nanoSha2'))
 
     }
 }
-
+/****
 if (!function_exists('str_split'))
 {
-    /**
-     * Splits a string into an array of strings with specified length.
-     * Compatability with older verions of PHP
-     */
+
     function str_split($string, $split_length = 1)
     {
         $sign = ($split_length < 0) ? -1 : 1;
@@ -371,19 +370,6 @@ if (!function_exists('str_split'))
     }
 }
 
-/**
- * Main routine called from an application using this include.
- *
- * General usage:
- *   require_once('sha256.inc.php');
- *   $hashstr = sha256('abc');
- *
- * Note:
- * PHP Strings are limitd to (2^31)-1, so it is not worth it to
- * check for input strings > 2^64 as the FIPS180-2 defines.
- */
-// 2009-07-23: Added check for function as the Suhosin plugin adds this routine.
-/*
 if (!function_exists('sha256')) {
     function sha256($str, $ig_func = false) {
         $obj = new nanoSha2((defined('_NANO_SHA2_UPPER')) ? true : false);
@@ -410,5 +396,5 @@ if (!function_exists('hash'))
         }
     }
 }
-*/
+*****/
 ?>

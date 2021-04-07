@@ -64,7 +64,7 @@ class jsdialogStreamSrv extends jsdialog {
 		$respond = $responder ? $this->dajaxpage."?t=".$responder : $this->dajaxpage;
 		
 		$ret = "
-			$.ajax({
+			jQuery.ajax({
             url: '$respond',
             context: document.body,
             success: function(responseText) {
@@ -95,7 +95,7 @@ class jsdialogStreamSrv extends jsdialog {
 		$c = $close ? "'auto_close': $close," : null;
 		
 		$ret = "
-		new $.Zebra_Dialog('$msg', 
+		new jQuery.Zebra_Dialog('$msg', 
 		{
 			'buttons':  false,
 			'modal': false,
@@ -113,7 +113,7 @@ class jsdialogStreamSrv extends jsdialog {
 		$type = $type ? $type : 'warning';
 		
 		$ret = "
-		new $.Zebra_Dialog('$msg', 
+		new jQuery.Zebra_Dialog('$msg', 
 		{
 			'type'   : '$type',
 			'buttons':  false,

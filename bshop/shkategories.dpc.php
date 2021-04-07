@@ -887,6 +887,13 @@ class shkategories {
 		return ($mytokens);
     }	
 	
+	public function getcurrenturlkategory($rewrite=false) {
+		$cat = GetReq('cat');
+		if (!$cat) return false;
+		
+		return $rewrite ? $cat .'.html' : '/products/' . $cat . '/';
+	}	
+	
 	public function getcurrentkategory($toplevel=null, $url=null, $urlname=false) {
 		$cat = GetReq('cat');
 		if (($urlname) && ($cat)) {

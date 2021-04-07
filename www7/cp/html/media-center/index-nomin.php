@@ -29,12 +29,12 @@
 	    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
 	    
 	    <!-- Customizable CSS -->
-	    <link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/main.css</phpdac>">
-	    <link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/orange.css</phpdac>">
-	    <link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/owl.carousel.css</phpdac>">
-		<link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/owl.transitions.css</phpdac>">
+	    <link rel="stylesheet" href="assets/css/main.css">
+	    <link rel="stylesheet" href="assets/css/orange.css">
+	    <link rel="stylesheet" href="assets/css/owl.carousel.css">
+		<link rel="stylesheet" href="assets/css/owl.transitions.css">
 		<link rel="stylesheet" href="assets/css/animate.min.css">
-		<link rel="stylesheet" href="assets/css/config.css">
+
 	    <!-- Fonts -->
 		<link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800' rel='stylesheet' type='text/css'>
 		
@@ -55,40 +55,44 @@
 		<![endif]-->
 		
 		<link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">
+		<link rel="stylesheet" type="text/css" href="css/jquery.cookiebar.css" />
 		<script> var sc = new Array();	</script>
 		
-		<!--hpdac>cms.include_partDb use google-analytics-tm+++js</phpda-->
-		<!--hpdac>cms.include_partDb use skroutz-analytics+++js</phpda-->
-		<phpdac>cms.include_partDb use fb-analytics+++js</phpdac>
-		
-		<!--link rel="stylesheet" href="css/mega-menu.css" type="text/css"-->
-		<phpdac>cms.include_partDb use headstyle+++style</phpdac>	
+		<phpdac>cms.include_part use /parts/skroutz-analytics.php</phpdac>	
+<style>		
+.videoWrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    padding-top: 25px;
+    height: 0;
+}
+.videoWrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+</style>		
 	</head>
 <body>
-<!--hpdac>cms.include_partDb use google-tagmanager-ns+++js</phpda-->
-<phpdac>cms.include_partDb use fb-api+++js</phpdac>
-
+<!--script>
+   <-hpdac>cmslogin.fblogin_javascript</phpda->
+</script-->	
 	<div class="wrapper">
-		<!--hpdac>cms.nvldac2 use cmsrt.megamenu+cms.include_part:/mm/mega-menu.php++</phpda-->
-	    <!--hpdac>cms.nvldac2 use cmsrt.megamenu+cms.include_part:/parts/navigation/top-menu-bar-empty-space.php+cms.include_part:/parts/navigation/top-menu-bar.php+</phpda-->
 		<phpdac>cms.include_part use /parts/navigation/top-menu-bar.php</phpdac>
 
 		<phpdac>cms.nvldac2 use headerStyle+cms.include_part:/parts/section/header.php::cms.include_part:/parts/breadcrumb/breadcrumb.php+cms.include_part:/parts/section/header-2.php+1</phpdac>
-	
+		
 		<phpdac>cms.include_part_arg use /pages/<mc_page>.php</phpdac>
 		
 		<phpdac>cms.include_part use /parts/section/footer.php</phpdac>
 	</div><!-- /.wrapper -->
-	
+
+	<!-- el_GR JavaScripts placed at the end of the document so the pages load faster -->
 	<script src="assets/js/jquery-1.10.2.min.js"></script>
 	<script src="assets/js/jquery-migrate-1.2.1.js"></script>
 	<script src="assets/js/bootstrap.min.js"></script>
-	
-	<!--script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script-->
-	
-	<!--script type="text/javascript" src="js/mega-menu.js"></script-->
-	
 	<phpdac>cms.nvl use cmsrt.MC_CURRENT_PAGE+<script src="https://maps.google.com/maps/api/js?sensor=false&amp;language=en"></script><script src="assets/js/gmap3.min.js"></script>++contact|sendamail</phpdac>
 	<script src="assets/js/bootstrap-hover-dropdown.min.js"></script>
 	<script src="assets/js/owl.carousel.min.js"></script>
@@ -100,10 +104,10 @@
     <script src="assets/js/jquery.prettyPhoto.min.js"></script>
     <script src="assets/js/jquery.customSelect.min.js"></script>
     <script src="assets/js/wow.min.js"></script>
-	<script src="assets/js/scripts.min.js"></script>
+	<script src="assets/js/scripts.js"></script>
 
-	<script type="text/javascript" src="js/zebra/zebra_dialog.min.js"></script>
-	
+	<script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
+	<script type="text/javascript" src="js/jquery.cookiebar.js"></script>	
 	<script type="text/javascript">
 	/*$(document).ready(function(){
 		$.cookieBar({ message: '<phpdac>cmsrt.slocale use _cookiesmsg</phpdac>', policyButton: true, policyText: 'Περισσότερα', policyURL:'cookies-policy.php', acceptButton: true, acceptText: '.', element: 'body', autoEnable: false, acceptOnScroll: 100, acceptFunction: function(cookieValue){if(cookieValue!='enabled' && cookieValue!='accepted') start();}
@@ -115,14 +119,9 @@
 	});	*/
 	function start() {}
     </script>
-	
-	<!--hpdac>cmsrt.nvldac2 use cmsrt.MC_CURRENT_PAGE+cms.include_part_arg:/parts/<mc_page>-side-select.php++</phpda-->	
-	<phpdac>cmsrt.nvldac2 use cmsrt.MC_CURRENT_PAGE+cms.include_part:/parts/addtocart-side-select.php++addtocart</phpdac>	
-	
-	<!-- e-Enterprise, stereobit/phpdac7 -->	
+	<phpdac>cms.include_part use /parts/google-analytics.php</phpdac>
+	<phpdac>cms.include_part use /parts/piwik-analytics.php</phpdac>
+	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->	
 <script type="text/javascript" src="jsdialog.php?t=divstart"></script>	
-
-<phpdac>cms.include_partDb use google-plusone+++js</phpdac>
-<phpdac>cms.include_partDb use piwik-analytics+++js</phpdac>
 </body>
 </html>

@@ -94,7 +94,13 @@ class shlogin extends cmslogin {
 ";
 		
 		return ($code);
-	}	
+	}
+
+	//override
+	/*public function do_guest_login($email=null,$name=null,$address=null,$postcode=null,$country=null,$tel=null) {
+		
+		return $this->do_guest_login($email,$name,$address,$postcode,$country,$tel);
+	}*/		
    
 };
 }

@@ -1,20 +1,4 @@
-                        <!--li class="$0$">
-                            <div class="metro_tmtime" datetime="$2$">
-                                <span class="date">$3$</span>
-                                <span class="time">$4$</span>
-                            </div>
-                            <div class="metro_tmicon">
-                                <i class="$1$"></i>
-                            </div>
-                            <div class="metro_tmlabel">
-                                <h2>$5$</h2>
-                                <p>$6$</p>
-                                <a class="btn" href="$7$">
-                                    Περισσότερα <i class="icon-circle-arrow-right"></i>
-                                </a>
-                            </div>
-                        </li-->
-	                        <div class="bs-docs-example">
+							<div class="bs-docs-example">
                                 <h4>$0$</h4>
                                 <div class="navbar">
                                     <div class="navbar-inner">
@@ -32,11 +16,10 @@
                                                     <li><a href="#">Link</a></li-->													
                                                 </ul>
                                                 <form method="post" action="#" class="navbar-search pull-left">
-                                                    <!--input type="text" placeholder="Search" class="search-query input-medium"-->
 									                <div class="id="input-prepend">
-														<span class="add-on"><i class="icon-calendar"></i></span>
+														<!--span class="add-on"><i class="icon-calendar"></i></span>
 														<input id="reservation" name="rdate" type="text" class=" m-ctrl-medium" />
-														<input type="hidden" name="FormAction" value="cpuliststats" />
+														<input type="hidden" name="FormAction" value="cpuliststats" /-->
 													</div>
                                                 </form>
 												<a href="#" class="brand">$7$</a>												

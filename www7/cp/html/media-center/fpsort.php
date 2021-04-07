@@ -11,8 +11,8 @@
 
             <div class="grid-list-buttons">
                 <ul>
-                    <li class="grid-list-button-item <phpdac>cms.nvl use shkatalogmedia.isListView++active+1</phpdac>"><a data-toggle="tab" href="#grid-view" onClick="cc('viewmode','grid','1');"><i class="fa fa-th-large"></i> <phpdac>cms.slocale use _GRID</phpdac></a></li>
-                    <li class="grid-list-button-item <phpdac>cms.nvl use shkatalogmedia.isListView+active++1</phpdac>"><a data-toggle="tab" href="#list-view" onClick="cc('viewmode','list','1');"><i class="fa fa-th-list"></i> <phpdac>cms.slocale use _LIST</phpdac></a></li>
+                    <li class="grid-list-button-item <phpdac>cms.nvl use shkatalogmedia.isListView++active+1</phpdac>"><a data-toggle="tab" href="#grid-view" onClick="cc('viewmode','grid','1');"><i class="fa fa-th-large"></i> <phpdac>cms.slocale use _GRIDFLAG</phpdac></a></li>
+                    <li class="grid-list-button-item <phpdac>cms.nvl use shkatalogmedia.isListView+active++1</phpdac>"><a data-toggle="tab" href="#list-view" onClick="cc('viewmode','list','1');"><i class="fa fa-th-list"></i> <phpdac>cms.slocale use _LISTFLAG</phpdac></a></li>
                 </ul>
             </div>
         </div><!-- /.control-bar -->			   

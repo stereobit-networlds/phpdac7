@@ -22,6 +22,7 @@ $__EVENTS['RCMENU_DPC'][6]='cpmnewmenu';
 $__EVENTS['RCMENU_DPC'][7]='cpmselectmenu';
 $__EVENTS['RCMENU_DPC'][8]='cpmnewelement';
 $__EVENTS['RCMENU_DPC'][9]='cpmaddelement';
+$__EVENTS['RCMENU_DPC'][10]='cpmcopymenu';
 
 $__ACTIONS['RCMENU_DPC'][0]='cpmconfig';
 $__ACTIONS['RCMENU_DPC'][1]='cpmconfedit';
@@ -33,6 +34,7 @@ $__ACTIONS['RCMENU_DPC'][6]='cpmnewmenu';
 $__ACTIONS['RCMENU_DPC'][7]='cpmselectmenu';
 $__ACTIONS['RCMENU_DPC'][8]='cpmnewelement';
 $__ACTIONS['RCMENU_DPC'][9]='cpmaddelement';
+$__ACTIONS['RCMENU_DPC'][10]='cpmcopymenu';
 
 $__LOCALE['RCMENU_DPC'][0]='RCMENU_DPC;Menu Configuration;Menu Configuration;';
 $__LOCALE['RCMENU_DPC'][1]='_newelement;New element;Νέο στοιχείο;';
@@ -59,12 +61,14 @@ $__LOCALE['RCMENU_DPC'][21]='_newelm;New element;Νέο στοιχείο;';
 $__LOCALE['RCMENU_DPC'][22]='_elmname;Element name;Όνομα στοιχείου;';
 $__LOCALE['RCMENU_DPC'][23]='_elmurl;Element url;Σύνδεσμος στοιχείου;';
 $__LOCALE['RCMENU_DPC'][24]='_selectmenu;Select menu;Επιλέξτε μενού;';
+$__LOCALE['RCMENU_DPC'][25]='_copymenu;Copy menu;Αντιγραφή μενού;';
 
 class rcmenu extends cmsmenu {
 
     var $crlf, $path, $title;
 	var $t_config, $t_config0, $t_config1, $t_config2;
 	var $edit_per_lan, $selectedMenu, $post, $element;
+	var $menusperlang;
 	
     public function __construct() {
 	
@@ -82,6 +86,8 @@ class rcmenu extends cmsmenu {
 		$this->selectedMenu = GetParam('menu');
 		$this->post = null;	
 		$this->element = null;	
+		
+		$this->menusperlang = remote_paramload('SHMENU','menusperlang',$this->path);
 	}
 	
     public function event($event=null) {			
@@ -90,6 +96,14 @@ class rcmenu extends cmsmenu {
 		if ($login!='yes') return null;		
 	    	    		  			    
 		switch ($event) {	
+		
+			case "cpmcopymenu"    :  	$this->copyMenus();
+										/*
+										$this->t_config = $this->read_config();
+										//if ($newmenu = $_POST['menu'])
+											//$this->post = $this->createMenu($newmenu);
+										*/
+			                            break;
 		
 			case "cpmaddelement"    :   $this->t_config = $this->read_config();
 										if ($elmname = $_POST['elmname'])
@@ -146,6 +160,9 @@ class rcmenu extends cmsmenu {
 		if ($login!='yes') return null;			
 
 		switch ($action) {	
+		
+			case "cpmcopymenu"      :	$out = $this->menuMessage();//$this->post);
+			                            break;		
 		
 			case "cpmaddelement"    :	break;	
 			case "cpmnewelement"   	:	$out = $this->newElement(localize('_newelm', getlocal()),"cpmaddelement"); 
@@ -713,13 +730,31 @@ class rcmenu extends cmsmenu {
 		
 		//db based menu list
 		$sSQL = "select relative, locale from relatives where ";
-		$sSQL.= "type='$lan' and active=1 and ismenu=1 and ismaster=1";
+		//$sSQL.= "type='$lan' and active=1 and ismenu=1 and ismaster=1";
+		//remove type=lan
+		$sSQL.= "active=1 and ismenu=1 and ismaster=1";
 		$sSQL.= " ORDER BY relative";
 	    $result = $db->Execute($sSQL);
+		//echo $sSQL . ">" . $this->menusperlang ;
 		
 		foreach ($result as $r=>$rec) {
 			$name = $rec[1] ? ucfirst($rec[1]) : ucfirst($rec[0]);
-			$menu_array[$name] = seturl('t=cpmselectmenu&menu=' . $rec[0]);
+			//$menu_array[$name] = seturl('t=cpmselectmenu&menu=' . $rec[0]);
+			
+			//menu or mymenu menus per language selectors
+			if ($this->menusperlang && (substr($rec[0],0,5)=='menu'.$lan) || (substr($rec[0],0,7)=='mymenu'.$lan)) {
+				//$lan_name = null;
+				$lan_name = $rec[0];
+			}	
+			elseif ($this->menusperlang && (substr($rec[0],0,4)=='menu') || (substr($rec[0],0,6)=='mymenu'))
+			    //do nothing (hide other lan menu1/0 mymenu1/0)
+				//$lan_name = $rec[0] . $lan;
+				$lan_name = null;
+			else
+				$lan_name = $rec[0]; //common for all lans
+			
+			if ($lan_name)
+				$menu_array[$name] = seturl('t=cpmselectmenu&menu=' . $lan_name);
 		}		
 
 		//text based menu list
@@ -729,8 +764,63 @@ class rcmenu extends cmsmenu {
 			$menu_array[$name] = seturl('t=cpmselectmenu&menu=' . $name);
 		}*/	
 		
-		ksort($menu_array);		
-		return ($menu_array);						
+		
+		if (is_array($menu_array)) {
+			ksort($menu_array);			
+		}
+		
+		//else {//copy cmd menu from menu to menu0 or menu1
+		if ($this->menusperlang) {
+		    $menu_array[2] = ''; //sep
+			$name = ucfirst(localize('_copymenu', getlocal()));
+			$menu_array[$name] = seturl('t=cpmcopymenu&lantype='.$lan);
+		}	
+		
+		//ksort($menu_array);				
+		return ($menu_array);			
+	}	
+	
+	//copy menu db items and files from lan A(0/1) to lan B(1/0)
+	protected function copyMenus() {
+		$lan = GetReq('lantype') ? GetReq('lantype') : (getlocal() ? getlocal() : '0');
+		$db = GetGlobal('db');	
+		/*
+		//text based menu list
+		$menufiles = $lan ? "menu-*0.ini" : "menu-*1.ini"; //select lan opposite 0 or 1
+		echo $menufiles . ':';
+		foreach (glob($this->path . $menufiles) as $filename) {
+			echo "$filename size " . filesize($filename) . "<br>";
+			//$name = str_replace(array("menu-","$lan.ini", $this->path),array('','',''), $filename);
+			//$menu_array[$name] = seturl('t=cpmselectmenu&menu=' . $name);
+		}
+		*/
+		//db based menu list
+		$lantype = $lan ? '0' : '1'; //select lan opposite 0 or 1
+		
+		$sSQL = "select relative, locale from relatives where ";
+		//$sSQL.= "type='$lantype' and active=1 and ismenu=1 and ismaster=1";
+		//remove type=lan annd relative menu name
+		$sSQL.= "active=1 and ismenu=1 and ismaster=1";// and (relative='menu' OR relative='mymenu')";
+		$sSQL.= " ORDER BY relative";
+	    $result = $db->Execute($sSQL);
+		//echo $sSQL;
+		
+		foreach ($result as $r=>$rec) {
+			//echo $rec[1] . " db " . $rec[0];
+			
+			//$name = $rec[1] ? ucfirst($rec[1]) : ucfirst($rec[0]);
+			//$menu_array[$name] = seturl('t=cpmselectmenu&menu=' . $rec[0]);
+			
+			if (($rec[0]=='menu') || ($rec[0]=='mymenu')) {
+				$newlanmenu = $rec[0] . $lan;
+				//db based create menu 
+				$this->createMenu($newlanmenu);
+				//db based, initialize menu by delete menu items copied before
+		   	    $this->deleteMenu($newlanmenu);
+				//echo '...z';
+			}
+			//echo "<br>";
+		}		
 	}	
 	
 	public function currentMenuName() {

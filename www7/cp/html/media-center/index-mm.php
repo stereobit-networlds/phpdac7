@@ -26,7 +26,8 @@
         <phpdac>shkatalogmedia.getOGTags</phpdac>
 
 	    <!-- Bootstrap Core CSS -->
-	    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+	    <!--link rel="stylesheet" href="assets/css/bootstrap.min.css"-->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	    
 	    <!-- Customizable CSS -->
 	    <link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/main.css</phpdac>">
@@ -57,24 +58,55 @@
 		<link rel="stylesheet" href="css/zebra/flat/zebra_dialog.css" type="text/css">
 		<script> var sc = new Array();	</script>
 		
-		<!--hpdac>cms.include_partDb use google-analytics-tm+++js</phpda-->
-		<!--hpdac>cms.include_partDb use skroutz-analytics+++js</phpda-->
-		<phpdac>cms.include_partDb use fb-analytics+++js</phpdac>
+		<phpdac>cms.include_part use /parts/skroutz-analytics.php</phpdac>	
+		<phpdac>cms.include_part use /parts/fb-analytics.php</phpdac>
 		
 		<!--link rel="stylesheet" href="css/mega-menu.css" type="text/css"-->
-		<phpdac>cms.include_partDb use headstyle+++style</phpdac>	
+<style>		
+.videoWrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    padding-top: 25px;
+    height: 0;
+}
+.videoWrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+</style>		
 	</head>
 <body>
-<!--hpdac>cms.include_partDb use google-tagmanager-ns+++js</phpda-->
-<phpdac>cms.include_partDb use fb-api+++js</phpdac>
+<!--script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '<phpdac>cms.paramload use CMS+fbid</phpdac>',
+      xfbml      : true,
+      version    : 'v2.7'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/el_GR/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script-->
+<!--script>
+   <-hpdac>cmslogin.fblogin_javascript</phpda->
+</script-->	
 
 	<div class="wrapper">
-		<!--hpdac>cms.nvldac2 use cmsrt.megamenu+cms.include_part:/mm/mega-menu.php++</phpda-->
-	    <!--hpdac>cms.nvldac2 use cmsrt.megamenu+cms.include_part:/parts/navigation/top-menu-bar-empty-space.php+cms.include_part:/parts/navigation/top-menu-bar.php+</phpda-->
+		<!--hpdac>cms.include_part use /mm/mega-menu.php</phpdac-->	
+	
 		<phpdac>cms.include_part use /parts/navigation/top-menu-bar.php</phpdac>
 
 		<phpdac>cms.nvldac2 use headerStyle+cms.include_part:/parts/section/header.php::cms.include_part:/parts/breadcrumb/breadcrumb.php+cms.include_part:/parts/section/header-2.php+1</phpdac>
-	
+		
 		<phpdac>cms.include_part_arg use /pages/<mc_page>.php</phpdac>
 		
 		<phpdac>cms.include_part use /parts/section/footer.php</phpdac>
@@ -86,7 +118,6 @@
 	
 	<!--script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script-->
-	
 	<!--script type="text/javascript" src="js/mega-menu.js"></script-->
 	
 	<phpdac>cms.nvl use cmsrt.MC_CURRENT_PAGE+<script src="https://maps.google.com/maps/api/js?sensor=false&amp;language=en"></script><script src="assets/js/gmap3.min.js"></script>++contact|sendamail</phpdac>
@@ -119,10 +150,18 @@
 	<!--hpdac>cmsrt.nvldac2 use cmsrt.MC_CURRENT_PAGE+cms.include_part_arg:/parts/<mc_page>-side-select.php++</phpda-->	
 	<phpdac>cmsrt.nvldac2 use cmsrt.MC_CURRENT_PAGE+cms.include_part:/parts/addtocart-side-select.php++addtocart</phpdac>	
 	
-	<!-- e-Enterprise, stereobit/phpdac7 -->	
+	<phpdac>cms.include_part use /parts/google-analytics.php</phpdac>
+	<phpdac>cms.include_part use /parts/piwik-analytics.php</phpdac>
+	<!-- e-Enterprise, stereobit.networlds (phpdac5) -->	
 <script type="text/javascript" src="jsdialog.php?t=divstart"></script>	
 
-<phpdac>cms.include_partDb use google-plusone+++js</phpdac>
-<phpdac>cms.include_partDb use piwik-analytics+++js</phpdac>
+<script type="text/javascript">
+  (function() {
+    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    po.src = 'https://apis.google.com/js/plusone.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+  })();
+</script>	
+
 </body>
 </html>

@@ -69,7 +69,7 @@ $__LOCALE['SHCUSTOMERS_DPC'][23]='zip;Zip;Τ.Κ.';
 $__LOCALE['SHCUSTOMERS_DPC'][24]='voice2;Phone 2;Τηλέφωνο';
 $__LOCALE['SHCUSTOMERS_DPC'][25]='mail;e-mail;Ηλ. Ταχυδρομείο';
 $__LOCALE['SHCUSTOMERS_DPC'][26]="_MSG20;Record not affected;Η εγγραφή δεν καταχωρήθηκε.";
-$__LOCALE['SHCUSTOMERS_DPC'][27]='name;Name;Επωνυμια';
+$__LOCALE['SHCUSTOMERS_DPC'][27]='name;Name;Ονοματεπώνυμο';
 $__LOCALE['SHCUSTOMERS_DPC'][28]='_UNKNOWNENTRY;WARNING:You are not an official registrated customer, please insert your details below and we will contact you as soon as possible.<br> You can not use our site advance services !;ΠΡΟΣΟΧΗ: Δεν ειστε έγκυρος πελάτης της εταιρείας μας και δεν θα έχετε δικαίωμα παραγγελίας,αν είστε νέος πελατης συμπληρωστε τα παρακατω στοιχεια διαφορετικα επικοιωνήστε τηλεφωνικώς με την εταιρεια μας!';
 $__LOCALE['SHCUSTOMERS_DPC'][29]='_UMAILSUBC;New customer;Νέος πελάτης';
 $__LOCALE['SHCUSTOMERS_DPC'][30]='_INVOICE;Invoice;Τιμολόγιο';
@@ -94,6 +94,10 @@ $__LOCALE['SHCUSTOMERS_DPC'][48]='CustomerRegistration;Customer registration;Ε�
 $__LOCALE['SHCUSTOMERS_DPC'][49]='CustomerInsData;Customer details added;Εισαγωγή στοιχείων πελάτη';
 $__LOCALE['SHCUSTOMERS_DPC'][50]='CustomerUpdData;Customer details updated;Μεταβολή στοιχείων πελάτη';
 $__LOCALE['SHCUSTOMERS_DPC'][51]="_MSG21;Record not affected;Πρόβλημα κατά την αποθήκευση.";
+$__LOCALE['SHCUSTOMERS_DPC'][52]="_SELECTINVTYPE;Charge type;Τύπος παραστατικού";
+$__LOCALE['SHCUSTOMERS_DPC'][53]="_SELECTCUSTYPE;Customer details;Στοιχεία χρέωσης";
+$__LOCALE['SHCUSTOMERS_DPC'][54]="_SELECTCUSADDRBUTTON;Select details;Επιλογή στοιχείων χρέωσης";
+$__LOCALE['SHCUSTOMERS_DPC'][55]="_CREATEACCOUNTQUESTION;Create account;Αποθήκευση στοιχείων";
 
 class shcustomers {
 	var $userLevelID;
@@ -117,7 +121,7 @@ class shcustomers {
 	var $mydelivery_address, $delivery_fields, $delivery_goto_url, $adddelivgoto, $delivok;
 	var $is_reseller, $error, $checkuseasterisk,$asterisk;
 	var $cusok, $addcusgoto, $reseller, $reseller_attr;
-	var $check_exist, $customer_exist_id;
+	var $check_exist, $customer_exist_id, $_customerway;
 	var $rewrite; 
 	
 	static $staticpath, $myf_button_class, $myf_button_submit_class;	
@@ -215,7 +219,8 @@ class shcustomers {
 		$myf_submit = remote_paramload('SHCUSTOMERS','buttonclasssubmit',$this->path);
 		self::$myf_button_submit_class = $myf_submit ? $myf_submit : 'myf_button';
   
-		$this->rewrite = 1;	   
+		$this->rewrite = 1;	 
+		$this->_customerway	= null; //init (superfastcart)
 	}
 
     public function event($sAction) {
@@ -351,13 +356,13 @@ class shcustomers {
 		
 		$code = "
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#checkout-page').offset().top, 10));
+		window.scrollTo(0,parseInt(jQuery('#checkout-page').offset().top, 10));
 	else {		
 		gotoTop('checkout-page');	
 	
-		$(window).scroll(function() { 
+		jQuery(window).scroll(function() { 
 			if (agentDiv('transactions')) {
-				$.ajax({ url: 'jsdialog.php?t=jsdcode&id=trans&div=transactions', cache: false, success: function(jsdialog){
+				jQuery.ajax({ url: 'jsdialog.php?t=jsdcode&id=trans&div=transactions', cache: false, success: function(jsdialog){
 					eval(jsdialog);		
 				}})	
 			}	
@@ -370,7 +375,7 @@ class shcustomers {
 	protected function checkFieldsJs($err=null, $title=null) {
 			
 		$code = "
-	new $.Zebra_Dialog('$err', {'type':'error','title':'$title'});";
+	new jQuery.Zebra_Dialog('$err', {'type':'error','title':'$title'});";
 		
 		$js = new jscript;	
 		$js->load_js($code,null,1);			   
@@ -412,7 +417,7 @@ window.onload=function(){
 			$code = "
 window.onload=function(){
   //alert('$message');	
-  new $.Zebra_Dialog('$message', {'type':'error','title':''});
+  new jQuery.Zebra_Dialog('$message', {'type':'error','title':''});
 } 
 ";	  
 			$js = new jscript;		   
@@ -527,32 +532,53 @@ window.onload=function(){
 	  return ($out);
 	}	
 
-    public function getcustomer($id="",$fkey=null) {
+    public function getcustomer($id=null, $fkey=null, $qstr=false) {
 		$db = GetGlobal('db');
 		$a = GetReq('a');
 		//$un = GetGlobal('UserName');
 		$myfkey = $fkey ? $fkey : $this->fkey;
 		$update = false;
-
-		if ($id) { 
-			$cid = $id;//param
-			$update = true;
-		}	
-		elseif ($a) {
-			$cid = $a;//update
-			$update = true;
+		//echo '<br>ID:' . $id .'-'. $fkey . '-'. $qstr;
+		
+		if (($id) && (defined('SHCART_DPC')) && (_v('shcart.superfastcart'))) {
+			//not logged-in user when superfast procedure 			
+			//submited guest form and auto-login
+			$cid = $qstr ? $db->qstr($id) : $id;	//qstr enable	
 		}	
 		else {
-	        //cart procedure
-		    if ($cid = GetSessionParam('customerway')) { 
-			    $myfkey = 'id';
+			if ($id) { 
+				$cid = $id;//param
+				$update = true;
 			}	
-	        else {//insert procedure
-				$cid = ($this->usemailasusername) ? "'".$this->username."'" : $this->userid;
-				$myfkey = $this->fkey;
-			}	
+			elseif ($a) {
+				$cid = $a;//update
+				$update = true;
+			}		
+			else {
+				/*if (($cid = $this->_customerway) || ($cid = GetSessionParam('_customerway'))) { //not yet session
+					//superfastcart mode invoice generation
+					$myfkey = 'id';
+				}*/ 				
+				if (($cid = GetParam('guestemail')) && (defined('SHCART_DPC')) && (_v('shcart.superfastcart'))) { 
+					//superfastcart without cid param call
+					
+					//not logged-in user when superfast procedure 			
+					//submited guest form and auto-login				
+					
+					$myfkey = 'code2';
+					$cid = $db->qstr($cid);	//qstr			
+				}	
+				elseif ($cid = GetSessionParam('customerway')) { 
+					//cart procedure
+					$myfkey = 'id';
+				}				
+				else {//insert procedure
+					$cid = ($this->usemailasusername) ? $db->qstr($this->username) : $this->userid;
+					$myfkey = $this->fkey;
+				}	
+			}
 		}
-	 
+		
 		$recfields = ($this->usemailasusername) ?
 					array('name','afm','eforia','prfdescr','address','area','zip','voice1','voice2','fax','mail') :
 					array('code2','name','afm','eforia','prfdescr','address','area','zip','voice1','voice2','fax','mail');
@@ -562,23 +588,25 @@ window.onload=function(){
 				"SELECT code2,name,afm,eforia,prfdescr,address,area,zip,voice1,voice2,fax,mail";
 		$sSQL .= " FROM customers WHERE ". $myfkey . "=" . $cid;
 		$sSQL .= ($update==true) ? " and code2=" . $db->qstr($this->userid) : null;
-
+	
 		$result = $db->Execute($sSQL);
 		//print_r($result->fields);
+		//echo $sSQL;
 		
 		reset($recfields);
 		foreach ($recfields as $field_num=>$fieldname) {
-			//echo $fid,'><br>';
-			$record .= $result->fields[$field_num] . ";";
+			$record .= trim($result->fields[$field_num]) . ";";
+			//echo ">",$record,'><br>';
 		}
 		//echo $record;
 		return ($record);
 	}
 
 	//return formed record data as html
-    public function showcustomerdata($customer="",$fkey=null,$template=null,$ret_tokens=false) {
+    public function showcustomerdata($customer=null,$fkey=null,$template=null,$ret_tokens=false) {
 		$sFormErr = GetGlobal('sFormErr');
 		$data = array();
+		//echo '<br>Customer:' . $customer .'-'. $fkey;
 		
 		//template
 		$template= $template ? str_replace('.htm', '', $template) : "showcustomerdata";
@@ -589,30 +617,55 @@ window.onload=function(){
 		else
 			$recfields = array('code2','name','afm','eforia','prfdescr','address','area','zip','voice1','voice2','fax','mail');
 		reset($recfields);
-	    */
-		//when show activate viewed customer so deactivat all other same user clients
-		$this->deactivatecustomers();	   
+	    */   
+		
+		if (($customer) && ((defined('SHCART_DPC')) && (_v('shcart.superfastcart')))) {
+			//superfastcart
+			//no deactivations
+			$fields = $this->getcustomer($customer,'code2',true);
+		}	
+		else {
 	   
-		//read data
-		if ($customerway = GetReq('customerway')) {
-			//echo 'z22';
-			$fields = $this->getcustomer($customerway,'id');
-			SetSessionParam('scustomer',$customerway);
-			$this->activatecustomer($customerway);		 
-		}	 
-		elseif ($selectedcustomer = GetSessionParam('scustomer')) {
-			//echo 'a22'; 
-			$fields = $this->getcustomer($selectedcustomer,'id');	
-			$this->activatecustomer($selectedcustomer);		 
-		}	    
-		else	{ 
-			//echo 'b22';
-			$fields = $this->getcustomer($customer,$fkey,1);
-			$this->activatecustomer();		 
-		}	 
+			//read data
+			if ($customerway = GetReq('customerway')) {
+				//echo 'z22';			
+				//when show activate viewed customer so deactivat all other same user clients
+				$this->deactivatecustomers();				
+			
+				$fields = $this->getcustomer($customerway,'id');
+				SetSessionParam('scustomer',$customerway);
+				$this->activatecustomer($customerway);		 
+			}	 
+			elseif ($selectedcustomer = GetSessionParam('scustomer')) {
+				//echo 'a22'; 
+				//when show activate viewed customer so deactivat all other same user clients
+				$this->deactivatecustomers();
+			
+				$fields = $this->getcustomer($selectedcustomer,'id');	
+				$this->activatecustomer($selectedcustomer);		 
+			}	    
+			elseif ($customer)	{ 
+				//echo 'b22';
+				//when show activate viewed customer so deactivat all other same user clients
+				$this->deactivatecustomers();
+			
+				$fields = $this->getcustomer($customer,$fkey);
+				$this->activatecustomer();		 
+			}
+			else {
+				if (($c = GetParam('guestemail')) && ((defined('SHCART_DPC')) && (_v('shcart.superfastcart')))) {
+					//superfastcart caal without customer param
+					//no deactivations
+					$fields = $this->getcustomer($c,'code2',true);
+				}
+				else	
+					$fields = null;
+			}	
+		}		
 
 		//in case of no customer data this must return null
-		if (strlen($fields)>11) { //if empty returns ';;;;;;;;;'
+		//if (strlen($fields)>11) { //if empty returns ';;;;;;;;;'
+		if ($fields) {
 
 			$myfields = explode(";",$fields);
 			array_pop($myfields); //get out the empty last element
@@ -632,8 +685,11 @@ window.onload=function(){
 			    return ($data);
 			else	
 				$out = $this->combine_tokens($mytemplate,$data);
+			
+			return ($out);			
 		}
-		return ($out);
+		
+		return false;
 	}
 
 	//return leeid of customer based on ageneric where (suitable for pre register user procedure)
@@ -650,7 +706,7 @@ window.onload=function(){
 	    $sFormErr = GetGlobal('sFormErr');
 		if (!$this->userid) 
 			return localize('_ACCDENIED',getlocal());
-		
+		//echo $fields;
 		$customerid = GetParam('a');
 	    $goto = $go_to ? $go_to : "editcus/$customerid/"; //"t=signup2&a=".GetParam('a'); 
 	   
@@ -662,20 +718,22 @@ window.onload=function(){
 	    $data =  array();       //read data	  
 	    $recfields = $this->get_cus_record(1,1);		 
 	    reset($recfields);
-	   
+	    //print_r($recfields); 
 	    if ($fields) { //get record param
 		    $myfields = explode(";",$fields);
 
             foreach ($recfields as $recid => $rec) 
 		        $data[$recid] = $myfields[$recid] ? $myfields[$recid] : null;//"&nbsp;");
-
+				
+			//echo 'a';
 	    }
 	    else { //read form data
             foreach ($recfields as $fnum => $fname) {
 		        $data[$fnum] = ToHTML(GetParam(_with($fname)));
 		    }
+			//echo 'b';
 	    }
-
+        //print_r($data);
         //$sFileName = seturl($goto,0,1);	   
 	    if ($sFormErr!="ok") 
 			$err = $sFormErr;
@@ -713,7 +771,7 @@ window.onload=function(){
 		 
 	    //submit buttons
         $tokens[] = $out2;
-		   
+		//print_r($tokens);   
 		$ret = $this->combine_tokens($mytemplate,$tokens);
 		return ($ret);		   
 	}
@@ -844,7 +902,8 @@ window.onload=function(){
 		   
 		   //update with new submited data..except afm		   
 		   //name,eforia,prfdescr,address,area,zip,voice1,voice2,fax,		   
-           $sSQL = "update customers set active=1,code2=" . $db->qstr($uid); 
+           $sSQL = "update customers set active=1,timeupd=" . $db->qstr(date('Y-m-d h:m:s'));
+		   $sSQL.= ",code2=" . $db->qstr($uid); 
 		   $sSQL.= ",name=" . $db->qstr(addslashes(GetParam('lname')));//user's name 
 	       //$sSQL.= ",afm=" . $db->qstr(addslashes(GetParam('afm')));
 	       $sSQL.= ",eforia=" . $db->qstr(addslashes(GetParam('eforia')));
@@ -930,8 +989,9 @@ window.onload=function(){
 	     	  
 		//$recfields = array('code2','name','afm','eforia','prfdescr','address','area','zip','voice1','voice2','fax','mail');
 		
-		$sSQL = "insert into customers (code2,active,name,afm,eforia,prfdescr,address,area,zip,country,voice1,voice2,fax,mail)";
+		$sSQL = "insert into customers (timeupd,code2,active,name,afm,eforia,prfdescr,address,area,zip,country,voice1,voice2,fax,mail)";
 		$sSQL.= " values (" .
+			   $db->qstr(date('Y-m-d h:m:s')) . ',' . 
 	           $db->qstr($uid) . ',1,' .
 	           $db->qstr(addslashes(GetParam('name'))) . ',' .
 	           $db->qstr(addslashes(GetParam('afm'))) . ',' .
@@ -1017,8 +1077,9 @@ window.onload=function(){
 		//before set active the current record deactive all others  
 		$d = $this->deactivatecustomers($uid);			 			 
 
-		$sSQL = "insert into customers (code2,active,name,afm,eforia,prfdescr,address,area,zip,country,voice1,voice2,fax,mail)";
+		$sSQL = "insert into customers (timeupd,code2,active,name,afm,eforia,prfdescr,address,area,zip,country,voice1,voice2,fax,mail)";
 		$sSQL.= " values (" .
+			   $db->qstr(date('Y-m-d h:m:s')) . ',' .
 	           $db->qstr($uid) . ',1,' .
 	           $db->qstr(addslashes(GetParam('lname'))) . ',' . //user's name
 	           $db->qstr(addslashes(GetParam('afm'))) . ',' .
@@ -1147,19 +1208,19 @@ window.onload=function(){
 	    }	 
 
         $sSQL = "update customers set ";
-	    $sSQL.='timeupd=' . $db->qstr($updDate) . ',' .
-	           'name='.$db->qstr(addslashes(GetParam('name'))) . ',' .
-	           'afm='.$db->qstr(addslashes(GetParam('afm'))) . ',' .
-	           'eforia='.$db->qstr(addslashes(GetParam('eforia'))) . ',' .
-	           'prfdescr='.$db->qstr(addslashes(GetParam('prfdescr'))) . ',' .
-	           'address='.$db->qstr(addslashes(GetParam('address'))) . ',' .
-	           'area='.$db->qstr(addslashes(GetParam('area'))) . ',' .
-	           'zip='.$db->qstr(addslashes(GetParam('zip'))) . ',' .
-			   'country='.$db->qstr(addslashes(GetParam('country'))) . ',' .
-	           'voice1='.$db->qstr(addslashes(GetParam('voice1'))) . ',' .
-	           'voice2='.$db->qstr(addslashes(GetParam('voice2'))) . ',' .
-	           'fax='.$db->qstr(addslashes(GetParam('fax'))) . ',' .
-	           'mail='.$db->qstr(addslashes(GetParam('mail')))  .
+	    $sSQL.='timeupd=' . $db->qstr($updDate) .
+	           ',name='.$db->qstr(addslashes(GetParam('name'))) .
+	           ',afm='.$db->qstr(addslashes(GetParam('afm'))) .
+	           ',eforia='.$db->qstr(addslashes(GetParam('eforia'))).
+	           ',prfdescr='.$db->qstr(addslashes(GetParam('prfdescr'))) .
+	           ',address='.$db->qstr(addslashes(GetParam('address')))  .
+	           ',area='.$db->qstr(addslashes(GetParam('area'))) .
+	           ',zip='.$db->qstr(addslashes(GetParam('zip'))) .
+			   ',country='.$db->qstr(addslashes(GetParam('country'))) .
+	           ',voice1='.$db->qstr(addslashes(GetParam('voice1'))) .
+	           ',voice2='.$db->qstr(addslashes(GetParam('voice2'))) .
+	           ',fax='.$db->qstr(addslashes(GetParam('fax'))) .
+	           ',mail='.$db->qstr(addslashes(GetParam('mail'))) .
 			   //" where code2=" . $db->qstr($key); //DISABLED UPDATE WITH ID AS PARAM ?
 	           " where $myfkey=".$id . " and " . "code2=" . $db->qstr($key); 
 
@@ -1278,19 +1339,22 @@ window.onload=function(){
 		return ($sFormErr);
     }
 	
-	public function get_cus_type($id,$field=null,$istext=0) {
+	public function get_cus_type($id,$field=null,$istext=0,&$retid=null) {
         $db = GetGlobal('db');
 		$mycode = $field ? $field : 'code2';
 
 		if ($id) { 
-			$sSQL = "select attr1 from customers where active=1 and $mycode=";
+			$sSQL = "select attr1,id from customers where active=1 and $mycode=";
 			switch ($istext) {
 				case 1 : $sSQL .= $db->qstr($id); break;
 				case 0 :
 				default: $sSQL .= $id;
 			}
 			$res = $db->Execute($sSQL,2);
+			
+			$retid = $res->fields[1]; //save retid
 			$ret = $res->fields[0];
+			
 			return ($ret);	
 		}
 		
@@ -1298,16 +1362,21 @@ window.onload=function(){
 	}
 	
 	public function is_reseller($id=null) {
-		$UserName = GetGlobal('UserName');		   
+		$UserName = GetGlobal('UserName');	
+		$customer_id= null;	
 	
 		if ($this->usemailasusername) {
 			$id = decode($UserName);	
-			$ret = $this->get_cus_type($id,null,1);
+			$ret = $this->get_cus_type($id,null,1,$customer_id);
 		}	 
 		else	 
 			$ret = $this->get_cus_type($id);
 	
 		if (!$ret) return;	 
+		
+		//save session default active customer id _private
+		$this->_customerway	= $customer_id;
+		SetSessionParam('_customerway',$customer_id);
 		  
 		if (is_array($this->reseller_attr) && (!empty($this->reseller_attr))) {	 		   
 			foreach ($this->reseller_attr as $i=>$attr) {
@@ -1350,23 +1419,6 @@ window.onload=function(){
 		else
 			$recfields = ($invtype==1) ? $this->cusform : $this->cusform2;
 		
-	    /*if (!$default_records) 	
-			$recfields = ($invtype==1) ? $this->cusform : $this->cusform2;	    
-	   
-		if (!$recfields) {
-			if ($this->usemailasusername) {
-		 
-				if ($usermail = GetParam('uname')) 
-					$recfields = ($invtype==1) ? array('name','afm','eforia','prfdescr','address','area','zip','voice1','voice2','fax') :
-												 array('name','address','area','zip','voice1','voice2','fax');  
-				else 
-					$recfields = ($invtype==1) ? array('name','afm','eforia','prfdescr','address','area','zip','voice1','voice2','fax','mail') :
-												 array('name','address','area','zip','voice1','voice2','fax','mail');  
-			}
-			else 	   
-				$recfields = ($invtype==1)	? array('code2','name','afm','eforia','prfdescr','address','area','zip','voice1','voice2','fax','mail') :
-										  array('code2','name','address','area','zip','voice1','voice2','fax','mail');
-        }*/
 	   
 	    return ($recfields);	
 	}	
@@ -1976,8 +2028,8 @@ window.onload=function(){
 			}	 
 			  		   
 			$cusfields = implode(',',$recfields);
-			$sSQL2 = "insert into customers (code2,active,$cusfields)";
-			$sSQL2.= " values (". $db->qstr($myui). ",1,";
+			$sSQL2 = "insert into customers (timeupd,code2,active,$cusfields)";
+			$sSQL2.= " values (". $db->qstr(date('Y-m-d h:m:s')) . "," . $db->qstr($myui). ",1,";
 			$sSQL2.= implode(',',$cusdata);
 			$sSQL2.= ")";
 
@@ -2038,7 +2090,7 @@ window.onload=function(){
 		 
 			if ($counter>1) {
 				//$sSQL = "delete from customers"; //UNMAP
-				$sSQL = "update customers set code2='', mail=''";
+				$sSQL = "update customers set code2='', mail='', timeupd=" . $db->qstr(date('Y-m-d h:m:s'));
 				$sSQL.= " where code2=". $db->qstr($myui) . ' and id=' . $id;
 				//echo $sSQL;	   
 				$result = $db->Execute($sSQL,1);	 
@@ -2064,8 +2116,9 @@ window.onload=function(){
 	    $myui = $id?$id:decode($UserName);	
 	   
 	    if ($myui) {
-			$sSQL = "update customers set active=0";
-			$sSQL.= " where code2=". $db->qstr($myui);   
+			$sSQL = "update customers set active=0, timeupd=" . $db->qstr(date('Y-m-d h:m:s'));
+			$sSQL.= " where code2=". $db->qstr($myui);  
+			//echo $sSQL;	
 			$result = $db->Execute($sSQL,1);	 
 	    }
 	     
@@ -2095,8 +2148,9 @@ window.onload=function(){
 	    } 
 	   
 	    if ($id) {
-			$sSQL = "update customers set active=1";
-			$sSQL.= " where id=". $id;   
+			$sSQL = "update customers set active=1, timeupd=" . $db->qstr(date('Y-m-d h:m:s'));
+			$sSQL.= " where id=". $id;  
+			//echo $sSQL;	
 			$result = $db->Execute($sSQL,1);	 
 	    }
 	     
@@ -2140,16 +2194,64 @@ window.onload=function(){
 		else
 			$cuscity = $cuscountry = ($country ? trim($country) : '');
 		
-		$sSQL = "insert into customers (code2,active,name,address,area,zip,city,country,mail,voice1)";
-		$sSQL.= " values (". $db->qstr($email). ",1,'$name','$address','$address','$postcode','$cuscity','$cuscountry','$email','$tel')";
-		//echo $sSQL2;
+		$sSQL = "select id from customers WHERE code2='{$email}' and active=1 order by id desc LIMIT 1"; //last entry
+		$uret = $db->Execute($sSQL);	
+
+		if ($uret->fields[0]) {	
+			$this->update_guest_customer($email,$name,$address,$postcode,$country,$tel);
+		}
+		else {
+			$sSQL = "insert into customers (timeupd,code2,active,name,address,area,zip,city,country,mail,voice1)";
+			$sSQL.= " values (". $db->qstr(date('Y-m-d h:m:s')) .
+							",". $db->qstr($email). 
+							",1,'$name','$address','$country','$postcode','$cuscity','$cuscountry','$email','$tel')";
+			//echo $sSQL;
 		
-		$result = $db->Execute($sSQL,1);	
-		if ($ret = $db->Affected_Rows()) 
-			return true;	
+			$result = $db->Execute($sSQL,1);	
+			if ($ret = $db->Affected_Rows()) 
+				return true;	
+		}
 		
 		return false;
 	}
+	
+	public function update_guest_customer($email=null,$name=null,$address=null,$postcode=null,$country=null,$tel=null) {
+		$db = GetGlobal('db');	
+		if (!$email) return false;
+		
+		if ((trim($country)) && (strstr(trim($country), ' '))) {
+			$p = explode(' ', trim($country));
+			$cuscity = array_shift($p);
+			$cuscountry = implode(' ', $p); //rest array
+		}
+		else
+			$cuscity = $cuscountry = ($country ? trim($country) : '');
+		
+		$sSQL = "select id from customers WHERE code2='{$email}' and active=1 order by id desc LIMIT 1"; //last entry
+		$uret = $db->Execute($sSQL);
+		
+		if ($uret->fields[0]) {
+		
+			$sSQL = "update customers set ";
+			$sSQL.= "timeupd=" . $db->qstr(date('Y-m-d h:m:s'));
+			$sSQL.= ",name=" . $db->qstr($name);
+			$sSQL.= ",address=" . $db->qstr($address);
+			$sSQL.= ",area=" . $db->qstr($country);
+			$sSQL.= ",zip=" . $db->qstr($postcode);
+			$sSQL.= ",city=" . $db->qstr($cuscity);
+			$sSQL.= ",country=" . $db->qstr($cuscountry);
+			$sSQL.= ",mail=" . $db->qstr($email);
+			$sSQL.= ",voice1=" . $db->qstr($tel);
+			$sSQL.= " where active=1 AND code2=" . $db->qstr($email); 
+			//echo $sSQL;
+		
+			$result = $db->Execute($sSQL,1);	
+			if ($ret = $db->Affected_Rows()) 
+				return true;	
+		}
+		
+		return false;
+	}	
 
 	public function save_guest_deliveryaddress($email=null,$name=null,$address=null,$postcode=null,$country=null,$tel=null) {	
 		$db = GetGlobal('db');	

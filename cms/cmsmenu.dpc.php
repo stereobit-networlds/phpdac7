@@ -20,7 +20,8 @@ class cmsmenu {
 
 	var $path, $urlpath, $inpath, $menufile, $sliderfile;
 	var $delimiter, $httpurl;
-	var $dropdown_class, $dropdown_class2;   
+	var $dropdown_class, $dropdown_class2; 
+	var $menusperlang;
 	
 	public function __construct() {
 		$UserName = GetGlobal('UserName');	
@@ -42,6 +43,8 @@ class cmsmenu {
 	    //SHMENU !!!
 		$this->dropdown_class = remote_paramload('SHMENU','dropdownclass',$this->path);	   
 		$this->dropdown_class2 = remote_paramload('SHMENU','dropdownclass2',$this->path);
+		
+		$this->menusperlang = remote_paramload('SHMENU','menusperlang',$this->path);
 	}
    
 
@@ -65,7 +68,7 @@ class cmsmenu {
 	} 
 
 	//text conf sliders (slideshow.ini and sld files)
-	public function callSlider($name=null,$slider_template=null,$glue_tag=null,$subslider_template=null) {
+	public function callSlider($name=null,$slider_template=null,$glue_tag=null,$subslider_template=null,$limit=null) {
 	    $lan = getlocal() ? getlocal() : '0';	
 		$gstart = $glue_tag ? '<'.$glue_tag.'>' : null;
 		$gend = $glue_tag ? '</'.$glue_tag.'>' : null;	
@@ -77,6 +80,8 @@ class cmsmenu {
 			$slidername = ($name=='slider') ? $name : 'slider-' . $name;
 			$slfile = $this->path . str_replace('.sld','',$slidername) . $lan . '.sld';
 			$conf = @parse_ini_file($slfile, 1, INI_SCANNER_RAW);
+			
+			//echo '<br><br>' . $name . " : ($lan)-->" . $slfile;
 		}	
 		else //slideshow.ini	
 			$conf = @parse_ini_file($this->sliderfile, 1, INI_SCANNER_RAW);
@@ -84,7 +89,8 @@ class cmsmenu {
 		//echo $slfile; print_r($conf);
 		if (empty($conf)) return null;
 		
-		foreach ($conf as $section=>$params) {
+		$i=0;
+		foreach ($conf as $section=>$params) {	
 			
 			$tokens = array();
 			foreach ($params as $p=>$v) {
@@ -93,6 +99,11 @@ class cmsmenu {
 			}			
 			//print_r($tokens);
 			$slide[] = $this->combine_tokens($tmpl, $tokens, true);
+
+			if ($limit) {
+				$i+=1;
+				if ($i==$limit) break 1; 
+			}
 		}
 		
 		$slides = $gstart . implode(''. $gend . $gstart , $slide) . $gend;
@@ -117,9 +128,17 @@ class cmsmenu {
 		$db = GetGlobal('db');
 
 		$sSQL = "select type,isfather,ischild,relative,relation,notes,locale,orderid from relatives where ";
-		$sSQL.= "type='$lan' and active=1 and ismenu=1 and ismaster=0 and locale=" . $db->qstr($name);
+		//$sSQL.= "type='$lan' and active=1 and ismenu=1 and ismaster=0 and locale=" . $db->qstr($name);
+		
+		//remove type=lan
+		if ($this->menusperlang && ($name=='menu') || ($name=='mymenu'))
+			$lan_name = $name . $lan;
+		else
+			$lan_name = $name; //common for all lans		
+		$sSQL.= "active=1 and ismenu=1 and ismaster=0 and locale=" . $db->qstr($lan_name);
+		
 		$sSQL.= " ORDER BY orderid";
-		//echo $sSQL;
+		//echo '<br><br>' . $lan_name . " : ($lan)-->" . $sSQL;
 	    $result = $db->Execute($sSQL);
 
 		$menu = array();
@@ -158,7 +177,7 @@ class cmsmenu {
 					if ($tmpl2) {
 						$tokens2[] = trim($cvalue) ? $this->make_link($cvalue) : '#';
 						$tokens2[] = $cname;
-						$ret2 .= $this->combine_tokens($tmpl2, $tokens, true);
+						$ret2 .= $this->combine_tokens($tmpl2, $tokens2, true);
 						unset($tokens2);
 					}
 					else {

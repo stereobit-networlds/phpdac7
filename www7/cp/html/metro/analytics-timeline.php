@@ -8,14 +8,12 @@
                                                 <span class="icon-bar"></span>
                                                 <span class="icon-bar"></span>
                                             </a>
-                                            <!--a href="cp.php?t=cp&year=$1$&month=$2$" class="brand">$1$ $2$</a-->
                                             <div class="nav-collapse collapse navbar-responsive-collapse">
                                                 <form method="post" action="#" class="navbar-search pull-left">
-                                                    <!--input type="text" placeholder="Search" class="search-query input-medium"-->
 									                <div class="id="input-prepend">
-														<span class="add-on"><i class="icon-calendar"></i></span>
+														<!--span class="add-on"><i class="icon-calendar"></i></span>
 														<input id="reservation" name="rdate" type="text" class=" m-ctrl-medium" />
-														<input type="hidden" name="FormAction" value="cp" />
+														<input type="hidden" name="FormAction" value="cp" /-->
 													</div>
                                                 </form>
 												<a href="#" class="brand">$7$</a>

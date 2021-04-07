@@ -48,11 +48,11 @@
                             <a href="javascript:;" class="icon-chevron-down"></a>
                             </span>
                             <div class="update-btn">
-                                <a href="cpmhtmleditor.php?t=cpmedititem&id=<phpdac>fronthtmlpage.getParam use id</phpdac>" class="btn update-easy-pie-chart"><i class="icon-repeat"></i> <phpdac>cmsrt.slocale use _modify</phpdac></a>
+                                <a href="cpmhtmleditor.php?t=cpmedititem&id=<phpdac>cmsrt.nvldac2 use id+cmsrt.getParam:id+cpmhtmleditor.getItemCode+</phpdac>" class="btn update-easy-pie-chart"><i class="icon-repeat"></i> <phpdac>cmsrt.slocale use _modify</phpdac></a>
                             </div>							
                         </div>
                         <div class="widget-body form">
-                            <form action="cpmhtmleditor.php?t=cpmdropzone&title=<phpdac>fronthtmlpage.getParam use title</phpdac>" class="dropzone" id="my-awesome-dropzone"></form>
+                            <form action="cpmhtmleditor.php?t=cpmdropzone&title=<phpdac>cmsrt.getParam use title</phpdac>&code=<phpdac>cpmhtmleditor.getItemCode</phpdac>" class="dropzone" id="my-awesome-dropzone"></form>
                         </div>
                     </div>					
                 </div>

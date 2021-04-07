@@ -68,7 +68,7 @@ class jsdialogStream extends jsdialog {
 		$respond = $responder ? $this->dajaxpage."?t=".$responder : $this->dajaxpage;
 		
 		$ret = "
-			$.ajax({
+			jQuery.ajax({
             url: '$respond',
             context: document.body,
             success: function(responseText) {

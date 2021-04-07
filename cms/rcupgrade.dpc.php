@@ -43,7 +43,7 @@ class rcupgrade {
 		
 		$this->upgdirs = null;
 		$this->isremote = true; //strstr($this->prpath, 'public_html/'.$this->app) ? false : true;//false;	
-		$this->remoteurl = "http://www.xix.gr/upgrade/cpupgrader.php";
+		$this->remoteurl = "https://demo.x3host.eu/upgrade/cpupgrader.php";
 	}
 
 	public function event($event=null) {

@@ -7,10 +7,9 @@ define("SHPIRAEUS_DPC",true);
 
 $__DPC['SHPIRAEUS_DPC'] = 'shpiraeus';
 
-$d = GetGlobal('controller')->require_dpc('libs/sha256.lib.php');
-require_once($d); 
-
-//GetGlobal('controller')->get_parent('SHPAYPAL_DPC','PAYPAL_DPC');
+require_once(_r('libs/sha256.lib.php'));
+//require_once(_r('libs/sha256pharapp.lib.php'));
+//require_once(_r('libs/nanosha2.lib.php'));
 
 $__EVENTS['SHPIRAEUS_DPC'][0]='piraeus';
 $__EVENTS['SHPIRAEUS_DPC'][1]='process';

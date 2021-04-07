@@ -103,13 +103,13 @@ class shtransactions extends transactions {
 		
 		$code = "
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#questions').offset().top, 10));
+		window.scrollTo(0,parseInt(jQuery('#questions').offset().top, 10));
 	else {		
 		gotoTop('questions');	
 	
-		$(window).scroll(function() { 
+		jQuery(window).scroll(function() { 
 			if (agentDiv('transactions')) {
-				$.ajax({ url: 'jsdialog.php?t=jsdcode&id=trans&div=transactions', cache: false, success: function(jsdialog){
+				jQuery.ajax({ url: 'jsdialog.php?t=jsdcode&id=trans&div=transactions', cache: false, success: function(jsdialog){
 					eval(jsdialog);		
 				}})	
 			}	
@@ -305,7 +305,7 @@ class shtransactions extends transactions {
 			$tokens[] = '';//dummy
 			
 			//echo $user,'>',$fkey;
-			$tokens[] = _m("shcustomers.showcustomerdata use $user+$fkey+cusdetails.htm");
+			$tokens[] = _m("shcustomers.showcustomerdata use $user+$fkey+cusdetails");
 			$tokens[] = GetSessionParam('orderdetails');
 			$tokens[] = GetSessionParam('ordercart');
 		  

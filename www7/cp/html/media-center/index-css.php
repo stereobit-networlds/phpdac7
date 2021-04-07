@@ -6,7 +6,7 @@
 		<!--link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/main_rtl.css</phpdac>"-->
 		<phpdac>cms.nvlparam use CMS.RTL+<link rel="stylesheet" href="assets/css/main_rtl.min.css">+<link rel="stylesheet" href="assets/css/main.min.css">+1</phpdac>
 		
-	    <!--link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/orange.css</phpdac-->">
+	    <!--link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/orange.css</phpdac-->
 		<!--link rel="stylesheet" href="<phpdac>cms.cssMin use assets/css/navy.css</phpdac>"-->
 	    <link rel="stylesheet" href="assets/css/<phpdac>cms.paramload use INDEX+color</phpdac>.css">
 		

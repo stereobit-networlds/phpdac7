@@ -81,6 +81,7 @@ $__LOCALE['CPMHTMLEDITOR_DPC'][47]='_gallery;Gallery;Συλλογή εικόνω
 $__LOCALE['CPMHTMLEDITOR_DPC'][48]='_remselect;Remove option;Αφαίρεση ιδιότητας';
 $__LOCALE['CPMHTMLEDITOR_DPC'][49]='_AVAILABILITY;Availability;Διαθεσιμότητα';
 $__LOCALE['CPMHTMLEDITOR_DPC'][50]='_CONDITION;Condition;Κατάσταση';
+$__LOCALE['CPMHTMLEDITOR_DPC'][51]='_itemcat;Category;Κατηγορία';
 
 /*
 update products set code4 =
@@ -301,9 +302,11 @@ class cpmhtmleditor {
 
 			if ($title = GetParam('title')) {
 				
+				$item_code = GetParam('code') ?? null;
+				
 				//$code = $this->replace_spchars($title);
 				//$code =  _m('cmsrt.stralias use '. $title);
-				$code =  _m('cmsrt.slugstr use '. $title);
+				$code =  $item_code ? _m('cmsrt.slugstr use '. $item_code) : _m('cmsrt.slugstr use '. $title);
 				
 				$tags = GetParam('tags') ;
 				$text = GetParam('htmltext');
@@ -403,12 +406,14 @@ class cpmhtmleditor {
 				
 				$this->writeMCPage($code, $mcpage, _v('cmsrt.template'));
 				
+				/* //DISABLED
 				if (!empty($_POST['include'])) 
 					$category = array_shift($_POST['include']); //get first from list
 				else		
 					$category = $this->replace_spchars($cpGet['cat'], 1);
 				$cat = explode($this->cseparator, $category);
-
+				*/
+				
 				//update tags
 				//if ($mytags = $this->getTags())
 				$mytags = null;
@@ -458,11 +463,20 @@ class cpmhtmleditor {
 				$sSQL.= GetParam('price2') ? ",price2=" . floatval(str_replace(',','.',GetParam('price2'))) : ",price2=0";
 				$sSQL.= GetParam('pricepc') ? ",pricepc=" . floatval(str_replace(',','.',GetParam('pricepc'))) :",pricepc=0" ;
 				
+				//categories fields
+				$sSQL.= ",cat0=" . $db->qstr(GetParam('cat0'));				
+				$sSQL.= ",cat1=" . $db->qstr(GetParam('cat1'));
+				$sSQL.= ",cat2=" . $db->qstr(GetParam('cat2'));
+				$sSQL.= ",cat3=" . $db->qstr(GetParam('cat3'));
+				$sSQL.= ",cat4=" . $db->qstr(GetParam('cat4'));				
+				
 				$sSQL.= ",resources=" . $db->qstr(GetParam('resources'));
 				$sSQL.= ",sysupd=" . $db->qstr(date('Y-m-d h:m:s'));
 				
+				/* //DISABLED
 				foreach($cat as $i=>$c) 
 					$sSQL .= ",cat{$i}=" . $db->qstr($c);
+				*/	
 					
 				$sSQL .= " WHERE {$this->activecode}=" . $db->qstr($id);
 				
@@ -718,7 +732,8 @@ class cpmhtmleditor {
 	//handle dropzone js form for pic uploading
 	protected function dropzone($accepted_filetypes=null) {
 		//$cpGet = _v('rcpmenu.cpGet');		
-		$realid = _m("cmsrt.getRealItemCode use " . $_GET['title']) ;//$cpGet['id']);		
+		$_code = $_GET['code'] ? $_GET['code'] : $_GET['title']; //$this->postok
+		$realid = _m("cmsrt.getRealItemCode use " . $_code) ;//$cpGet['id']);		
 
 	    //$title = $_GET['title'] ? str_replace(' ','-',$_GET['title']) : 'title'; //posted item code
 		//$title = $realid ? str_replace(' ','-',$realid) : 'title'; //real id
@@ -1787,6 +1802,25 @@ class cpmhtmleditor {
 		if (!$var) return null;
 		return ($this->{$var});
 	}
+	
+	public function getItemCode() {
+		//$code = $_GET['code'] ? $_GET['code'] : $_GET['title']; //$this->postok
+		
+		if (isset($_POST['insert'])) { //is new post
+		
+			$realid =  GetParam('code') ? _m('cmsrt.slugstr use '. GetParam('code') ) : _m('cmsrt.slugstr use '. GetParam('title') );
+			return $realid;
+		}
+		
+		$cpGet = _v('rcpmenu.cpGet');
+		//elseif (GetParam('id')) is edit post
+		$code = GetParam('id') ? _m("cmsrt.getRealItemCode use " .GetParam('id')) : 
+						  		 _m("cmsrt.getRealItemCode use " . $cpGet['id']);		
+								 
+		$realid = _m("cmsrt.getRealItemCode use " . $code) ;
+
+		return ($realid);
+	}	
 	
 	public function getField($field=null, $scan=false) {
 	    $lan = getlocal();

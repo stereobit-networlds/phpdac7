@@ -110,14 +110,14 @@ $__LOCALE['SHCART_DPC'][24]='_ORDERSUBJECT;Order No ;Παραγγελία No ';
 $__LOCALE['SHCART_DPC'][25]='_MYCART;My Cart;Καλάθι';
 $__LOCALE['SHCART_DPC'][26]='_VIEWCART;View cart;Καλάθι';
 $__LOCALE['SHCART_DPC'][27]='_CHECKOUT;Checkout;Ταμείο';
-/*
+
 $__LOCALE['SHCART_DPC'][28]='Eurobank;Credit card;Πιστωτική κάρτα'; //used by mchoice param
 $__LOCALE['SHCART_DPC'][29]='Piraeus;Credit card;Πιστωτική κάρτα'; //used by mchoice param
 $__LOCALE['SHCART_DPC'][30]='Paypal;Credit card;Πιστωτική κάρτα'; //used by mchoice param
 $__LOCALE['SHCART_DPC'][31]='PayOnsite;Pay on site;Πληρωμή στο κατάστημά μας';//used by mchoice param
-$__LOCALE['SHCART_DPC'][32]='BankTransfer;Bank transfer;Κατάθεση σε τραπεζικό λογαριασμό';//used by mchoice param
-$__LOCALE['SHCART_DPC'][33]='PayOndelivery;Pay on delivery;Αντικαταβολή';//used by mchoice param
-*/
+$__LOCALE['SHCART_DPC'][32]='BankTransfer;Direct Bank transfer;Κατάθεση σε τραπεζικό λογαριασμό';//used by mchoice param
+$__LOCALE['SHCART_DPC'][33]='PayOndelivery;Cash on delivery;Αντικαταβολή';//used by mchoice param
+
 $__LOCALE['SHCART_DPC'][34]='Invoice;Invoice;Τιμολόγιο';//used by mchoice param
 $__LOCALE['SHCART_DPC'][35]='Receipt;Receipt;Απόδειξη';//used by mchoice param
 /*
@@ -127,6 +127,8 @@ $__LOCALE['SHCART_DPC'][38]='Courier;Courier;Courier';//used by mchoice param
 $__LOCALE['SHCART_DPC'][39]='CustomerDelivery;Self Service;Παραλαβή απο το κατάστημα μας';//used by mchoice param
 $__LOCALE['SHCART_DPC'][40]='PayOnCompanyDelivery;Pay at delivery;Πληρωμή κατα την παράδοση (εντός θεσσαλονίκης)';
 */
+$__LOCALE['SHCART_DPC'][38]='Courier;Courier;Courier';//used by mchoice param
+
 $__LOCALE['SHCART_DPC'][41]='_RESET;Reset;Καθαρισμός';
 $__LOCALE['SHCART_DPC'][42]='_EMPTY;Empty;Αδειο';
 $__LOCALE['SHCART_DPC'][43]='_BLN3;Clear Cart;Αδειασμα Καλαθιού';
@@ -147,7 +149,7 @@ $__LOCALE['SHCART_DPC'][57]='_CANCELORDER;Cancel;Ακύρωση';
 $__LOCALE['SHCART_DPC'][58]='_SUBMITORDER;Submit Order;Ολοκλήρωση Συναλλαγής';
 $__LOCALE['SHCART_DPC'][59]='_PRINT;Print;Εκτύπωση';
 $__LOCALE['SHCART_DPC'][60]='_CLOSE;Close;Κλείσιμο';
-$__LOCALE['SHCART_DPC'][61]="_ACCDENIED;Sorry you don't have the appropriate priviliges.;Δέν έχετε το απαραίτητο δικαίωμα.";
+$__LOCALE['SHCART_DPC'][61]="_ACCDENIED;Υou don't have the appropriate priviliges.;Δεν έχετε το απαραίτητο δικαίωμα.";
 $__LOCALE['SHCART_DPC'][62]='_CONTENTS;Contents;Περιεχόμενα';
 $__LOCALE['SHCART_DPC'][63]='_NOTAVAL;Not available;Μη διαθέσιμο';
 $__LOCALE['SHCART_DPC'][64]='_TAX;Tax;Φόρος';
@@ -190,6 +192,17 @@ $__LOCALE['SHCART_DPC'][100]='_EMAIL;e-Mail;e-Mail;';
 $__LOCALE['SHCART_DPC'][101]='_CLICKAWAY;Click Away;Click Away;';
 $__LOCALE['SHCART_DPC'][102]='_CARTAWAYTEXT;Click away enabled;Η διαδικασία click away ενεργοποίηθηκε';
 $__LOCALE['SHCART_DPC'][103]='_CLICKAWAYENABLE;Enable the ClickAway procedure;Ενεργοποιήσετε την διαδικασία ClickAway;';
+$__LOCALE['SHCART_DPC'][104]='_DELIVERYADDRESS;Delivery Address;Διεύθυνση αποστολής';
+$__LOCALE['SHCART_DPC'][105]='_NOTES;Order notes;Παρατηρήσεις';
+$__LOCALE['SHCART_DPC'][106]='_TERMSTEXT;I’ve read and accept the ;Με την αποστολή της παραπάνω φόρμας αποδέχεστε τους ';
+$__LOCALE['SHCART_DPC'][107]='_TERMSTITLE;Terms and Conditions;Όρους χρήσης';
+$__LOCALE['SHCART_DPC'][108]='_BILLINGDETAILS;Billing Details;Στοιχεία χρέωσης';
+$__LOCALE['SHCART_DPC'][109]='_EMPTYCART;Υour cart is empty;Αδειο καλάθι';
+$__LOCALE['SHCART_DPC'][110]='_ONESTEPREGISTRATION;One step registration;Eγγραφή σε ένα βήμα';
+$__LOCALE['SHCART_DPC'][111]='_FATCARTREGISTRATION;Registration form;Εισάγετε τα στοιχεία σας';
+$__LOCALE['SHCART_DPC'][112]='_invalidpayway;Payment type not selected;Επιλέξτε τρόπο πληρωμής';
+$__LOCALE['SHCART_DPC'][113]='_CARTERROR;Error during cart submition;Η συναλλαγή δεν εκτελέστηκε';
+$__LOCALE['SHCART_DPC'][114]='_TERMSAPPROVE;Approve the terms and conditions;Επικυρώστε τους όρους χρήσης';
 
 $__PARSECOM['SHCART_DPC']['quickview']='_VIEWCART_';
 
@@ -216,14 +229,12 @@ class shcart extends storebuffer {
 	
     var $rewrite, $readonly, $minus, $plus, $removeitemclass, $maxlenght;
     var $twig_invoice_template_name;//, $appname, $mtrackimg; 
-    var $agentIsIE, $baseurl, $fastpick, $continue_shopping_goto_cmd;
+    var $agentIsIE, $baseurl, $fastpick, $fastpickbutton, $continue_shopping_goto_cmd;
 	var $loyalty, $ppolicynotes, $isValidCoupon, $cusrid;	
 	
 	static $staticpath, $myf_button_class, $myf_button_submit_class;	
 	
-	var $process, $_NOTAVAL;
-	var $shclass;
-	
+	var $process, $_NOTAVAL, $shclass, $fastcart, $testcart, $superfastcart, $clickaway;
 	protected $clickaway_id, $clikaway_date, $clickaway_apikey, $clickaway_url, $clickaway_return, $clickaway_signature, $clickawaycode;
 	
     public function __construct($p=null) {
@@ -317,9 +328,6 @@ class shcart extends storebuffer {
 
 		$rm = remote_paramload('SHCART','notallowremove',$this->path);
 		$this->notallowremove = $rm ? $rm : 0;	
-
-		$this->twig_invoice_template_name = str_replace('.', $this->lan . '.', 'invoice.htm');
-		//echo $this->twig_invoice_template_name; 
 		
 		$this->continue_button = 1; 	
 		
@@ -358,7 +366,6 @@ class shcart extends storebuffer {
 		
 		$this->printout = GetSessionParam('printout') ? GetSessionParam('printout') : null;	  
 		$this->transaction_id = GetSessionParam('TransactionID') ? GetSessionParam('TransactionID') : null;
-		$this->fastpick = GetSessionParam('fastpick') ? true : false;
 		$this->is_reseller = GetSessionParam('RESELLER');	
 		
 		$this->_NOTAVAL = localize('_ZEROVAL',$this->lan) ?
@@ -382,9 +389,24 @@ class shcart extends storebuffer {
 		$this->clickaway_webid = remote_paramload('CLICKAWAY','webid',$this->path); //'0c2c45028b3f4f52b6cdf5392c981ccb'; //null ;//web id
 		$this->clickaway_apikey = remote_paramload('CLICKAWAY','apikey',$this->path); //'ed078e5a4d5b484da5c63318f83e5842';
 		$this->clickaway_date = date('Y-m-d h:i:s');	
+		$this->clickaway = $this->clickaway_apikey ? true : false;
 		
 		$_caway = GetReq('clickawaycode') ?? false; //manual last step						
 		$this->clickawaycode = GetSessionParam('clickacode') ?? $_caway;	
+		
+		//cart params
+		$this->fastcart = remote_paramload('SHCART','fastcart',$this->path);
+		$this->superfastcart = remote_paramload('SHCART','superfastcart',$this->path);		
+		$this->testcart = remote_paramload('SHCART','testcart',$this->path);
+		
+		$this->fastpickbutton = remote_paramload('SHCART','fastpickbutton',$this->path);
+		$this->fastpick = GetSessionParam('fastpick') ? true : false;		
+		
+		//select invoice per cart mode
+		$this->twig_invoice_template_name = $this->superfastcart ?
+											str_replace('.', $this->lan . '.', 'invoicesuperfast.htm'):
+											str_replace('.', $this->lan . '.', 'invoice.htm');
+		//echo $this->twig_invoice_template_name; 			
 	  
 		if ($this->maxqty<0) // || ($this->readonly)) { //free style
 			$this->javascript(); //ONLY WHEN DEFAULT VIEW EVENT ??		
@@ -396,7 +418,7 @@ class shcart extends storebuffer {
 		}
 		//echo base64_encode(serialize($this->buffer));
 		//echo serialize($this->buffer);
-		//echo json_encode($this->buffer);
+		//echo json_encode($this->buffer);	
     }
 	
 	//called by controller after event
@@ -416,68 +438,14 @@ class shcart extends storebuffer {
 
 		switch ($event) {
 			
-			case 'clickaway'    :   if (!GetGlobal('UserID')) {
+			case 'clickaway'    :   if (GetGlobal('UserID'))
+										$ret = $this->clickaway_event();
+									else 
 										$this->todo = 'loginorregister';
-									}	
-									elseif ($this->clickawaycode) { 
-										echo '<br/>' . 'start:' . $this->clickawaycode;
-										if ($this->clickaway_url) {
-										
-											echo '<br/>' . $this->clickaway_url;
-											
-											$merchant = remote_paramload('INDEX','company-name',$this->path);
-											$afm = remote_paramload('INDEX','afm',$this->path);
-											$address = remote_paramload('INDEX','address',$this->path);
-											
-											$comments = remote_paramload('CLICKAWAY','comments',$this->path);
-										
-											//$data = array("name" => "Hagrid", "age" => "36");                                                                    
-											//json_encode($data); 
-											$data_string = "{
-    \"products\": 
-    {
-        \"action\": \"click_away\",
-        \"subaction\": \"add_appointment\",
-        \"code\": \"{$this->clickawaycode}\",
-        \"extra_fields\": 
-        {
-            \"merchant\":\"Alexiou Vasilis, STEREOBIT\",
-            \"afm\":\"055208430\",
-            \"address\":\"13 Spanoy St. Thessaloniki\",
-            \"date\":\"2020-12-28\",
-            \"time\":\"18:00\",
-            \"comments\":\"SAS PERIMENOUME\"
-        }
-    }
-}"; 
-										
-											$this->clickaway_signature = sha256($this->clickaway_apikey . $this->clickaway_date);
-											echo '<br/>' . $this->clickaway_signature;
-											$ch = curl_init();
-											curl_setopt($ch, CURLOPT_URL, $this->clickaway_url);
-											//curl_setopt($curl, CURLOPT_POST, true);
-											curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-										
-											curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
-										
-											curl_setopt($ch, CURLOPT_HTTPHEADER, 
-												array(
-												"loyalty-web-id: {$this->clickaway_webid}",
-												"loyalty-date': {$this->clickaway_date}",
-												"loyalty-signature': {$this->clickaway_signature}"
-												)
-											);
-										
-											curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-										
-											$this->clickaway_return  = curl_exec($ch);
-											echo '<br/>' . $this->clickaway_return;
-											curl_close($ch);
-										}	
-									}
 									break;
 			
-			case "cartguestreg"  :  die($this->guestRegistration()); 
+			case "cartguestreg"  :  $ret = $this->fastcart ? $this->guestFastRegistration() : $this->guestRegistration();
+									die($ret); 
 									break;			
 			
 			case "cartguestuser" :  die($this->guestDetails()); 
@@ -630,7 +598,7 @@ class shcart extends storebuffer {
 			case _lc('shcart',27,2):			
 			case 'cart-checkout' : 
 			case $this->checkout : 	if (!GetGlobal('UserID')) {
-										$this->todo = 'loginorregister';
+										$this->todo = $this->fastcart ? 'fastcart' : 'loginorregister';
 										$this->recalculate();
 										
 										$this->js_storeCart(); //re-save when step
@@ -652,8 +620,26 @@ class shcart extends storebuffer {
 									$this->fbjs();
 									break;
 			case 'cart-order'    :
-			case $this->order    : 	if (!GetGlobal('UserID')) 
-										die('Invalid operation 0x00f');
+			case $this->order    : 	if (!GetGlobal('UserID')) { //never here with guest user auto-login
+			
+										/*if ($this->fastcart) {
+											echo 'fastcart status 2<br>';
+											echo GetParam('payway') .'-'. GetReq('payway') . '<br>';
+											echo GetParam('addressway') .'-'. GetParam('sxolia') . '<br>';
+											echo GetParam('guestname') .'-'. GetParam('guestemail') . '<br>';
+										}
+										else*/
+											die('Invalid operation 0x00f');
+									}
+									else { //guest user auto login / normal logedin user
+										/*if ($this->fastcart) {
+											echo 'fastecart ON<br>';
+										}
+										echo GetParam('payway') .'-'. GetReq('payway') . '<br>';
+										echo GetParam('addressway') .'-'. GetParam('sxolia') . '<br>';
+										echo GetParam('guestname') .'-'. GetParam('guestemail') . '<br>';										
+										*/
+									}	
 									SetSessionParam('cartstatus',2); 
 									$this->status = 2; 
 									
@@ -675,8 +661,30 @@ class shcart extends storebuffer {
 									break;
 			case 'cart-submit'   :						 
 			case $this->submit2  : 
-			case $this->submit   : 	if (!GetGlobal('UserID')) 
-										die('Invalid operation 0x0ff');
+			case $this->submit   : 	if (!GetGlobal('UserID')) { 
+			
+										if ($this->superfastcart) {
+											//echo 'SUPER fastcart status 3<br>';
+											//echo GetParam('payway') .'-'. GetReq('payway') . '<br>';
+											//echo GetParam('addressway') .'-'. GetParam('sxolia') . '<br>';
+											//echo GetParam('guestname') .'-'. GetParam('guestemail') . '<br>';		
+
+											if ($error = $this->guestSuperFastCheck($_POST)) {
+												$this->jsDialog($error, localize('_CART', $this->lan));
+												
+												//set cart status to 1
+												SetSessionParam('cartstatus',1);
+												$this->status = 1; 
+												return;
+											}											
+											//else continue
+											
+											//save user/customer
+											$this->guestSuperFastRegistration();
+										}
+										else
+											die('Invalid operation 0x0ff');
+									}	
 									
 									//no page refresh 
 									if ($this->getcartCount()>0) {
@@ -728,7 +736,7 @@ class shcart extends storebuffer {
 
 		switch ($act) {
 			
-			case 'clickaway'    :  	$out = $this->todo ? $this->todolist() : $this->clickaway();
+			case 'clickaway'    :  	$out = $this->todo ? $this->todolist() : $this->clickaway_action();
 									break;
 			
 			case "cartguestreg" :   break;
@@ -739,7 +747,7 @@ class shcart extends storebuffer {
 			case "carttransport": 	break;				
 			case "cartpayment"  : 	break;				
 			
-			case "sship"     	:   $out .= $this->show_supershipping();
+			case "sship"     	:   $out = $this->show_supershipping();
 									break;
 	   
 			case "transcart" 	:   break;
@@ -753,7 +761,7 @@ class shcart extends storebuffer {
 		 
 			case "cartcustselect": 
 			case "fastpick" 	:	//$out = $this->fastpick ? localize('_FASTPICKON',$this->lan) : localize('_FASTPICKOFF',$this->lan);
-									$out .= $this->cartview();
+									$out = $this->cartview();
 									break;
 		    case 'viewcart'     :      
 			default          	:	if ($pushTokens) return json_encode($_tokens);
@@ -762,31 +770,7 @@ class shcart extends storebuffer {
         }
 
 	    return ($out);
-    }
-	
-	
-	//curl less post
-	protected function post_request($url, array $params) {
-		$query_content = http_build_query($params);
-		$fp = fopen($url, 'r', FALSE, // do not use_include_path
-		stream_context_create([
-			'http' => [
-				'header'  => [ // header array does not need '\r\n'
-					'Content-type: application/x-www-form-urlencoded',
-					'Content-Length: ' . strlen($query_content)
-				],
-			'method'  => 'POST',
-			'content' => $query_content
-			]
-		]));
-		
-		if ($fp === FALSE) {
-			return json_encode(['error' => 'Failed to get contents...']);
-		}
-		$result = stream_get_contents($fp); // no maxlength/offset
-		fclose($fp);
-		return $result;
-	}	
+    }	
 	
 	protected function fbjs() {
 		if (!defined('JAVASCRIPT_DPC')) return ;
@@ -852,32 +836,32 @@ class shcart extends storebuffer {
 		}	
 		
 		$code = $this->js_compute_qty();			
-		$code.= $this->js_guest_registration();		
+		$code.= $this->js_guest_registration();			
 		$code.= "
-$('#guestdetailsbutton').on('click touchstart',function(){
-	$.ajax({ url: 'katalog.php?t=cartguestuser', cache: false, success: function(html){
-		$('#guestdetails').html(html);
+jQuery('#guestdetailsbutton').on('click touchstart',function(){
+	jQuery.ajax({ url: 'katalog.php?t=cartguestuser', cache: false, success: function(html){
+		jQuery('#guestdetails').html(html);
 		if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-			window.scrollTo(0,parseInt($('#guestdetails').offset().top, 10));
+			window.scrollTo(0,parseInt(jQuery('#guestdetails').offset().top, 10));
 		else
 			gotoTop('guestdetails');
 	}})
 });	
 		
-$(document).ready(function () {
+jQuery(document).ready(function () {
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#$gotoSection').offset().top, 10));
+		window.scrollTo(0,parseInt(jQuery('#$gotoSection').offset().top, 10));
 	else {		
 		gotoTop('$gotoSection');	
 	
-		$(window).scroll(function() { 
+		jQuery(window).scroll(function() { 
 			if (agentDiv('$gotoSection')) {
-				$.ajax({ url: 'jsdialog.php?t=jsdcode{$urlstr}&div=$gotoSection', cache: false, success: function(jsdialog){
+				jQuery.ajax({ url: 'jsdialog.php?t=jsdcode{$urlstr}&div=$gotoSection', cache: false, success: function(jsdialog){
 					eval(jsdialog);		
 				}})	
 			}
 			else if (agentDiv('cart-page')) {
-				$.ajax({ url: 'jsdialog.php?t=jsdcode{$urlstr}&div=cart-page', cache: false, success: function(jsdialog){
+				jQuery.ajax({ url: 'jsdialog.php?t=jsdcode{$urlstr}&div=cart-page', cache: false, success: function(jsdialog){
 					eval(jsdialog);		
 				}})	
 			}	
@@ -895,67 +879,68 @@ $(document).ready(function () {
 		$gotoSection = 'cart-summary';//'cart-page';
 		
 		$code = "
-$(document).ready(function () {
+jQuery(document).ready(function () {
 	
     if (/{$mobileDevices}/i.test(navigator.userAgent)) {
 	  //delegate events
 		  
-	  //$('#addressway').on('change', function (e) { 
-	  $('body').on('change', '#addressway', function(){
-		url = 'katalog.php?t=cartaddress&addressway='+$(this).val();
-		$.ajax({ url: url, cache: false, success: function(html){
-			$('#addressdetails').html(html);
+	  //jQuery('#addressway').on('change', function (e) { 
+	  jQuery('body').on('change', '#addressway', function(){
+		url = 'katalog.php?t=cartaddress&addressway='+jQuery(this).val();
+		jQuery.ajax({ url: url, cache: false, success: function(html){
+			jQuery('#addressdetails').html(html);
 		}});
       });
 	
-	  //$('#roadway').on('change', function (e) {
-	  $('body').on('change', '#roadway', function(){
-		url = 'katalog.php?t=carttransport&roadway='+$(this).val();
-		$.ajax({ url: url, cache: false, success: function(html){
-			$('#transportdetails').html(html);
+	  //jQuery('#roadway').on('change', function (e) {
+	  jQuery('body').on('change', '#roadway', function(){
+		url = 'katalog.php?t=carttransport&roadway='+jQuery(this).val();
+		jQuery.ajax({ url: url, cache: false, success: function(html){
+			jQuery('#transportdetails').html(html);
 		}});
       });	
 	
-	  //$('#payway').on('change', function (e) {
-	  $('body').on('change', '#payway', function(){
-		url = 'katalog.php?t=cartpayment&payway='+$(this).val();
-		$.ajax({ url: url, cache: false, success: function(html){
-			$('#paymentdetails').html(html);
+	  //jQuery('#payway').on('change', function (e) {
+	  jQuery('body').on('change', '#payway', function(){
+		url = 'katalog.php?t=cartpayment&payway='+jQuery(this).val();
+		jQuery.ajax({ url: url, cache: false, success: function(html){
+			jQuery('#paymentdetails').html(html);
 		}});
       });	
 
-	  //$('#customerway').on('change', function (e) {
-	  $('body').on('change', '#customerway', function(){
-		url = 'katalog.php?t=cartcustomer&customerway='+$(this).val();
-		$.ajax({ url: url, cache: false, success: function(html){
-			$('#customerdetails').html(html);
+	  //jQuery('#customerway').on('change', function (e) {
+	  jQuery('body').on('change', '#customerway', function(){
+		url = 'katalog.php?t=cartcustomer&customerway='+jQuery(this).val();
+		jQuery.ajax({ url: url, cache: false, success: function(html){
+			jQuery('#customerdetails').html(html);
 		}});
       });	
 
-	  //$('#invoiceway').on('change', function (e) {
-	  $('body').on('change', '#invoiceway', function(){
-		url = 'katalog.php?t=cartinvoice&invway='+$(this).val();
-		$.ajax({ url: url, cache: false, success: function(html){
-			$('#invoicedetails').html(html);
+	  //jQuery('#invoiceway').on('change', function (e) {
+	  jQuery('body').on('change', '#invoiceway', function(){
+		url = 'katalog.php?t=cartinvoice&invway='+jQuery(this).val();
+		jQuery.ajax({ url: url, cache: false, success: function(html){
+			jQuery('#invoicedetails').html(html);
 		}});
       });	  
 	}
 	
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#$gotoSection').offset().top, 10));
+		window.scrollTo(0,parseInt(jQuery('#$gotoSection').offset().top, 10));
 	else {		
 		gotoTop('$gotoSection');	
 	
-		$(window).scroll(function() { 
+		jQuery(window).scroll(function() { 
 			if (agentDiv('$gotoSection')) {
-				$.ajax({ url: 'jsdialog.php?t=jsdcode&id=cart-status-1&div=$gotoSection', cache: false, success: function(jsdialog){
+				jQuery.ajax({ url: 'jsdialog.php?t=jsdcode&id=cart-status-1&div=$gotoSection', cache: false, success: function(jsdialog){
 					eval(jsdialog);		
 				}})	
 			}	
 		});
 	}	
 });	
-";		
+";	
+		
 		return ($code);
 	}
 
@@ -964,9 +949,9 @@ $(document).ready(function () {
 		$gotoSection = 'cart-summary';//'cart-page';
 		
 		$code = "
-$(document).ready(function () {	
+jQuery(document).ready(function () {	
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#$gotoSection').offset().top, 10));
+		window.scrollTo(0,parseInt(jQuery('#$gotoSection').offset().top, 10));
 	else 	
 		gotoTop('$gotoSection');	
 });	
@@ -979,9 +964,9 @@ $(document).ready(function () {
 		$gotoSection = 'cart-page';
 		
 		$code = "
-$(document).ready(function () {	
+jQuery(document).ready(function () {	
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#$gotoSection').offset().top, 10));
+		window.scrollTo(0,parseInt(jQuery('#$gotoSection').offset().top, 10));
 	else 	
 		gotoTop('$gotoSection');	
 });	
@@ -996,12 +981,18 @@ $(document).ready(function () {
 		$out = "	
 function computeqty(textbox,n)
 {
-  var textInput = Number(document.getElementById(textbox).value); var qty = textInput + n;  
-  if (qty>0){var location = '$url'+textbox+'/'+qty+'/';	window.location.href = location;}	
+  var nval = document.getElementById(textbox).value;	
+  var textInput = Number(nval); 
+  var qty = textInput + n;  
+  if (qty>0) { 
+	var location = '$url'+textbox+'/'+qty+'/'; 
+	window.location.href = location; 
+  }	
 }
 function preselqty(id,step,limit)
 {
-  var presel = Number(document.getElementById(id).value);
+  var nval = document.getElementById(id).value;	
+  var presel = Number(nval);
   if ((step<0) && (presel>limit)) qty = presel + Number(step);
   else if ((step>0) && (presel<limit))qty = presel + Number(step);
   else qty = presel;  
@@ -1022,15 +1013,16 @@ function preselqty(id,step,limit)
 		$ajaxurl = seturl("t=");
 		
 		$code = <<<EOF
-function guestreg()
+function guestreg(gotourl)
 {
+	var gurl = gotourl;
 	var emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;	
-    var email = $('#guestemail').val();
-	var gname = $('#guestname').val();
-	var gaddr = $('#guestaddress').val();
-	var gcode = $('#guestpostcode').val();
-	var gcoun = $('#guestcountry').val();
-	var gphon = $('#guestphone').val();
+    var email = jQuery('#guestemail').val();
+	var gname = jQuery('#guestname').val();
+	var gaddr = jQuery('#guestaddress').val();
+	var gcode = jQuery('#guestpostcode').val();
+	var gcoun = jQuery('#guestcountry').val();
+	var gphon = jQuery('#guestphone').val();
 	
 	var err = '';
 	var validemail = emailReg.test(email);
@@ -1043,15 +1035,20 @@ function guestreg()
 	if (!gcode)	err += '$invps.<br/>'; 
 	if (!gcoun)	err += '$invcountry.<br/>';
 	if (err) 
-		new $.Zebra_Dialog(err, {'type':'error','title':'$guesterr'});
+		new jQuery.Zebra_Dialog(err, {'type':'error','title':'$guesterr'});
 	else {
-	$.ajax({
+	jQuery.ajax({
 		url: '{$ajaxurl}cartguestreg',
 		type: 'POST',
 		data: {FormAction: 'cartguestreg', email: email, name: gname, address: gaddr, tel: gphon, postcode: gcode, country: gcoun},
 		success:function(postdata) {
 			if (postdata) {
-				$('#guestdetails').html(postdata);
+				jQuery('#guestdetails').html(postdata);
+				if (gurl) {
+					setTimeout(function(){  
+						window.location.href = '$ajaxurl' + gurl;
+					}, 1000);
+				}	
 			}		
 	}}); }		
 }
@@ -1186,7 +1183,6 @@ function addtocart(id,cartdetails)
 			if (($this->status==3) && ($this->autopay>0)) {
 				
 				$this->submit_order();	
-				
 				SetSessionParam('paypalID',$this->transaction_id);
 				SetSessionParam('amount',$finalCost);
 
@@ -1257,7 +1253,7 @@ function addtocart(id,cartdetails)
 			SetSessionParam('transcost',null);
 			SetSessionParam('paycost',null);
 			SetSessionParam('shipcost',null);
-			
+			//echo 'submited';
 		} 
 	}		
 
@@ -1378,7 +1374,7 @@ function addtocart(id,cartdetails)
 				SetSessionParam('cartstatus',0);
 				$this->status = 0;
 
-				if ($user = $this->user)
+				if ($user = $this->user ?? session_id())
 					$this->update_statistics('cart-add', $user);
 				
 				$this->quick_recalculate();//re-update prices and totals 
@@ -1423,7 +1419,7 @@ function addtocart(id,cartdetails)
 		if ($ret) {	
 			$this->setStore();
 		
-			if ($user = $this->user)
+			if ($user = $this->user  ?? session_id())
 				$this->update_statistics('cart-remove', $user);
 		
 			$this->quick_recalculate();	//re-update prices and totals	
@@ -1458,8 +1454,11 @@ function addtocart(id,cartdetails)
 		$roadway = $this->getDetailSelection('roadway');
 		$invway = $this->getDetailSelection('invway');	
 		$sxolia = $this->getDetailSelection('sxolia');
-		$customer = $this->getDetailSelection('customerway');		
+		
+		//get customer at auto-login when in superfast mode
+		$customer = ($this->superfastcart) ? _v('shcustomers._customerway') : $this->getDetailSelection('customerway');		
 		$fkey = 'id';
+		
 		$user = $this->user;
 		$submit = false;	
 
@@ -1475,7 +1474,7 @@ function addtocart(id,cartdetails)
 			if (defined('SHTRANSACTIONS_DPC'))  {
 				//set this trid	
 				$this->transaction_id = _m('shtransactions.saveTransaction use '.serialize($this->buffer)."+$user+$payway+$roadway+$qty+$cost+$costpt");
-                //echo 'TRID:' . $this->transaction_id;
+                //echo 'TRID:' . $this->transaction_id . ' USER:' . $user;
 				
 				if ($invoiceTemplate = $this->twig_invoice_template_name) {
 			
@@ -1556,18 +1555,21 @@ function addtocart(id,cartdetails)
 	//used by pay engines when comeback
 	public function submitCartOrder($trid=null,$subject=null) {
 
-		//when come back from pay engines with trid may the trid != this.trid		
-		//get transaction id from session when return
-		if ($ses_transaction_id = GetSessionParam('TransactionID')) {		
-			if ((!$trid) || ($trid != $ses_transaction_id)) {
-				//send suspicious mail
-				$from = $this->cartsend_mail;
-				$subj = "Suspicious transaction $trid : " . $this->transaction_id;
-				$body = str_replace('+','<SYN/>','Please check this transaction id!'); 
-				_m("cmsrt.cmsMail use $from+{$this->cartreceive_mail}+$subj+$body");
-			}			
-		}
-		//else trid= this->trid and trid in session is null (simple order)
+		if ($this->testcart) { /* TEST MODE */}
+		else {
+			//when come back from pay engines with trid may the trid != this.trid		
+			//get transaction id from session when return
+			if ($ses_transaction_id = GetSessionParam('TransactionID')) {		
+				if ((!$trid) || ($trid != $ses_transaction_id)) {
+					//send suspicious mail
+					$from = $this->cartsend_mail;
+					$subj = "Suspicious transaction $trid : " . $this->transaction_id;
+					$body = str_replace('+','<SYN/>','Please check this transaction id!'); 
+					_m("cmsrt.cmsMail use $from+{$this->cartreceive_mail}+$subj+$body");
+				}			
+			}
+			//else trid= this->trid and trid in session is null (simple order)
+		}	
 			
 		$_trid = $trid ? $trid : $this->transaction_id;	
 			
@@ -1590,6 +1592,7 @@ function addtocart(id,cartdetails)
 			}
 			//else
 			//popup message
+			$this->submiterror = 'Internal DB error.';
 			$this->jsDialog('Internal DB error, trID:' . $_trid, 
 							localize('_CART', $this->lan),6000);				
 			return false;
@@ -1599,9 +1602,7 @@ function addtocart(id,cartdetails)
 		$this->update_statistics('cart-error-' . $this->mailerror, $this->user);		
 		
 		//popup message
-		$this->jsDialog(localize('_CARTERROR', $this->lan) .
-						' ' . $this->mailerror ,
-						localize('_CART', $this->lan),6000);		
+		$this->jsDialog(localize('_CARTERROR', $this->lan) .' '. $this->mailerror ,	localize('_CART', $this->lan),6000);		
 		
 		return false;	
 	}
@@ -1665,16 +1666,21 @@ function addtocart(id,cartdetails)
 	    //MAIL SUBJECT
 	    $mailSubject = $subject ? $subject : 
 						(($this->ordermailsubject) ? str_replace('@', $trid, $this->ordermailsubject) :	localize('_ORDERSUBJECT',$this->lan) . $trid);			
-		//MAIL THE ORDER TO HOST
- 		$err1 = $this->cart_mailto($this->cartreceive_mail,$mailSubject,$mailout);
+						
+		if ($this->testcart) { /* TEST MODE */}
+		else {
+			//MAIL THE ORDER TO HOST
+			$err1 = $this->cart_mailto($this->cartreceive_mail,$mailSubject,$mailout);
 		
-		//TO CUSTOMER
- 		$err2 = $this->cart_mailto($this->user, $mailSubject, $mailout);		    			  
-		  
+			//TO CUSTOMER
+			$err2 = $this->cart_mailto($this->user, $mailSubject, $mailout);		    			  
+		}  
+		
 		//null for true  
 		//return ($err1 ? $err1 : ($err2 ? $err2 : null));
 		//IN CASE OF EUROBANK RETURN err2 = 454 4.7.1 : Relay access denied for mail ($this->user)
 		//TEMPORARY DISABLE err2
+		
 		return ($err1 ? $err1 : null);
 	}	
 	
@@ -1862,10 +1868,22 @@ function addtocart(id,cartdetails)
 				$onchange = "onkeyup=computeqty('$qtyname',0)"; 
 				$onclickadd = "onclick=computeqty('$qtyname',1)";
 				$onclickreduce = "onclick=computeqty('$qtyname',-1)";
-			
-				$out = $this->minus ? "<a class='$this->minus' href='#reduce' $onclickreduce></a>" : null;
-				$out.= "<input id=\"$qtyname\" name=\"$qtyname\" $onchange value=\"$selectedqty\" size=\"{$this->maxlength}\" maxlength=\"{$this->maxlength}\" $r >";//<<4 max lenght of qty		  
-				$out.= $this->plus ? "<a class='$this->plus' href='#add' $onclickadd></a>" : null;
+				
+				if ($myqtytemplate = _m('cmsrt.select_template use shcartlineqty')) {
+					
+					$qtytokens = array();
+					$qtytokens[] = $qtyname;
+					$qtytokens[] = $selectedqty;
+					$qtytokens[] = $onchange;
+					$qtytokens[] = $onclickadd;
+					$qtytokens[] = $onclickreduce;
+					$out = $this->combine_tokens($myqtytemplate, $qtytokens);
+				}	
+				else {
+					$out = $this->minus ? "<a class='$this->minus' href='#reduce' $onclickreduce></a>" : null;
+					$out.= "<input id=\"$qtyname\" name=\"$qtyname\" $onchange value=\"$selectedqty\" size=\"{$this->maxlength}\" maxlength=\"{$this->maxlength}\" $r >";//<<4 max lenght of qty		  
+					$out.= $this->plus ? "<a class='$this->plus' href='#add' $onclickadd></a>" : null;
+				}	
 			}
 			else { //combo style
 		  
@@ -1976,6 +1994,7 @@ function addtocart(id,cartdetails)
 	public function cartview($trid=null,$status=null) {
 		$cat = GetReq('cat');
 		$UserName = decode(GetGlobal('UserName')); 
+		
 		if ($trid) //view case
 			$this->transaction_id = $trid;
 			
@@ -1993,6 +2012,16 @@ function addtocart(id,cartdetails)
 		$invway = $this->getDetailSelection('invway');    
 	   
 		$status = $status ? $status : GetReq('status');
+		
+		/////////////////////////////////////////////// 
+		if ((empty($_POST)) && (!$this->notempty())) {
+		
+			$tokens[] = localize('_EMPTY',$this->lan);
+			$emptycarttemplate = _m('cmsrt.select_template use shcartempty');
+			
+			return $this->combine_tokens($emptycarttemplate,$tokens,true);			
+		}
+		//////////////////////////////////////////////
    
 		if ($status) {
 			$this->status = $status;
@@ -2016,36 +2045,88 @@ function addtocart(id,cartdetails)
 
 					//get customer data or register new customer
 					if (defined('SHCUSTOMERS_DPC')) {
-						$ret = _m('shcustomers.showcustomerdata use ++cusdetails');
-
-						if ($ret) {
-							$mydate = date('d/m/Y h:i:s A'); //$this->make_gmt_date();
+						$mydate = date('d/m/Y h:i:s A'); //$this->make_gmt_date();
+						
+						if ($existed_customer = _m('shcustomers.showcustomerdata use ++cusdetails')) {
+							//existed customer
+							
 							$tokens[] = $mydate;
-							$tokens[] = $ret;
+							$tokens[] = $existed_customer;
+							
+							//continue cart
 						}
 						else {
-							//in case of no customer data register now
-							$out = _m('shcustomers.register');
-							SetSessionParam('cartstatus',0);
-							$this->status = 0;
-							return ($out); //exit now
+							if ($UserName) { //user is logged in
+							
+							    //when fastcart auto-login is set to go to step2
+								if ($this->fastcart) { //customer data exist with auto-login
+									//case guest user auto-login
+									//echo 'FASTCART AUTO-LOGIN STATUS 2';
+									$tokens[] = $mydate;
+									
+									//after new customer reg
+									$new_customer = _m('shcustomers.showcustomerdata use ++cusdetails');
+									$tokens[] = $new_customer ?? array(0=>'No customer data');
+									
+									//continue cart
+								}
+								else {	//customer data not exist
+									//register now
+									$customer_regform = _m('shcustomers.register');
+								
+									//after new customer registration return to step 0
+									SetSessionParam('cartstatus',0);
+									$this->status = 0;
+								
+									return ($customer_regform); //exit now 
+								}	
+							}	
+							else {	//user is NOT logged in
+							
+								if ($this->fastcart) {  
+									//echo 'FASTCART STATUS 2';
+									$tokens[] = $mydate;
+									
+									//after new customer reg
+									$new_customer = _m('shcustomers.showcustomerdata use ++cusdetails');
+									$tokens[] = $new_customer ?? array(0=>'No customer data');
+									
+									//continue cart
+								}
+								else { //test NO fastcart
+									$customer_regform = _m('shcustomers.register');	//ACCESS DENIED
+									return ($customer_regform); //exit now
+								}	
+							}
 						}
 					}
 				}
-				else {
+				elseif ($this->status==1) {
+					$cid = GetSessionParam('_customerway'); //default customer id _
+					
+					if ($existed_customer = (defined('SHCUSTOMERS_DPC')) ? ($UserName ?  _m("shcustomers.showcustomerdata use $cid+id+cusdetails") : null) : null) {
+						$tokens[] = date('d/m/Y h:i:s A');
+						$tokens[] = $existed_customer;
+					}
+					else {
+						$tokens[] = null;
+						$tokens[] = null;
+					}	
+				}	
+				else { //status 0
 					$tokens[] = null;
 					$tokens[] = null;
 				}
-		   
+
 				//loop cart
 				$tokens[] = $this->loopcartdata;
-				
+
 				//footer
 				$tokens[] = $this->looptotals;	   	   
 
 				//calc
 				$this->calculate_totals();
- 
+				
 				switch ($this->status) {
 			 
 					case 1  : 	break;
@@ -2072,51 +2153,78 @@ function addtocart(id,cartdetails)
 			else { //empty
 				$tokens[] = localize('_EMPTY',$this->lan);	 		   
 			}
+			/////////////////////////////////////////////////////////////
+			$tstep = $this->status ? strval($this->status) : '0';	
+			$mysteptemplate = _m('cmsrt.select_template use shcartstep' . $tstep);
+			$mycarttemplate = isset($mysteptemplate) ? $mysteptemplate : _m('cmsrt.select_template use shcart');
+			
+			$out = $this->combine_tokens($mycarttemplate,$tokens,true);
+			return $out;			
+			
 	    }
 	    else {//status>=3
 	        //echo  $this->status . '>>>>>>>>' . $this->submiterror . '-'.$this->mailerror .'<br/>';
 			
-			if (defined('SHCUSTOMERS_DPC')) 
-				$ret = _m('shcustomers.showcustomerdata');
-		  	  
-		  
+			if (defined('SHCUSTOMERS_DPC')) {
+				if ($this->superfastcart) { 
+					//$cid = GetSessionParam('_customerway'); //not yet session param
+					//$existed_customer = $UserName ? _m("shcustomers.showcustomerdata use $cid+id+cusdetails") : null;
+					$cid = GetParam('guestemail');
+					$existed_customer = _m("shcustomers.showcustomerdata use $cid+code2+cusdetails");
+				}
+				elseif ($this->fastcart) {
+					$cid = GetSessionParam('_customerway');
+					$existed_customer = $UserName ? _m("shcustomers.showcustomerdata use $cid+id+cusdetails") : null;
+				}
+				else
+					$existed_customer = _m("shcustomers.showcustomerdata use ++cusdetails");		
+			}
+
 			$tokens[] = (($this->submiterror) || ($this->mailerror)) ?
 						$this->finalize_cart_error() :
 						$this->finalize_cart_success();
 				
-			if ($ret) {
-				$tokens[] = $this->transaction_id;
-				$tokens[] = $ret;				
-			}
-			else {//dummy tokens
-				$tokens[] = null;
-				$tokens[] = null;				
-			}				
+			$tokens[] = $this->transaction_id;
+			$tokens[] = $existed_customer;				
+			
 			$tokens[] = $this->loopcartdata;
 			$tokens[] = $this->looptotals;
+			
+			/////////////////////////////////////////////////////////////////////
+			$tstep = $this->status ? strval($this->status) : '0';	
+			$mysteptemplate = _m('cmsrt.select_template use shcartstep' . $tstep); 
+			$mycarttemplate = isset($mysteptemplate) ? $mysteptemplate : _m('cmsrt.select_template use shcart');
 
 			//reset global params..								 
 			SetSessionParam('TransactionID',0);
 			SetSessionParam('cartstatus',0);
-			$this->status = 0;
+			$this->status = 0; //GOTO SHCART TEMPLATE NOT SHCARTSTEP !!!!!!!!!
 			//echo $this->status . '>>>>>>>>';
+			
+			$out = $this->combine_tokens($mycarttemplate,$tokens,true);
+			return $out;
 	    }
-	   
+	    /*
 		if ($this->notempty()) {
 			
-			$mycarttemplate = _m('cmsrt.select_template use shcart');
+			$tstep = $this->status ? strval($this->status) : '0';	
+			$mysteptemplate = _m('cmsrt.select_template use shcartstep' . $tstep); //!!!!
+			$mycarttemplate = isset($mysteptemplate) ? $mysteptemplate : _m('cmsrt.select_template use shcart');
+			//echo $mycarttemplate . '>>>';
 			
 			if ($this->status>0) { 
-				if (!$exist = _m("shcustomers.search_customer_id use code2='" .$UserName."'")) {
-					$out .= _m("shcustomers.register");
+				if (($UserName) && (!$exist = _m("shcustomers.search_customer_id use code2='" .$UserName."'"))) {
+					$out = _m("shcustomers.register");
 					$this->status = 0;
 					SetSessionParam('cartstatus',0);
 				}	
-				else
-					$out .= $this->combine_tokens($mycarttemplate,$tokens,true);
+				else {
+					//fastcart when no UserName
+					$out = $this->combine_tokens($mycarttemplate,$tokens,true);
+				}	
 			}
 			else
-				$out .= $this->combine_tokens($mycarttemplate,$tokens,true);
+				$out = $this->combine_tokens($mycarttemplate,$tokens,true);
 		}	
 		else {	//empty 1 token 
 			$emptycarttemplate = _m('cmsrt.select_template use shcartempty');
@@ -2124,6 +2232,7 @@ function addtocart(id,cartdetails)
 		}		
 	   
 		return ($out);
+		*/
 	}
 	
 	protected function loopcart() {
@@ -2136,8 +2245,11 @@ function addtocart(id,cartdetails)
 	    $ixw = $ix ? "width=".$ix : "width=".$ix;
 	    $iyh = $iy ? "height=".$iy :null; //empty y=free dim	   
 	   
-		$myloopcarttemplate = _m('cmsrt.select_template use shcartline'); //.php file, code inside
-	   
+	    //$myloopcarttemplate = _m('cmsrt.select_template use shcartline');
+	    $tstep = $this->status ? strval($this->status) : '0';	
+		$mysteptemplate = _m('cmsrt.select_template use shcartlinestep' . $tstep);
+		$myloopcarttemplate = isset($mysteptemplate) ? $mysteptemplate : _m('cmsrt.select_template use shcartline');
+
         reset ($this->buffer);
 		
 		$this->cartsumitems = 0;
@@ -2470,6 +2582,10 @@ function addtocart(id,cartdetails)
 	    return ($loopout);  	 	
 	}	
 	
+	
+	
+	//GUEST REG (DEF)
+	
 	public function guestDetails() {
 		//if (defined('SHCUSTOMERS_DPC')) {
 
@@ -2510,7 +2626,324 @@ function addtocart(id,cartdetails)
 		}
 		
 		return false; //"Guest user registration failed";
+	}
+	
+	//GUEST REG (FASTCART)
+
+    //fastcart mode guest registration
+	public function guestFastRegistration() {
+		$db = GetGlobal('db');	
+		$email = GetParam('email');
+		$name = GetParam('name');
+		$address = GetParam('address');
+		$postcode = GetParam('postcode');
+		$country = GetParam('country');
+		$tel = str_replace('+','00', GetParam('tel'));
+		
+		//register and login (save customer details or deliv address of existing user)
+		$loggedin = $this->do_guest_login_fastcart($email,$name,$address,$postcode,$country,$tel);
+		
+		if ($loggedin) {
+
+			$this->user = $email; //update this user
+			
+			if ($template = _m('cmsrt.select_template use shcartguestprocced')) {
+				$tokens = array($email, $name, $address, $postcode, $country, $tel);
+				return $this->combine_tokens($template, $tokens, true);
+			}
+			else
+				return "Message: Guest user registration form missing";					
+		}
+		
+		return false; //"Guest user registration failed";
 	}	
+	
+	//copied form cmslogin for fastcart (no mail messages and analytics)
+	protected function do_guest_login_fastcart($email=null,$name=null,$address=null,$postcode=null,$country=null,$tel=null) {
+	    $db = GetGlobal('db');	
+		if (!$email) return false;
+		
+		if (($name) && (strstr($name, ' '))) {
+			$p = explode(' ', $name);
+			$fname = array_shift($p);
+			$lname = implode(' ', $p); //rest array
+		}
+		else
+			$fname = $lname = ($name ? $name : 'unknown');
+		
+		if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+			
+			$sUsername = $email;
+			//$this->fbhash = '#facebook';
+			//SetSessionParam('fbhash', '#facebook');
+						  
+			$sName = $name;
+			$sId = $email;
+			
+			$sSQL = "select id from users WHERE username='{$email}' and active=1 order by id desc LIMIT 1"; //last entry
+			$uret = $db->Execute($sSQL);
+		
+			if (!$uret->fields[0]) {
+				 
+				$pass = md5('!@test@!' . time()); //auto gen password
+				  
+				//insert guest user (active by def)	  
+				$sSQL = "insert into users (code2,fname,lname,email,username,subscribe,seclevid, password, vpass, active, fb) values ";
+				$sSQL.= "('{$sUsername}','{$fname}','{$lname}','{$email}','{$email}',1,1,'{$pass}','{$pass}',1,2)";
+				$ret = $db->Execute($sSQL);
+							  
+				if ($db->Affected_Rows()) {
+					/*
+					if (defined('SHUSERS_DPC'))  
+						_m("shusers.mailtohost use $sUsername++".$fname.'+'.$lname);
+					else
+						_m("cmsusers.mailtohost use $sUsername++".$fname.'+'.$lname);
+					//if (defined('CMSSUBSCRIBE_DPC'))  
+						//_m('cmssubscribe.dosubscribe use '.$sUsername.'+1');
+					*/
+				    //add save-update customer 
+					if (defined('SHCUSTOMERS_DPC')) 
+						$save = _m("shcustomers.save_guest_customer use $email+$name+$address+$postcode+$country+$tel");
+					
+					$this->update_statistics('registration', $sUsername);					
+				}
+				else
+					return false;		
+			}	
+			else {  
+				//add customer address
+				/*
+				if (defined('SHCUSTOMERS_DPC')) 
+					$save = _m("shcustomers.save_guest_deliveryaddress use $email+$name+$address+$postcode+$country+$tel"); 
+				*/
+				//save-update user (only name not password)
+				$sSQL = "update users set "; //(code2,fname,lname,email,username,subscribe,seclevid, password, vpass, active, fb) values ";
+				$sSQL.= "fname=" . $db->qstr($fname);
+				$sSQL.= ",lname=" . $db->qstr($lname);
+				$sSQL.= " where username='{$email}' and active=1 and id=" . $uret->fields[0];
+				$ret = $db->Execute($sSQL);
+							  
+				if ($db->Affected_Rows()) {
+					//save-update customer
+					if (defined('SHCUSTOMERS_DPC'))
+						$save = _m("shcustomers.save_guest_customer use $email+$name+$address+$postcode+$country+$tel");
+				}	
+			}
+			
+			$GLOBALS['UserID'] = encode($sId);
+			SetSessionParam("UserName", encode($sUsername));
+			SetSessionParam("UserID", encode($sId));
+			SetSessionParam("UserSecID", encode('1'));
+					
+			//set cookie
+			if (paramload('SHELL','cookies')) {
+				setcookie("cuser", $sUserName, time()+$this->time_of_session);
+				setcookie("csess", session_id(), time()+$this->time_of_session);
+			}
+			
+			_m('cmslogin.update_login_statistics use login+' . $sUsername);	
+
+			return true;			
+			
+		}
+        else 
+		    SetGlobal('sFormErr',localize('_MSG1',getlocal()));	
+		
+		return false;
+	}		
+	
+	//GUEST REG (SUPERFAST)
+	
+	protected function guestSuperFastCheck($fields) {
+		$guesterr = localize('_guesterr', $this->lan);
+		$invmail = localize('_invalidemail', $this->lan);
+		$invname = localize('_invalidname', $this->lan);
+		$invaddr = localize('_invalidaddress', $this->lan);
+		$invps = localize('_invalidpostcode', $this->lan);
+		$invcountry = localize('_invalidcountry', $this->lan);
+		$invphone = localize('_invalidphone', $this->lan);	
+		$invpayway = localize('_invalidpayway', $this->lan);
+		$invterms = localize('_TERMSAPPROVE', $this->lan);
+		
+		$err = array();
+
+		if (!$fields['guestemail']) $err[] = $invmail;
+		if (!$fields['guestname'])	$err[] = $invname;
+		if (!$fields['guestaddress']) $err[] =$invaddr;
+		if (!$fields['guestphone'])	$err[] = $invphone;
+		if (!$fields['guestpostcode'])	$err[] = $invps; 
+		if (!$fields['guestcountry'])	$err[] = $invcountry;
+		if (!$fields['payway'])			$err[] = $invpayway;
+		if (!$fields['terms'])			$err[] = $invterms;		
+		//print_r($err);
+		
+		if (!empty($err))
+			return implode('<br>', $err);
+		
+		return false;
+	}	
+	
+	public function guestSuperFastRegistration() {
+		$db = GetGlobal('db');	
+		$email = GetParam('guestemail');
+		$name = GetParam('guestname');
+		$address = GetParam('guestaddress');
+		$postcode = GetParam('guestpostcode');
+		$country = GetParam('guestcountry');
+		$tel = str_replace('+','00', GetParam('guestphone'));
+		
+		//register and login (save customer details or deliv address of existing user)
+		$loggedin = $this->do_guest_login_fastcart($email,$name,$address,$postcode,$country,$tel);
+		
+		if ($loggedin) { 
+
+			$this->user = $email; //update this user
+		
+			if ($template = _m('cmsrt.select_template use shcartguestprocced')) {
+				$tokens = array($email, $name, $address, $postcode, $country, $tel);
+				return $this->combine_tokens($template, $tokens, true);
+			}
+			else
+				return "Message: Guest user registration form missing";					
+		}
+		
+		return false; //"Guest user registration failed";
+	}	
+
+
+	//CLICK AWAY	
+	
+	protected function clickaway_event() {
+		
+		if (($this->clickawaycode) && ($this->clickaway_url)) {
+			echo '<br/>' . 'start:' . $this->clickawaycode;								
+			echo '<br/>' . $this->clickaway_url;
+											
+			$merchant = remote_paramload('INDEX','company-name',$this->path);
+			$afm = remote_paramload('INDEX','afm',$this->path);
+			$address = remote_paramload('INDEX','address',$this->path);
+										
+			$comments = remote_paramload('CLICKAWAY','comments',$this->path);
+										
+			//$data = array("name" => "Hagrid", "age" => "36");                                                                    
+			//json_encode($data); 
+			$data_string = "{
+    \"products\": 
+    {
+        \"action\": \"click_away\",
+        \"subaction\": \"add_appointment\",
+        \"code\": \"{$this->clickawaycode}\",
+        \"extra_fields\": 
+        {
+            \"merchant\":\"Alexiou Vasilis, STEREOBIT\",
+            \"afm\":\"055208430\",
+            \"address\":\"13 Spanoy St. Thessaloniki\",
+            \"date\":\"2020-12-28\",
+            \"time\":\"18:00\",
+            \"comments\":\"SAS PERIMENOUME\"
+        }
+    }
+}"; 
+										
+			$this->clickaway_signature = sha256($this->clickaway_apikey . $this->clickaway_date);
+			echo '<br/>' . $this->clickaway_signature;
+			
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $this->clickaway_url);
+			//curl_setopt($curl, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+										
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+										
+			curl_setopt($ch, CURLOPT_HTTPHEADER, 
+						array(
+							"loyalty-web-id: {$this->clickaway_webid}",
+							"loyalty-date': {$this->clickaway_date}",
+							"loyalty-signature': {$this->clickaway_signature}"
+						)
+			);
+										
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+									
+			$this->clickaway_return  = curl_exec($ch);
+			echo '<br/>' . $this->clickaway_return;
+			curl_close($ch);
+				
+			return true;
+		}	
+		
+		return false;
+	}
+	
+	protected function clickaway_action() {
+		if (!$this->user) return false;
+		
+		$out = null;
+		if ($this->clickawaycode)
+			echo 'CODE:'.$this->clickawaycode;
+		
+		$tokens[] = $this->clickaway_signature;//$this->clickaway_return; //$this->clickaway_webid;  
+		
+	    //VIEW TRANSACTIONS
+		if ((defined('SHTRANSACTIONS_DPC'))) {
+			//$out .= _m('shtransactions.viewTransactions');
+			$lnk1 = _m('cmsrt.url use t=transview'); 
+			$trans_button = '&nbsp;'.$this->myf_button(localize('_TRANSLIST',$this->lan),$lnk1);
+		} 	
+
+		//CLICK AWAY
+		if ($this->clickawaycode) { //code has already submited 
+			//hide button
+			
+			//reset code
+			SetSessionParam('clickacode',null);
+		}
+		else {
+			//button for manual click away
+			$lnk2 = _m('cmsrt.url use t=clickaway'); 
+			$catell = localize('_CLICKAWAYENABLE',$this->lan);
+			$caway_button = "<div class=\"inline-input\"><form method=\"POST\" action=\"clickaway/\"> <input data-placeholder=\"Insert code\" type=\"text\" name=\"clickawaycode\" /><button class=\"le-button\" type=\"submit\">$catell</button></form></div>";
+			//$caway_button .= '&nbsp;'.$this->myf_button(localize('_CLICKAWAY',$this->lan),$lnk2);
+		} 
+		$tokens[] = $trans_button . $caway_button;	
+		$tokens[] = $this->clickaway_return; //$this->clickaway_date;
+		//$tokens[] = $this->clickaway_return;	//$this->clickaway_signature	
+
+		$mycarttemplate = _m('cmsrt.select_template use shcartclickaway');	
+		$out = $this->combine_tokens($mycarttemplate,$tokens,true);
+
+		$this->update_statistics('cart-final-clickaway', $this->user);					
+		
+		return ($out);
+	}		
+	
+	//curl less post (unused !!!)
+	protected function post_request($url, array $params) {
+		$query_content = http_build_query($params);
+		$fp = fopen($url, 'r', FALSE, // do not use_include_path
+		stream_context_create([
+			'http' => [
+				'header'  => [ // header array does not need '\r\n'
+					'Content-type: application/x-www-form-urlencoded',
+					'Content-Length: ' . strlen($query_content)
+				],
+			'method'  => 'POST',
+			'content' => $query_content
+			]
+		]));
+		
+		if ($fp === FALSE) {
+			return json_encode(['error' => 'Failed to get contents...']);
+		}
+		$result = stream_get_contents($fp); // no maxlength/offset
+		fclose($fp);
+		return $result;
+	}	
+	
+	
+	
+	
+	//PAYWAY
 	
 	public function payway() {
 	    $pways = remote_arrayload('SHCART','payways',$this->path);
@@ -2620,6 +3053,53 @@ function addtocart(id,cartdetails)
 
 		return $res->fields[0];			
 	}
+	
+	//fast payments (method without login)
+	public function payFast($nopresel=false) {
+		$db = GetGlobal('db');
+		if (!$this->superfastcart) return null; //disable when no superfastcart
+		
+		$UserName = decode(GetGlobal('UserName'));
+		if ($UserName) return null; //disable when logged in
+		
+		$selectedPost = GetParam('payway'); //when selection is set
+		
+		switch ($this->status) {		
+		
+			case 2  :
+						break;
+		
+			case 1  :	$template = _m('cmsrt.select_template use ppayfast');
+						$subtemplate = _m('cmsrt.select_template use ppayfastline');
+						
+						$sSQL = "select code,title,lantitle,notes from ppayments where active=1";
+						$sSQL.= " order by orderid";
+						$res = $db->Execute($sSQL);	
+						//return $sSQL;
+						foreach ($res as $i=>$rec) {
+							
+							if ($selectedPost == $rec['code'])
+								$_selection = 1;
+							else
+								$_selection = $nopresel ? 0 : (($i==0) ? 1 : 0); //first element orderby orderid
+							
+							$title = $rec['lantitle'] ? localize($rec['lantitle'], $this->lan) : $rec['title'];
+							$tokens = array($rec['code'], $title, $rec['notes'], $_selection);
+							$options[] = $this->combine_tokens($subtemplate, $tokens, true);
+							unset ($tokens);
+						}
+						if (!empty($options)) {
+							$opt = implode('', $options);
+							$tokens2 = array('payway', $opt);
+							return $this->combine_tokens($template, $tokens2, true);
+						}
+						break;
+			case 0  :
+			default :   //do nothing
+		}
+	}	
+	
+	//ROADWAY
 
 	public function roadway() {
 	    $ways = remote_arrayload('SHCART','roadways',$this->path);
@@ -2796,6 +3276,8 @@ function addtocart(id,cartdetails)
 	}	
 	
 	
+	//INVOICEWAY
+	
 	public function invoiceway() {
 		$ways = remote_arrayload('SHCART','invways',$this->path);
 		$defway = remote_paramload('SHCART','invway_default',$this->path); 	
@@ -2915,7 +3397,9 @@ function addtocart(id,cartdetails)
 		}		
 		
 		return null;
-	}		
+	}	
+
+	//ADDRESSWAY	
 	
 	public function addressway() {
 		   	   
@@ -3038,6 +3522,8 @@ function addtocart(id,cartdetails)
 		return null;
 	}	
 	
+	//CUSTOMERWAY
+	
 	public function customerway() {
 		   	   
         switch ($this->status) {
@@ -3158,6 +3644,8 @@ function addtocart(id,cartdetails)
 		return null;
 	}	
 	
+	//COMMENTS
+	
 	public function comments() {
 	
         switch ($this->status) {
@@ -3212,6 +3700,7 @@ function addtocart(id,cartdetails)
 		return ($out);	   	    	
 	}	
 
+	//CALULATIONS
 
     protected function calculate_totals() {
 		$ret = 0;
@@ -3239,7 +3728,7 @@ function addtocart(id,cartdetails)
 		$ret = number_format(floatval($this->myfinalcost),$this->dec_num,',','.');						
 
 	   return ($ret);
-    }
+    }	
 
     protected function print_button() {
 		/* DISABLE PRINT BUTTON, VIEW ONLY AT TRANSACTIONS
@@ -3247,16 +3736,21 @@ function addtocart(id,cartdetails)
 		$translink = 'printcart/';
 		$ret = $this->myf_button(localize('_TRANSPRINT',$this->lan),$translink,'_TRANSPRINT');
 	    */
+		if (($this->fastcart) || ($this->superfastcart)) 
+			return null;	
+
 	    //VIEW TRANSACTIONS
 		if ((defined('SHTRANSACTIONS_DPC'))) {
 			//$out .= _m('shtransactions.viewTransactions');
 			$lnk1 = _m('cmsrt.url use t=transview'); 
+			
 			$trans_button = '&nbsp;'.$this->myf_button(localize('_TRANSLIST',$this->lan),$lnk1);
 		} 	
 
 		//CLICK AWAY
 		//if (GetSessionParam("roadway"=='clickaway')) {
 			$lnk2 = _m('cmsrt.url use t=clickaway'); 
+
 			$caway_button = '&nbsp;'.$this->myf_button(localize('_CLICKAWAYENABLE',$this->lan),$lnk2);
 		//} 
 			
@@ -3265,6 +3759,7 @@ function addtocart(id,cartdetails)
 	
 	protected function finalize_cart_success() {
 		$out = null;
+		$this->update_statistics('cart-final-purchase', $this->user);		
 		
 		if ($mygototitle = $this->onSuccessGotoTitle) {
 			$onsuccess = explode('/',$mygototitle); 
@@ -3286,65 +3781,23 @@ function addtocart(id,cartdetails)
 				
 		$tokens[] = $this->transaction_id;				
 		$tokens[] = $this->print_button();		
-		$tokens[] = $gobutton; 
-
-		$mycarttemplate = _m('cmsrt.select_template use shcartsuccess');	
-		$out = $this->combine_tokens($mycarttemplate,$tokens,true);
+		$tokens[] = (($this->fastcart) || ($this->superfastcart)) ? $onsuccesstitle : $gobutton; 
 
 		//change status of transaction
         //if (defined('SHTRANSACTIONS_DPC')) 
-		   // _m('shtransactions.setTransactionStatus use '.$this->transaction_id."+1");
+		   // _m('shtransactions.setTransactionStatus use '.$this->transaction_id."+1");					
 		
-		$this->update_statistics('cart-final-purchase', $this->user);					
-		
+		//if (($this->fastcart) || ($this->superfastcart)) 
+			//return $tokens[0];		
+		//else
+		$mycarttemplate = _m('cmsrt.select_template use shcartsuccess');	
+		$out = $this->combine_tokens($mycarttemplate,$tokens,true);		
 		return ($out);
 	}
-	
-	protected function clickaway() {
-		if (!$this->user) return false;
-		
-		$out = null;
-		if ($this->clickawaycode)
-			echo 'CODE:'.$this->clickawaycode;
-		
-		$tokens[] = $this->clickaway_signature;//$this->clickaway_return; //$this->clickaway_webid;  
-		
-	    //VIEW TRANSACTIONS
-		if ((defined('SHTRANSACTIONS_DPC'))) {
-			//$out .= _m('shtransactions.viewTransactions');
-			$lnk1 = _m('cmsrt.url use t=transview'); 
-			$trans_button = '&nbsp;'.$this->myf_button(localize('_TRANSLIST',$this->lan),$lnk1);
-		} 	
-
-		//CLICK AWAY
-		if ($this->clickawaycode) { //code has already submited 
-			//hide button
-			
-			//reset code
-			SetSessionParam('clickacode',null);
-		}
-		else {
-			//button for manual click away
-			$lnk2 = _m('cmsrt.url use t=clickaway'); 
-			$catell = localize('_CLICKAWAYENABLE',$this->lan);
-			$caway_button = "<div class=\"inline-input\"><form method=\"POST\" action=\"clickaway/\"> <input data-placeholder=\"Insert code\" type=\"text\" name=\"clickawaycode\" /><button class=\"le-button\" type=\"submit\">$catell</button></form></div>";
-			//$caway_button .= '&nbsp;'.$this->myf_button(localize('_CLICKAWAY',$this->lan),$lnk2);
-		} 
-		$tokens[] = $trans_button . $caway_button;	
-		$tokens[] = $this->clickaway_return; //$this->clickaway_date;
-		//$tokens[] = $this->clickaway_return;	//$this->clickaway_signature	
-
-		$mycarttemplate = _m('cmsrt.select_template use shcartclickaway');	
-		$out = $this->combine_tokens($mycarttemplate,$tokens,true);
-
-		$this->update_statistics('cart-final-clickaway', $this->user);					
-		
-		return ($out);
-	}	
 
 	protected function finalize_cart_error() {
 		$out = null;
-		//echo 'finalize-cart-error';
+		$this->update_statistics('cart-final-error', $this->user);	
 		
 		if ($err1 = $this->mailerror) {
 			//change status of transaction
@@ -3363,14 +3816,23 @@ function addtocart(id,cartdetails)
 		}	
 							 		
 		$msg = localize('_TRANSERROR',$this->lan) . "&nbsp;" . "<a href='contact.php'>{$this->carterror_mail}</a>";
-		$tokens[] = localize('_TRANSERROR',$this->lan);//$msg; 			
+		$tokens[] = localize('_CARTERROR',$this->lan);//$msg; 			
 		$tokens[] = $error;
 		
-		$mycarttemplate = _m('cmsrt.select_template use shcarterror');
-		$out = $this->combine_tokens($mycarttemplate,$tokens,true);	
-
-		$this->update_statistics('cart-final-error', $this->user);				
+		if ($this->testcart) { /* TEST MODE */}
+		else {
+			
+			$mailerr = $this->transaction_id . '<br/>' . $this->user . '<br>' . $error;
+			
+			//MAIL THE ORDER TO HOST
+			$merr = $this->cart_mailto($this->cartreceive_mail,"Error in transaction " . $this->transaction_id, $mailerr);
 		
+			//TO CUSTOMER
+			//$err2 = $this->cart_mailto($this->user, $mailSubject, $mailout);		    			  
+		}  		
+		
+		$mycarttemplate = _m('cmsrt.select_template use shcarterror');
+		$out = $this->combine_tokens($mycarttemplate,$tokens,true);				
 		return ($out);
 	}
 	
@@ -3593,7 +4055,12 @@ function addtocart(id,cartdetails)
 		//echo $this->total,':',$this->mydiscount;	
 		//if ($coupon = GetParam('coupon')) echo $coupon;
 		
-		$out = _m('cmsrt._ct use shcartfooter+' . serialize($tokens) . '+1');
+		$tstep = $this->status ? strval($this->status) : '0';	
+		$mysteptemplate = _m('cmsrt.select_template use shcartfooterstep' . $tstep);
+		if (isset($mysteptemplate))
+			$out = _m("cmsrt._ct use shcartfooterstep$tstep+" . serialize($tokens) . '+1');
+		else
+			$out = _m('cmsrt._ct use shcartfooter+' . serialize($tokens) . '+1');
 		return ($out);
 	}	
 
@@ -3672,10 +4139,15 @@ function addtocart(id,cartdetails)
 	}
 
 	protected function todolist() {
-	 
+	    //echo $this->todo,'>';
 		$mytemplate = _m('cmsrt.select_template use ' . $this->todo);
 		 
 		switch ($this->todo) {
+			
+			case 'fastcart'        :$this->status = 1;
+									$ret = $this->cartview();//default view	
+
+									break;
 
 			case 'loginorregister' :if (defined('SHLOGIN_DPC')) 
 										$a = _m("shlogin.quickform use +viewcart+shcart>cartview+status+1");  
@@ -4027,9 +4499,18 @@ function addtocart(id,cartdetails)
 	//standart roadway, payway costs
 	protected function calcShipping() {
 		$db = GetGlobal('db');	
-
+		
+		if ($this->superfastcart) {
+			$road_code = 'Courier'; //superfastcart uses only courier method
+			$pay_code = GetParam('payway');
+		}
+		else {	
+			$road_code = $this->getDetailSelection('roadway');
+			$pay_code = $this->getDetailSelection('payway');
+		}
+		
 		//transport cost
-		if ($code = $this->getDetailSelection('roadway')) {
+		if ($code = $road_code) { //$this->getDetailSelection('roadway')) {
 			$sSQL = "select cost from ptransports where ";
 			$sSQL.= "code=" . $db->qstr($code);
 			$res = $db->Execute($sSQL);	
@@ -4043,7 +4524,7 @@ function addtocart(id,cartdetails)
 			$this->transportcost = GetSessionParam('transcost');	
 		
 		//payment cost
-		if ($code = $this->getDetailSelection('payway')) {
+		if ($code = $pay_code) { //$this->getDetailSelection('payway')) {
 			$sSQL = "select cost from ppayments where code=" . $db->qstr($code);	
 			$res = $db->Execute($sSQL);	
 			$pcost = $res->fields[0];
@@ -4395,6 +4876,8 @@ function addtocart(id,cartdetails)
 		}
 	}	
 	
+	
+	//SCRIPTS JS
 		
 	/*send js data line by line */
 	protected function getCartItemsScript($referer=null, $tid=null) {
@@ -4638,6 +5121,8 @@ function addtocart(id,cartdetails)
 		$fcode = _v("cmsrt.fcode");
 		
 		$tokens = $this->getCartTransactionTokens();
+		//print_r($tokens);
+
 		if (!empty($tokens)) {
 			
 			$tid = $tokens[0];
@@ -4762,6 +5247,8 @@ function addtocart(id,cartdetails)
         }                       
         return false;
     }*/	
+	
+	//COOKIE STORE CART
 	
 	protected function cookie_store_cart() {
         $db = GetGlobal('db');

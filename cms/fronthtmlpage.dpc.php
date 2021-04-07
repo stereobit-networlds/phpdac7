@@ -957,7 +957,7 @@ EOF;
 	public function include_part($fname=null, $args=null, $uselans=null, $tmplname=null) {	
 	    $tmpln = $tmplname ? $this->mcRoot($tmplname) . $fname : 
 		                     $this->mcRoot($this->MC_TEMPLATE) . $fname;
-	    //echo 'INCLUDE_PART:'.$tmpln;
+	    //echo 'INCLUDE_PART :'.$tmpln . '<br>';
 		$pattern = "@<(.*?)>@"; /*search for content params*/
 		$arguments = explode('|',$args);
 		//print_r($arguments);
@@ -1008,6 +1008,7 @@ EOF;
 	    preg_match_all($pattern,$fname,$matches);
 	  
         foreach ($matches[1] as $r=>$cmd) {
+		  //echo $cmd . '>' . GetGlobal($cmd);	
 		  $arg = GetParam($cmd) ? GetParam($cmd) : GetGlobal($cmd);
 		  $fname_arg = str_replace('<'.$cmd.'>',$arg,$fname);
 	    }	
@@ -1255,7 +1256,7 @@ EOF;
 	}
 	
 	public function slocaleParam($param=null) {
-		$id = GetGlobal($param) ? GetGlobal($param) : GetSessionParam($param); 
+		$id = GetGlobal($param) ? GetGlobal($param) : (GetSessionParam($param) ?? getParam($param)); 
 	    $ret = localize($id, getlocal());
 		return ($ret ? $ret : '_loc_');
 	}	

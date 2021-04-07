@@ -103,13 +103,13 @@ class shusers extends cmsusers {
 		
 		$code = "
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#checkout-page').offset().top, 10));
+		window.scrollTo(0,parseInt(jQuery('#checkout-page').offset().top, 10));
 	else {		
 		gotoTop('checkout-page');	
 	
-		$(window).scroll(function() { 
+		jQuery(window).scroll(function() { 
 			if (agentDiv('checkout-page')) {
-				$.ajax({ url: 'jsdialog.php?t=jsdcode&id=user&div=signup', cache: false, success: function(jsdialog){
+				jQuery.ajax({ url: 'jsdialog.php?t=jsdcode&id=user&div=signup', cache: false, success: function(jsdialog){
 					eval(jsdialog);		
 				}})	
 			}	
@@ -123,7 +123,7 @@ class shusers extends cmsusers {
 	protected function checkFieldsJs($err=null, $title=null) {
 			
 		$code = "
-	new $.Zebra_Dialog('$err', {'type':'error','title':'$title'});";
+	new jQuery.Zebra_Dialog('$err', {'type':'error','title':'$title'});";
 		
 		$js = new jscript;	
 		$js->load_js($code,null,1);			   
@@ -712,7 +712,7 @@ class shusers extends cmsusers {
 		return ($ret->fields[0]);		
 	}	
 	
-	public function get_cus_name() {
+	public function get_cus_name($nourl=false) {
         $db = GetGlobal('db');
 		$UserName = GetGlobal('UserName');		
 		$user = decode($UserName);
@@ -725,7 +725,7 @@ class shusers extends cmsusers {
 		$name = $res->fields['name'] ? $res->fields['name'] : $user;
 		
 		//$nk = seturl('t=signup');//addnewcus&select=1');
-		$ret = "<a href='signup/'>" . $name . "</a>";
+		$ret = $nourl ? $name : "<a href='signup/'>" . $name . "</a>";
 		return ($ret);		
 	}	
 	

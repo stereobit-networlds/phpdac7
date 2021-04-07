@@ -1034,22 +1034,25 @@ window.setTimeout('neu()',10);
     }	
 
 	public function myf_login_logout($link=null,$glue=null) {
+		$lan = getlocal();
 	
 	    if ($UserID = GetGlobal('UserID')) {
 	        $url = _m('cmsrt.url use t=dologout+' . localize('_CMSLOGOUT',getlocal())); 
 			$myfb = ($link) ? (($glue) ? '<'.$glue.'>'.$url.'</'.$glue.'>' : $url) :
-			                  $this->myf_button(localize('_CMSLOGOUT',getlocal()),'dologout/','_CMSLOGOUT');
+			                  //$this->myf_button(localize('_CMSLOGOUT',getlocal()),'dologout/','_CMSLOGOUT');
+							  "<a href='dologout/'>" . $glue . localize('_CMSLOGOUT',$lan) . "</a>";
 	    }
 	    else {
 		    $url = _m('cmsrt.url use t=login+' . localize('CMSLOGIN_DPC',getlocal())); 
 		    $myfb = ($link) ? (($glue) ? '<'.$glue.'>'.$url.'</'.$glue.'>' : $url) :
-			                  $this->myf_button(localize('CMSLOGIN_DPC',getlocal()),'login/','_CMSLOGIN');
+			                  //$this->myf_button(localize('CMSLOGIN_DPC',getlocal()),'login/','_CMSLOGIN');
+							  "<a href='login/'>" . $glue . localize('CMSLOGIN_DPC',$lan) . "</a>";
 	    }
 	   
 	    return ($myfb);
 	}
 	
-	protected function update_login_statistics($id, $user=null) {
+	public function update_login_statistics($id, $user=null) {
 		if ($this->userLevelID >= 5) return false;
 		
         if (defined('CMSVSTATS_DPC'))	

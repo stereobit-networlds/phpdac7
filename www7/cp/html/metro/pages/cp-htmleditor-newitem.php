@@ -82,6 +82,14 @@
 									<phpdac>cpmhtmleditor.itemEditor</phpdac>
 								</div>
 							</div>	
+							
+							<div class="control-group">
+                                    <label class="control-label"><phpdac>cmsrt.slocale use _itemcode</phpdac></label>
+                                    <div id="edit_to" class="controls">
+										<input id="code" name="code" type="text" class="span12" value="" />
+                                    </div>
+                            </div>
+							
                             <div class="control-group">
                                 <label class="control-label"><phpdac>cmsrt.slocale use _itemactive</phpdac></label>
                                 <div class="controls">
@@ -119,18 +127,19 @@
 										<phpdac>cpmhtmleditor.mcpages</phpdac>
                                     </select>
                                 </div>								
-                            </div>								
+                            </div>	
+								
                             <div class="form-actions">
-                                <button type="submit" class="<phpdac>fronthtmlpage.nvl use cpmhtmleditor.postok+btn btn-success+btn btn-danger+</phpdac>"><phpdac>cmsrt.slocale use _save</phpdac></button>
+                                <button type="submit" class="<phpdac>cmsrt.nvl use cpmhtmleditor.postok+btn btn-success+btn btn-danger+</phpdac>"><phpdac>cmsrt.slocale use _save</phpdac></button>
                                 <!--button type="button" class="btn">Cancel</button-->
 								<input type="hidden" name="FormName" value="newitem" />
 								<input type="hidden" name="FormAction" value="cpmnewitem" />
-								<input type="hidden" name="id" value="<phpdac>fronthtmlpage.nvldac2 use id+fronthtmlpage.echostr:id++</phpdac>">
+								<input type="hidden" name="id" value="<phpdac>cmsrt.nvldac2 use id+cmsrt.echostr:id++</phpdac>">
 								<input type="hidden" name="insert" value="1">
 								
-								<phpdac>fronthtmlpage.nvl use cpmhtmleditor.postok+<a href="cpmhtmleditor.php?t=cpmvphoto&id=" class="btn btn-info">Photo</a>++</phpdac>
-								<!--hpdac>fronthtmlpage.nvl use cpmhtmleditor.postok+<a href="cpmhtmleditor.php?t=cpmhtmlcopy&copyid=" class="btn btn-info">Copy</a>++</phpda-->
-								<!--hpdac>fronthtmlpage.nvl use cpmhtmleditor.postok+<a href="cpmhtmleditor.php?t=cpmitemedit&copyid=" class="btn btn-success">Details</a++</phpda-->								
+								<phpdac>cmsrt.nvl use cpmhtmleditor.postok+<a href="cpmhtmleditor.php?t=cpmvphoto&id=" class="btn btn-info">Photo</a>++</phpdac>
+								<!--hpdac>cmsrt.nvl use cpmhtmleditor.postok+<a href="cpmhtmleditor.php?t=cpmhtmlcopy&copyid=" class="btn btn-info">Copy</a>++</phpda-->
+								<!--hpdac>cmsrt.nvl use cpmhtmleditor.postok+<a href="cpmhtmleditor.php?t=cpmitemedit&copyid=" class="btn btn-success">Details</a++</phpda-->								
                             </div>							
 							<div>
 							<div id="exclude" class="control-group">

@@ -74,7 +74,7 @@ class jsdialog {
 		<script type="text/javascript" src="js/zebra/zebra_dialog.js"></script>
 
 		<script type="text/javascript">
-			$(document).ready(function(){
+			jQuery(document).ready(function(){
 		
 				<phpdac>jsdialog.startDialog</phpdac>	
 			});
@@ -89,7 +89,7 @@ class jsdialog {
 		$respond = $responder ? $responder : $this->dajaxpage;
 		
 		$ret = "
-			$.ajax({
+			jQuery.ajax({
             url: '$respond',
             context: document.body,
             success: function(responseText) {
@@ -105,7 +105,7 @@ class jsdialog {
 	public function defaultDialog($text=null, $title=null) {
 		$msg = $title ? '<strong>' . $title .'</strong><br/>'. $text : $text;
 		$ret = "
-		new $.Zebra_Dialog('$msg', 
+		new jQuery.Zebra_Dialog('$msg', 
 		{
 			'buttons':  false,
 			'modal': false,
@@ -121,7 +121,7 @@ class jsdialog {
 		$c = $close ? "'auto_close': $close," : null;
 		
 		$ret = "
-		new $.Zebra_Dialog('$msg', 
+		new jQuery.Zebra_Dialog('$msg', 
 		{
 			'buttons':  false,
 			'modal': false,
@@ -144,7 +144,7 @@ class jsdialog {
 	});
 	*/
 	public function zdialog($text, $title=null, $type='error') {
-		return "new $.Zebra_Dialog('$text', 
+		return "new jQuery.Zebra_Dialog('$text', 
 	{
 		'type':     '$type',
 		'title':    '$title'
@@ -163,7 +163,7 @@ class jsdialog {
 	*/
 	public function zdialogQuestion($text, $title=null, $buttons) {
 		$b = $buttons ? $buttons : "'Yes', 'No', 'Help'";
-		return "new $.Zebra_Dialog('$text', 
+		return "new jQuery.Zebra_Dialog('$text', 
 		'type':     'question',
 		'title':    '$title',
 		'buttons':  [$b]
@@ -188,7 +188,7 @@ class jsdialog {
 		}	
 		$mybuttons = implode(',',$btn);
 		
-		return "new $.Zebra_Dialog('$text', 
+		return "new jQuery.Zebra_Dialog('$text', 
 		'type':     'question',
 		'title':    '$title',
 		'buttons':  [$mybuttons]
@@ -204,7 +204,7 @@ class jsdialog {
 	public function zdialogAjax($url,$title=null,$width=600) {
 		$w = $width ? $width : 600;		
 		if ($url)		
-		return "new $.Zebra_Dialog('$text', 
+		return "new jQuery.Zebra_Dialog('$text', 
 	{
 		'source':  {'ajax': '$url'},
 		width: $w,
@@ -226,7 +226,7 @@ class jsdialog {
 		$w = $width ? $width : 800;
 		$h = $height ? $height : 500;
 		if ($url)
-		return "new $.Zebra_Dialog('$text', 
+		return "new jQuery.Zebra_Dialog('$text', 
 	{
 		source: {'iframe': {
 			'src':  '$url',

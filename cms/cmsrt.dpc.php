@@ -246,9 +246,9 @@ class cmsrt extends cms  {
 
 	protected function scrollTo() {
 		if ($this->mobile) 
-			return "new $.Zebra_Dialog('test', {'type':'error','title':'x'});";
+			return "new jQuery.Zebra_Dialog('test', {'type':'error','title':'x'});";
 		
-		return "$('html, body').animate({ scrollTop: sw }, 'slow',function(){ $('html,body').clearQueue();});";
+		return "jQuery('html, body').animate({ scrollTop: sw }, 'slow',function(){ jQuery('html,body').clearQueue();});";
 	}
 	//stackoverflow.com/questions/12260279/scrolltop-not-working-in-android-mobiles
 	//stackoverflow.com/questions/12225456/jquery-scrolltop-does-not-work-in-scrolling-div-on-mobile-browsers-alternativ
@@ -258,32 +258,32 @@ class cmsrt extends cms  {
 
 		$jscroll = <<<SCROLLTOP
 function ajaxCall(url,div,goto) {
-	$.ajax({ url: url, cache: false, success: function(html){
-		$('#'+div).html(html);
+	jQuery.ajax({ url: url, cache: false, success: function(html){
+		jQuery('#'+div).html(html);
 	}});
 	if (goto) {
 		if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-			window.scrollTo(0,parseInt($('#'+div).offset().top, 10));
+			window.scrollTo(0,parseInt(jQuery('#'+div).offset().top, 10));
 		else 		
 			gotoTop(div);  
 	}	
 }				
 function atEnd() {
-	if ($(window).scrollTop() + $(window).height() == $(document).height()) 
+	if (jQuery(window).scrollTop() + jQuery(window).height() == jQuery(document).height()) 
 			return 1; else return 0;
 }
 function atDiv(div,offset=0,margin=100) {
 	if (!div) return atEnd();
-	if (($(window).scrollTop() >= $('#'+div).offset().top + offset) &&
-		($(window).scrollTop() <= $('#'+div).offset().top + offset + margin))
+	if ((jQuery(window).scrollTop() >= jQuery('#'+div).offset().top + offset) &&
+		(jQuery(window).scrollTop() <= jQuery('#'+div).offset().top + offset + margin))
 		return 1; else return 0;	
 }
 function gotoTop(div) {	
-	var sw = (div) ? $('#'+div).offset().top : 0;
+	var sw = (div) ? jQuery('#'+div).offset().top : 0;
 	
-	$('html, body').animate({ scrollTop: sw }, 'slow', 
+	jQuery('html, body').animate({ scrollTop: sw }, 'slow', 
 	function(){
-        $('html,body').clearQueue();
+        jQuery('html,body').clearQueue();
     });
 	
 	return true;
@@ -2198,23 +2198,19 @@ EOF;
 	
 	//override
 	public function include_part($fname=null, $args=null, $uselans=null, $tmplname=null) {	
-	
+		/* //DISABLE
 		if ($this->mobile) {
 			$fparts = explode('/',$fname);
 			$lastpart = 'mob@' . array_pop($fparts);
 			$mobilefname = implode('/', $fparts);
 			$mobilefname.= '/'. $lastpart;
+			//echo 'INCLUDE_PART (MOBILE):'.$tmpln . '<br>';
 
-			/*
-			if (is_readable($mobilefname))
-				$ret = parent::include_part($mobilefname,$args,$uselans,$tmplname);
-			//if ($ret) echo $mobilefname . '<br/>';
-			*/
 			if ($ret = parent::include_part($mobilefname,$args,$uselans,$tmplname)) //mobile version
 				return $ret;
 			//else...
 		} 
-
+		*/
 		/*
 		return (isset($ret)) ? $ret : parent::include_part($fname,$args,$uselans,$tmplname);
 		*/
@@ -2223,21 +2219,18 @@ EOF;
 
 	//override
 	public function include_part_arg($fname=null, $args=null, $uselans=null, $tmplname=null) {
-		
+		/* // DISABLE
 		if ($this->mobile) {
 			$fparts = explode('/',$fname);
 			$lastpart = 'mob@' . array_pop($fparts);
 			$mobilefname = implode('/', $fparts);
 			$mobilefname.= '/'. $lastpart;
-			/*
-			if (is_readable($mobilefname))
-				$ret = parent::include_part_arg($mobilefname,$args,$uselans,$tmplname);
-			//if ($ret) echo $mobilefname . '<br/>';
-			*/
+
 			if ($ret = parent::include_part_arg($mobilefname,$args,$uselans,$tmplname)) //mobile version
 				return $ret;
 			//else...	
 		} 
+		*/
 		/*
 		return (isset($ret)) ? $ret : parent::include_part_arg($fname,$args,$uselans,$tmplname);
 		*/
@@ -2300,37 +2293,37 @@ EOF;
 	    $ajaxurl = seturl($keep_id."&t=");	
 	
 		$jscroll = <<<JJSCROLL
-$(document).ready( function() {
-	$.ajaxSetup({ cache: false });
+jQuery(document).ready( function() {
+	jQuery.ajaxSetup({ cache: false });
 	if (sc == undefined) return;
-	$(window).scroll(function() { 
-        if ($(window).scrollTop() + $(window).height() == $(document).height()) {	
+	jQuery(window).scroll(function() { 
+        if (jQuery(window).scrollTop() + jQuery(window).height() == jQuery(document).height()) {	
             read_scroll_data();
 		}
 	});	
 });
 function read_scroll_data() {
 	if (func = sc.shift()) {
-	var param = $('#'+func).html();
+	var param = jQuery('#'+func).html();
 	if (param) {					
 		setTimeout(function() {
-			$.ajax({
+			jQuery.ajax({
 				url: '{$ajaxurl}'+func+'&param='+param,
 				type: 'GET',
 				success: function(data) {					
                 if (data) {						
-					$('#'+func).html(data);
-					$('#'+func).css('visibility','visible');
+					jQuery('#'+func).html(data);
+					jQuery('#'+func).css('visibility','visible');
 				}
 				else {
-				    $('#'+func).html('');
+				    jQuery('#'+func).html('');
 					read_scroll_data();
 				}}	
 			});
 		},100);						
 	}
 	else {
-	    $.globalEval(func+'()');
+	    jQuery.globalEval(func+'()');
     }}	
 }
 	
@@ -2344,27 +2337,27 @@ JJSCROLL;
 	
 		$jscroll = <<<JSCROLL
 //var sc = new Array(); //moved on top of file
-$(document).ready( function() {
-	$.ajaxSetup({ cache: false });
+jQuery(document).ready( function() {
+	jQuery.ajaxSetup({ cache: false });
 	if (sc == undefined) return;
-	$.each( sc, function( index, func ) {
+	jQuery.each( sc, function( index, func ) {
 		//console.log(func+':'+index);	
 		fetch_timeout_data(func, index*100);			    
 	});			
 });
 function fetch_timeout_data(func, outtime) {
 	if (func == undefined) return;			
-	var param = $('#'+func).html();
+	var param = jQuery('#'+func).html();
 	if (param) {		
 		setTimeout(function() {
-			$.ajax({
+			jQuery.ajax({
 				url: '{$ajaxurl}'+func+'&param='+param,
 				type: 'GET',
-				success: function(data) { $('#'+func).html(data); $('#'+func).css('visibility','visible')}});
+				success: function(data) { jQuery('#'+func).html(data); jQuery('#'+func).css('visibility','visible')}});
         },outtime);				  
 	}
 	else {
-	    $.globalEval(func+'()');
+	    jQuery.globalEval(func+'()');
     }
 	
 }

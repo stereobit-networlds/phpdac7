@@ -6,19 +6,9 @@ define("RCITEMS_DPC",true);
 
 $__DPC['RCITEMS_DPC'] = 'rcitems';
 
-
-$d = GetGlobal('controller')->require_dpc('bshop/shkategories.dpc.php');
-require_once($d);
-
-$e = GetGlobal('controller')->require_dpc('images/wateresize.lib.php');
-require_once($e);
-
-$f= GetGlobal('controller')->require_dpc('images/SimpleImage.lib.php');
-require_once($f);
-
-//$g = GetGlobal('controller')->require_dpc('shell/pxml.lib.php');
-//require_once($g);		
-
+require_once(_r('bshop/shkategories.dpc.php'));
+require_once(_r('images/wateresize.lib.php'));
+require_once(_r('images/SimpleImage.lib.php'));
 
 $__EVENTS['RCITEMS_DPC'][0]='cpitems';
 $__EVENTS['RCITEMS_DPC'][1]='cpvinput';
@@ -165,6 +155,7 @@ $__LOCALE['RCITEMS_DPC'][91]='_EDITPHOTO;Photo;Φωτό';
 $__LOCALE['RCITEMS_DPC'][92]='_dimensions;Dimension;Διαστάσεις';
 $__LOCALE['RCITEMS_DPC'][93]='_size;Size;Μέγεθος';
 $__LOCALE['RCITEMS_DPC'][94]='_orderid;Order ID;Order ID';
+$__LOCALE['RCITEMS_DPC'][95]='_manufacturer;Manufacturer;Κατασκευαστής';
 
 class rcitems {
 
@@ -407,9 +398,14 @@ class rcitems {
 			case 'cpvitemrss'  :
 			case 'cpvrestorephoto':
 		    case 'cpvphoto'    :   $out .= $this->form_photo();
-			                       break;		 
-		    case 'cpvinput'    :   $out .= $this->form_insert2(null,null,null,null,'d',true);
+			                       break;	
+								   
+		    case 'cpvinput'    :   //$out .= $this->form_insert2(null,null,null,null,'d',true);
+			
+								   //read items, select code to edit	
+								   $out .= $this->form_insert3(null,300,12,null,'r',true); 
 			                       break;
+								   
 		    case 'cpvmodify'   :   $out .= $this->form_modify();
 			                       break;			
 		    case 'cpvdelete'   :   $out .= $this->list_items();
@@ -1105,6 +1101,71 @@ class rcitems {
 		}
       }		
 	} 	
+	
+	function form_insert3($width=null, $height=null, $rows=null, $editlink=null,$mode=null, $noctrl=false) {
+	    $height = $height ? $height : 600;
+        $rows = $rows ? $rows : 25;
+        $width = $width ? $width : null; //wide	
+		$mode = $mode ? $mode : 'd';
+		$noctrl = $noctrl ? 0 : 1;	
+		
+		$this->lan = getlocal();	
+		
+		$this->fcode = $this->getmapf('code');
+		$this->lastprice = $this->getmapf('lastprice');						
+
+		$xfields = $this->fcode . ',';
+		//$xfields.= $this->lastprice ? $this->lastprice . ',' : null;		
+		$this->selectSQL = "select id,sysins,sysupd,code1,pricepc,price2,itmname,itmfname,uniname1,uniname2,active,code4," .
+							"price0,price1,cat0,cat1,cat2,cat3,cat4,itmdescr,itmfdescr,itmremark,ypoloipo1,resources,".
+							$xfields . "xml,weight,volume,dimensions,size,color,manufacturer,orderid,YEAR(sysins) as year,MONTH(sysins) as month,DAY(sysins) as day, DATE_FORMAT(sysins, '%h:%i') as time, DATE_FORMAT(sysins, '%b') as monthname," .
+							"template,owner,itmactive,p1,p2,p3,p4,p5,code2,code3,datein,availalt,cond from products ";		
+
+		$title = str_replace(' ','_',localize('RCITEMS_DPC',getlocal()));
+        //$myfields = implode(',', $this->select_fields);	
+		//$sSQL = 'select * from (select id,'.$myfields . ' from products) as o';	   
+		$sSQL = 'select * from ('. $this->selectSQL . ') as o';	   
+		//echo $sSQL;
+		
+		$itmname = $this->lan ? 'itmname' : 'itmfname'; 
+		$itmdescr = $this->lan ? 'itmdescr' : 'itmfdescr'; 
+		$this->select_fields = explode(',' , 'id,' . $this->fcode . ",$itmname,$itmdescr,itmactive,active,p1,p2,p3,p4,price0,price1,weight,volume,dimensions,size,color,manufacturer,cat0,cat1,cat2,cat3,cat4,orderid");
+
+		foreach ($this->select_fields as $i=>$f) {
+			
+		    if ($f=='id') {
+			  $type = 'link';//6;
+			  $edit = null;//no edit id	
+			  $options = "cpmhtmleditor.php?t=cpmedititem&id={".$this->fcode."}"; 
+			  //seturl("t=cpmhtmleditor&id={".$this->fcode."}"); //"javascript:edit_item({".$this->fcode."});";//
+              $align = 'left';				  
+		    }
+			elseif (stristr($f,'active')) {
+				$type = 'boolean';
+				$edit = 0;//1;
+				$options = ($f=='itmactive') ? "1:0" : "101:0";	
+				$align = 'left';
+                //$title = localize('_'.$f,getlocal());					
+			}
+		    elseif (stristr($f,'price')) {
+		      $type = 10;
+			  $edit = 0;//1;
+			  $options = null;	
+              $align = 'right';			  
+		    }				
+			else {
+				$type = 10;
+				$edit = 0;//1;
+				$options = null; 
+				$align = 'left';
+			}				
+			_m("mygrid.column use grid9+$f|".localize('_'.$f,getlocal())."|$type|$edit|$options|$link_option|$search|$hidden|$align");	
+		}
+			
+		$out = _m("mygrid.grid use grid9+products+$sSQL+$mode+$title+id+$noctrl+0+$rows+$height+$width+0+1+1");
+			
+		return ($out);			
+	}	
 	
 	function form_insert2($width=null, $height=null, $rows=null, $editlink=null,$mode=null, $noctrl=false) {
 	    $height = $height ? $height : 600;

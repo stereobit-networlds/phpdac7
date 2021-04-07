@@ -31,6 +31,8 @@ $__LOCALE['RCPHARAPP_DPC'][15]='_options;Options;Ρυθμίσεις';
 $__LOCALE['RCPHARAPP_DPC'][16]='_enable;Set active;Ενεργοποίηση';
 $__LOCALE['RCPHARAPP_DPC'][17]='_lrp;Long Running Process;Long Running Process';
 $__LOCALE['RCPHARAPP_DPC'][18]='_tail;Tail;Tail';
+$__LOCALE['RCPHARAPP_DPC'][19]='_selectnone;None;Κανένα';
+$__LOCALE['RCPHARAPP_DPC'][20]='_selecttmpl;Template;Πρότυπο';
 
 class rcpharapp {
 	
@@ -130,6 +132,17 @@ class rcpharapp {
 		$fcode = _v('cmsrt.fcode');
 		
 		return "Not supported in NON LRP mode!";
+	}	
+	
+	public function pharTemplates() {
+		$temps = arrayload('FRONTHTMLPAGE', 'pharapptemplates');
+		if (empty($temps))
+			$temps = array('media-center');
+		
+		foreach ($temps as $t)
+			$ret .= "<option value='$t'>". ucfirst($t) . "</oprion>";
+			
+		return $ret;	
 	}	
 	
 	public function tail($_file=null, $_lines=null) {

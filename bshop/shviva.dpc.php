@@ -1,34 +1,37 @@
 <?php
+/**
 
-$__DPCSEC['SHPAYPAL_DPC']='1;1;1;1;1;1;1;1;1;1;1';
+https://developer.vivawallet.com/
+https://developer.vivawallet.com/online-checkouts/redirect-checkout/
+https://developer.vivawallet.com/getting-started/create-a-payment-source/redirect-checkout/
+https://developer.vivawallet.com/getting-started/sandbox-demo-account/
+https://demo.vivapayments.com/ (....VK7DP!@)
 
-if ((!defined("SHPAYPAL_DPC")) && (seclevel('SHPAYPAL_DPC',decode(GetSessionParam('UserSecID')))) ) {
-define("SHPAYPAL_DPC",true);
+*/
+$__DPCSEC['SHVIVA_DPC']='1;1;1;1;1;1;1;1;1;1;1';
 
-$__DPC['SHPAYPAL_DPC'] = 'shpaypal';
+if ((!defined("SHVIVA_DPC")) && (seclevel('SHVIVA_DPC',decode(GetSessionParam('UserSecID')))) ) {
+define("SHVIVA_DPC",true);
 
-require_once(_r('bshop/paypal.dpc.php'));
+$__DPC['SHVIVA_DPC'] = 'shviva';
 
-GetGlobal('controller')->get_parent('SHPAYPAL_DPC','PAYPAL_DPC');
-
-$__EVENTS['SHPAYPAL_DPC'][0]='paypal';
-$__EVENTS['SHPAYPAL_DPC'][1]='process';
-$__EVENTS['SHPAYPAL_DPC'][2]='payreturn';
-$__EVENTS['SHPAYPAL_DPC'][3]='paycancel';
-$__EVENTS['SHPAYPAL_DPC'][4]='payipn';
+$__EVENTS['SHVIVA_DPC'][0]='viva';
+$__EVENTS['SHVIVA_DPC'][1]='process';
+$__EVENTS['SHVIVA_DPC'][2]='payreturn';
+$__EVENTS['SHVIVA_DPC'][3]='paycancel';
+$__EVENTS['SHVIVA_DPC'][4]='payipn';
  
-$__ACTIONS['SHPAYPAL_DPC'][0]='paypal';
-$__ACTIONS['SHPAYPAL_DPC'][1]='process';
-$__ACTIONS['SHPAYPAL_DPC'][2]='payreturn';
-$__ACTIONS['SHPAYPAL_DPC'][3]='paycancel';
-$__ACTIONS['SHPAYPAL_DPC'][4]='payipn';
+$__ACTIONS['SHVIVA_DPC'][0]='viva';
+$__ACTIONS['SHVIVA_DPC'][1]='process';
+$__ACTIONS['SHVIVA_DPC'][2]='payreturn';
+$__ACTIONS['SHVIVA_DPC'][3]='paycancel';
+$__ACTIONS['SHVIVA_DPC'][4]='payipn';
 
+$__DPCATTR['SHVIVA_DPC']['shviva'] = 'paypal,1,0,0,0,0,0,0,0,0,0,0,1';
 
-$__DPCATTR['SHPAYPAL_DPC']['shpaypal'] = 'paypal,1,0,0,0,0,0,0,0,0,0,0,1';
-
-$__LOCALE['SHPAYPAL_DPC'][0]='SHPAYPAL_DPC;Paypal;Paypal';   
+$__LOCALE['SHVIVA_DPC'][0]='SHVIVA_DPC;Viva payments;Viva Payments';   
  
-class shpaypal extends paypal {
+class shviva {
 
 	var $title;
 	var $reset_database;
@@ -50,11 +53,8 @@ class shpaypal extends paypal {
 		$this->username = decode($UserName);
 		$this->userid = decode($UserID);   
 	 
-		paypal::__construct();  
-	 
 		$this->path = paramload('SHELL','prpath'); 
-	 	 
-		$this->title = localize('SHPAYPAL_DPC',getlocal());	
+		$this->title = localize('SHVIVA_DPC',getlocal());	
 	  
 		$sandbox = remote_paramload('SHPAYPAL','sandbox',$this->path);
 		if ($sandbox)
@@ -128,7 +128,7 @@ class shpaypal extends paypal {
 								$this->savelog("PAYPAL PAYMENT:IPN STATUS ERROR!!!");		                      
 							break;
 					   
-	   case 'paypal'	:
+	   case 'viva'		:
 	   case 'process'	: 					   
        default      	:    
 							$cust_data = _m("shcustomers.getcustomer");//default mail=username.. use ".$this->userid); 					     
@@ -211,7 +211,7 @@ class shpaypal extends paypal {
 		                 break;
 		case 'payipn'     : $ret = null;
 		                 break; 
-		case 'paypal':				 
+		case 'viva'	   :				 
 	    case 'process' : //$ret = $this->error;//null;//must not have action, if error goto frontpage'Please wait processing...'; 
 	    default        : //in case of no amount (error?) goto fp 		
 		                 //$ret = seturl('t=',localize('_HOME',getlocal()));

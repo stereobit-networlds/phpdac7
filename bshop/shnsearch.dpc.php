@@ -147,10 +147,10 @@ class shnsearch {
 	    $felement = $inputId ? $inputId : 'input';
 		$belement = $buttonId ? $buttonId : 'search-button';
 		$_all = (defined("SHKATEGORIES_DPC")) ? _v('shkategories._catAllSearch') : $this->_catAllSearch;
-//$(document).ready(function () {		
+//jQuery(document).ready(function () {		
 //});
 		$code = "
-	$('#$belement').on('click',function(){
+	jQuery('#$belement').on('click',function(){
 		var url = 'search/$_all/';
 		var inp = document.getElementById('$felement').value;
 		var ret = inp ? url.replace('$_all', inp) : url.replace('$_all/', '$_all/');
@@ -215,14 +215,14 @@ class shnsearch {
 		$purl.= empty($reset_input) ? null : implode(',', $reset_input) . ',';		
 
 		$onPrice = (($div = _v($this->shclass . '.filterajax')) && (!_v($this->shclass . '.mobile'))) ?		
-"$('.price-slider').on('slideStop', function(slideEvt) {
-	var p = $('.price-slider').val();
+"jQuery('.price-slider').on('slideStop', function(slideEvt) {
+	var p = jQuery('.price-slider').val();
 	var value = p.replace(',', '.');
 	//console.log(value);
 	ajaxCall('$purl'+value+'/','$div',1);
 });" :			
-"$('.price-slider').on('slideStop', function(slideEvt) {
-	var p = $('.price-slider').val();
+"jQuery('.price-slider').on('slideStop', function(slideEvt) {
+	var p = jQuery('.price-slider').val();
 	var value = p.replace(',', '.');
 	//console.log(value);
 	window.location='$purl'+value+'/';
@@ -260,11 +260,11 @@ function remFilter(f, div) {
 	//if (div) gotoTop(div);
 }	
 
-$(document).ready(function () {
-	if ($('.price-slider').length > 0) {
+jQuery(document).ready(function () {
+	if (jQuery('.price-slider').length > 0) {
 		var v0 = parseInt('{$input[0]}') ? {$input[0]} : {$min};
 		var v1 = parseInt('{$input[1]}') ? {$input[1]} : {$max};
-        $('.price-slider').slider({
+        jQuery('.price-slider').slider({
             min: {$min},
             max: {$max},
             step: {$step},
@@ -274,14 +274,14 @@ $(document).ready(function () {
     }	
 	
 	if (/{$mobileDevices}/i.test(navigator.userAgent)) 
-		window.scrollTo(0,parseInt($('#{$_section}').offset().top, 10));
+		window.scrollTo(0,parseInt(jQuery('#{$_section}').offset().top, 10));
 	else {
 		gotoTop('{$_section}');
 
-		$(window).scroll(function() { 
+		jQuery(window).scroll(function() { 
 		
 			if (agentDiv('category-grid',300)) {	
-				$.ajax({ url: 'jsdialog.php?t=jsdcode&id=search&div=search', cache: false, success: function(jsdialog){
+				jQuery.ajax({ url: 'jsdialog.php?t=jsdcode&id=search&div=search', cache: false, success: function(jsdialog){
 					eval(jsdialog);		
 				}})	
 			}

@@ -75,13 +75,24 @@
 										<div class="control-group">
 											<label class="control-label">
 												<phpdac>cmsrt.slocale use _usecp</phpdac>
-											</label>
+											</label>										
 											<div class="controls">
 												<div id="normal-toggle-button">
 													<input name="usecp" type="checkbox" <phpdac>cmsrt.getSubmitedParam use usecp+checked</phpdac>>
 												</div>
-											</div>
-										</div>								
+											</div>												
+										</div>
+										<div class="control-group">
+											<div id="select_template" class="control-group">
+												<label class="control-label"><phpdac>cmsrt.slocale use _selecttmpl</phpdac></label>
+												<div id="template_page" class="controls">
+													<select name="selectedtemplate" class="span6 chzn-select" data-placeholder="Choose a template" tabindex="1">
+														<option value=""><phpdac>cmsrt.slocale use _selectnone</phpdac></option>
+														<phpdac>rcpharapp.pharTemplates</phpdac>										
+													</select>
+												</div>								
+											</div>										
+										</div>		
                                     </div>	
 									<div class="tab-pane" id="tabsleft-tab2">
                                     	<h3><phpdac>cmsrt.slocale use _messages</phpdac></h3>

@@ -205,6 +205,23 @@
 										<input id="pricepc" name="pricepc" type="text" class="span12" value="<phpdac>cphtmleditor.getField use pricepc</phpdac>" />									
                                     </div>
                             </div>	
+							
+							<div class="control-group">
+                                    <label class="control-label"><phpdac>cmsrt.slocale use _itemcategories</phpdac></label>
+                                    <div id="edit_to" class="controls">
+	
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemcat</phpdac> 0</label>
+										<input id="cat0" name="cat0" type="text" class="span12" value="<phpdac>cphtmleditor.getField use cat0</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemcat</phpdac> 1</label>
+										<input id="cat1" name="cat1" type="text" class="span12" value="<phpdac>cphtmleditor.getField use cat1</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemcat</phpdac> 2</label>
+										<input id="cat2" name="cat2" type="text" class="span12" value="<phpdac>cphtmleditor.getField use cat2</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemcat</phpdac> 3</label>
+										<input id="cat3" name="cat3" type="text" class="span12" value="<phpdac>cphtmleditor.getField use cat3</phpdac>" />
+										<label class="control-label"><phpdac>cmsrt.slocale use _itemcat</phpdac> 4</label>
+										<input id="cat4" name="cat4" type="text" class="span12" value="<phpdac>cphtmleditor.getField use cat4</phpdac>" />
+                                    </div>
+                            </div>
 
 							<div class="control-group">
                                     <label class="control-label"><phpdac>cmsrt.slocale use _itemextras</phpdac></label>
@@ -241,10 +258,10 @@
                             </div>	
 							
                             <div class="form-actions">
-                                <button type="submit" class="<phpdac>fronthtmlpage.nvl use cpmhtmleditor.postok+btn btn-success+btn btn-danger+</phpdac>"><phpdac>cmsrt.slocale use _save</phpdac></button>
+                                <button type="submit" class="<phpdac>cmsrt.nvl use cpmhtmleditor.postok+btn btn-success+btn btn-danger+</phpdac>"><phpdac>cmsrt.slocale use _save</phpdac></button>
 								<input type="hidden" name="FormName" value="edititem" />
 								<input type="hidden" name="FormAction" value="cpmedititem" />
-								<input type="hidden" name="id" value="<phpdac>fronthtmlpage.echostr use id</phpdac>">
+								<input type="hidden" name="id" value="<phpdac>cmsrt.nvldac2 use id+cmsrt.getParam:id+cpmhtmleditor.getItemCode+</phpdac>">
 								<input type="hidden" name="update" value="1">
 								
 								<!--a href="cpmhtmleditor.php?t=cpmhtmlcopy&copyid=<phpdac>fronthtmlpage.echostr use id</phpdac>" class="btn btn-success">Copy</a>
