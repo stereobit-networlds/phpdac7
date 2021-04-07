@@ -6,7 +6,7 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script-->
 	<phpdac>cms.nvlparam use CMS.megamenu+<script type="text/javascript" src="js/mega-menu.js"></script>++</phpdac>
 	
-	<phpdac>cms.nvl use cmsrt.MC_CURRENT_PAGE+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDk1w69McHeTmaXIPkOOFcKLnR8l_COWaA"></script><script src="assets/js/gmap3.min.js"></script>++contact|sendamail</phpdac>
+	<phpdac>cms.nvl use cmsrt.MC_CURRENT_PAGE+<script src="https://maps.googleapis.com/maps/api/js?key="></script><script src="assets/js/gmap3.min.js"></script>++contact|sendamail</phpdac>
 	<script src="assets/js/bootstrap-hover-dropdown.min.js"></script>
 	<script src="assets/js/owl.carousel.min.js"></script>
 	<script src="assets/js/css_browser_selector.min.js"></script>
