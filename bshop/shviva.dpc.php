@@ -5,7 +5,7 @@ https://developer.vivawallet.com/
 https://developer.vivawallet.com/online-checkouts/redirect-checkout/
 https://developer.vivawallet.com/getting-started/create-a-payment-source/redirect-checkout/
 https://developer.vivawallet.com/getting-started/sandbox-demo-account/
-https://demo.vivapayments.com/ (....VK7DP!@)
+https://demo.vivapayments.com/ 
 
 */
 $__DPCSEC['SHVIVA_DPC']='1;1;1;1;1;1;1;1;1;1;1';

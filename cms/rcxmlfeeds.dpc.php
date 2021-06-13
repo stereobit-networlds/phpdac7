@@ -181,12 +181,14 @@ class rcxmlfeeds {
 		$opt = "<option value='#'>".localize('RCXMLFEEDS_DPC',getlocal())."</option>";	   
 		//$opt .= implode("</option><option>",$this->xmlfiles);
 		foreach ($this->xmlfiles as $i=>$v) {
-		    $myvalue = str_replace('#',$i,seturl('t=cpxmlfeeds&xmlfeed='.$v)); 
+			
+			$u = _m("cmsrt.seturl use t=cpxmlfeeds&xmlfeed=$v+++1"); //seturl('t=cpxmlfeeds&xmlfeed='.$v);
+		    $myvalue = str_replace('#', $i, $u ); 
 			$opt .= "<option value=\"$myvalue\"".($v == $file ? " selected" : "").">$v</option>";		
 		}  
 		$opt .= "</option>";	
 	
-		$filename = seturl("t=cpxmlfeeds");
+		$filename = _m("cmsrt.seturl use t=cpxmlfeeds+++1"); //seturl("t=cpxmlfeeds");
     
 		$toprint .= "<FORM action=". "$filename" . " method=post>";
 		$toprint .= "<P><FONT face=\"Arial, Helvetica, sans-serif\" size=1><STRONG>";
@@ -277,9 +279,10 @@ class rcxmlfeeds {
 			$cat .= $rec['cat3'] ? $this->cseparator.$rec['cat3'] : null;
 			$cat .= $rec['cat4'] ? $this->cseparator.$rec['cat4'] : null;
 			
-			$_cat = _m('cmsrt.replace_spchars use '.$cat);//str_replace(' ','_', $cat);
+			$_cat = _m('cmsrt.replace_spchars use '.$cat); //str_replace(' ','_', $cat);
 			
-			$recarray['itemurl'] = $this->httpurl . '/' . seturl('t=kshow&cat='.$_cat.'&id='.$id,null,null,null,null,1);
+			$u = _m("cmsrt.seturl use t=kshow&cat=$_cat&id=$id+++1"); //seturl('t=kshow&cat='.$_cat.'&id='.$id,null,null,null,null,1);
+			$recarray['itemurl'] = $this->httpurl . '/' . $u;
 			$recarray['itemimg'] = $this->httpurl . '/' . $this->imgpath . $id . $this->restype;
 			$recarray['itemcat'] = $cat; 
 			

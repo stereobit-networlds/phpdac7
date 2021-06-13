@@ -74,6 +74,7 @@ RewriteRule ^(cart-checkout|cart-cancel|cart-order|cart-submit)/?$ katalog.php?t
 RewriteRule ^cart-submit/paypal/?$ paypal.php?p=$1     [NC,L]
 RewriteRule ^cart-submit/eurobank/?$ eurobank.php?p=$1 [NC,L]
 RewriteRule ^cart-submit/piraeus/?$ piraeus.php?p=$1   [NC,L]
+RewriteRule ^cart-submit/vivapay/?$ vivapay.php?p=$1   [NC,L]
 
 RewriteRule ^addcart/([^/]*)/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=addtocart&a=$1&cat=$2&page=$3&qty=$4 [L]
 RewriteRule ^addcart/([^/]*)/([^/]*)/([^/]*)/$ /katalog.php?t=addtocart&a=$1&cat=$2&qty=$3 [L]

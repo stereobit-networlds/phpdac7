@@ -207,14 +207,19 @@ class rccmslandp {
 		$fidparam = $this->fid ? "&fid=" . $this->fid : null;
 		
 		switch ($selectmode) {
-			case 'sort'  : $bodyurl = seturl("t=cpsortpage&mode=sort&id=". $id . $fidparam); break;
+			case 'sort'  :  $bodyurl = _m("cmsrt.seturl use t=cpsortpage&mode=sort&id=". $id . $fidparam."+++1"); //seturl("t=cpsortpage&mode=sort&id=". $id . $fidparam); 
+						    break;
 			
-			case 'rels'  : $bodyurl = seturl("t=cplanditems&mode=rels&id=". $id . $fidparam); break;
-			case 'cats'  : $bodyurl = seturl("t=cplanditems&mode=cats&id=". $id . $fidparam); break;
-			case 'items' : $bodyurl = seturl("t=cplanditems&mode=items&id=". $id . $fidparam); break;
-			case 'tree'  : $bodyurl = seturl("t=cplanditems&mode=tree&id=". $id . $fidparam); break;
+			case 'rels'  :  $bodyurl = _m("cmsrt.seturl use t=cplanditems&mode=rels&id=". $id . $fidparam ."+++1"); //seturl("t=cplanditems&mode=rels&id=". $id . $fidparam); 
+							break;
+			case 'cats'  :  $bodyurl = _m("cmsrt.seturl use t=cplanditems&mode=cats&id=". $id . $fidparam ."+++1"); //seturl("t=cplanditems&mode=cats&id=". $id . $fidparam); 
+							break;
+			case 'items' :  $bodyurl = _m("cmsrt.seturl use t=cplanditems&mode=items&id=". $id . $fidparam ."+++1"); //seturl("t=cplanditems&mode=items&id=". $id . $fidparam); 
+							break;
+			case 'tree'  :  $bodyurl = _m("cmsrt.seturl use t=cplanditems&mode=tree&id=". $id . $fidparam ."+++1"); //seturl("t=cplanditems&mode=tree&id=". $id . $fidparam); 
+							break;
 			case 'landpage':
-			default      : $bodyurl = seturl("t=cplanditems&mode=landpage&id=". $id . $fidparam);
+			default      :  $bodyurl = _m("cmsrt.seturl use t=cplanditems&mode=landpage&id=". $id . $fidparam ."+++1"); //seturl("t=cplanditems&mode=landpage&id=". $id . $fidparam);
 		}
 			
 		$frame = "<iframe src =\"$bodyurl\" width=\"100%\" height=\"500px\"><p>Your browser does not support iframes</p></iframe>";    
@@ -225,12 +230,13 @@ class rccmslandp {
 	protected function gridMode() {
 		$mode = GetReq('mode') ? GetReq('mode') : 'landpage';
         
-		$turl0 = seturl('t=cpcmslandp&mode=items');		
-		$turl1 = seturl('t=cpcmslandp&mode=cats');
-		$turl2 = seturl('t=cpcmslandp&mode=rel');
-		$turl3 = seturl('t=cpcmslandp&mode=tree');
-		$turl4 = seturl('t=cpcmslandp&mode=landpage');
+		$turl0 = _m("cmsrt.seturl use t=cpcmslandp&mode=items+++1"); //seturl('t=cpcmslandp&mode=items');		
+		$turl1 = _m("cmsrt.seturl use t=cpcmslandp&mode=cats+++1"); //seturl('t=cpcmslandp&mode=cats');
+		$turl2 = _m("cmsrt.seturl use t=cpcmslandp&mode=rel+++1"); //seturl('t=cpcmslandp&mode=rel');
+		$turl3 = _m("cmsrt.seturl use t=cpcmslandp&mode=tree+++1"); //seturl('t=cpcmslandp&mode=tree');
+		$turl4 = _m("cmsrt.seturl use t=cpcmslandp&mode=landpage+++1"); //seturl('t=cpcmslandp&mode=landpage');
 		$turl5 = "javascript:tsort();";
+		
 		$button = $this->createButton(localize('_mode', getlocal()), 
 										array(localize('_items', getlocal())=>$turl0,
 										      localize('_relatives', getlocal())=>$turl2,
@@ -516,7 +522,7 @@ class rccmslandp {
 			default     : $fid = $field ? $field : _m("cmsrt.getmapf use code");
 		}
 		
-		$ret = seturl("t=$t&mode=$mode&id=$id&fid=". $fid);
+		$ret = _m("cmsrt.seturl use t=$t&mode=$mode&id=$id&fid=$fid+++1"); //seturl("t=$t&mode=$mode&id=$id&fid=". $fid);
 		
 		return ($ret);
 	}

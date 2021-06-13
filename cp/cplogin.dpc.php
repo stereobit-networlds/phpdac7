@@ -97,7 +97,8 @@ class cplogin {
 
        $this->must_reenter_password	= null;
 
-	   $this->link = seturl("t=rempwd",localize("_HERE",getlocal()));
+	   $here = localize("_HERE",getlocal());
+	   $this->_link = _m("cmsrt.seturl use t=rempwd+$here++1"); //seturl("t=rempwd",localize("_HERE",getlocal()));
 	   $this->message = localize("_IFORGET",getlocal());
 	   $this->formerror = null;
 	   $this->ssl = (isset($_SERVER['HTTPS'])) ? true : false;		   
@@ -342,11 +343,12 @@ function neu(){	top.frames.location.href = \"$goto\"} window.setTimeout(\"neu()\
 			    //re-enter password flag
 			    if ($result->fields['clogon']==1) {
 				    $this->must_reenter_password=1;
-			   	    $chpass = seturl("t=chpass",localize('_PASSREMINDER',getlocal()),1,'',1);
-					setInfo($chpass);
+					$passrem = localize('_PASSREMINDER',getlocal());
+			   	    $chpass = _m("cmsrt.seturl use t=chpass+$passrem++1"); //seturl("t=chpass",localize('_PASSREMINDER',getlocal()),1,'',1);
+					//setInfo($chpass);
 				}
-				else
-  		            setInfo(localize('_WELLCOME',getlocal()) . " " . $sUsername);
+				//else
+  		           //setInfo(localize('_WELLCOME',getlocal()) . " " . $sUsername);
                 
 				//set cookie
 				/*if (paramload('SHELL','cookies')) {
@@ -533,7 +535,7 @@ function neu(){	top.frames.location.href = \"$goto\"} window.setTimeout(\"neu()\
 
 	protected function iforgotmypassword() {
 
-	    $ret = $this->message . " " . $this->link;
+	    $ret = $this->message . " " . $this->_link;
 		return ($ret);
 	}
 
@@ -586,7 +588,7 @@ function neu(){	top.frames.location.href = \"$goto\"} window.setTimeout(\"neu()\
 					
 					$timestamp = time(); 
 					$sectoken = urlencode(base64_encode($u.'|'.$timestamp));
-					$reset_url = seturl('t=chpass&sectoken='.$sectoken);
+					$reset_url = _m("cmsrt.seturl use t=chpass&sectoken=$sectoken+++1"); //seturl('t=chpass&sectoken='.$sectoken);
 					$tokens[] = $reset_url;			  
 				
 					$mailbody = _m('cmsrt._ct use userremind+' . serialize($tokens) . '+1');
@@ -738,14 +740,15 @@ function neu(){	top.frames.location.href = \"$goto\"} window.setTimeout(\"neu()\
 	}
 	
 	public function myf_login_logout($link=null,$glue=null) {
+		$lan = getlocal();
 	
 	    if ($UserID = GetGlobal('UserID')) {
-	        $url = seturl("t=dologout",localize('_CPLOGOUT',getlocal()),null,null,null,true);
+	        $url = _m("cmsrt.seturl use t=dologout+".localize('_CPLOGOUT',$lan)."++1"); //seturl("t=dologout",localize('_CPLOGOUT',getlocal()),null,null,null,true);
 			$myfb = ($link) ? (($glue) ? '<'.$glue.'>'.$url.'</'.$glue.'>' : $url) :
 			                  $this->myf_button(localize('_CPLOGOUT',getlocal()),'dologout/','_CPLOGOUT');
 	    }
 	    else {
-		    $url = seturl("t=login",localize('CPLOGIN_DPC',getlocal()),null,null,null,true);
+		    $url = _m("cmsrt.seturl use t=login+".localize('_CPLOGIN_DPC',$lan)."++1"); //seturl("t=login",localize('CPLOGIN_DPC',getlocal()),null,null,null,true);
 		    $myfb = ($link) ? (($glue) ? '<'.$glue.'>'.$url.'</'.$glue.'>' : $url) :
 			                  $this->myf_button(localize('CPLOGIN_DPC',getlocal()),'login/','_CPLOGIN');
 	    }

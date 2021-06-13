@@ -19,14 +19,33 @@
 				
 				<!-- 1 -->
 				
-				<a class="button" href="transview/"><phpdac>cmsrt.slocale use _TRANSLIST</phpdac></a>
+				<!--a class="button" href="transview/"><phpdac>cmsrt.slocale use _TRANSLIST</phpdac></a-->
+				<phpdac>
+					cmsrt.nvl use createaccount+
+					<?php
+						$title =  localize('_TRANSLIST', getlocal());	
+						$link = _v('shcart.baseurl') . "/transview/";							
+						$ret = "<a class='button' href='$link'>$title</a>";	
+						return $ret;
+					?>
+					+
+					<?php
+						$title =  localize('_CREATEACCOUNTOPTIONREJECTED', getlocal());	
+						$link = _v('shcart.baseurl') . "/tools/";							
+						$ret = "<a class='button' href='$link'>$title</a>";	
+						return $ret;
+					?>
+					+
+				</phpdac>
+				
 				<!--a class="button" href="clickaway/"><phpdac>cmsrt.slocale use _CLICKAWAYENABLE</phpdac></a-->				
 				<phpdac>
 					cmsrt.nvl use shcart.clickaway+
 					<?php
 						$title =  localize('_CLICKAWAYENABLE', getlocal());	
 						$link = _v('shcart.baseurl') . "/clickaway/";							
-						$ret = "<a class='button' href='$link'>$title</a>";	
+						$ret = "<a class='button' href='$link'>$title</a>";
+						return $ret;		
 					?>
 					++
 				</phpdac>	

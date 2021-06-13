@@ -171,11 +171,11 @@
                 </tr>
 				<tr>
                   <td class="blsubtitles"><phpdac>cmsrt.slocale use _subject</phpdac>: </td>
-                  <td class="lptext" height="25" nowrap="nowrap">$1$</td>
+                  <td class="lptext" height="25">$1$</td>
                 </tr>
                 <tr>
                   <td class="blsubtitles"><phpdac>cmsrt.slocale use _message</phpdac>: </td>
-                  <td class="lptext" height="25" nowrap="nowrap">$2$</td>
+                  <td class="lptext" height="25">$2$</td>
                 </tr>				
 
 					</table>

@@ -40,10 +40,11 @@ $__LOCALE['CMSRT_DPC'][2]='_company;Company;Εταιρία';
 $__LOCALE['CMSRT_DPC'][3]='_contact;Contact;Επικοινωνία';
 $__LOCALE['CMSRT_DPC'][4]='_activatemsg;Action required to activate your account after the registration process;Μετά την εγγραφή σας θα λάβετε email επιβεβαίωσης και ενεργοποίησης του λογαριασμού';
 
-//$a = GetGlobal('controller')->require_dpc('cms/cms.dpc.php');
 require_once(_r('cms/cms.dpc.php')); 
 
 class cmsrt extends cms  {
+	
+	use systemlib;
 	
 	var $map_t, $map_f, $cseparator, $onlyincategory, $encodeimageid;
 	var $imgxval, $imgyval, $image_size_path;
@@ -279,7 +280,7 @@ function atDiv(div,offset=0,margin=100) {
 		return 1; else return 0;	
 }
 function gotoTop(div) {	
-	var sw = (div) ? jQuery('#'+div).offset().top : 0;
+	var sw = (document.getElementById(div)) ? jQuery('#'+div).offset().top : 0;
 	
 	jQuery('html, body').animate({ scrollTop: sw }, 'slow', 
 	function(){
@@ -2364,7 +2365,33 @@ function fetch_timeout_data(func, outtime) {
 JSCROLL;
 		return ($jscroll);			
 	}		
+	/* //SPEED ISSUES
+	//override
+	public function slocale($id=null, $noaccents=false) {
+		$lan = getlocal();
+		
+	    $ret = $this->localize($id, $lan, $noaccents);
+		return ($ret ? $ret : '_loc_');
+	}
 	
+	//override
+	public function slocaleParam($param=null, $ismethod=false, $noaccents=false) {
+		$lan = getlocal();
+		$id = GetGlobal($param) ? GetGlobal($param) : (GetSessionParam($param) ?? getParam($param));
+		$var = (stristr($param,'.')) ? ($ismethod ? _m($param) : _v($param)) : $id;
+		  
+	    $ret = $this->localize($var, $lan, $noaccents);
+		return ($ret ? $ret : '_loc_');
+	}*/	
+	
+	public function slocalevar($param=null, $ismethod=false, $noaccents=false) {
+		$lan = getlocal();
+		$id = GetGlobal($param) ? GetGlobal($param) : (GetSessionParam($param) ?? getParam($param));
+		$var = (stristr($param,'.')) ? ($ismethod ? _m($param) : _v($param)) : $id;
+		  
+	    $ret = $noaccents ? noaccents($var) : localize($var, $lan);
+		return $ret;
+	}
 };
 }
 ?>

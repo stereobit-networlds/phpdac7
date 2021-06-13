@@ -140,9 +140,9 @@ class rcshop {
 	protected function shopMode() {
 		$mode = GetReq('mode') ? GetReq('mode') : 'items';
         
-		$turl0 = seturl('t=cpshop&mode=items');		
-		$turl1 = seturl('t=cpshop&mode=solditems');
-		$turl2 = seturl('t=cpshop&mode=catitems');
+		$turl0 = _m("cmsrt.seturl use t=cpshop&mode=items+++1"); //seturl('t=cpshop&mode=items');		
+		$turl1 = _m("cmsrt.seturl use t=cpshop&mode=solditems+++1"); //seturl('t=cpshop&mode=solditems');
+		$turl2 = _m("cmsrt.seturl use t=cpshop&mode=catitems+++1"); //seturl('t=cpshop&mode=catitems');
 		$l = array(localize('_items', getlocal())=>$turl0,
 			       localize('_solditems', getlocal())=>$turl1,
 				   localize('_catitems', getlocal())=>$turl2,);
@@ -165,7 +165,7 @@ class rcshop {
 	protected function loadframe($ajaxdiv=null, $mode=null) {
 		$id = GetParam('id');
 		$cmd = 'cpshopshowform&id='.$id ;//$mode not used
-		$bodyurl = seturl("t=$cmd&iframe=1");
+		$bodyurl = _m("cmsrt.seturl use t=$cmd&iframe=1+++1"); //seturl("t=$cmd&iframe=1");
 			
 		$frame = "<iframe src =\"$bodyurl\" width=\"100%\" height=\"460px\"><p>Your browser does not support iframes</p></iframe>";    
 
@@ -180,9 +180,9 @@ class rcshop {
 		$id = GetParam('id'); //form id
 
 		if ($init)
-			$bodyurl = seturl("t=cpshopformdetail&iframe=1&id=$id&module=$module");
+			$bodyurl = _m("cmsrt.seturl use t=cpshopformdetail&iframe=1&id=$id&module=$module+++1"); //seturl("t=cpshopformdetail&iframe=1&id=$id&module=$module");
 		else
-			$bodyurl = seturl("t=cpshopformsubdetail&iframe=1&id=$id&module=$module");
+			$bodyurl = _m("cmsrt.seturl use cpshopformsubdetail&iframe=1&id=$id&module=$module+++1"); //seturl("t=cpshopformsubdetail&iframe=1&id=$id&module=$module");
 	
 		$frame = "<iframe src =\"$bodyurl\" width=\"100%\" height=\"460px\"><p>Your browser does not support iframes</p></iframe>";    
 
@@ -740,12 +740,14 @@ class rcshop {
 		$t = ($template!=null) ? _m("cmsrt.select_template use ".$template) : null;		
 	    if ($t) {
 			for ($y=2015;$y<=intval(date('Y'));$y++) {
-				$yearsli .= '<li>'. seturl("t=cpshopformsubdetail&id=$id&module=dashboard&month=".$month.'&year='.$y, $y) .'</li>';
+				$yu = _m("cmsrt.seturl use t=cpshopformsubdetail&id=$id&module=dashboard&month=$month&year=$y+$y++1"); //seturl("t=cpshopformsubdetail&id=$id&module=dashboard&month=".$month.'&year='.$y, $y)
+				$yearsli .= '<li>'. $yu .'</li>';
 			}
 		
 			for ($m=1;$m<=12;$m++) {
 				$mm = sprintf('%02d',$m);
-				$monthsli .= '<li>' . seturl("t=cpshopformsubdetail&id=$id&module=dashboard&month=".$mm.'&year='.$year, $mm) .'</li>';
+				$ym = _m("cmsrt.seturl use t=cpshopformsubdetail&id=$id&module=dashboard&month=$mm&year=$year+$mm++1"); //seturl("t=cpshopformsubdetail&id=$id&module=dashboard&month=".$mm.'&year='.$year, $mm)
+				$monthsli .= '<li>' . $ym .'</li>';
 			}	  
 	  
 	        $posteddaterange = $daterange ? ' &gt ' . $daterange : ($year ? ' &gt ' . $month . ' ' . $year : null) ;

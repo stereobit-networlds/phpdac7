@@ -1,0 +1,329 @@
+
+/** 
+  * The header logo.
+  * Change the width and height of this to fit your new logo
+  * Change the path to your logo PNG file if needed
+  */
+#logo a{
+    text-indent: -9999px;
+    background:url(../images/logo_ucm_lite.png) no-repeat;
+}
+
+body {
+	background-color:#dbf0f6;
+	background-image:url(/images/blue/page_bg_wood.jpg);
+	color:#666666;
+}
+a, a:link, a:visited {
+	color:#86d1ec;
+}
+#fixed_header {
+	background-image:url(/images/blue/bar_bg_faded.png);
+}
+
+ul#navigation a {
+	color:#79bde9; /*menu color normal*/
+}
+ul#navigation li.hover a, ul#navigation li:hover a, ul#navigation a.active, ul#navigation a:hover {
+	color:#0079c2; /*color of text on mouse over*/
+}
+
+ul#navigation a.active{
+	background-color:#dbeff5;
+}
+
+ul#navigation ul.second-level {
+	background-color:#f3fafc; /*color of the dropdown*/
+}
+
+ul#navigation ul.second-level a {
+	color:#79bde9;
+	border-bottom:1px solid #e5f2f7;
+}
+ul#navigation ul.second-level li.hover a, ul#navigation ul.second-level li:hover a, ul#navigation ul.second-level a:hover {
+	color:#0079c2;
+	background-color:#e5f2f7;
+}
+
+
+.main_box {
+	background-color:#FFF;
+}
+
+.home_box {
+	background:url(/images/blue/home_bg.jpg) no-repeat top left;
+}
+
+.home_box h1 {
+	color:#79bde9;
+}
+.home_box h2 {
+	color:#0079c2;
+}
+
+
+.button_med {
+	background:url(/images/blue/button_med.png) no-repeat top left;
+	color:#fff;
+}
+.button_med a, .button_med a:link, .button_med a:visited {
+	color:#fff;
+}
+
+.numbered_list li {
+	color:#0079c2;
+}
+.numbered_list li span {
+	background:url(/images/blue/circle.png) no-repeat 0px 0px;
+	color:#FFF;
+}
+
+.home_price_tag {
+	background:url(/images/blue/price_tag.png) no-repeat top right;
+	color:#c2e2f4;
+}
+.home_price_tag .band {
+	background-color:#1a87c8;
+	color:#fff;
+}
+.star {
+	background:url(/images/blue/star_orange.png) no-repeat left top;
+	color:#FFF;
+}
+
+ul.dots li {
+	background:url(/images/blue/icon_circle.png) no-repeat left 6px;
+}
+
+.slider_buttons a:hover, .slider_buttons a.slider_active {
+	color:#0079c2;
+}
+.slider_buttons a.slider_disabled {
+	color:#FFF;
+}
+.slider_buttons a.slider_disabled:hover {
+	color:#FFF !important;
+}
+.feature img {
+	/*border:5px solid #def6ff;*/
+}
+.portfolio_right img {
+	border:5px solid #def6ff;
+}
+
+.sale_border {
+	border-top:#e3f4f9 2px solid;
+	border-bottom:#e3f4f9 2px solid;
+}
+.sale {
+	border-top:#e3f4f9 1px solid;
+	border-bottom:#e3f4f9 1px solid;
+}
+.sale .balls {
+	background:url(/images/blue/price_circles.png) no-repeat right top;
+}
+.sale .balls .price1 {
+	color:#fff;
+}
+.sale .balls .price2 {
+	color:#0079c2;
+}
+.title18 {
+	color:#0079c2;
+}
+.title30 {
+	color:#fe7800;
+}
+.title14 {
+	color:#0079c2;
+}
+.box_title {
+	background:#d9eff6;
+	color:#0079c2;
+}
+.side_box {
+	background:url(/images/blue/side_box_tile.jpg) repeat-y left;
+}
+.side_box .title {
+	color:#0079c2;
+}
+.forms {
+	background-color:#d9eff6 !important; /*the important gets rid of the yellow google toolbar field style*/
+}
+.textarea {
+	background-color:#d9eff6 !important; /*the important gets rid of the yellow google toolbar field style*/
+}
+
+.form_wrap label {
+	color:#0079c2;
+}
+
+.form_wrap .submit_button {
+	background: url("/images/blue/button_med.png") no-repeat top left;
+	color:#fff;
+}
+.button {
+	background-color:#d9eff6;
+	color:#0079c2;
+}
+
+h1 {
+	color:#79bde9;
+}
+h2 {
+	color:#047bc3;
+}
+h3 {
+	color:#79bde9;
+}
+
+
+ul.ticklist li {
+	background-image:url(/images/blue/icon_tick.png);
+}
+
+hr {
+	background-color:#b7e2f1;
+	border:#b7e2f1;
+}
+.dtbaker_gallery img {
+	border: 2px solid #cfcfcf;
+}
+
+.side_menu h3 {
+	color:#047bc3;
+}
+
+.side_menu li {
+	background:url(/images/blue/icon_arrow.gif) no-repeat 5px;
+	border-bottom:1px solid #e5e5e5;
+}
+
+.grey {
+	color:#666666;
+}
+
+.side_box_thin {
+	background:url(/images/blue/side_box_thin.jpg) top left;
+}
+
+#search_box_container .field {
+	background-color:#fff !important; /*the important gets rid of the yellow google toolbar field style*/
+}
+#search_box_container .sbutton {
+	background:url(/images/blue/button_sml.png) no-repeat bottom left;
+	color:#fff;
+}
+.side_form {	
+	background-color:#eefafe;
+}
+
+.side_form h3{
+	margin-left:20px;
+}
+
+
+#small_form label {
+	color:#0079c2;
+}
+#small_form .submit_button {
+	background:url(/images/blue/button_sml.png) no-repeat bottom left;
+	color:#fff;
+}
+.forms_small {
+	background-color:#ffffff !important; /*the important gets rid of the yellow google toolbar field style*/
+}
+
+#contact_form .submit_button {
+	background:url(/images/blue/button_sml.png) no-repeat left top;
+	color:#fff;
+}
+ul#connect {
+	border-bottom:solid 1px #d9eff6;
+}
+.googlemap {
+	border:3px solid #d9eff6;
+	color:#666666;
+}
+
+ul.map_buttons li {
+	background:url(/images/blue/button_med.png) no-repeat top left;
+	color:#fff;
+}
+ul.map_buttons li a {
+	color:#fff;
+}
+.map_input {
+	background-color:#d9eff6 !important; /*the important gets rid of the yellow google toolbar field style*/
+}
+#go_button {
+	background:url(/images/blue/button_med.png) no-repeat left top;
+	color:#fff;
+}
+
+
+.shadow{
+	background:url(/images/blue/box_bottom_shadow.png) no-repeat;
+}
+
+
+.side_box .top {
+	background:url(/images/blue/side_box_top.jpg) no-repeat;
+}
+.side_box .bottom {
+	background:url(/images/blue/side_box_bottom.jpg) no-repeat;
+}
+
+.testimonial_left{
+	background:url(/images/blue/testimonial_top.png) no-repeat;
+}
+.testimonial_right{
+	background:url(/images/blue/testimonial_bottom.png) no-repeat;
+}
+
+
+.icon.chome{
+	background:url(/images/blue/icon_home.gif) no-repeat;
+}
+.icon.cmail{
+	background:url(/images/blue/icon_mail.gif) no-repeat;
+}
+.icon.cphone{
+	background:url(/images/blue/icon_phone.gif) no-repeat;
+}
+.icon.cfax{
+	background:url(/images/blue/icon_fax.gif) no-repeat;
+}
+
+
+
+/** Optional Stylesheet for Search Results Page **/
+
+.phpsearch_header {
+	background-color:#F0F7F9;
+	border-top:1px solid #6B90DA;
+}
+.phpsearch_list_item:hover {
+	background-color:#EFEFEF;
+}
+.phpsearch_error {
+	background:#FEF1EC;
+	color:#CD0A0A;
+}
+.phpsearch_input {
+	background-color:#d9eff6 !important; /*the important gets rid of the yellow google toolbar field style*/
+}
+.phpsearch_button {
+	background:url(/images/button_sml.png) no-repeat bottom left;
+	color:#fff;
+}
+
+
+.cart_summary_wrap{
+    border-top:2px double #D9EFF6;
+    border-bottom:2px double #D9EFF6;
+}
+.cart_summary_wrap label,
+.cart_summary_wrap span{
+    color:#FE7800 !important;
+}

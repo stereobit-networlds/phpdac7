@@ -207,14 +207,19 @@ class rccmsctg {
 		$fidparam = $this->fid ? "&fid=" . $this->fid : null;
 		
 		switch ($selectmode) {
-			case 'sort'  : $bodyurl = seturl("t=cpsortpage&mode=sort&id=". $id . $fidparam); break;
+			case 'sort'  :  $bodyurl = _m("cmsrt.seturl use t=cpsortpage&mode=sort&id=". $id . $fidparam."+++1"); //seturl("t=cpsortpage&mode=sort&id=". $id . $fidparam); 
+							break;
 			
-			case 'rels'  : $bodyurl = seturl("t=cpctgitems&mode=rels&id=". $id . $fidparam); break;
-			case 'cats'  : $bodyurl = seturl("t=cpctgitems&mode=cats&id=". $id . $fidparam); break;
-			case 'items' : $bodyurl = seturl("t=cpctgitems&mode=items&id=". $id . $fidparam); break;
-			case 'tree'  : $bodyurl = seturl("t=cpctgitems&mode=tree&id=". $id . $fidparam); break;
+			case 'rels'  :  $bodyurl = _m("cmsrt.seturl use t=cpctgitems&mode=rels&id=". $id . $fidparam."+++1"); //seturl("t=cpctgitems&mode=rels&id=". $id . $fidparam); 
+							break;
+			case 'cats'  :  $bodyurl = _m("cmsrt.seturl use t=cpctgitems&mode=cats&id=". $id . $fidparam."+++1"); //seturl("t=cpctgitems&mode=cats&id=". $id . $fidparam); 
+							break;
+			case 'items' :  $bodyurl = _m("cmsrt.seturl use t=cpctgitems&mode=items&id=". $id . $fidparam."+++1"); //seturl("t=cpctgitems&mode=items&id=". $id . $fidparam); 
+							break;
+			case 'tree'  :  $bodyurl = _m("cmsrt.seturl use t=cpctgitems&mode=tree&id=". $id . $fidparam."+++1"); //seturl("t=cpctgitems&mode=tree&id=". $id . $fidparam); 
+							break;
 			case 'catalog':
-			default      : $bodyurl = seturl("t=cpctgitems&mode=catalog&id=". $id . $fidparam);
+			default      :  $bodyurl = _m("cmsrt.seturl use t=cpctgitems&mode=catalog&id=". $id . $fidparam."+++1"); //seturl("t=cpctgitems&mode=catalog&id=". $id . $fidparam);
 		}
 			
 		$frame = "<iframe src =\"$bodyurl\" width=\"100%\" height=\"500px\"><p>Your browser does not support iframes</p></iframe>";    
@@ -225,12 +230,13 @@ class rccmsctg {
 	protected function gridMode() {
 		$mode = GetReq('mode') ? GetReq('mode') : 'catalog';
         
-		$turl0 = seturl('t=cpcmsctg&mode=items');		
-		$turl1 = seturl('t=cpcmsctg&mode=cats');
-		$turl2 = seturl('t=cpcmsctg&mode=rel');
-		$turl3 = seturl('t=cpcmsctg&mode=tree');
-		$turl4 = seturl('t=cpcmsctg&mode=catalog');
+		$turl0 = _m("cmsrt.seturl use t=cpcmsctg&mode=items+++1"); //seturl('t=cpcmsctg&mode=items');		
+		$turl1 = _m("cmsrt.seturl use t=cpcmsctg&mode=cats+++1"); //seturl('t=cpcmsctg&mode=cats');
+		$turl2 = _m("cmsrt.seturl use t=cpcmsctg&mode=rel+++1"); //seturl('t=cpcmsctg&mode=rel');
+		$turl3 = _m("cmsrt.seturl use t=cpcmsctg&mode=tree+++1"); //seturl('t=cpcmsctg&mode=tree');
+		$turl4 = _m("cmsrt.seturl use t=cpcmsctg&mode=catalog+++1"); //seturl('t=cpcmsctg&mode=catalog');
 		$turl5 = "javascript:tsort();";
+		
 		$button = $this->createButton(localize('_mode', getlocal()), 
 										array(localize('_items', getlocal())=>$turl0,
 										      localize('_relatives', getlocal())=>$turl2,
@@ -517,7 +523,7 @@ class rccmsctg {
 			default     : $fid = $field ? $field : _m("cmsrt.getmapf use code");
 		}
 		
-		$ret = seturl("t=$t&mode=$mode&id=$id&fid=". $fid);
+		$ret = _m("cmsrt.seturl use t=$t&mode=$mode&id=$id&fid=$fid+++1"); //seturl("t=$t&mode=$mode&id=$id&fid=". $fid);
 		
 		return ($ret);
 	}

@@ -687,8 +687,8 @@ class rccollections {
 			$cat .= $rec['cat3'] ? $this->cseparator . _m("cmsrt.replace_spchars use ".$rec['cat3']) : null;
 			$cat .= $rec['cat4'] ? $this->cseparator . _m("cmsrt.replace_spchars use ".$rec['cat4']) : null;
 			
-			$item_url = $this->url . '/' . seturl('t=kshow&cat='.$cat.'&id='.$id,null,null,null,null,1);
-			$item_name_url = seturl('t=kshow&cat='.$cat.'&id='.$id,$rec['itmname'],null,null,null,1);			   
+			$item_url = $this->url . '/' . _m("cmsrt.seturl use t=kshow&cat=$cat&id=$id+++1"); //seturl('t=kshow&cat='.$cat.'&id='.$id,null,null,null,null,1);
+			$item_name_url = _m("cmsrt.seturl use t=kshow&cat=$cat&id=$id+".$rec['itmname']."++1"); //seturl('t=kshow&cat='.$cat.'&id='.$id,$rec['itmname'],null,null,null,1);			   
 		    $item_name_url_base = "<a href='$item_url'>".$rec['itmname']."</a>";
 			
 			$imgfile = $this->urlpath . $this->image_size_path . '/' . $id . $this->restype;
@@ -731,8 +731,10 @@ class rccollections {
 	protected function show_select_collections($name, $taction=null, $ext=null, $class=null) {
 		$col = GetReq('collection') ;
 	
-		$url = ($taction) ? seturl('t='.$taction.'&collection=',null,null,null,null) : 
-		                    seturl('t=cploadcol&collection=',null,null,null,null);
+		$url = ($taction) ? _m("cmsrt.seturl use t=$taction&collection=+++1") :
+							_m("cmsrt.seturl use t=cploadcol&collection=+++1") ;
+			/*seturl('t='.$taction.'&collection=',null,null,null,null) : 
+		                    seturl('t=cploadcol&collection=',null,null,null,null); */
 		
 		if (defined('RCFS_DPC')) {
 			$path = $this->prpath . $this->savecolpath . '/';
@@ -1022,8 +1024,11 @@ class rccollections {
 	protected function show_select_presets($name, $taction=null, $ext=null, $class=null) {
 		$xlx = $_GET['xlx'] ;
 	
-		$url = ($taction) ? seturl('t='.$taction.'&xlx=',null,null,null,null) : 
+		$url = ($taction) ? _m("cmsrt.seturl use t=$taction&xlx=+++1") :
+							_m("cmsrt.seturl use t=cpsavexml&xlx=+++1") ;
+			/*seturl('t='.$taction.'&xlx=',null,null,null,null) : 
 		                    seturl('t=cpsavexml&xlx=',null,null,null,null);
+			*/
 		
 		if (defined('RCFS_DPC')) {
 			$path = $this->prpath;

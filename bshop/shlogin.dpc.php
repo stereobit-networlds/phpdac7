@@ -63,7 +63,7 @@ class shlogin extends cmslogin {
 		return ($out);
 	}
 	
-	protected function jsBrowser() {
+	public function jsBrowser() {
 		
 		$code = $this->jsLogin();		
 		   

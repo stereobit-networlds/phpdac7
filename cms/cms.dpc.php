@@ -219,23 +219,24 @@ class cms extends fronthtmlpage {
 	
 	public function seturl($query=null, $title=null, $jscript=null, $norewrite=null) {   
    
-		$name = $this->httpurl;
+		$subpath = pathinfo($_SERVER['PHP_SELF'],PATHINFO_DIRNAME);
+		$name = $this->httpurl . $subpath;
                          
 		//mv controller or page controller caller???
-		$xurl = "/" . pathinfo($_SERVER['PHP_SELF'],PATHINFO_BASENAME);
+		$xurl = $subpath . pathinfo($_SERVER['PHP_SELF'],PATHINFO_BASENAME);
 
 		//fun called by mv cntrl
 		if ($this->shellfn == $xurl) {
 		    //get page if exist..(t=page)!!!!!!!!!!!!!!!!!!!!!!!!!!
             if ($page = $this->getpurl($query, $title)) {
-			    $name .= "/" . $page;//page cntrl
+			    $name .= $page; //page cntrl
 			    //echo "[",$name,"]<br>";
 			}
 			else						 
-			    $name .= "/" . $this->shellfn;				
+			    $name .= $this->shellfn; 				
 		}  		   
 		else  
-		    $name .= "/" . pathinfo($_SERVER['PHP_SELF'],PATHINFO_BASENAME);  
+		    $name .= pathinfo($_SERVER['PHP_SELF'],PATHINFO_BASENAME);  
 						 
 		//echo $name,"<br>";
 						 

@@ -64,8 +64,8 @@
  *       script will attempt to use the output from mhash prior to running
  *       the PHP code.
  */
-if (!class_exists('nanoSha2'))
-{
+//if (!class_exists('nanoSha2'))
+//{
     class nanoSha2
     {
         // php 4 - 5 compatable class properties
@@ -333,7 +333,7 @@ if (!class_exists('nanoSha2'))
         }
 
     }
-}
+//}
 
 if (!function_exists('str_split'))
 {

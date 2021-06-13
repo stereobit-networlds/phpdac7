@@ -1,4 +1,20 @@
 <?php
+	
+	//https://forum.getkirby.com/t/remove-accents-from-greek-text/14047
+	function noaccents($string=null) {
+		return strtr($string, array('ά'=>'α', 'έ'=>'ε', 'ή'=>'η', 'ί'=>'ι', 'ό'=>'ο', 'ύ'=>'υ', 'ώ'=>'ω',
+									'Ά' => 'Α', 'Έ' => 'Ε', 'Ί' => 'Ι', 'Ή' => 'Η', 'Ύ' => 'Υ',
+									'Ό' => 'Ο', 'Ώ' => 'Ω', 'A' => 'A', 'A' => 'A', 'A' => 'A', 'A' => 'A',
+									'Y' => 'Y','ΐ' => 'Ϊ'));
+	}	
+	
+	//https://gist.github.com/gecon/3dfe1ff6baa1e646b170
+	function noaccentsUc($string, $enc = "utf-8") {
+		return strtr(mb_strtoupper($string, $enc),
+			array('Ά' => 'Α', 'Έ' => 'Ε', 'Ί' => 'Ι', 'Ή' => 'Η', 'Ύ' => 'Υ',
+					'Ό' => 'Ο', 'Ώ' => 'Ω', 'A' => 'A', 'A' => 'A', 'A' => 'A', 'A' => 'A',
+					'Y' => 'Y','ΐ' => 'Ϊ'));
+	}	
 
 	function seclevel($modulename,$levelofsec) {
 		$sec = GetGlobal('__DPCSEC');
@@ -19,63 +35,99 @@
 		$p = explode(';', $__LOCALE[strtoupper($element) . '_DPC'][$id]);
 		return $p[$l];
 	}	
+	
+	//fast ver default behavior without locale.csv used in shcart
+	function localizeS($codename, $lang=null) {
+		$loc = GetGlobal('__DPCLOCALE');
+		$lang = $lang ?? getlocal();
+		if (isset($loc[$codename])) {
+			$parts = explode(";", $loc[$codename]);
+			if ($text = $parts[$lang]) 
+				return ($text);				
+		} 	
+		return ($codename);
+	}	
 
-	function localize($codename,$lang=null,$enc=null,$encto=null,$debug=null) {
-		$loc = GetGlobal('__DPCLOCALE');		
-		if (!isset($lang)) 
-			$lang = getlocal();
-   
-		$encodingsperlan = arrayload('SHELL','char_set'); 
-		$enc = $enc ? $enc : $encodingsperlan[$lang];
-   
-		if (isset($loc[$codename])) { 
-			$parts = explode(";",$loc[$codename]);
-			if ($parts[$lang]) 
-				return ($parts[$lang]);
-		}  	
-   
-    //CART EMPTY VIEW WHEN IN 2nd LANGUAGE (MUST EXIST THE TRANS)
-   if ((!paramload('SHELL','langdb')) || (!$db)) { //text file
-	 
-	 if ($seslocales = GetSessionParam('locales')) {
-	   //in memory
-	   $locale_file = unserialize($seslocales);
-	 }
-	 else {
-       if (is_readable("locale.csv")) //in root	  
-	     $locale_file = file("locale.csv");
-	   elseif (is_readable("cp/locale.csv")) //in cp
-         $locale_file = file("cp/locale.csv");  	
-	   else
-         echo "Configuration warning, locale.csv not exist!";	
+	//no accents case ver with locale.csv read
+	function localize($codename, $lang=null, $enc=null, $encto=null, $noaccents=false) {
+		global $g_mylans, $g_encodingsperlan, $g_langdb, $g_accents;
+		$loc = GetGlobal('__DPCLOCALE');
+		$lang = $lang ?? getlocal();
+		//echo $g_accents, ']---[';
 		
-       SetSessionParam('locales',serialize($locale_file));		
-	 }  
-	    
-	 if (!empty($locale_file)) {	 
-	   foreach ($locale_file as $line_num => $line) {	 
-		   $split = explode (";", $line);
-           //echo $line,'<br>';  
-		   if ($split[0] == $codename) {
-	         if ($encto)
-	           return iconv($enc,$encto,trim($split[$lang+1]));
-	         else	
-			   return (trim($split[$lang+1]));
-           }
-       }
-	 }
-   }   
+		//if noaccents>0 is the current lan+1 
+		$_noacc = $noaccents ? (($noaccents == $lang+1) ? true : false) :
+						       ($g_accents ? (($g_accents == $lang+1) ? true : false) : false);
+		
+		if (isset($loc[$codename])) {
+			
+			$parts = explode(";", $loc[$codename]);
+			
+			if ($text = $parts[$lang]) {
+				//return ($text);
+				return ($_noacc ? noaccents($text) : $text);				
+			}	
+		} 
+		//else
+			
+		//CART EMPTY VIEW WHEN IN 2nd LANGUAGE (THE TRANSLATIONS MUST EXISTS)
+		//if (!paramload('SHELL','langdb')) { //text file
+		if (!$g_langdb) { //text file
+			//echo $codename;
+			
+			if ($seslocales = GetSessionParam('locales')) {
+				//in mem
+				//echo '->m';
+				$locale_file = unserialize($seslocales);
+			}
+			else {
+				//echo '->r';
+				if (is_readable("locale.csv")) //in root	  
+					$locale_file = file("locale.csv");
+				elseif (is_readable("cp/locale.csv")) //in cp
+					$locale_file = file("cp/locale.csv");  	
+				else
+					echo "Configuration warning, locale.csv not exist!";	
+		
+				//save in mem
+				SetSessionParam('locales',serialize($locale_file));		
+			}  
+ 
+			if (!empty($locale_file)) { 
+				//echo '->!';  	 
+				//$encodingsperlan = arrayload('SHELL','char_set'); 
+				$enc = $enc ?? $g_encodingsperlan[$lang];
+				
+				foreach ($locale_file as $line_num => $line) {
+					
+					$split = explode (";", $line);
+					//echo $line,'<br>';  
+					if ($split[0] == $codename) {
+							$ret = ($encto) ? iconv($enc,$encto,trim($split[$lang+1])) : (trim($split[$lang+1]));
+							//echo $ret;
+							return $ret;
+					}		
+				}
+			}
+		}   
    
    
 		return ($codename); //as input
 	}
 
+	//to disable
 	function getlans() {
+		global $g_mylans; //pcntl regs at init func
+		
+		return $g_mylans;
+		
+		/*
 		$mylans = arrayload('SHELL','languages'); //titles of lans
 		if (count($mylans)>0) 
 			return ($mylans); //get the info from config  
-
+		
 		return null;
+		*/
 	}
 
 	function settheCookie($name,$val) {
@@ -229,7 +281,7 @@
         $dir->close(); 
         return true; 
 }	 
-
+/*
 function scanargs($label) {
   //global $argv,$argc;
   $argc = GetGlobal('argc');
@@ -264,7 +316,7 @@ function setsyspath($path,$type='UNIX') {
   if ($outpath) return ($outpath); 
            else return ($path);
 }
-
+*/
 function iniload($section) {
   $config = GetGlobal('config');
 
@@ -1166,10 +1218,9 @@ function ToHTML($strValue) {
   return htmlspecialchars($strValue);
 }
 
-function ToURL($strValue) {
-  return urlencode($strValue);
-}
-
+ function ToURL($strValue) {
+	return urlencode($strValue);
+ }
 
  function loadTheme($src, $comment='',$nohtml=0,$jscript=null) {
      if (!$src) return null;
@@ -1188,8 +1239,8 @@ function ToURL($strValue) {
 
 	 return ($out);
  }
-
-function _PRAGMA($cp,$cs,$al,$wd,$bd,$cl,$content,$attributes,$style=null) {
+ 
+ function _PRAGMA($cp,$cs,$al,$wd,$bd,$cl,$content,$attributes,$style=null) {
 
       $pragma .= "\n"; //<!-- start pragma -->\n";
       $pragma .= "<TABLE";
@@ -1288,5 +1339,146 @@ function _LAYER($id,$pos,$vis,$state,$overf,$left,$top,$width,$height,$data,$att
 	
 	return ($ldata);
 }
+ 
+ 
+
+ trait systemlib
+ {
+	public function pricewithtax($price,$tax=null) {
+	
+		if ($tax) {
+			$mytax = ((floatval($price) * $tax)/100);	
+			$value = (floatval($price) + $mytax);		  
+		}
+		elseif ($tax = $this->tax) {
+			$mytax = ((floatval($price) * $tax)/100);	
+			$value = (floatval($price) + $mytax);		  
+		}		
+		else
+			$value = floatval($price);
+	
+		return ($value);
+	}	 
+	 
+	protected function replace_cartchars($string, $reverse=false) {
+		if (!$string) return null;
+
+		$g1 = array("'",',','"','+','/',' ','-&-');
+		$g2 = array('_','~',"*","plus",":",'-','-n-');		
+	  
+		return $reverse ? str_replace($g2,$g1,$string) : str_replace($g1,$g2,$string);
+	}	
+
+	public static function myf_button($title,$link=null,$image=null, $myclass=null) {
+		$class = $myclass ? $myclass : 'myf_button'; 
+	    $path = paramload('SHELL','urlpath'); 
+		
+	    if (($image) && (is_readable($path."/images/".$image.".png"))) {
+			$imglink = "<a href=\"$link\" title='$title'><img alt='$title' src='images/".$image.".png'/></a>";
+		}
+	   
+		if (preg_match('/MSIE/i',$_SERVER['HTTP_USER_AGENT'])) { 
+			$_b = $imglink ? $imglink : "[$title]";
+			$ret = "&nbsp;<a href=\"$link\">$_b</a>&nbsp;";
+			return ($ret);
+		}	
+	   
+		if (isset($imglink))
+			return ($imglink);
+	
+		//else button	
+		$ret = "<a class=\"$class\" href=\"$link\">" . $title . "</a>";
+		return ($ret);
+	}	
+ 
+	public function combine_tokens(&$template_contents, $tokens, $execafter=null) {
+	    if (!is_array($tokens)) return;
+		$ret = null;
+		
+		if ((!$execafter) && (defined('FRONTHTMLPAGE_DPC'))) {
+			$fp = new fronthtmlpage(null);
+			$ret = $fp->process_commands($template_contents);
+			unset ($fp);		  		
+		}		  		
+		else
+			$ret = $template_contents;
+		  
+	    foreach ($tokens as $i=>$tok) {
+		    $ret = str_replace("$".$i."$",$tok,$ret);
+	    }
+
+		for ($x=$i;$x<60;$x++)
+			$ret = str_replace("$".$x."$",'',$ret);
+		
+		if (($execafter) && (defined('FRONTHTMLPAGE_DPC'))) {
+			$fp = new fronthtmlpage(null);
+			$retout = $fp->process_commands($ret);
+			unset ($fp);
+          
+			return ($retout);
+		}		
+		
+		return ($ret);
+	}		
+		
+	//n tokens method
+	public function combine_n_tokens(&$template_contents, $tokens, $tokens2=null) {
+	    if (!is_array($tokens)) return;
+		
+		if (defined('FRONTHTMLPAGE_DPC')) {
+		  $fp = new fronthtmlpage(null);
+		  $ret = $fp->process_commands($template_contents);
+		  unset ($fp);		  		
+		}		  		
+		else
+		  $ret = $template_contents;
+		  
+	    foreach ($tokens as $i=>$tok) {
+			$n = str_replace('$N$',$tok,$ret);
+			if (is_array($tokens2[$i])) {//mix combination
+			   $nret .= $this->combine_tokens($n, $tokens2[$i]);
+			}
+			else
+		      $nret .= $n;
+	    }
+		return ($nret);
+	}
+	
+	public function noaccents($string=null) {
+		return strtr($string, array('ά'=>'α', 'έ'=>'ε', 'ή'=>'η', 'ί'=>'ι', 'ό'=>'ο', 'ύ'=>'υ', 'ώ'=>'ω',
+									'Ά' => 'Α', 'Έ' => 'Ε', 'Ί' => 'Ι', 'Ή' => 'Η', 'Ύ' => 'Υ',
+									'Ό' => 'Ο', 'Ώ' => 'Ω', 'A' => 'A', 'A' => 'A', 'A' => 'A', 'A' => 'A',
+									'Y' => 'Y','ΐ' => 'Ϊ'));
+	}	
+	
+	public function noaccentsUc($string, $enc = "utf-8") {
+		return strtr(mb_strtoupper($string, $enc),
+			array('Ά' => 'Α', 'Έ' => 'Ε', 'Ί' => 'Ι', 'Ή' => 'Η', 'Ύ' => 'Υ',
+					'Ό' => 'Ο', 'Ώ' => 'Ω', 'A' => 'A', 'A' => 'A', 'A' => 'A', 'A' => 'A',
+					'Y' => 'Y','ΐ' => 'Ϊ'));
+	}	
+
+	//method localize
+	public function localize($codename, $lang=null, $noaccents=false) {
+		global $g_mylans, $g_encodingsperlan, $g_langdb, $g_accents, $g_accentsupper;
+		$loc = GetGlobal('__DPCLOCALE');
+		$lang = $lang ?? getlocal();
+		//$_noacc = ($noaccent || $g_accents) ? true : false;
+		$_noacc = $noaccents ? (($noaccents == $lang+1) ? true : false) :
+							   ($g_accents ? (($g_accents == $lang+1) ? true : false) : false);	
+		
+		if (isset($loc[$codename])) {
+			
+			$parts = explode(";",$loc[$codename]);
+			
+			if ($text = $parts[$lang]) {
+				//return $text;
+				return ($_noacc ? $this->noaccents($text) : $text);				
+			}	
+		}
+	
+		return $codename;	
+	}	
+ }	 
 
 ?>

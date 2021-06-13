@@ -118,9 +118,9 @@ class rccmstemplates {
 	protected function cmsTemplatesMode() {
 		$mode = GetReq('mode') ? GetReq('mode') : 'templates';
         
-		$turl0 = seturl('t=cpcmstemplates&mode=landpages');		
-		$turl1 = seturl('t=cpcmstemplates&mode=catalogs');
-		$turl2 = seturl('t=cpcmstemplates&mode=webpages');
+		$turl0 = _m("cmsrt.seturl use t=cpcmstemplates&mode=landpages+++1"); //seturl('t=cpcmstemplates&mode=landpages');		
+		$turl1 = _m("cmsrt.seturl use t=cpcmstemplates&mode=catalogs+++1"); //seturl('t=cpcmstemplates&mode=catalogs');
+		$turl2 = _m("cmsrt.seturl use t=cpcmstemplates&mode=webpages+++1"); //seturl('t=cpcmstemplates&mode=webpages');
 		$button = $this->createButton(localize('_templates', getlocal()), 
 										array(localize('_landpages', getlocal())=>$turl0,
 										      localize('_catalogs', getlocal())=>$turl1,
@@ -144,7 +144,7 @@ class rccmstemplates {
 	protected function loadframe($ajaxdiv=null, $mode=null) {
 		$id = GetParam('id');
 		$cmd = 'cpcmsshowform&id='.$id ;//$mode not used
-		$bodyurl = seturl("t=$cmd&iframe=1");
+		$bodyurl = _m("cmsrt.seturl use t=$cmd&iframe=1+++1"); //seturl("t=$cmd&iframe=1");
 			
 		$frame = "<iframe src =\"$bodyurl\" width=\"100%\" height=\"460px\"><p>Your browser does not support iframes</p></iframe>";    
 
@@ -169,9 +169,9 @@ class rccmstemplates {
 			@unlink($this->urlpath . '/_test.php'); //erase test file
 		
 		if ($init)
-			$bodyurl = seturl("t=cpcmsformdetail&iframe=1&id=$id&module=$module");
+			$bodyurl = _m("cmsrt.seturl use t=cpcmsformdetail&iframe=1&id=$id&module=$module+++1"); //seturl("t=cpcmsformdetail&iframe=1&id=$id&module=$module");
 		else
-			$bodyurl = seturl("t=cpcmsformsubdetail&iframe=1&id=$id&module=$module");
+			$bodyurl = _m("cmsrt.seturl use t=cpcmsformsubdetail&iframe=1&id=$id&module=$module+++1"); //seturl("t=cpcmsformsubdetail&iframe=1&id=$id&module=$module");
 	
 		$frame = "<iframe src =\"$bodyurl\" width=\"100%\" height=\"460px\"><p>Your browser does not support iframes</p></iframe>";    
 

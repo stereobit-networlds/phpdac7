@@ -12,13 +12,13 @@ require_once(_r('libs/sha256.lib.php'));
 
 //$__LOCALE['SHCART_DPC'][27]='_CHKOUT;Checkout;Ταμείο';
 //echo _lc('shcart',27,2);
-
-$cart_checkout = localize('_CHKOUT',getlocal());
-$cart_order = localize('_ORDER',getlocal());
-$cart_recalc = localize('_RECALC',getlocal());
-$cart_submit = localize('_SUBMITORDER',getlocal());	
-$cart_cancel = localize('_CANCELORDER',getlocal());
-$cart_submit2 = localize('_SUBMITORDER2',getlocal());
+$al = getlocal();
+$cart_checkout = localize('_CHKOUT', $al);
+$cart_order = localize('_ORDER', $al);
+$cart_recalc = localize('_RECALC', $al);
+$cart_submit = localize('_SUBMITORDER', $al);	
+$cart_cancel = localize('_CANCELORDER', $al);
+$cart_submit2 = localize('_SUBMITORDER2', $al);
 //echo $cart_checkout . '>';
 
 $__EVENTS['SHCART_DPC'][0]= "viewcart"; 					 	 
@@ -135,7 +135,7 @@ $__LOCALE['SHCART_DPC'][43]='_BLN3;Clear Cart;Αδειασμα Καλαθιού'
 $__LOCALE['SHCART_DPC'][44]='_BLN2;Remove from Cart;Αφαίρεση απο το Καλάθι';
 $__LOCALE['SHCART_DPC'][45]='_BLN1;Add to Cart;Προσθήκη στο Καλάθι';
 $__LOCALE['SHCART_DPC'][46]='_MSG16;Prices does not include taxes;Οι τιμές δεν συμπεριλαμβάνουν ΦΠΑ 19%';
-$__LOCALE['SHCART_DPC'][47]='_MSG15;Your cart is full ! ! !;Το καλάθι σας είναι γεμάτο ! ! !';
+$__LOCALE['SHCART_DPC'][47]='_MSG15;Your cart is full;Το καλάθι σας είναι γεμάτο';
 $__LOCALE['SHCART_DPC'][48]='_MSG14;Your order submited successfully! Thank you!;Η παραγγελία σας εκτελέστηκε επιτυχώς !';
 $__LOCALE['SHCART_DPC'][49]='_QTY;Qty;Τεμ.';
 $__LOCALE['SHCART_DPC'][50]='_PRICE;Price;Τιμή';
@@ -169,8 +169,8 @@ $__LOCALE['SHCART_DPC'][77]='_PWAY3;VISA;VISA';
 $__LOCALE['SHCART_DPC'][78]='_ENDOK;Thank you! Your order submited successfully with Order No :;Ευχαριστούμε ! Η παραγγελία σας εκτελέστηκε επιτυχώς με αριθμό Παραγγελίας :';
 $__LOCALE['SHCART_DPC'][79]='_SXOLIA;Comments;Σχόλια;';
 $__LOCALE['SHCART_DPC'][80]='_CARTERROR;Transaction error;Λαθος εκτελεσης;';
-$__LOCALE['SHCART_DPC'][81]='_STOCKOUT; is out of stock!; δεν υπαρχει απόθεμα!;';
-$__LOCALE['SHCART_DPC'][82]='_INPUTERR;Invalid entry!;Λανθασμένη ποσότητα!;';
+$__LOCALE['SHCART_DPC'][81]='_STOCKOUT; is out of stock; δεν υπαρχει επαρκές απόθεμα;';
+$__LOCALE['SHCART_DPC'][82]='_INPUTERR;Invalid entry;Λανθασμένη ποσότητα;';
 $__LOCALE['SHCART_DPC'][83]='_couponvalid;Valid coupon;Ενεργοποίηση κουπονιού;';
 $__LOCALE['SHCART_DPC'][84]='_couponinvalid;Invalid coupon;Το κουπόνι δεν είναι έγκυρο;';
 $__LOCALE['SHCART_DPC'][85]='_pointsused;Use loyalty points;Χρήση πόντων επιβράβευσης;';
@@ -203,13 +203,34 @@ $__LOCALE['SHCART_DPC'][111]='_FATCARTREGISTRATION;Registration form;Εισάγ�
 $__LOCALE['SHCART_DPC'][112]='_invalidpayway;Payment type not selected;Επιλέξτε τρόπο πληρωμής';
 $__LOCALE['SHCART_DPC'][113]='_CARTERROR;Error during cart submition;Η συναλλαγή δεν εκτελέστηκε';
 $__LOCALE['SHCART_DPC'][114]='_TERMSAPPROVE;Approve the terms and conditions;Επικυρώστε τους όρους χρήσης';
+$__LOCALE['SHCART_DPC'][115]='_CREATEACCOUNTOPTION;Create Account;Να κρατηθούν τα στοιχεία για επόμενη παραγγελία';
+$__LOCALE['SHCART_DPC'][116]='_CREATEACCOUNTOPTIONREJECTED;Remove your account;Διαγραφή των στοιχείων σας';
+$__LOCALE['SHCART_DPC'][117]='_ADDMSG1;There is no stock;Δεν υπάρχει απόθεμα στο προιον';
+$__LOCALE['SHCART_DPC'][118]='_pqtycolor;Color;Χρώμα';
+$__LOCALE['SHCART_DPC'][119]='_pqtysize;Size;Μέγεθος';
+$__LOCALE['SHCART_DPC'][120]='_pqtysizecolor;Dim;Μέγεθος-Χρώμα';
+$__LOCALE['SHCART_DPC'][121]='_ITEMQTYSELECT;Select item attribute;Επιλέξτε χαρακτηριστικό είδους';
 
 $__PARSECOM['SHCART_DPC']['quickview']='_VIEWCART_';
 
 $__DPCEXT['SHCART_DPC']='showsymbol';
 
+/*when include this class file add code for event/action
+  switch (event) {
+	case evnt1 : require_once(_r('traits/shcart-evnt1.trait.php'));
+				 break;	
+	case evnt2 : ...
+    default    : none 	
+  }
+  class shcart {
+	  use evnt1 as samename;
+	  ...
+  }	  
+*/	  
 
 class shcart extends storebuffer {
+	
+	use systemlib;
 
 	var $path, $lan, $autopay, $test2pay;
 	var $uniname2, $status, $qtytotal;
@@ -234,8 +255,9 @@ class shcart extends storebuffer {
 	
 	static $staticpath, $myf_button_class, $myf_button_submit_class;	
 	
-	var $process, $_NOTAVAL, $shclass, $fastcart, $testcart, $superfastcart, $clickaway;
+	var $process, $_NOTAVAL, $shclass, $fastcart, $testcart, $superfastcart, $superfasterror , $clickaway;
 	protected $clickaway_id, $clikaway_date, $clickaway_apikey, $clickaway_url, $clickaway_return, $clickaway_signature, $clickawaycode;
+	protected $selectsql, $itemqtyselect_misattr, $backorders;
 	
     public function __construct($p=null) {
 		$UserName = GetGlobal('UserName');
@@ -243,7 +265,8 @@ class shcart extends storebuffer {
 		$this->userLevelID = (((decode($UserSecID))) ? (decode($UserSecID)) : 0);		
 		$this->user = decode($UserName);
 		
-		$this->shclass = defined('SHKATALOGMEDIA_DPC') ? 'shkatalogmedia' : 'shkatalog';		
+		$this->shclass = defined('SHKATALOGMEDIA_DPC') ? 'shkatalogmedia' : 'shkatalog';
+		$this->selectsql = "itmname,price0,price1,price2,pricepc,ypoloipo1,ypoloipo2,uniname2,uni2uni1,uniida";
 		
 		//cookie store id
 	    $this->cusrid = md5($_SERVER['REMOTE_ADDR']); //$this->user ? md5($this->user) : md5($_SERVER['REMOTE_ADDR']);	
@@ -284,7 +307,7 @@ class shcart extends storebuffer {
 		$this->imagey = remote_paramload('SHCART','imagey',$this->path);	
 		$this->cartprintwin = remote_arrayload('SHCART','printwin',$this->path);
 		$this->uniname2 = remote_paramload('SHCART','uniname2',$this->path);
-		$this->liveupdate = remote_paramload('SHCART','liveupdate',$this->path);
+		//$this->liveupdate = remote_paramload('SHCART','liveupdate',$this->path);
 		$this->allowqtyover = remote_paramload('SHCART','allowqtyover',$this->path);
 		$this->rejectqty = remote_paramload('SHCART','rejectzeroqty',$this->path);
 		$this->detailqty = remote_paramload('SHCART','overqty2detail',$this->path);
@@ -335,7 +358,7 @@ class shcart extends storebuffer {
         $this->order       = trim(localize('_ORDER',$this->lan));
 	    $this->submit      = trim(localize('_SUBMITORDER',$this->lan));
 		$this->submit2 	   = trim(localize('_SUBMITORDER2',$this->lan));		
-	    $this->cancel      = trim(localize('_CANCELORDER',getlocal()));
+	    $this->cancel      = trim(localize('_CANCELORDER',$this->lan));
 	    $this->recalc      = trim(localize('_RECALC',$this->lan));			
 					
 		$this->total = (double) 0.0;
@@ -395,12 +418,17 @@ class shcart extends storebuffer {
 		$this->clickawaycode = GetSessionParam('clickacode') ?? $_caway;	
 		
 		//cart params
+		$this->payFastPresel = remote_paramload('SHCART','payfastselection',$this->path);
 		$this->fastcart = remote_paramload('SHCART','fastcart',$this->path);
 		$this->superfastcart = remote_paramload('SHCART','superfastcart',$this->path);		
 		$this->testcart = remote_paramload('SHCART','testcart',$this->path);
+		$this->superfasterror = null;
 		
 		$this->fastpickbutton = remote_paramload('SHCART','fastpickbutton',$this->path);
-		$this->fastpick = GetSessionParam('fastpick') ? true : false;		
+		$this->fastpick = GetSessionParam('fastpick') ? true : false;	
+
+		$this->itemqtyselect_misattr = false;
+		$this->backorders = remote_paramload('SHCART','backorders',$this->path);		
 		
 		//select invoice per cart mode
 		$this->twig_invoice_template_name = $this->superfastcart ?
@@ -435,6 +463,7 @@ class shcart extends storebuffer {
 
     public function event($event) {
 		global $pushTokens;
+		global $cart_checkout, $cart_order, $cart_recalc, $cart_submit, $cart_cancel, $cart_submit2;
 
 		switch ($event) {
 			
@@ -486,14 +515,27 @@ class shcart extends storebuffer {
 										break;
 									}
 									//else
-									$p = $this->addtocart();
-			
-									$this->jsDialog($p, localize('_BLN1', $this->lan));
-									$this->js_storeCart();
+										
+									if ($this->addtocart()) {
+
+										$this->js_storeCart();
+									}
+									else {
+										//missing attr shows popup frame item to select
+										if (($this->itemqtyselect_misattr) && ($id = GetReq('a'))) {
+											
+											$cat = GetReq('cat');
+											$cmd = 'kshowx'; //_v($this->shclass . '.kshowcmd');
+											$url = _v('cmsrt.httpurl') . '/';
+											$url.= _m("cmsrt.url use t=$cmd&cat=$cat&id=$id");
+											//echo $url;
+											//<phpdac>jsdialog.zdialogFrame use https://en.m.wikipedia.org/wiki/Big_data</phpdac>
+											$this->jsDialogAjax($url);
+										}	
+									}	
 									
 									$this->jsBrowser();
 									$this->fbjs();
-									//$this->analytics('cartadd'); //moved to shkatalog
 									break;					 	
 									
 			case "removefromcart": 	if ($pushTokens) {
@@ -518,7 +560,6 @@ class shcart extends storebuffer {
 									
 									$this->jsBrowser();
 									$this->fbjs();
-									//$this->analytics('cartrem'); //moved to shkatalog
 									break;
 									
 			case "clearcart"     : 	if ($pushTokens) {
@@ -562,6 +603,7 @@ class shcart extends storebuffer {
 									break;			  
 								 
 			case $this->recalc   :
+			case $cart_recalc    :
 			case 'calc'          : 	//for auto select and calc reason
 									SetSessionParam('cartstatus',0); 
 									$this->recalculate(); 
@@ -580,7 +622,8 @@ class shcart extends storebuffer {
 									SetSessionParam('orderdetails',null);//COMMENT IT, NOT RE-RENDER
 									echo $prn; 
 									exit;
-								 
+			
+			case $cart_cancel    :	
 			case $this->cancel   : 	SetSessionParam('cartstatus',0); 
 									$this->status = 0; 
 
@@ -597,29 +640,34 @@ class shcart extends storebuffer {
 			case _lc('shcart',27,1):
 			case _lc('shcart',27,2):			
 			case 'cart-checkout' : 
+			case $cart_checkout  :
 			case $this->checkout : 	if (!GetGlobal('UserID')) {
-										$this->todo = $this->fastcart ? 'fastcart' : 'loginorregister';
-										$this->recalculate();
-										
-										$this->js_storeCart(); //re-save when step
+										if ($this->recalculate()) { //recalc include calc shipping
+											
+											$this->todo = $this->fastcart ? 'fastcart' : 'loginorregister';
+											$this->js_storeCart(); //re-save when step
+										}
 									}
 									else {
-										SetSessionParam('cartstatus',1); 
-										$this->status = 1; 
-										$this->recalculate();
+										if ($this->recalculate()) { //recalc include calc shipping
+											
+											SetSessionParam('cartstatus',1); 
+											$this->status = 1; 
+
+											$this->js_storeCart(); //re-save when step
 										
-										$this->js_storeCart(); //re-save when step
+											$this->loopcartdata = $this->loopcart();
+											$this->looptotals = $this->foot();
 										
-										$this->loopcartdata = $this->loopcart();
-										$this->looptotals = $this->foot();
-										
-										$this->analytics('cartcheckout');
+											$this->analytics('cartcheckout');
+										}
 									}  
 									
 									$this->jsBrowser();
 									$this->fbjs();
 									break;
 			case 'cart-order'    :
+			case $cart_order     :
 			case $this->order    : 	if (!GetGlobal('UserID')) { //never here with guest user auto-login
 			
 										/*if ($this->fastcart) {
@@ -639,28 +687,35 @@ class shcart extends storebuffer {
 										echo GetParam('addressway') .'-'. GetParam('sxolia') . '<br>';
 										echo GetParam('guestname') .'-'. GetParam('guestemail') . '<br>';										
 										*/
-									}	
-									SetSessionParam('cartstatus',2); 
-									$this->status = 2; 
+									}
 									
-									//hold post params (ver2 of tokens do not save - ajax calls)
-									SetSessionParam('payway', GetParam('payway'));
-									SetSessionParam('roadway', GetParam('roadway'));
-									SetSessionParam('customerway', GetParam('customerway'));
-									SetSessionParam('addressway', GetParam('addressway'));
-									SetSessionParam('invway', GetParam('invway'));
-									SetSessionParam('sxolia', GetParam('sxolia'));
-									//$this->calculate_shipping();
-									$this->calcShipping();
+									if ($this->recalculate()) { //recalc include calc shipping
 									
-									$this->loopcartdata = $this->loopcart();
-									$this->looptotals = $this->foot();
+										SetSessionParam('cartstatus',2); 
+										$this->status = 2; 
 									
-									$this->jsBrowser();
-									$this->analytics('cartorder');
+										//hold post params (ver2 of tokens do not save - ajax calls)
+										SetSessionParam('payway', GetParam('payway'));
+										SetSessionParam('roadway', GetParam('roadway'));
+										SetSessionParam('customerway', GetParam('customerway'));
+										SetSessionParam('addressway', GetParam('addressway'));
+										SetSessionParam('invway', GetParam('invway'));
+										SetSessionParam('sxolia', GetParam('sxolia'));
+										
+										//$this->calculate_shipping(); //deprecated
+										//$this->calcShipping();
+									
+										$this->loopcartdata = $this->loopcart();
+										$this->looptotals = $this->foot();
+									
+										$this->jsBrowser();
+										$this->analytics('cartorder');
+									}
 									break;
 			case 'cart-submit'   :						 
-			case $this->submit2  : 
+			case $this->submit2  :
+			case $cart_submit    :	
+			case $cart_submit2   :	
 			case $this->submit   : 	if (!GetGlobal('UserID')) { 
 			
 										if ($this->superfastcart) {
@@ -669,8 +724,8 @@ class shcart extends storebuffer {
 											//echo GetParam('addressway') .'-'. GetParam('sxolia') . '<br>';
 											//echo GetParam('guestname') .'-'. GetParam('guestemail') . '<br>';		
 
-											if ($error = $this->guestSuperFastCheck($_POST)) {
-												$this->jsDialog($error, localize('_CART', $this->lan));
+											if ($this->superfasterror = $this->guestSuperFastCheck($_POST)) {
+												$this->jsDialog($this->superfasterror, localize('_CART', $this->lan));
 												
 												//set cart status to 1
 												SetSessionParam('cartstatus',1);
@@ -681,18 +736,26 @@ class shcart extends storebuffer {
 											
 											//save user/customer
 											$this->guestSuperFastRegistration();
+											
+											//in case of user selection of no-account 
+											//js to redirect to url /dologout after 3sec of success page
+											if (!GetParam('createaccount')) {
+												//success page has link to gdpr tools
+											}	
 										}
 										else
 											die('Invalid operation 0x0ff');
-									}	
+									} 	
 									
-									//no page refresh 
-									if ($this->getcartCount()>0) {
+									//no page refresh / recalc include calc shipping
+									if ($this->recalculate() && $this->getcartCount()>0) {
 										
 										SetSessionParam('cartstatus',3);
-										$this->status = 3; 		  
-										//$this->calculate_shipping();		  
-										$this->calcShipping();
+										$this->status = 3; 		
+										
+										//$this->calculate_shipping();	//deprecated
+										//$this->calcShipping();
+										
 										$this->loopcartdata = $this->loopcart();
 										$this->looptotals = $this->foot();
 
@@ -754,9 +817,20 @@ class shcart extends storebuffer {
 							
 			case 'searchtopic'	:	//handler from shkatalog
 									break;
-			case 'addtocart'  	:   
-			case 'removefromcart': 	
-									if ($pushTokens) return json_encode($_tokens);
+									
+			case 'addtocart'  	:   if ($pushTokens) return json_encode($_tokens);
+			
+									if (!_v($this->shclass . '.carthandler')) {
+
+											$out = $this->cartview();
+									}
+									break;
+									
+			case 'removefromcart': 	if ($pushTokens) return json_encode($_tokens);
+			
+									if (!_v($this->shclass .'.carthandler')) {
+										$out = $this->cartview();
+									}
 									break;							
 		 
 			case "cartcustselect": 
@@ -1144,18 +1218,51 @@ function addtocart(id,cartdetails)
 		
 	    $stay = $time ? $time : 3000;//2000;
 	   
-        if (defined('JSDIALOGSTREAM_DPC')) {
+        /*if (defined('JSDIALOGSTREAM_DPC')) {
 	   
 			if ($text)	
 				$code = _m("jsdialogstream.say use $_text+$_title+$source+$stay");
 			else
 				$code = _m('jsdialogstream.streamDialog use jsdtime');
-		   
+		*/	
+		if ((defined('JSDIALOGSTREAM_DPC')) && ($code = _m("jsdialogstream.say use $_text+$_title+$source+$stay"))) {
+			
 			$js = new jscript;	
 			$js->load_js($code,null,1);		
 			unset ($js);
 	    }	
 	}
+	
+	public function jsDialogFrame($url) {
+		
+		if ((defined('JSDIALOG_DPC')) && ($code = _m('jsdialog.zdialogFrame use '. $url))) {
+			
+			$js = new jscript;	
+			$js->load_js($code,null,1);		
+			unset ($js);
+		}
+
+		return null;	
+	}
+	
+	public function jsDialogAjax($url) {
+		//'buttons':  [{caption: 'Ok', callback: function() { alert('clicked')}}]
+		$code = "new jQuery.Zebra_Dialog('', 
+	{
+		'source':  {'ajax': '$url'},
+		width: 600,
+		'buttons':  ['Cancel']
+	});";
+		
+		if ((defined('JSDIALOG_DPC')) && ($code)) {//($code = _m('jsdialog.zdialogAjax use '. $url))) {
+			
+			$js = new jscript;	
+			$js->load_js($code,null,1);		
+			unset ($js);
+		}
+
+		return null;	
+	}	
 
 	//redirection when blank spaces exist when redir (headers sent)
 	protected function _header($to=null) {
@@ -1174,10 +1281,14 @@ function addtocart(id,cartdetails)
 	}
 	
 	protected function dispatch_pay_engines() {
-		$payway = strtoupper(trim(GetSessionParam('payway')));
+		//$_payway = $this->superfastcart ? GetParam('payway') : GetSessionParam('payway');		
+		$_payway = GetParam('payway') ?? GetSessionParam('payway');	//getparam = superfast
+		
+		$payway = strtoupper(trim($_payway));
 		$finalCost = ($this->test2pay>0) ? $this->test2pay : $this->myfinalcost;
 	    $urlgo = _v('cmsrt.httpurl') . '/cart-submit/';
-	  
+		//echo  $payway.' '.$this->autopay;
+		
 		if (strcmp($payway,'PAYPAL')==0) {
 
 			if (($this->status==3) && ($this->autopay>0)) {
@@ -1191,8 +1302,7 @@ function addtocart(id,cartdetails)
 				SetSessionParam('cartstatus',0); 
 				$this->status = 0;		  
 
-				//header("Location: " . $urlgo . strtolower(GetSessionParam('payway')).'/');
-				$this->_header($urlgo . strtolower(GetSessionParam('payway')) . '/');
+				$this->_header($urlgo . strtolower($_payway) . '/');
 				exit;
 			}
 		}
@@ -1209,8 +1319,7 @@ function addtocart(id,cartdetails)
 				SetSessionParam('cartstatus',0); 
 				$this->status = 0;		  
 			
-				//header("Location: " . $urlgo . strtolower(GetSessionParam('payway')).'/');
-				$this->_header($urlgo . strtolower(GetSessionParam('payway')) . '/');
+				$this->_header($urlgo . strtolower($_payway) . '/');
 				exit;
 			}
 		}
@@ -1227,13 +1336,34 @@ function addtocart(id,cartdetails)
 				SetSessionParam('cartstatus',0); 
 				$this->status = 0;		  
 
-				//header("Location: ".strtolower(GetSessionParam('payway')).'.php');
-				//echo "Location: " . $urlgo . strtolower(GetSessionParam('payway')).'/';
-				//header("Location: " . $urlgo . strtolower(GetSessionParam('payway')).'/');
-				$this->_header($urlgo . strtolower(GetSessionParam('payway')) . '/');
+				$this->_header($urlgo . strtolower($_payway) . '/');
 				exit;
 			}
-		}	  
+		}	
+		elseif (strcmp($payway,'VIVAPAY')==0) {
+			
+			if (($this->status==3) && ($this->autopay>0))  {
+
+				$this->submit_order();		  
+				SetSessionParam('vivapayID',$this->transaction_id);
+				SetSessionParam('amount',$finalCost);
+				
+				//reset global params
+				SetSessionParam('TransactionID',0);
+				SetSessionParam('cartstatus',0); 
+				$this->status = 0;		  
+
+				//if ($this->superfastcart) && 
+				/*if ((defined('SHVIVAPAY_DPC')) && ($create_payment = _m('shvivapay.viva_create_payment use 1'))) {
+					//redirection here
+					$this->_header(_v('shvivapay.viva_url') . '/web/checkout?ref=' . $create_payment->OrderCode);	
+				}	
+				else*/ 
+					$this->_header($urlgo . strtolower($_payway) . '/'); //redirection to vivapay.php
+				
+				exit;
+			}
+		}		
 		else { //simple order
 	  
 			if (($this->status==3) && ($this->submit_order(true))) { 
@@ -1258,30 +1388,47 @@ function addtocart(id,cartdetails)
 	}		
 
 	public function addtocart($item=null,$qty=null) {
+		$db = GetGlobal('db');	
+		
 		$a = $item ? $item : GetReq('a');
-		//$params = explode(";",$a);	
-
-		//make params
 		$_qty = $qty ? $qty : GetReq('qty'); 
 		$cat = GetReq('cat');
 		$page = 0;
-	
-		$db = GetGlobal('db');
-		$_code = _v($this->shclass . '.fcode');
+		$stock_message = null;
+		$addtocartTitle = localize('_BLN1', $this->lan);
+		$nostockTitle = localize('_ADDMSG1', $this->lan);
 		
-		$sSQL = "select itmname,price0,price1 from products  WHERE $_code ='" . $a . "'";	  
+		//init missing attr when item selected
+		$this->itemqtyselect_misattr = false; 
+		
+		$_pSize = GetParam('selectpSize');
+		$_pColor = GetParam('selectpColor');		
+		//use when one field for 2 values //(upd:use psize or color attr)
+		//$_pSizeColor = GetParam('selectpSizeColor'); 
+		
+		$_code = _v($this->shclass . '.fcode');		
+		
+		$sSQL = "select $_code,{$this->selectsql} from products  WHERE $_code ='" . $a . "'";	  
 		$result = $db->Execute($sSQL,2);		
-		//echo $sSQL,'>', $result->fields['itmname'];
-		if ($title = $result->fields['itmname']) {	
-			//echo $title;
+		
+		if ($title = $result->fields['itmname']) { //check sql return value	
+
 			$pp = _m($this->shclass . '.read_policy'); 	
 		    $price = $result->fields[$pp];
 			$priceqty = _m($this->shclass . ".read_qty_policy use ". $a.'+'.$price."++".$_qty);
 			
-			//$aparam = "{$item};{$title};;;{$cat};{$page};;{$item};{$price};1";
-			//$params = explode(";", $aparam);
-			$params = array(0=>$a, 
-							1=>$this->replace_cartchars($title),
+			//qty meter method per item 22,21,2,1,0=default use global params
+			$qtycalc_method = $result->fields['uniida'];
+			//when size/color the item code has sizecolor attr as cart id
+			$extCode = ($_pSize || $_pColor) ? $a . '['.$_pSize . $_pColor .']' : $a;
+			//add size/color at item title
+			$extTitle = ($_pSize || $_pColor) ? $this->replace_cartchars($title) .' ['.$_pSize.' '.$_pColor .']' : $title;
+			
+			//return qty 0 when qty < 0 
+			$pqty = ($result->fields['ypoloipo1']<0) ? 0 : $result->fields['ypoloipo1'];
+			
+			$params = array(0=>$extCode, 
+							1=>$extTitle, /*$this->replace_cartchars($title),*/
 							2=>'',
 							3=>'',
 							4=>$cat,
@@ -1290,19 +1437,15 @@ function addtocart(id,cartdetails)
 							7=>$a,
 							8=>$priceqty,
 							9=>1,
-							10=>'',
-							11=>'',							
-							12=>'',
-							13=>'',								
-							14=>'',							
+							10=>$_pSize,
+							11=>$_pColor,							
+							12=>$result->fields['uniname2'],
+							13=>$result->fields['uni2uni1'],								
+							14=>$pqty,
+							15=>0,
 							);	
-							
+			//print_r($params);
 	   
-		//in case of browsing pages after addtocart procedure
-		//url continues to execute addtocart (as friend cmd) without $a
-		//..poping allways javascript alert(stock_message)
-		//so check if param a exist to proceed.
-		//if ($a!='') {//echo $a,'>';
 			if ($this->getcartCount() < $this->maxcart) { //check cart maximum items
 
 				$this->qty_total+=1;
@@ -1314,81 +1457,167 @@ function addtocart(id,cartdetails)
 				SetSessionParam('total',$this->total);			
 	   
 				//get selected quantity number
-				$preqty = GetParam("PRESELQTY");
-				$preuni = GetParam("PRESELUNI");
-				//echo $bypass_qty,'>';
-				//if (!$this->bypass_qty) 
-				//$preqty=$qty?$qty:(GetReq('qty')?GetReq('qty'):1);//1; //default qty when qty form not show
-			  
-				//preqty filed takes place when exist  
+				$preuni = GetParam("PRESELUNI");			
 				$preqty = GetParam("PRESELQTY") ? GetParam("PRESELQTY") : ($_qty ? $_qty : 1);  
               
 				if ((is_number($preqty)) && ($preqty>0)) {
-					//echo $a;
-					//$params = explode(";",$a); //moved up
-
-					//if isset 2nd mm convert...
-					if (($this->uniname2) && ($preuni==$params[11])) {
-						if ($params[12])
-							$preqty = ($preqty * $params[12]); //2nd mm
+					
+					//if isset 2nd mm convert
+					if (($this->uniname2) && ($preuni==$params[12])) {
+						if ($params[13]) {
+							$preqty = ($preqty * $params[13]); //2nd mm
+						}	
+						else {
+							$preqty = 1; // default 1 qty
+							$this->jsDialog("Error: Invalid qty uni2", localize('SHCART_DPC', $this->lan));
+						}	
 					}
-
+					
 					//check storage
-					if ((!$this->ignoreqtyzero) && ($preqty>$params[14]) && ($this->allowqtyover)) {
+					$qtycalc_param = $this->allowqtyover ? 11 : 1; //get more items than in db
+					if ($this->ignoreqtyzero) {} else $qtycalc_param += 1; //check if db items is 0 or <0
+					
+					//per item calc or global param for all items
+					$qtycalc = $qtycalc_method ? $qtycalc_method : $qtycalc_param; 
+					//echo $qtycalc . '>>>';
 
-						$stockout = ($params[14]-$preqty);
-						$stock_message = $params[0].",".$params[1].localize('_STOCKOUT',$this->lan) . "(" . $stockout . ")";
-
-						$preqty = $params[14];//set qty= max storage
-						//echo "DIATHESIOMo:",$params[14];
-
-						if (iniload('JAVASCRIPT')) {
-							$code = "alert('$stock_message')";
-							$js = new jscript;
-							$js->load_js($code,"",1);
-							unset ($js);
-						}
-						else
-							setInfo($stock_message);
-					}
-
-					if ($preqty) {
-						$params[9]= $preqty;
-						$b = implode(";",$params);
-						//echo $b;
-						$this->addto($b);
-					}
+					switch ($qtycalc) {
+						case 12://check zero 
+								if ($params[14]<=0) {
+									$this->jsDialog(localize('_STOCKOUT',$this->lan), $addtocartTitle);
+									break; //exit here
+								}
+						case 11://set qty = selection
+								/*if ($this->itemHasQtySelection($params[7])) { //is size/color item
+									$_ypoloipo1 = 0 ; //init (check zero -12- can be disabled)
+									
+									if ($_pSize || $_pColor) { //get qty from selection table
+										$_ypoloipo1 = $this->itemHasQtySelection($params[7], true, $_pSize, $_pColor) - $this->qtyin($extCode);
+										//continue
+									}
+									else {
+										$this->jsDialog(localize('_ITEMQTYSELECT',$this->lan), $addtocartTitle);
+										$this->itemqtyselect_misattr = true;
+										return false;
+									}	
+								}
+								else
+									$_ypoloipo1 = $params[14] - $this->qtyin($extCode);
+								*/
+								if (($y = $this->pcheckQty($params[7], $params[14], $_pSize, $_pColor))===false)
+									return false;
+								
+								$_ypoloipo1 =  $y - $this->qtyin($extCode); 
+								//echo $_ypoloipo1 . '>>>>'. $y . 'aaa';
+								
+								if ($preqty > $_ypoloipo1) {
+									$stockout = ($preqty - $_ypoloipo1);
+									$stock_message = $this->replace_cartchars($params[1],true) ." ". localize('_STOCKOUT',$this->lan) . " (" . $stockout . ")";
+									$this->jsDialog($stock_message, $nostockTitle);
+																		
+									//$preqty = $_ypoloipo1; //as calculated /entered with check
+									$params[15] = $stockout; //save backorder
+								}	
+								$params[9]= $preqty; //overwrite								
+								$this->addto(implode(";",$params));	
+								break;
+						
+						case 2 ://check zero
+								if ($params[14]<=0) {
+									$this->jsDialog(localize('_STOCKOUT',$this->lan), $addtocartTitle);
+									break; //exit here
+								}	
+						case 1 ://set qty = max in storage
+								/*if ($this->itemHasQtySelection($params[7])) { //is size/color item
+									$_ypoloipo1 = 0 ; //init (check zero -2- can be disabled)
+									if ($_pSize || $_pColor) { //get qty from selection table
+										$_ypoloipo1 = $this->itemHasQtySelection($params[7], true, $_pSize, $_pColor) - $this->qtyin($extCode);
+										//continue
+									}
+									else {
+										$this->jsDialog(localize('_ITEMQTYSELECT',$this->lan), $addtocartTitle);
+										$this->itemqtyselect_misattr = true;
+										return false;
+									}	
+								}
+								else
+									$_ypoloipo1 = $params[14] - $this->qtyin($extCode);
+								*/
+								if (($y = $this->pcheckQty($params[7], $params[14], $_pSize, $_pColor))===false)
+									return false;
+								
+								$_ypoloipo1 =  $y - $this->qtyin($extCode); 
+								
+								if ($preqty > $_ypoloipo1) {
+									$stockout = ($preqty - $_ypoloipo1);
+									$stock_message = $this->replace_cartchars($params[1],true) ." ". localize('_STOCKOUT',$this->lan) . " (" . $stockout . ")";
+									$this->jsDialog($stock_message, $nostockTitle);
+									
+									$preqty = $_ypoloipo1; 
+									$params[15] = $stockout; //save backorder
+								}	
+								$params[9]= $preqty; //overwrite
+								$this->addto(implode(";",$params));
+								break;
+								 
+						case 0 :
+						default: //as entered no checks
+								/*if ($this->itemHasQtySelection($params[7])) { //is size/color item
+									if ($_pSize || $_pColor) { 
+										//continue
+									}
+									else {
+										$this->jsDialog(localize('_ITEMQTYSELECT',$this->lan), $addtocartTitle);
+										$this->itemqtyselect_misattr = true;
+										return false;
+									}	
+								}
+								*/
+								if (($y = $this->pcheckQty($params[7], $params[14], $_pSize, $_pColor))===false)
+									return false;
+								
+								//$_ypoloipo1 =  $y - $this->qtyin($extCode); 
+								$params[9]= $preqty; //overwrite
+								$this->addto(implode(";",$params));
+					}	
 				}
 				else {
 					$input_message = localize('_INPUTERR',$this->lan);
-					if (iniload('JAVASCRIPT')) {
-						$code = "alert('$input_message')";
-						$js = new jscript;
-						$js->load_js($code,"",1);
-						unset ($js);
-					}
-					else
-						setInfo($input_message);
+					$this->jsDialog($input_message, localize('SHCART_DPC', $this->lan));
 				}
 
+				//reset cart status when add item
 				SetSessionParam('cartstatus',0);
 				$this->status = 0;
 
 				if ($user = $this->user ?? session_id())
 					$this->update_statistics('cart-add', $user);
 				
-				$this->quick_recalculate();//re-update prices and totals 
+				//re-update prices and totals 
+				$this->quick_recalculate();
 			
-				return ($title); //js baloon				
+				// as true and use val as js baloon				
+				//return ($title); 
+				if (!$stock_message) //if no prev message = stock message
+					$this->jsDialog($this->replace_cartchars($extTitle,true), $addtocartTitle);
+				
+				return true;
 			}
-			else
-				return localize('_MSG15',$this->lan);
+			else {
+				//return localize('_MSG15',$this->lan);
+				$this->jsDialog(localize('_MSG15',$this->lan), $addtocartTitle);
+				return false;
+			}	
 			
-		}//if $a
+		}
+		else {
+			$this->jsDialog('Error: Invalid item ID', localize('SHCART_DPC', $this->lan));
+		}	
 		 
 		return false; 
 	}
 	
+	//override
 	public function remove($id=null,$qty=null) {
         //$myid = $id ? explode(';', $id) : explode(';', GetReq('a'));
 		$myid = $id ? $id : GetReq('a');
@@ -1403,7 +1632,8 @@ function addtocart(id,cartdetails)
 			$title = $this->replace_cartchars($param[1], true);
 			
             //if ($param[0] == $myid[0]) {
-			if ($param[0] == $myid) {   
+			if (($param[0] == $myid) && $param[8] && $param[9]) {
+				
 	             $this->qty_total-=$param[9];
 			     SetSessionParam('qty_total',$this->qty_total);	
 				 
@@ -1430,12 +1660,43 @@ function addtocart(id,cartdetails)
 		return false;
 	}
 
+	//override
     public function isin($id) {
 
         reset ($this->buffer); 
         foreach ($this->buffer as $buffer_num => $buffer_data) {
 		   $param = explode(";",$buffer_data);	
            if ($param[0] == $id) return true;                                    
+        }                       
+        return false;
+    } 	
+	
+	//override
+	public function clear() {
+		parent::clear();
+		
+		$this->js_cleanCart();
+	}
+
+	//override with arg (cookie use)
+    /*public function notempty($buffer=null) {
+        $b = $buffer ? $buffer : $this->buffer;
+		
+        reset ($b); 
+        while (list ($buffer_num, $buffer_data) = each ($b)) {
+           $mchar = strlen($buffer_data); 
+           if ($mchar > 1) return true;
+        }                       
+        return false;
+    }*/		
+	
+	//fetch item cart qty already selected
+    public function qtyin($id, $backorder=false) {
+
+        reset ($this->buffer); 
+        foreach ($this->buffer as $buffer_num => $buffer_data) {
+		   $param = explode(";",$buffer_data);	
+           if ($param[0] == $id) return ($backorder ? $param[15] : $param[9]);  
         }                       
         return false;
     } 	
@@ -1504,7 +1765,7 @@ function addtocart(id,cartdetails)
 				}			 
 			}
 			else
-				$this->transaction_id = '1111';//dummy
+				$this->transaction_id = '11';//dummy
 
 			if (isset($this->transaction_id)) {
 				//save in session
@@ -1545,6 +1806,7 @@ function addtocart(id,cartdetails)
 		$this->jsBrowser();	
 		$this->fbjs();	
 	}
+	
 	//alias, used by pay engines
 	public function cancelCartOrder() {
 		//$this->cancel_order(); //!!! not affceted
@@ -1758,99 +2020,198 @@ function addtocart(id,cartdetails)
 		return ($out);
 	}	
 
-    public function recalculate($update_from_db=null) {
-
+    //called from step to step full recalc with uni2uni1 convertions  and storage check methods
+    public function recalculate() {
+		$db = GetGlobal('db');
 		$this->stock_msg = null;
 		$this->overitem = null;
-		$jcode = null;
-	   
-		$p_returned = _m($this->shclass . '.update_prices use '.serialize($this->buffer));
-	   
-		$this->read_policy();	   
+		$_go = true;
+		
+		$this->read_policy();	   		
 	   
 		$this->qty_total = 0;
 		SetSessionParam('qty_total',0);
 		$this->total = 0;      
+		
+		$_code = _v($this->shclass . '.fcode');	
+		$pp = _m($this->shclass . '.read_policy'); 			
 
 		$counter = 0; 
 		foreach ($this->buffer as $prod_id => $product) {
 
 			if (($product) && ($product!='x')) {
            
-				$counter+=1;
-				$param = explode(";",$product);
-				$aa = $prod_id+1;// ???? echo $aa,"+++";
+				$counter += 1;
+				$param = explode(";", $product); //print_r($param);
+				$aa = $prod_id + 1;		
 		   
 				//selected quantity  ..get ? get : post when select is onChange
 				$selectedqty = GetReq("Product$aa") ? GetReq("Product$aa") : 
 								(GetParam("Product$aa") ? GetParam("Product$aa") : intval($param[9])); 
-				//echo $selectedqty,">>";
+
+				//selected uniname convert from 2nd mm
+				if ($selecteduni = GetParam("Uniname$aa")) {
+					if (($selecteduni == $param[12]) && ($param[13]))  //if selected = 2nd mm
+						$selectedqty = ($selectedqty * $param[13]); //multiply by sxesh mm2
+				}						
+				
 				$this->qty_total += $selectedqty;
-				$qty = $selectedqty;		   
-				//selected uniname
-				$selecteduni = GetParam("Uniname$aa");		   
-		   
-				//new prices when updated from db (live)
-				if (is_array($p_returned) && isset($p_returned[$param[0]])) {
+	
+				//extCode : when size/color the item code has sizecolor attr as cart id, remove it before sql it
+				//$_realCode = ($param[10] || $param[11]) ? str_replace(array($param[10], $param[11],'[',']'), '', $param[0]) : $param[0];
+				//https://stackoverflow.com/questions/19948660/how-to-replace-everything-between-braces-from-a-string
+				$_realCode = $param[7]; //preg_replace('/[\[].*?[\]]/', '', $param[0]); //by default with no question / param[7]
+				
+				$sSQL = "select $_code,{$this->selectsql} from products  WHERE $_code ='" . $_realCode . "'";	  
+				$result = $db->Execute($sSQL,2);
+				if ($title = $result->fields['itmname']) { //check sql return value	
+
+					$price = $result->fields[$pp];
+					$ap_price = _m($this->shclass . ".read_qty_policy use ". $_realCode.'+'.$price."++".$selectedqty);			 		   			 
+					$param[8] = $ap_price; //update
+					$param[14] = $result->fields['ypoloipo1']; //update
 					
-					$ap_price = _m($this->shclass . ".read_qty_policy use ". $param[0].'+'.$p_returned[$param[0]]."++".$selectedqty);			 		   			 
-					$param[8] = $ap_price?$ap_price:$p_returned[$param[0]];		 
-				}
-				$p = floatval(str_replace(',','.',$param[8]));
-				$this->total = $this->total+($qty*$p);
-
-				//convert from 2nd mm
-				if ($selecteduni) {
-					if (($selecteduni==$param[11]) && ($param[12]))  //if selected = 2nd mm
-						$selectedqty = ($selectedqty*$param[12]); //multiply by sxesh mm2
-				}
-
-				//check storage
-				if ((!$this->ignoreqtyzero) && ($selectedqty>$param[14]) && ($this->allowqtyover)) { //enable - disable check over qty selection
-
-					$stockout = ($param[14]-$selectedqty);
-					$stock_message = $param[0] . ",". $this->replace_cartchars($param[1], true) . localize('_STOCKOUT',$this->lan) . "(" . $stockout . ")";
-					$this->stock_msg .= $stock_message . "<br>";
-					$jcode .= "alert('$stock_message');";
-
-					//remark item
-					$this->overitem[$prod_id] = 1;
-					//pass cart messages to sxolia
-					if ($this->detailqty)
-						$this->sxolia .= $stock_message;
-
-					$selectedqty = $param[14];//set qty= max store
-					//echo "DIATHESIOMo:",$selectedqty,">>>";
-				}
-
-				if (($selectedqty)||isset($p_returned[$param[0]])) {//change qty or price from db
-					//in case of no selectedqty
-					if (!$selectedqty) $selectedqty = $param[9];//default as is
-			  
-					$this->buffer[$prod_id] = "$param[0];$param[1];$param[2];$param[3];$param[4];$param[5];$param[6];$param[7];$param[8];$selectedqty;$param[10];$param[11];$param[12];$param[13];$param[14];$param[15];";
-				}
-				else {
-					if ($this->rejectqty)
-						$this->buffer[$prod_id] = 'x';//=0 so delete it from list
+					$this->total = $this->total + ($selectedqty * $ap_price); //update				
+					
+					//check storage					
+					$qtycalc_method = $result->fields['uniida'];
+					$qtycalc_param = $this->allowqtyover ? 11 : 1; //get more items than in db
+					if ($this->ignoreqtyzero) {} else $qtycalc_param += 1; //check if db items is 0 or <0
+					
+					//per item calc or global param for all items
+					$qtycalc = $qtycalc_method ? $qtycalc_method : $qtycalc_param; 
+					
+					switch ($qtycalc) {
+						case 12://check zero 
+								if ($param[14]<=0) {
+									$stock_message = $this->replace_cartchars($param[1],true) ." ". localize('_STOCKOUT',$this->lan);
+									$this->stock_msg .= $stock_message . "<br>";
+									
+									$param[9]= 0; //zero item qty
+									if ($this->rejectqty)
+										$this->buffer[$prod_id] = 'x';//=0 so delete it from list
+									else
+										$this->buffer[$prod_id] = implode(";", $param);
+									break; //exit here
+								}
+						case 11://set qty = selection
+								if ($this->itemHasQtySelection($_realCode)) {
+									$_ypoloipo1 = 0; //init (check zero -12- can be disabled)
+									if ($param[10] || $param[11]) { //get qty from selection table
+										$_ypoloipo1 = $this->itemHasQtySelection($_realCode, true, $param[10], $param[11]);
+										//continue
+									}
+									else {
+										//$this->jsDialog(localize('_ITEMQTYSELECT',$this->lan), localize('SHCART_DPC', $this->lan));
+										//return false;
+										$this->stock_msg .= $this->replace_cartchars($param[1],true) ." ". localize('_ITEMQTYSELECT',$this->lan) . "<br>";
+									}	
+								}
+								else
+									$_ypoloipo1 = $param[14];
+								
+								if (($selectedqty > $_ypoloipo1)) {
+									$stockout = ($selectedqty - $_ypoloipo1);
+									$stock_message = $this->replace_cartchars($param[1],true) ." ". localize('_STOCKOUT',$this->lan) . " (" . $stockout . ")";
+									$this->stock_msg .= $stock_message . "<br>";
+																		
+									$param[9] = $selectedqty;//as calculated /entered with check
+									$param[15] = $stockout; //save backorder
+									
+									$this->overitem[$prod_id] = $stockout; //remark backorder item
+								}	
+								$param[9]= $selectedqty; //as is
+								$this->buffer[$prod_id] = implode(";", $param);
+								break;
+						
+						case 2 ://check zero								
+								if ($param[14]<=0) {
+									$stock_message = $this->replace_cartchars($param[1],true) ." ". localize('_STOCKOUT',$this->lan);
+									$this->stock_msg .= $stock_message . "<br>";
+									
+									$param[9]= 0; //zero item qty
+									if ($this->rejectqty)
+										$this->buffer[$prod_id] = 'x';//=0 so delete it from list
+									else
+										$this->buffer[$prod_id] = implode(";", $param);
+									break; //exit here
+								}	
+						case 1 ://set qty = max in storage
+								if ($this->itemHasQtySelection($_realCode)) {
+									$_ypoloipo1 = 0; //init (check zero -12- can be disabled)
+									if ($param[10] || $param[11]) { //get qty from selection table
+										$_ypoloipo1 = $this->itemHasQtySelection($_realCode, true, $param[10], $param[11]);
+										//continue
+									}
+									else {
+										//$this->jsDialog(localize('_ITEMQTYSELECT',$this->lan), localize('SHCART_DPC', $this->lan));
+										//return false;
+										$this->stock_msg .= $this->replace_cartchars($param[1],true) ." ". localize('_ITEMQTYSELECT',$this->lan) . "<br>";
+									}	
+								}
+								else
+									$_ypoloipo1 = $param[14];
+								
+								if (($selectedqty > $_ypoloipo1)) {
+									$stockout = ($selectedqty - $_ypoloipo1);
+									$stock_message = $this->replace_cartchars($param[1],true) ." ". localize('_STOCKOUT',$this->lan) . " (" . $stockout . ")";
+									$this->stock_msg .= $stock_message . "<br>";
+									
+									$param[9] = $_ypoloipo1; //overwrite
+									$param[15] = $stockout; //save backorder
+									
+									$this->overitem[$prod_id] = $stockout; //remark backorder item
+								}	
+								$param[9]= $selectedqty; //as is
+								$this->buffer[$prod_id] = implode(";", $param);
+								break;
+								 
+						case 0 :
+						default: //as entered no checks
+								if ($this->itemHasQtySelection($_realCode)) {
+									if ($param[10] || $param[11]) { 
+										//$_ypoloipo1 = $this->itemHasQtySelection($_realCode, true, $_pSize, $_pColor);
+										$param[9]= $selectedqty; //as is
+										$this->buffer[$prod_id] = implode(";", $param);
+									}
+									else {
+										//$this->jsDialog(localize('_ITEMQTYSELECT',$this->lan), localize('SHCART_DPC', $this->lan));
+										//return false;
+										$this->stock_msg .= $this->replace_cartchars($param[1],true) ." ". localize('_ITEMQTYSELECT',$this->lan) . "<br>";
+									}	
+								}
+								else {
+									$param[9]= $selectedqty; //as is
+									$this->buffer[$prod_id] = implode(";", $param);
+								}
+					}						
 				}
 			}
 		}
 		
 		$this->setStore();
-	   
-		if ((iniload('JAVASCRIPT')) && ($jcode)) {
-		    $js = new jscript;
-            $js->load_js($jcode,"",1);
-		    unset ($js);
-		}
+
+		//message for all items
+		//if ($jcode)
+		if ($this->stock_msg) {
+			$nostockTitle = localize('_ADDMSG1', $this->lan);
+			$this->jsDialog($this->stock_msg, $nostockTitle); 
+			//if ($this->detailqty)
+				//$this->sxolia .= $stock_message;
+			
+			if (!$this->backorders)
+				$_go = false; //NEVER GOES TO NEXT STEP WHEN FALSE <<<<<<<<<<<<<
+		}	
 	   
 		if ($this->itemscount)
 			SetSessionParam('qty_total',$counter);//items count
 		else
 			SetSessionParam('qty_total',$this->qty_total);//qty count 
 		 
-		//$this->calculate_shipping();	 		 
+		//$this->calculate_shipping(); //deprecated	 		 
 		$this->calcShipping();
+		
+		return $_go;
 	}
 	
     public function setquantity($id,$qty=null) {
@@ -1991,28 +2352,30 @@ function addtocart(id,cartdetails)
 	}
 
 
-	public function cartview($trid=null,$status=null) {
+	public function cartview($trid=null, $status=null) {
 		$cat = GetReq('cat');
-		$UserName = decode(GetGlobal('UserName')); 
-		
-		if ($trid) //view case
-			$this->transaction_id = $trid;
-			
 		$pview = $cmd ? $cmd : 'klist';
-		$myaction = _m('cmsrt.url use t=viewcart'); 
-		switch ($this->status) {
-			case 1 : 	$myaction = _m('cmsrt.url use t=cart-order'); break;
-			case 2 : 	$myaction = _m('cmsrt.url use t=cart-submit');	break;
-			case 0 :			
-			default : 	$myaction = _m('cmsrt.url use t=cart-checkout'); 
-		}		
-	   
+		$UserName = decode(GetGlobal('UserName')); 		
 		$payway = $this->getDetailSelection('payway');
 		$roadway = $this->getDetailSelection('roadway');
-		$invway = $this->getDetailSelection('invway');    
-	   
-		$status = $status ? $status : GetReq('status');
+		$invway = $this->getDetailSelection('invway'); 
 		
+		if ($trid) //calldpc view case && PAYENGINES return 
+			$this->transaction_id = $trid;		
+		
+		if ($status) {//calldpc view case && PAYENGINES return 
+			$this->status = $status; 
+			$this->recalculate(); 			
+		}	
+			
+		//$myaction = _m('cmsrt.url use t=viewcart'); 
+		switch ($this->status) {
+			case 1  : 	$myaction = _m('cmsrt.url use t=cart-order'); break;
+			case 2  : 	$myaction = _m('cmsrt.url use t=cart-submit');	break;
+			case 0  :			
+			default : 	$myaction = _m('cmsrt.url use t=cart-checkout'); 
+		}		   
+	    /*
 		/////////////////////////////////////////////// 
 		if ((empty($_POST)) && (!$this->notempty())) {
 		
@@ -2022,19 +2385,19 @@ function addtocart(id,cartdetails)
 			return $this->combine_tokens($emptycarttemplate,$tokens,true);			
 		}
 		//////////////////////////////////////////////
-   
-		if ($status) {
+		
+ 		//$status = $status ? $status : GetReq('status'); //PAYENGINES (DISABLE _GET status)  
+		if ($status) { //PAYENGINES
 			$this->status = $status;
-			$this->recalculate(1); 
+			$this->recalculate(); 
 		}	
-	
-		//in case of no event fist..calldpc view...   
+	    */
+		//if recalculate fails or calldpc view case && PAYENGINES return 
 		if (empty($this->loopcartdata)) 
 			$this->loopcartdata = $this->loopcart();
-		
 		if (empty($this->looptotals)) 
 			$this->looptotals = $this->foot();	     	   
-
+		
 		if ($this->status<3) {
 
 			if ($this->notempty()) {
@@ -2102,15 +2465,20 @@ function addtocart(id,cartdetails)
 					}
 				}
 				elseif ($this->status==1) {
-					$cid = GetSessionParam('_customerway'); //default customer id _
 					
-					if ($existed_customer = (defined('SHCUSTOMERS_DPC')) ? ($UserName ?  _m("shcustomers.showcustomerdata use $cid+id+cusdetails") : null) : null) {
+					if (defined('SHCUSTOMERS_DPC')) {
+						if ($cid = GetSessionParam('_customerway')) //default customer id _
+							$_cus = $UserName ? _m("shcustomers.showcustomerdata use $cid+id+cusdetails") : null;
+						else
+							$_cus = $UserName ? _m("shcustomers.showcustomerdata use $UserName+code2+cusdetails") : null;			
+					
+						//if ($existed_customer = (defined('SHCUSTOMERS_DPC')) ? ($UserName ?  _m("shcustomers.showcustomerdata use $cid+id+cusdetails") : null) : null) {
 						$tokens[] = date('d/m/Y h:i:s A');
-						$tokens[] = $existed_customer;
+						$tokens[] = $_cus; //$existed_customer;
 					}
 					else {
 						$tokens[] = null;
-						$tokens[] = null;
+						$tokens[] = null;//'xaxaxaxa'. $UserName. '>>>' . _m("shcustomers.showcustomerdata use $UserName+code2+cusdetails");
 					}	
 				}	
 				else { //status 0
@@ -2157,7 +2525,7 @@ function addtocart(id,cartdetails)
 			$tstep = $this->status ? strval($this->status) : '0';	
 			$mysteptemplate = _m('cmsrt.select_template use shcartstep' . $tstep);
 			$mycarttemplate = isset($mysteptemplate) ? $mysteptemplate : _m('cmsrt.select_template use shcart');
-			
+
 			$out = $this->combine_tokens($mycarttemplate,$tokens,true);
 			return $out;			
 			
@@ -2204,35 +2572,6 @@ function addtocart(id,cartdetails)
 			$out = $this->combine_tokens($mycarttemplate,$tokens,true);
 			return $out;
 	    }
-	    /*
-		if ($this->notempty()) {
-			
-			$tstep = $this->status ? strval($this->status) : '0';	
-			$mysteptemplate = _m('cmsrt.select_template use shcartstep' . $tstep); //!!!!
-			$mycarttemplate = isset($mysteptemplate) ? $mysteptemplate : _m('cmsrt.select_template use shcart');
-			//echo $mycarttemplate . '>>>';
-			
-			if ($this->status>0) { 
-				if (($UserName) && (!$exist = _m("shcustomers.search_customer_id use code2='" .$UserName."'"))) {
-					$out = _m("shcustomers.register");
-					$this->status = 0;
-					SetSessionParam('cartstatus',0);
-				}	
-				else {
-					//fastcart when no UserName
-					$out = $this->combine_tokens($mycarttemplate,$tokens,true);
-				}	
-			}
-			else
-				$out = $this->combine_tokens($mycarttemplate,$tokens,true);
-		}	
-		else {	//empty 1 token 
-			$emptycarttemplate = _m('cmsrt.select_template use shcartempty');
-			$out = $this->combine_tokens($emptycarttemplate,$tokens,true);
-		}		
-	   
-		return ($out);
-		*/
 	}
 	
 	protected function loopcart() {
@@ -2303,6 +2642,12 @@ function addtocart(id,cartdetails)
 				$data[] = $itemphoto;
 				$data[] = $param[0];
 				$data[] = $aa;
+				$data[] = $param[7];
+				
+				$data[] = $param[10]; // 12
+				$data[] = $param[11];
+				$data[] = $param[14];
+				$data[] = $param[15];
                
 			    $loopout .= $this->combine_tokens($myloopcarttemplate,$data,true);
 				  
@@ -2318,16 +2663,7 @@ function addtocart(id,cartdetails)
 	//tokens-api version / return tokens as var
 	protected function loopcartTokens(&$tokens) {
 	    if (empty($this->buffer)) return;
-		/*
-		$command = $this->itemclick ? $this->itemclick : GetReq('t');
-		$status = $this->status ? strval($this->status) : '0';
-		$ix = $this->imagex ? $this->imagex : 100;
-	    $iy = $this->imagey ? $this->imagey : null; 
-	    $ixw = $ix ? "width=".$ix : "width=".$ix;
-	    $iyh = $iy ? "height=".$iy :null; //empty y=free dim	   
-	   
-		$myloopcarttemplate = _m('cmsrt.select_template use shcartline'); //.php file, code inside
-	    */
+
         reset ($this->buffer);
 		
 		$this->cartsumitems = 0;
@@ -2339,13 +2675,14 @@ function addtocart(id,cartdetails)
 		    if (($product) && ($product!='x')) {
 				$aa+=1;
 				$param = explode(";",$product); 
+				$code = $param[7]; //$param[0];
 				$cat = $param[4];
 				$item = $param[1];
 				$utitle = $this->replace_cartchars($item, true);				
-				$link = _m("cmsrt.url use t=$command&cat=$cat&id=" . $param[0] ."+" . $utitle); 
+				$link = _m("cmsrt.url use t=$command&cat=$cat&id=" . $code ."+" . $utitle); 
 			   
 				$itemphoto = _m($this->shclass . ".get_photo_url use ".$param[7].'+1');
-				$linkimage = seturl("t=$command&cat=$cat&id=".$param[0], "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);
+				$linkimage = seturl("t=$command&cat=$cat&id=".$code, "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);
 				
 				$data['cartstatus'] = ($this->status==0) ? '0' : $this->status; //$linkimage : $aa; 
 
@@ -2359,7 +2696,7 @@ function addtocart(id,cartdetails)
 					default :	 $data['itmcarturldetails'] = $link . $details;  break; //$param[0] . "<br/>" . 					
 				}
 
-				$data['itmcartremove'] = ($this->status) ? null : $this->showsymbol($product,1);//<<allow remove here
+				$data['itmcartremove'] = "remcart/".$param[0]."/"; //($this->status) ? null : $this->showsymbol($product,1);//<<allow remove here
 
 				$price = floatval(str_replace(",",".",$param[8]));
 				$sumtotal = ($param[9] * $price);
@@ -2375,11 +2712,12 @@ function addtocart(id,cartdetails)
 
 				$data['itmcarttotal'] = $this->settotal("Product$aa",$price,$param[9]);// . $this->moneysymbol;
 				
-				$data['itmcarturl'] = _m("cmsrt.url use t=$command&cat=$cat&id=" . $param[0]);
+				$data['itmcarturl'] = _m("cmsrt.url use t=$command&cat=$cat&id=" . $code);
 				$data['itmcartname'] = $utitle;
 				$data['itmcartphoto'] = $itemphoto;
 				$data['itmcartcode'] = $param[0];
-				$data['itmcartcode'] = $aa;
+				$data['itmcartaa'] = $aa;
+				$data['itmcode'] = $code;		
                
 			    //$loopout .= $this->combine_tokens($myloopcarttemplate,$data,true);
 				$tokens[] = $data;
@@ -2435,7 +2773,7 @@ function addtocart(id,cartdetails)
 		foreach ($this->buffer as $prod_id => $product) {
 			if (($product) && ($product!='x')) {
 				$cartstr = explode(';', $product);
-				$item = $cartstr[0];
+				$item = $cartstr[7]; //$cartstr[0];
 				_m("cmsvstats.update_item_statistics use $item+checkout");				
 			}	
 		}		 		
@@ -2541,6 +2879,7 @@ function addtocart(id,cartdetails)
 				if (($product) && ($product!='x')) {
 					$aa+=1;
 					$param = explode(";",$product); 
+					$code = $param[7]; //$param[0];
 					$cat = $param[4];
 					$item = $param[1];
 					$qty = $param[9];
@@ -2548,10 +2887,10 @@ function addtocart(id,cartdetails)
 					
 					//$addButton = $this->showsymbol($product,$param[4],$param[5],1);//<<allow remove here
 					$addButton = $this->showsymbol($product,0,$qty);
-					$link = _m("cmsrt.url use t=$pview&cat=$cat&id=" . $param[0] ."+" . $utitle); 
+					$link = _m("cmsrt.url use t=$pview&cat=$cat&id=" . $code ."+" . $utitle); 
 			   
 					$itemphoto = _m($this->shclass . ".get_photo_url use ".$param[7].'+1');
-					$linkimage = seturl("t=$pview&cat=$cat&id=".$param[0], "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);	   
+					$linkimage = seturl("t=$pview&cat=$cat&id=".$code, "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);	   
 					$data[] = $linkimage;
 
 					$details = $this->cartlinedetails ? ($param[6] ? '&nbsp;' . $this->replace_cartchars($param[6], true) : null) : null;					
@@ -2566,10 +2905,10 @@ function addtocart(id,cartdetails)
 					$merikosynolo = number_format($ssum,$this->dec_num,',','.') . $this->moneysymbol;		   
 					$data[] = $merikosynolo;
 					
-					$data[] = _m("cmsrt.url use t=$pview&cat=$cat&id=" . $param[0]);
+					$data[] = _m("cmsrt.url use t=$pview&cat=$cat&id=" . $code);
 					$data[] = $utitle;
 					$data[] = $itemphoto;	
-					$data[] = $param[0];					
+					$data[] = $code; //$param[0];					
 			   		   
 					$loopout .= $this->combine_tokens($myloopcarttemplate,$data,true);
 				
@@ -3058,6 +3397,7 @@ function addtocart(id,cartdetails)
 	public function payFast($nopresel=false) {
 		$db = GetGlobal('db');
 		if (!$this->superfastcart) return null; //disable when no superfastcart
+		$_nopresel = $this->payFastPresel ? false : $nopresel;
 		
 		$UserName = decode(GetGlobal('UserName'));
 		if ($UserName) return null; //disable when logged in
@@ -3081,7 +3421,7 @@ function addtocart(id,cartdetails)
 							if ($selectedPost == $rec['code'])
 								$_selection = 1;
 							else
-								$_selection = $nopresel ? 0 : (($i==0) ? 1 : 0); //first element orderby orderid
+								$_selection = $_nopresel ? 0 : (($i==0) ? 1 : 0); //first element orderby orderid
 							
 							$title = $rec['lantitle'] ? localize($rec['lantitle'], $this->lan) : $rec['title'];
 							$tokens = array($rec['code'], $title, $rec['notes'], $_selection);
@@ -3705,14 +4045,8 @@ function addtocart(id,cartdetails)
     protected function calculate_totals() {
 		$ret = 0;
 
-        $data[] = number_format(floatval($this->total),$this->dec_num,',','.');
-
-	    $this->mydiscount = ($this->discount) ? 
-							($this->total*$this->discount)/100 : 0; 
-		 
-		$this->myshippingcost = ($this->shippingcost) ?
-								 $this->shippingcost : 0;		 
-	   
+	    $this->mydiscount = ($this->total > 0) ? ($this->discount ? ($this->total*$this->discount)/100 : 0) : 0; 
+		$this->myshippingcost = ($this->total > 0) ? ($this->shippingcost ? $this->shippingcost : 0) : 0;		 
 		if (($this->tax) && ($this->status)) {
 			//($this->is_reseller)) {//is or not reseller calculate tax except if status <3
 			$this->mytaxcost = (($this->total - $this->mydiscount) * 
@@ -3721,13 +4055,11 @@ function addtocart(id,cartdetails)
 		else
 			$this->mytaxcost = 0;
 
-		$this->myfinalcost =  ($this->total - $this->mydiscount) + 
-							   $this->mytaxcost + 
-							   $this->myshippingcost;
+		$this->myfinalcost =  ($this->total - $this->mydiscount) + $this->mytaxcost + $this->myshippingcost;
 	   	   
 		$ret = number_format(floatval($this->myfinalcost),$this->dec_num,',','.');						
 
-	   return ($ret);
+	    return ($ret);
     }	
 
     protected function print_button() {
@@ -3858,10 +4190,10 @@ function addtocart(id,cartdetails)
 					$param = explode(";",$product);
 					$cat = $param[4];
 					$itemdescr = $this->replace_cartchars($param[1], true);
-					$id = $param[0];			   
+					$id = $param[0]; //for links			   
 					
 					$toks[] = $prod_id+1;
-					$toks[] = $id;
+					$toks[] = $param[0]; //$id;
 					$toks[] = _m("cmsrt.url use t=kshow&cat=$cat&id=$id+" . $itemdescr); 
 					$toks[] = number_format(floatval($param[8]),$this->dec_num,',','.');
 					$toks[] = $param[9];
@@ -3869,7 +4201,16 @@ function addtocart(id,cartdetails)
 					$sum = floatval($param[8])*floatval($param[9]);//$param[11];
 					$toks[] = number_format($sum,$this->dec_num,',','.') . $this->moneysymbol;
 					
-					$toks[] = _m($this->shclass . ".get_photo_url use ".$id.'+1');
+					$toks[] = _m($this->shclass . ".get_photo_url use ". $param[7] .'+1');
+					$toks[] = _m("cmsrt.url use t=kshow&cat=$cat&id=$id");
+					$toks[] = $itemdescr;
+					$toks[] = $cat;
+					$toks[] = $param[7]; 
+					
+					$toks[] = $param[10]; // 11
+					$toks[] = $param[11];
+					$toks[] = $param[14];
+					$toks[] = $param[15];
 			   
 					if ($ret_tokens) 
 						return $toks;	 
@@ -3884,6 +4225,7 @@ function addtocart(id,cartdetails)
 		return ($out);
 	}
 
+	//called inside funcs without uni2uni1 convertions and storage check methods
     protected function quick_recalculate() {
 
 		$p_returned = _m($this->shclass . '.update_prices use '.serialize($this->buffer));	
@@ -3900,21 +4242,22 @@ function addtocart(id,cartdetails)
            
 				$counter+=1;
 				$param = explode(";",$product);
-		   
+				
+				$id = $param[7]; //$param[0];
 				$qty = $param[9];		   
 				$selectedqty = intval($param[9]);
 		   
 				$this->qty_total += intval($qty);
 		   
 				//new prices when updated from db (live)
-				if (is_array($p_returned) && isset($p_returned[$param[0]])) {
+				if (is_array($p_returned) && isset($p_returned[$id])) {
 
-					$ap_price = _m($this->shclass . ".read_qty_policy use ". $param[0].'+'.$p_returned[$param[0]]."++".$selectedqty);			 		   			 			 		   
-					$param[8] = $ap_price ? $ap_price : $p_returned[$param[0]];
+					$ap_price = _m($this->shclass . ".read_qty_policy use ". $id.'+'.$p_returned[$id]."++".$selectedqty);			 		   			 			 		   
+					$param[8] = $ap_price ? $ap_price : $p_returned[$id];
 				}		   
 		   
 				$p = floatval(str_replace(',','.',$param[8]));
-				$this->total = $this->total+($qty*$p); 
+				$this->total = $this->total + ($qty * $p); 
 			}
 	    }
 
@@ -3924,7 +4267,8 @@ function addtocart(id,cartdetails)
 			SetSessionParam('qty_total',$this->qty_total);//qty count
 		 
 	    $this->colideCart();	 
-	    //$this->calculate_shipping();			  
+		
+	    //$this->calculate_shipping();	//deprecated		  
 		$this->calcShipping();
 	}
 
@@ -4182,10 +4526,12 @@ function addtocart(id,cartdetails)
 	}
 	
 	public function getcartTotal($noformat=null, $tax=null) {
-	   
-		$val = GetSessionParam('total');
+		//$val = GetSessionParam('total'); 
+		if (!$val = GetSessionParam('total')) 
+			return $noformat ? floatval('0.0') : number_format(floatval('0.0'),$this->dec_num,',','.');
+		
 		$taxval = (!$this->status) ? ((floatval($val)*$this->tax)/100) : 0; /*0 when status>0 is recalc inside */
-		$sval = ($tax) ? ($val+$taxval) : $val;
+		$sval = ($tax) ? ($val + $taxval) : $val;
 	   
 		$ret = $noformat ? floatval($sval) : number_format(floatval($sval),$this->dec_num,',','.');	
 		return ($ret);
@@ -4205,19 +4551,21 @@ function addtocart(id,cartdetails)
 		return ($ret);	
 	}
 	
-	public function getCartItemQty($id=null, $default=null) {
+	//use exact code if sizecolor attr
+	public function getCartItemQty($id=null, $default=null, $exact=false) {
 		$qtymeter = 0;
 		if (!$id) return;
 	
+		$_xe = $exact ? 7 : 0;
 		foreach ($this->buffer as $i=>$rec) {
 			$data = explode(';',$rec);
-			if ($data[0]==$id) {
+			if ($data[$_xe]==$id) {
 				$qtymeter+=$data[9];
 			}
 		}
 		
 		return ($default ? $default : $qtymeter);		
-	}	
+	}		
 	
 	/* get the cart position id in list */
 	public function getCartItemPosition($id=null) {
@@ -4244,29 +4592,73 @@ function addtocart(id,cartdetails)
 		return ($out);
 	}
 	
+	/*
+			$params = array(0=>$item,
+							1=>$this->replace_cartchars($title),
+							2=>'',
+							3=>'',
+							4=>$cat,
+							5=>$page,
+							6=>'',
+							7=>$item,
+							8=>$priceqty,
+							9=>1,
+							10=>$_pSize,
+							11=>$_pColor,							
+							12=>$result->fields['uniname2'],
+							13=>$result->fields['uni2uni1'],								
+							14=>$result->fields['ypoloipo1'],
+							15=>0,	
+							);	
+	*/
+	//support size/color
 	protected function colideCart() {
 		if (empty($this->buffer)) return;
+		$tempbuffer = array();
+		$_price = array();
+		$_qty = array();
+		$_backorder = array();
 	
 		foreach ($this->buffer as $i=>$rec) {
 			if ($rec!='x') {
+				
 				$data = explode(';',$rec);
-				$cs = $data[0].';'.$data[1].';'.$data[2].';'.$data[3].';'.$data[4].';'.$data[5].';'.$data[6].';'.$data[7].';';
-				$tempbuffer[$cs] = intval($tempbuffer[$cs])+intval($data[9]).';'.$data[8];
+				
+				//0..7 = common attr plus 
+				//then replace @A@ with price and qty
+				//10..14 for size/color etc (same code diff size/color not colide)
+				//then replace @B@ as 15th element = backorder qty
+				$cs = $data[0].';'.$data[1].';'.$data[2].';'.$data[3].';'.$data[4].';'.$data[5].';'.$data[6].';'.$data[7].
+						';@8@;@9@;'.$data[10].';'.$data[11].';'.$data[12].';'.$data[13].';'.$data[14].';@15@;';
+						
+				//$tempbuffer[$cs] = intval($tempbuffer[$cs])+intval($data[9]).';'.$data[8];
+				
+				if ($data[8]) $_price[$cs] = $data[8]; //override with last element
+				if ($data[9]>0) $_qty[$cs] += $data[9];
+				if ($data[15]>0) $_backorder[$cs] += $data[15]; else $_backorder[$cs] = 0;
+				
+				$tempbuffer[$cs] =  $data[8] .';'. $data[9];
 			}
 		}	
 
 		if (!empty($tempbuffer)) {
+			
 			unset($this->buffer);
-			foreach ($tempbuffer as $trec=>$qtyandprice) {
+			
+			foreach ($tempbuffer as $trec=>$priceandqty) {
 
-				$params = explode(';',$qtyandprice);
-				$this->buffer[] = $trec . $params[1] .';'. $params[0] .';;;;;;;';
+				$params = explode(';',$priceandqty);
+				$price = $_price[$trec];
+				$qty = $_qty[$trec];
+				$backorder = $_backorder[$trec];
+				$this->buffer[] = str_replace(array('@8@','@9@','@15@'), 
+											  array($price, $qty, $backorder), 
+											  $trec);
 			}		
 		}	
 	  
 		$this->setStore();    
-	}
-	
+	}	
 	
 	/****************** user discount policy - coupons - points ****/
 	
@@ -4407,7 +4799,7 @@ function addtocart(id,cartdetails)
 					$param = explode(";",$product);
 					$cat = $param[4];
 					$itemdescr = $this->replace_cartchars($param[1], true);
-					$id = $param[0];
+					$id = $param[7]; //$param[0];
 
 					$points = _m($this->shclass . ".read_point_policy use ". $id); 
 		            if (!$points) continue;					
@@ -4464,7 +4856,7 @@ function addtocart(id,cartdetails)
 					$param = explode(";",$product);
 					$cat = $param[4];
 					$itemdescr = $this->replace_cartchars($param[1], true);
-					$id = $param[0];
+					$id = $param[7]; //$param[0];
 
 					$points = _m($this->shclass . ".read_point_policy use ". $id); 
 		            if (!$points) continue;					
@@ -4498,7 +4890,7 @@ function addtocart(id,cartdetails)
 	
 	//standart roadway, payway costs
 	protected function calcShipping() {
-		$db = GetGlobal('db');	
+		$db = GetGlobal('db');
 		
 		if ($this->superfastcart) {
 			$road_code = 'Courier'; //superfastcart uses only courier method
@@ -4536,10 +4928,16 @@ function addtocart(id,cartdetails)
 		else
 			$this->paymentcost = GetSessionParam('paycost');
 		
-		//save shipping cost as result of transp cost + payment cost
-		$result = floatval($this->transportcost) + floatval($this->paymentcost);
+		
+		if ($this->total > 0) {
+			//save shipping cost as result of transp cost + payment cost
+			$result = floatval($this->transportcost) + floatval($this->paymentcost);			
+		}
+		else
+			$result = 0; //when no items in cart
+		
 		$this->shippingcost = $result;
-		SetSessionParam('shipcost', $this->shippingcost);
+		SetSessionParam('shipcost', $this->shippingcost);		
 		
 		return ($result);			
 	}		
@@ -4877,6 +5275,237 @@ function addtocart(id,cartdetails)
 	}	
 	
 	
+	/************************* pqty items  ****************************/
+	public function pQtyItemColor($code, $template=null, $chkqty=false) {
+		$db = GetGlobal('db');
+		if (!$code) return null;
+		$retarr = array();
+		
+		$sSQL = "select id,pcode,psize,pcolor,qty,net,vat from pqtyitems where pcode=" . $db->qstr($code);
+		//$sSQL.= $chkqty ? null : " and qty>0"; //def check DISABLE allow add to cart when 0 qty
+		$res = $db->Execute($sSQL);
+
+		if (!empty($res)) {	
+			$tmpl = $template ? $template : 'fpitem-color';	
+			$mytemplate = _m('cmsrt.select_template use ' . $tmpl);
+			foreach ($res as $n=>$rec) {
+				$tokens = array();
+				$tokens[] = $rec['code'];
+				$tokens[] = $rec['pcolor'];
+				$tokens[] = ucfirst($rec['pcolor']);
+			
+				$retarr[] = $this->combine_tokens($mytemplate, $tokens, true);
+			}	
+
+		}
+		if (!empty($retarr)) {
+			
+			//return implode('', $retarr);
+			$tokens2[] = implode('', array_unique($retarr));			
+			$tokens2[] = 'selectpColor';
+			$tokens2[] = 'productColor';
+
+			$myselectemplate = _m('cmsrt.select_template use fpitem-select');
+			return $this->combine_tokens($myselectemplate, $tokens2, true);
+		}	
+
+		return false;	
+		//return $this->combine_tokens($mytemplate, array($code,'none',localize('_NOTAVAILABLE' ,$this->lan)), true);
+	}
+
+	public function pQtyItemSize($code, $template=null, $chkqty=false) {
+		$db = GetGlobal('db');
+		if (!$code) return null;
+		$retarr = array();
+		
+		$sSQL = "select id,pcode,psize,pcolor,qty,net,vat from pqtyitems where pcode=" . $db->qstr($code);
+		//$sSQL.= $chkqty ? null : " and qty>0"; //def check DISABLE allow add to cart when 0 qty
+		$res = $db->Execute($sSQL);
+		
+		if (!empty($res)) {
+			$tmpl = $template ? $template : 'fpitem-size';	
+			$mytemplate = _m('cmsrt.select_template use ' . $tmpl);					
+			foreach ($res as $n=>$rec) {
+				$tokens = array();
+				$tokens[] = $rec['code'];
+				$tokens[] = $rec['psize'];
+				$tokens[] = ucfirst($rec['psize']);
+			
+				$retarr[] = $this->combine_tokens($mytemplate, $tokens, true);
+			}	
+		}
+		if (!empty($retarr)) {
+			//return implode('', $retarr);
+
+			$tokens2[] = implode('', array_unique($retarr));			
+			$tokens2[] = 'selectpSize';
+			$tokens2[] = 'productSize';
+			
+			$myselectemplate = _m('cmsrt.select_template use fpitem-select');
+			return $this->combine_tokens($myselectemplate, $tokens2, true);			
+		}	
+
+		return false;			
+		//return $this->combine_tokens($mytemplate, array($code,'none',localize('_NOTAVAILABLE' ,$this->lan)), true);
+	}	
+	
+	//use both
+	public function pQtyItemSizeColor($code, $template=null, $chkqty=false) {
+		$db = GetGlobal('db');
+		if (!$code) return null;	
+		$retarr = array();
+		
+		$sSQL = "select id,pcode,psize,pcolor,qty,net,vat from pqtyitems where pcode=" . $db->qstr($code);
+		//$sSQL.= $chkqty ? null : " and qty>0"; //def check  DISABLE allow add to cart when 0 qty
+		$res = $db->Execute($sSQL);
+		
+		if (!empty($res)) {		
+			$tmpl = $template ? $template :  'fpitem-sizecolor';	
+			$mytemplate = _m('cmsrt.select_template use ' . $tmpl);			
+			foreach ($res as $n=>$rec) {
+				$tokens = array();
+				$tokens[] = $rec['code'];
+				$tokens[] = $rec['pcolor'] . $rec['psize']; //number (size) last
+				$tokens[] = ucfirst($rec['psize'] . ' ' . $rec['pcolor']);
+			
+				$retarr[] = $this->combine_tokens($mytemplate, $tokens, true);
+			}	
+		}
+		if (!empty($retarr)) {
+			//return implode('', $retarr);
+			
+			$tokens2[] = implode('', array_unique($retarr));			
+			$tokens2[] = 'selectpSizeColor';
+			$tokens2[] = 'productSizeColor';
+			
+			$myselectemplate = _m('cmsrt.select_template use fpitem-select');
+			return $this->combine_tokens($myselectemplate, $tokens2, true);			
+		}	
+
+		return false;			
+		//return $this->combine_tokens($mytemplate, array($code,'none',localize('_NOTAVAILABLE' ,$this->lan)), true);
+	}	
+	
+	//depend on param to show selection boxes
+	public function pQtyItemSelect($code, $template=null, $chkqty=false) {
+		$ret = null;
+		$itemqtysel = _m('cms.paramload use ESHOP+itemqtyselect');
+		
+		if (strstr($itemqtysel, ',')) {
+			$qs = explode(',', $itemqtysel);
+			foreach ($qs as $qtysel) {
+				$qtyselFunc = 'pQtyItem' . ucfirst($qtysel);
+				$ret.= $this->$qtyselFunc($code, $template, $chkqty);
+			}
+			return $ret;	
+		}	
+		
+		switch ($itemqtysel) {
+			case 'sizecolor' :  return $this->pQtyItemSizeColor($code, $template, $chkqty);
+								break;
+			case 'color'	 :	return $this->pQtyItemColor($code, $template, $chkqty);
+								break;
+			case 'size'		 :	return $this->pQtyItemSize($code, $template, $chkqty);  
+								break;
+			case 'all'       :
+			default          :  $ret = $this->pQtyItemSize($code, $template, $chkqty);
+								$ret.= $this->pQtyItemColor($code, $template, $chkqty);
+								return $ret;
+		}	
+		
+		return false;
+	}	
+	
+	//when check qty return sum of qty else just if is existed record (without stock)
+	protected function itemHasQtySelection($code, $chkqty=false, $size=null, $color=null) {
+		$db = GetGlobal('db');
+		if (!$itemqtysel = _m('cms.paramload use ESHOP+itemqtyselect')) //<<<<< ENABLE QTY ITEMS
+			return false;
+		
+		//$code = _m("cmsrt.getRealItemCode use " . $code);
+			
+		$sSQL = $chkqty ? "select sum(qty) as sqty from pqtyitems where pcode=" . $db->qstr($code) :
+						  "select id from pqtyitems where pcode=" . $db->qstr($code);
+		//$sSQL.= $chkqty ? " and qty>0" : null; //def no DISABLE allow add to cart when 0 qty
+		$sSQL.= $chkqty && $size ? " and psize=" . $db->qstr($size) : null; 
+		$sSQL.= $chkqty && $color ? " and pcolor=" . $db->qstr($color) : null; 
+		//echo $sSQL;
+		$res = $db->Execute($sSQL);
+		
+		//return qty 0 when qty < 0 or true / false
+		return $chkqty ? (($res->fields['sqty']<0) ? 0 : $res->fields['sqty']) : 
+							($res->fields['id'] ? true : false);
+	} 
+	
+	protected function pcheckQty($code, $altqty=0, $_pSize=null, $_pColor=null, $nojs=false) {
+		$_ypoloipo1 = 0 ;
+		
+		if ($this->itemHasQtySelection($code)) { //is size/color item
+			
+			if ($_pSize || $_pColor) { //get qty from selection table
+				$_ypoloipo1 = $this->itemHasQtySelection($code, true, $_pSize, $_pColor);
+			}
+			else {
+				if (!$nojs)
+					$this->jsDialog(localize('_ITEMQTYSELECT',$this->lan), localize('_BLN1', $this->lan));
+				
+				$this->itemqtyselect_misattr = true;
+				return false; //=== false return
+			}	
+		}
+		else
+			$_ypoloipo1 = $altqty; //0 for no size/color items	
+		
+		//echo $_ypoloipo1 . '<<<<';
+		return $_ypoloipo1;
+	}
+	
+	protected function pQtyPurchase($code, $qty, $size=null, $color=null) {
+		$db = GetGlobal('db');
+		if ((!$code) || (!$qty)) return 0;
+		
+		if (!$itemqtysel = _m('cms.paramload use ESHOP+itemqtyselect'))
+			return 0; //disabled size/color
+		
+		if ($this->itemHasQtySelection($code)) { //is size/color item
+		
+		    $sSQL = "update pqtyitems set qty=qty-$qty where pcode=" . $db->qstr($code);
+			$sSQL.= " AND psize=" . $db->qstr($size);
+			$sSQL.= " AND pcolor=" . $db->qstr($color);
+			$db->Execute($sSQL,1);	 
+			
+			if ($db->Affected_Rows())
+				return true;
+			
+			return false; //false as ===
+		}
+
+		return 0;	
+	}					
+	
+	protected function pQtyRefund($code, $qty, $size=null, $color=null) {
+		$db = GetGlobal('db');
+		if ((!code) || (!$qty)) return 0;
+		
+		if (!$itemqtysel = _m('cms.paramload use ESHOP+itemqtyselect'))
+			return 0; //disabled size/color
+		
+		if ($this->itemHasQtySelection($code)) { //is size/color item
+		
+		    $sSQL = "update pqtyitems set qty=qty+$qty where pcode=" . $db->qstr($code);
+			$sSQL.= " AND psize=" . $db->qstr($size);
+			$sSQL.= " AND pcolor=" . $db->qstr($color);			
+			$db->Execute($sSQL,1);	 
+			
+			if ($db->Affected_Rows())
+				return true;
+			
+			return false; //false as ===
+		}
+
+		return 0;	
+	}	
+	
 	//SCRIPTS JS
 		
 	/*send js data line by line */
@@ -4915,7 +5544,7 @@ function addtocart(id,cartdetails)
 				if (($product) && ($product!='x')) {
 				
 					$toks = explode(';', $product);
-					$prodID = $toks[0]; //item code
+					$prodID = $toks[7]; //$toks[0]; //item code
 					$tokens = (array) _m($this->shclass . '.fetchProductTokens use '. $prodID);
 					
 					$items[] = $this->combine_tokens($mytemplate, $tokens, true);
@@ -4947,7 +5576,7 @@ function addtocart(id,cartdetails)
 				if (($product) && ($product!='x')) {
 				
 					$toks = explode(';', $product);
-					$prodID = $toks[0]; //item code
+					$prodID = $toks[7]; //$toks[0]; //item code
 					$tokens[] = (array) _m($this->shclass . '.fetchProductTokens use '. $prodID);
 				}	
 			}
@@ -5070,7 +5699,7 @@ function addtocart(id,cartdetails)
 			if (($product) && ($product!='x')) {
 				
 				$toks = explode(';', $product);	
-				$tokens[0] = $toks[0]; //item code
+				$tokens[0] = $toks[7]; //$toks[0]; //item code
 				$tokens[1] = addslashes($this->replace_cartchars($toks[1], true)); //item title
 				$tokens[8] = number_format(floatval($toks[8]),$this->dec_num); //item net price 
 				$tokens[9] = $toks[9]; //qty
@@ -5143,14 +5772,17 @@ function addtocart(id,cartdetails)
 					if (($product) && ($product!='x')) {
 				
 						$toks = explode(';', $product);	
-						$prodID = $toks[0]; //item code				
-						$qty = $toks[9]; //quantity	
+						$prodID = $toks[7]; //$toks[0]; //item code				
+						$qty = intval($toks[9]); //quantity	
+						$size = $toks[10];
+						$color = $toks[11]; 
+						$bqty = intval($toks[15]); //back order	qty
 						$title = addslashes($this->replace_cartchars($toks[1], true));
 						$netprice = number_format(floatval($toks[8]),$this->dec_num); 						
-						$vat = $this->tax;
+						$vat = $this->tax ?? 0;
 						
-						$sSQL2 = "insert into pcartitems (tdate,tid,pid,qty,net,vat,ref,memo) values (";
-						$sSQL2.= "'$tdate','$tid','$prodID',$qty,$netprice,$vat,$refund,'$title'";
+						$sSQL2 = "insert into pcartitems (tdate,tid,pid,qty,size,color,bqty,net,vat,ref,memo) values (";
+						$sSQL2.= "'$tdate','$tid','$prodID',$qty,'$size','$color',$bqty,$netprice,$vat,$refund,'$title'";
 						$sSQL2.= ")";	
 				
 						$db->Execute($sSQL2,1);	 
@@ -5160,6 +5792,9 @@ function addtocart(id,cartdetails)
 							$sSQL3 = "update products set ypoloipo1=ypoloipo1-$qty where $fcode='$prodID'";
 							$db->Execute($sSQL3,1);	
 							//echo $sSQL3;
+							
+							//pqtyitems
+							$this->pQtyPurchase($prodID, $qty, $toks[10], $toks[11]);
 						}
 						else {	
 							$this->jsDialog($tid .' error 0x002', localize('_CARTERROR', $this->lan));
@@ -5190,7 +5825,7 @@ function addtocart(id,cartdetails)
 		
 		if ($db->Affected_Rows()) {
 
-			$sSQL = "select pid,qty from pcartitems where tid='$tid'";
+			$sSQL = "select pid,qty,size,color from pcartitems where tid='$tid'";
 			$res = $db->Execute($sSQL);
 			
 			if ($res) {
@@ -5206,7 +5841,10 @@ function addtocart(id,cartdetails)
 						//update inventory
 						$sSQL3 = "update products set ypoloipo1=ypoloipo1+$qty where $fcode='$prodID'";
 						$db->Execute($sSQL3,1);	
-						//echo $sSQL3;						
+						//echo $sSQL3;	
+
+						//pqtyitems
+						$this->pQtyRefund($prodID, $qty, $rec['size'], $rec['color']);	
 					}
 					else {	
 						$this->jsDialog($tid .' error!', localize('_trusercancel', $this->lan));
@@ -5228,25 +5866,7 @@ function addtocart(id,cartdetails)
 		return false;	
 	}		
 	
-
-	//override
-	public function clear() {
-		parent::clear();
-		
-		$this->js_cleanCart();
-	}
-
-	//override with arg (cookie use)
-    /*public function notempty($buffer=null) {
-        $b = $buffer ? $buffer : $this->buffer;
-		
-        reset ($b); 
-        while (list ($buffer_num, $buffer_data) = each ($b)) {
-           $mchar = strlen($buffer_data); 
-           if ($mchar > 1) return true;
-        }                       
-        return false;
-    }*/	
+	
 	
 	//COOKIE STORE CART
 	
@@ -5316,6 +5936,7 @@ function addtocart(id,cartdetails)
 		
 		return false;		
 	}	
+	
 	
 	/****************** funcs ***********************************/	   		
 	
@@ -5445,7 +6066,7 @@ function addtocart(id,cartdetails)
 		$ret = "<a class=\"$bc\" href=\"$link\">" . $title . "</a>";
 		return ($ret);
 	}	
-	
+	/*
 	protected function combine_tokens(&$template_contents, $tokens, $execafter=null) {
 	    if (!is_array($tokens)) return;
 		
@@ -5474,7 +6095,7 @@ function addtocart(id,cartdetails)
 		
 		return ($ret);
 	}		
-	
+	*/
 	
 	/*********************** API *********************************/
 	
@@ -5485,6 +6106,7 @@ function addtocart(id,cartdetails)
 	}	
 	
 	public function apiCartAdd($item,$qty=null) {
+		$db = GetGlobal('db');		
 		if (!$item) return false;	
 		
 		//make params
@@ -5492,20 +6114,35 @@ function addtocart(id,cartdetails)
 		$cat = GetReq('cat');
 		$page = 0;
 		
-		$db = GetGlobal('db');
+		//init missing attr when item selected
+		$this->itemqtyselect_misattr = false; 		
+		
+		$_pSize = GetParam('selectpSize');
+		$_pColor = GetParam('selectpColor');			
+
 		$_code = _v($this->shclass . '.fcode');
 	  	  
-		$sSQL = "select itmname,price0,price1 from products  WHERE $_code ='" . $item . "'";	  
+		$sSQL = "select $_code,{$this->selectsql} from products  WHERE $_code ='" . $item . "'";	  
 		$result = $db->Execute($sSQL,2);		
-		//echo $sSQL,'>', $result->fields['itmname'];
-		if ($title = $result->fields['itmname']) {	
+		
+		if ($title = $result->fields['itmname']) {	 //check sql return value
 			//echo $title;
 			$pp = _m($this->shclass . '.read_policy'); 	
 		    $price = $result->fields[$pp];
 			$priceqty = _m($this->shclass . ".read_qty_policy use ". $a.'+'.$price."++".$_qty);
 			
-			$params = array(0=>$item,
-							1=>$this->replace_cartchars($title),
+			//qty meter method per item 22,21,2,1,0=default use global params
+			$qtycalc_method = $result->fields['uniida'];
+			//when size/color the item code has sizecolor attr as cart id
+			$extCode = ($_pSize || $_pColor) ? $a . '['.$_pSize . $_pColor .']' : $a;
+			//add size/color at item title
+			$extTitle = ($_pSize || $_pColor) ? $this->replace_cartchars($title) .' ['.$_pSize.' '.$_pColor .']' : $title;			
+			
+			//return qty 0 when qty < 0 
+			$pqty = ($result->fields['ypoloipo1']<0) ? 0 : $result->fields['ypoloipo1'];			
+			
+			$params = array(0=>$extCode,
+							1=>$extTitle,
 							2=>'',
 							3=>'',
 							4=>$cat,
@@ -5514,11 +6151,12 @@ function addtocart(id,cartdetails)
 							7=>$item,
 							8=>$priceqty,
 							9=>1,
-							10=>'',
-							11=>'',							
-							12=>'',
-							13=>'',								
-							14=>'',								
+							10=>$_pSize,
+							11=>$_pColor,							
+							12=>$result->fields['uniname2'],
+							13=>$result->fields['uni2uni1'],								
+							14=>$pqty,
+							15=>0,	
 							);
 	   
 			if ($this->getcartCount() < $this->maxcart) { //check cart maximum items
@@ -5539,29 +6177,78 @@ function addtocart(id,cartdetails)
 				$preqty = GetParam("PRESELQTY") ? GetParam("PRESELQTY") : ($_qty ? $_qty : 1);  
               
 				if ((is_number($preqty)) && ($preqty>0)) {
-					//echo $a;
-					//$params = explode(";",$a); //moved up
 
-					//if isset 2nd mm convert...
-					if (($this->uniname2) && ($preuni==$params[11])) {
-						if ($params[12])
-							$preqty = ($preqty * $params[12]); //2nd mm
-					}
+					//if isset 2nd mm convert
+					if (($this->uniname2) && ($preuni==$params[12])) {
+						if ($params[13]) {
+							$preqty = ($preqty * $params[13]); //2nd mm
+						}	
+						else {
+							$preqty = 1; // default 1 qty
+							//$this->jsDialog("Error: Invalid qty uni2", localize('SHCART_DPC', $this->lan));
+						}	
+					}					
 
 					//check storage
-					if ((!$this->ignoreqtyzero) && ($preqty>$params[14]) && ($this->allowqtyover)) {
-						/*
-						$stockout = ($params[14]-$preqty);
-						$stock_message = $params[0].",".$params[1] . localize('_STOCKOUT',$this->lan) . "(" . $stockout . ")";
-						*/
-						$preqty = $params[14];//set qty= max storage
-					}
-
-					if ($preqty) {
-						$params[9]= $preqty;
-						$b = implode(";",$params);
-						//echo $b;
-						$this->addto($b);
+					$qtycalc_param = $this->allowqtyover ? 11 : 1; //get more items than in db
+					if ($this->ignoreqtyzero) {} else $qtycalc_param += 1; //check if db items is 0 or <0
+					
+					//per item calc or global param for all items
+					$qtycalc = $qtycalc_method ? $qtycalc_method : $qtycalc_param; 
+					
+					switch ($qtycalc) {
+						case 12://check zero 
+								if ($params[14]<=0) {
+									//$this->jsDialog(localize('_STOCKOUT',$this->lan), localize('_BLN1', $this->lan));
+									return false; //exit here
+								}
+						case 11://set qty = selection
+								if (($y = $this->pcheckQty($params[7], $params[14], $_pSize, $_pColor, true))===false) {
+									//$this->jsDialog(localize('_ITEMQTYSELECT',$this->lan), localize('_BLN1', $this->lan));
+									return false;
+								}
+								$_ypoloipo1 =  $y - $this->qtyin($extCode);
+								
+								if ($preqty > $_ypoloipo1) {
+									$stockout = ($preqty - $_ypoloipo1);
+									//$stock_message = localize('_STOCKOUT',$this->lan) . " (" . $stockout . ")";
+									//$this->jsDialog($stock_message, localize('_BLN1', $this->lan));
+																		
+									//$preqty = $_ypoloipo1; //as calculated /entered with check
+									$params[15] = $stockout; //save backorder
+								}	
+								$params[9]= $preqty; //overwrite
+								$this->addto(implode(";",$params));
+								break;
+						
+						case 2 ://check zero
+								if ($params[14]<=0) {
+									//$this->jsDialog(localize('_STOCKOUT',$this->lan), localize('_BLN1', $this->lan));
+									return false; //exit here
+								}	
+						case 1 ://set qty = max in storage
+								if (($y = $this->pcheckQty($params[7], $params[14], $_pSize, $_pColor, true))===false) {
+									//$this->jsDialog(localize('_ITEMQTYSELECT',$this->lan), localize('_BLN1', $this->lan));
+									return false;
+								}	
+								$_ypoloipo1 =  $y - $this->qtyin($extCode);
+								
+								if ($preqty > $_ypoloipo1) {
+									$stockout = ($preqty - $_ypoloipo1);
+									//$stock_message = localize('_STOCKOUT',$this->lan) . " (" . $stockout . ")";
+									//$this->jsDialog($stock_message, localize('_BLN1', $this->lan));
+									
+									$preqty = $_ypoloipo1; 
+									$params[15] = $stockout; //save backorder
+								}	
+								$params[9]= $preqty; //overwrite
+								$this->addto(implode(";",$params));
+								break;
+								 
+						case 0 :
+						default: //as entered no checks
+								$params[9]= $preqty; //overwrite
+								$this->addto(implode(";",$params));
 					}
 				}
 
@@ -5623,13 +6310,14 @@ function addtocart(id,cartdetails)
 		    if (($product) && ($product!='x')) {
 				$aa+=1;
 				$param = explode(";",$product); 
+				$code = $param[7]; //$param[0];
 				$cat = $param[4];
 				$item = $param[1];
 				$utitle = $this->replace_cartchars($item, true);				
-				$link = _m("cmsrt.url use t=$command&cat=$cat&id=" . $param[0] ."+" . $utitle); 
+				$link = _m("cmsrt.url use t=$command&cat=$cat&id=" . $code ."+" . $utitle); 
 			   
 				$itemphoto = _m($this->shclass . ".get_photo_url use ".$param[7].'+1');
-				$linkimage = seturl("t=$command&cat=$cat&id=".$param[0], "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);
+				$linkimage = seturl("t=$command&cat=$cat&id=".$code, "<img src=\"" . $itemphoto . "\" $ixw $iyh alt=\"$item\">",null,null,null,true);
 				
 				$data['cartstatus'] = ($this->status==0) ? 0 : $this->status;//$linkimage : $aa; // . "&nbsp;" . $param[0];
 				/*
@@ -5659,11 +6347,12 @@ function addtocart(id,cartdetails)
 
 				$data['itmcarttotal'] = $this->settotal("Product$aa",$price,$param[9]);// . $this->moneysymbol;
 				
-				$data['itmcarturl'] = _m("cmsrt.url use t=$command&cat=$cat&id=" . $param[0]);
+				$data['itmcarturl'] = _m("cmsrt.url use t=$command&cat=$cat&id=" . $code);
 				$data['itmcarttitle'] = $utitle;
 				$data['itmcartphoto'] = $itemphoto;
 				$data['itmcartcode'] = $param[0];
 				$data['itmcartaa'] = $aa;
+				$data['itmode'] = $code;
                
 			    $loopout[] = $data; 
 				  

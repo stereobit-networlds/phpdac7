@@ -7,8 +7,9 @@ define("RCUPLOAD_DPC",true);
 
 $__DPC['RCUPLOAD_DPC'] = 'rcupload';
 
-$a = GetGlobal('controller')->require_dpc('images/phpico.lib.php');
-require_once($a);
+//$a = GetGlobal('controller')->require_dpc('images/phpico.lib.php');
+//require_once($a);
+require_once(_r('images/phpico.lib.php'));
  
 $__EVENTS['RCUPLOAD_DPC'][0]='cpupload';
 $__EVENTS['RCUPLOAD_DPC'][1]='cpdoupload';
@@ -146,12 +147,12 @@ class rcupload {
 	      }		
           
 		  if ($action)
-		    $filename = seturl("t=".$action.'&editmode='.GetReq('editmode'));		
+		    $filename =  _m("cmsrt.seturl use t=$action&editmode=" . GetReq('editmode'). "+++1"); //seturl("t=".$action.'&editmode='.GetReq('editmode'));		
 		  else {	
 		    if (GetReq('editmode')) 
-			  $filename = seturl("t=cpdoupload&editmode=1");		
+			  $filename = _m("cmsrt.seturl use t=$action&editmode=1+++1"); //seturl("t=cpdoupload&editmode=1");		
 			else
-              $filename = seturl("t=cpdoupload");		
+              $filename = _m("cmsrt.seturl use t=cpdoupload+++1"); //seturl("t=cpdoupload");		
 		  }	
 		
 	      //upload file(s) form
@@ -253,7 +254,7 @@ class rcupload {
 		  	
 	    if (is_dir($this->tpath)) {
 		
-          $filename = seturl("t=cpchangeuloaddir");		
+          $filename = _m("cmsrt.seturl use t=cpchangeuloaddir+++1"); //seturl("t=cpchangeuloaddir");		
 		
           $out  = "<FORM action=". "$filename" . " method=post class=\"thin\">";
           $out .= "<FONT face=\"Arial, Helvetica, sans-serif\" size=1>"; 			 	   		    
@@ -403,9 +404,9 @@ function advanced_uploadform($title=null,$upfiles=null,$atoz=null,$path=null,$pr
 	      }		
           
 		  if (GetReq('editmode')) 
-			$filename = seturl("t=cpdouploadadv&id=$id&cat=$cat&editmode=1");		
+			$filename = _m("cmsrt.seturl use t=cpdouploadadv&id=$id&cat=$cat&editmode=1+++1"); //seturl("t=cpdouploadadv&id=$id&cat=$cat&editmode=1");		
 		  else
-            $filename = seturl("t=cpdouploadadv");			
+            $filename = _m("cmsrt.seturl use t=cpdouploadadv+++1"); //seturl("t=cpdouploadadv");			
 		
 	      //upload file(s) form
           $out  = "<FORM action=". "$filename" . " method=post ENCTYPE=\"multipart/form-data\" class=\"thin\">";
@@ -537,10 +538,10 @@ function advanced_uploadform($title=null,$upfiles=null,$atoz=null,$path=null,$pr
 	              $icon = "<img src=\"" . $my_icon . "\"  width=\"25\" height=\"25\" border=\"0\">";  
                   
 	              if ((defined('SHDOWNLOAD_DPC')) && ($id)) {	
-	                if (GetGlobal('controller')->calldpc_var("shdownload.direct"))
-		              $fout .= seturl("t=download&cat=$cat&id=".$id,$icon);//???? to be direct link 
+	                if (_v("shdownload.direct"))
+		              $fout .= _m("cmsrt.seturl use t=download&cat=$cat&id=$id+$icon++1"); //seturl("t=download&cat=$cat&id=".$id,$icon);//???? to be direct link 
 		            else  
-	                  $fout .= seturl("t=download&cat=$cat&id=".$id,$icon);
+	                  $fout .= _m("cmsrt.seturl use t=download&cat=$cat&id=$id+$icon++1"); //seturl("t=download&cat=$cat&id=".$id,$icon);
 	              }
 	              else {
 		           $downloadfile = $this->urlbase . '/'. $upath .'/'.$file;					 
@@ -567,7 +568,8 @@ function advanced_uploadform($title=null,$upfiles=null,$atoz=null,$path=null,$pr
 		 $this->post = true;
 	   }  	   
 	   elseif ($source) {
-	     $ret = seturl('t=cpupload&source='.$source.'&id='.GetReq('id').'&cat='.GetReq('cat').'&editmode=1',localize('_unlinkfile',$lan));
+	     //$ret = seturl('t=cpupload&source='.$source.'&id='.GetReq('id').'&cat='.GetReq('cat').'&editmode=1',localize('_unlinkfile',$lan));
+		 $ret = _m("cmsrt.seturl use t=cpupload&source=$source&id=". GetReq('id')."&cat=". GetReq('cat') . "&editmode=1+". localize('_unlinkfile',$lan) ."++1"); 
 	   }
 	   else {
 	     $ret = 'Invalid source'; 

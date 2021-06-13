@@ -13,3 +13,5 @@
 		<div class="clear"></div>
 					
 		<!--input type="button" onClick="javascript:guestreg('cart-order');" class="button" name="guestregister" value="<-hpdac>cms.phpcode use <-hp return _v('shcart.order')-></phpda->"-->
+		
+		<p class="form-row form-row-wide create-account"><input type="checkbox" value="1" checked="checked" name="createaccount" id="createaccount" class="input-checkbox"> <label class="checkbox" for="createaccount"><phpdac>cmsrt.slocale use _CREATEACCOUNTOPTION</phpdac>?</label></p>

@@ -163,9 +163,7 @@ class rcitems {
 	var $result;
 	var $path, $urlpath;
 	var $imgpath,$restype,$thubpath,$publicthubpath;
-	var $_grids;
 	var $debug_sql;	
-	var $charts;
 	var $ajaxLink, $hasgraph;
     var $delete_attach,$restore_attach,$delete_item,$edit_item,$offer_item,$add_item,$sep,$mail_item;	
     var $image2add, $image2sold;
@@ -198,9 +196,7 @@ class rcitems {
 	  $this->infolder = paramload('ID','hostinpath');	  
 	  $this->thubpath = $this->path . $this->infolder . '/images/thub/';	  
 	  $this->urlpath = paramload('SHELL','urlpath').$this->infolder.'/';		  
-	  $this->urlbase = paramload('SHELL','urlbase').$this->infolder.'/';
-	  //$murl = arrayload('SHELL','ip');
-      //$this->url = $murl[0]; 	  
+	  $this->urlbase = paramload('SHELL','urlbase').$this->infolder.'/'; 
 	  $this->baseurl = _v('cmsrt.httpurl');
 	  $this->url = $this->baseurl; 	
 	  
@@ -222,14 +218,9 @@ class rcitems {
       $photo_sm = remote_paramload('RCITEMS','photosmpath',$this->path);		  
       $this->img_small = $photo_sm?"/images/$photo_sm/":null;	  
 	      	
-	  
 	  $this->reset_on_import =  paramload('RCITEMS','resetonimport');  
-	  
-      //$this->_grids[] = new nitobi("Items");	  
-	  //$this->charts = new swfcharts;	
-	  $this->ajaxLink = seturl('t=cpvstatsshow&statsid=');	  
-	  
-	  
+	  $this->ajaxLink = _m("cmsrt.seturl use t=cpvstatsshow&statsid=+++1"); //seturl('t=cpvstatsshow&statsid=');	  
+	  /*
       if ($GRX) {    
           $this->delete_attach = loadTheme('dphoto',localize('_delete',getlocal())); 
           $this->restore_attach = loadTheme('rphoto',localize('_restore',getlocal()));		  
@@ -242,7 +233,7 @@ class rcitems {
 		  
 		  $this->sep ='&nbsp;';// loadTheme('lsep');		  		  
       } 
-      else { 
+      else { */
           $this->delete_attach = localize('_delete',getlocal()); 
           $this->restore_attach = localize('_restore',getlocal());		  
           $this->delete_item = localize('_delete',getlocal()); 
@@ -253,11 +244,9 @@ class rcitems {
           $this->mail_item = localize('_mail',getlocal());		  
 		  
 		  $this->sep = "|";	
-      }	
+      /*}	*/
 	  
-	  //$this->image2add = paramload('RCITEMS','image2add'); 
-      $this->image2add = remote_paramload('RCITEMS','image2add',$this->path);	  
-	  //$this->image2sold = paramload('RCITEMS','image2sold'); 	  
+      $this->image2add = remote_paramload('RCITEMS','image2add',$this->path);	   
       $this->image2sold = remote_paramload('RCITEMS','image2sold',$this->path);	
 	  
 	  $this->map_t = remote_arrayload('RCITEMS','maptitle',$this->path);	
@@ -427,7 +416,7 @@ class rcitems {
 	}
 	
 	function grid_javascript() {
-	
+	  /*	
       if (iniload('JAVASCRIPT'))  {		      
 		   
 	       $code = $this->init_grids();	     		
@@ -435,7 +424,8 @@ class rcitems {
 		   $js = new jscript;		   
            $js->load_js($code,"",1);			   
 		   unset ($js);
-	  }		
+	  }	
+	  */	
 	}
 		
 
@@ -461,7 +451,7 @@ class rcitems {
 	}	
 	
     function form_photo($onlyforms=false, $form_cat=null, $form_item=null, $pagecall=null)  { 	
-	
+	   /*
        $cat = GetReq('cat');		
        $sel = GetReq('sel');
 	   //when form called
@@ -471,7 +461,7 @@ class rcitems {
 	   $id = $this->encode_image_id(GetReq('id'));
 	   
 	   $photo = $this->imgpath .  $id . $this->restype; 
-	   $ppath = $this->urlpath. /*'/images/thub/'*/$this->ptp . $id . $this->restype;  //echo $ppath;
+	   $ppath = $this->urlpath. $this->ptp . $id . $this->restype;  //echo $ppath;
 	   $interface = $this->photodb;
 	   
 		 if (GetReq('editmode')) {
@@ -777,17 +767,7 @@ class rcitems {
 	       $myrec = new window('',$viewdata,$viewattr);
 	       $out .= $myrec->render("center::100%::0::group_article_selected::left::5::5::");
 	       unset ($viewdata);
-	       unset ($viewattr);						 
-		 /*}  
-	     else {
-	   
-	       $myrec = new window('Error',$uout);
-	       $out .= $myrec->render("center::100%::0::group_article_selected::left::5::5::");	   
-	     }
-	   
-	     if (!GetReq('editmode'))
-	       $out .= "<br>" . seturl("t=cpitems&cat=".$cat."&sel=".$sel,"Επιστροφή"); 	
-		  */    
+	       unset ($viewattr);						    
 	   }
 	   else { // 1 sized photo
 	   
@@ -889,6 +869,7 @@ class rcitems {
 	   }//else of 1 sized photo	   
 	   
 	   return ($out);
+	   */
 	} 
 	
 	function change_photo($source_photo=null) {
@@ -1194,7 +1175,7 @@ class rcitems {
 			//$editlink = seturl("t=cpmhtmleditor&htmlfile=&type=.html&editmode=1&id={".$active_code."}");
 		else
 			$editlink = $editlink ?
-						$editlink :	seturl("t=cpvphoto&editmode=1&id={".$active_code."}");
+						$editlink :	_m("cmsrt.seturl use t=cpvphoto&editmode=1&id=$active_code+++1"); //seturl("t=cpvphoto&editmode=1&id={".$active_code."}");
 					
 		$name_active = $lan?'itmname':'itmfname'; 
 		$itmdescr = $lan?'itmdescr':'itmfdescr'; 
@@ -2187,7 +2168,7 @@ class rcitems {
                    $price = number_format($price1,2);					 
 			       //echo $price,'>';
 				      			      		   
-				   $item_url = $this->baseurl . '/' . seturl('t=kshow&cat='.GetReq('cat').'&id='.$rec[$code],null,null,null,null,1);
+				   $item_url = $this->baseurl . '/' . _m("cmsrt.seturl use t=kshow&cat=".GetReq('cat')."&id=".$rec[$code]."+++1"); //seturl('t=kshow&cat='.GetReq('cat').'&id='.$rec[$code],null,null,null,null,1);
                    if ($this->photodb)
 				     $item_photo_url = $this->baseurl . '/showphoto.php?id='.$rec[$code].'&type=LARGE';
 				   else
@@ -2531,25 +2512,6 @@ class rcitems {
 		return false;				
 	}			
 	
-	/*function alphabetical($command='cpitems') {
-	
-	  $preparam = GetReq('alpha');
-	  $cat = GetReq('cat');
-	  
-	  $ret .= seturl("t=$command","Αρχή") . "&nbsp;|";
-	
-	  for ($c=$preparam.'a';$c<$preparam.'z';$c++) {
-	    $ret .= seturl("t=$command&cat=$cat&alpha=$c",$c) . "&nbsp;|";
-	  }
-	  //the last z !!!!!
-	  $ret .= seturl("t=$command&cat=$cat&alpha=".$preparam."z",$preparam."z");
-	  
-      //$mywin = new window('',$ret);
-      //$out = $mywin->render();	  
-	  
-	  return ($ret);
-	}*/	
-	
 	function codeit($id,$colorize=true) {
 	
 	  $seira = 'A';
@@ -2591,22 +2553,14 @@ class rcitems {
 		//due to str id of code2..transform from rec id
 	    $sSQL = 'select ' . $this->getmapf('code') . ' from products where id='.$id;
 		$ret = $db->Execute($sSQL,2);	 			
-		//echo $sSQL, '>',$ret->fields[0]; 
-		//$id = $ret->fields[0];
-	
-	    //$editurl = seturl("t=cpvmodify&editmode=1&id=").GetReq('id');
-		//$editurl = seturl("t=cpvphoto&editmode=1&id=").$ret->fields[0];//$id;
-		
 
 		$editurl = $this->urlbase . "cp/cpmhtmleditor.php?t=cpmhtmleditor&iframe=1&htmlfile=&type=.html&editmode=1&id=".$ret->fields[0];
 		$frame = "<iframe src =\"$editurl\" width=\"100%\" height=\"350px\"><p>Your browser does not support iframes</p></iframe>";    
 
-		
 		if ($ajaxdiv)
 			return $ajaxdiv.'|'.$frame;
-		else
-			return ($frame);
-		
+		//else
+		return ($frame);
 	}	
 	
 	function loadframe2($ajaxdiv=null) {
@@ -2616,23 +2570,22 @@ class rcitems {
 		//due to str id of code2..transform from rec id
 	    $sSQL = 'select ' . $this->getmapf('code') . ' from products where id='.$id;
 		$ret = $db->Execute($sSQL,2);	 			
-		//$id = $ret->fields[0];
 	
-	    //$editurl = seturl("t=cpvmodify&editmode=1&id=").GetReq('id');
 		if ($cptemplate)
 			$editurl = seturl("t=cpmvphoto&ajax=1&editmode=1&id=").$ret->fields[0];//$id;
 		else
 			$editurl = seturl("t=cpvphoto&editmode=1&id=").$ret->fields[0];//$id;
-	    //$editurl = $this->urlbase . "cp/cpmhtmleditor.php?htmlfile=&type=.html&editmode=1&id=".$ret->fields[0];
+	    
 		$frame = "<iframe src =\"$editurl\" width=\"100%\" height=\"350px\"><p>Your browser does not support iframes</p></iframe>";    
 
 		if ($ajaxdiv)
 			return $ajaxdiv.'|'.$frame;
-		else
-			return ($frame);
+		//else
+		return ($frame);
 	}		
 	
 	function init_grids() {
+		/*
 	    $editurl = seturl("t=cpeditframe&id=");
         $editurl2 = seturl("t=cpphotoframe&id="); 
   		
@@ -2670,9 +2623,11 @@ function photo_item() {
 ";
         $out .= "\r\n";
         return ($out);
+		*/
 	}
 	
 	function show_grids() {
+		/*
 	   $item_id = GetReq('id');
 	   $cat = rawurlencode(GetReq('cat'));	
 	   $sel = GetReq('sel');
@@ -2697,6 +2652,7 @@ function photo_item() {
 	   $rd .= "<div id='edtem'>".$init_content . "</div>";		   
 
 	   return ($rd);	
+	   */
 	}
 	
 	function show_mail() {
@@ -2760,10 +2716,7 @@ function photo_item() {
 		   $recar[localize('_extras',getlocal())]=($rec[10]?nl2br($extras):"&nbsp;");
 		   $recar[localize('_code',getlocal())] = $this->codeit($rec[11],false);
 		   $recar[localize('_axia',getlocal())]= writecl($price,'#000000','#FF0000') . "<br><br>";
-		   //$recar[]=;
-		   //set links as elements...
-		   //$recar[seturl('t=klist&cat='.$rec[0].'&subcat='.$scat,'Επιστροφή...')] =  seturl('t=qbuy&id='.$id,'Εκδήλωση ενδιαφέροντος...');	   		   		   
-		   
+
 		   foreach ($recar as $title=>$val)
 		     $ret .= $title . ":" . $val . "<br>";	  		 
 			 
@@ -2793,16 +2746,7 @@ function photo_item() {
 	  //$id = key($this->map_t[$name]) ;
 	  $ret = $this->map_f[$id];
 	  return ($ret);
-	}	
-	
-	/*function show_graph($xmlfile,$title,$url=null,$ajaxid=null,$xmax=null,$ymax=null) {
-	  $gx = $this->graphx?$this->graphx:$xmax?$xmax:550;
-	  $gy = $this->graphy?$this->graphy:$ymax?$ymax:250;	
-	  
-	  $ret = $title; 
-	  $ret .= $this->charts->show_chart($xmlfile,$gx,$gy,$url,$ajaxid);
-	  return ($ret);
-	}*/	
+	}		
 	
 	function add_attachment_data($itmcode,$type=null,$data=null, $forceisid=null) {
       $db = GetGlobal('db');	
@@ -3120,8 +3064,8 @@ function submitform()
 			$cat .= $rec['cat3'] ? $this->cseparator.$rec['cat3'] : null;
 			$cat .= $rec['cat4'] ? $this->cseparator.$rec['cat4'] : null;
 			
-			$item_url = $this->baseurl . '/' . seturl('t=kshow&cat='.$cat.'&id='.$id,null,null,null,null,1);
-			$item_name_url = seturl('t=kshow&cat='.$cat.'&id='.$id,$rec['itmname'],null,null,null,1);//$this->rewrite);			   
+			$item_url = $this->baseurl . '/' . _m("cmsrt.seturl use t=kshow&cat=$cat&id=$id+++1"); //seturl('t=kshow&cat='.$cat.'&id='.$id,null,null,null,null,1);
+			$item_name_url = _m("cmsrt.seturl use t=kshow&cat=$cat&id=$id+". $rec['itmname'] ."++1"); //seturl('t=kshow&cat='.$cat.'&id='.$id,$rec['itmname'],null,null,null,1);//$this->rewrite);			   
 		
             if ($this->has_photo2db($id,$this->restype,'LARGE')) {
 				$item_photo_url = $this->baseurl . '/showphoto.php?id='.$id.'&type=LARGE';

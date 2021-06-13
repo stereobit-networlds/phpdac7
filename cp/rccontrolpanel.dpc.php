@@ -248,7 +248,7 @@ class rccontrolpanel {
 		$this->owner = $_POST['Username'] ? $_POST['Username'] : GetSessionParam('LoginName');
 		$this->seclevid = $GLOBALS['ADMINSecID'] ? $GLOBALS['ADMINSecID'] : $_SESSION['ADMINSecID'];		
 		
-		$this->gotourl = seturl('t=cp&group=' . GetReq('group'));		
+		$this->gotourl = _m("cmsrt.seturl use t=cp&group=". GetReq('group') ."+++1"); //seturl('t=cp&group=' . GetReq('group'));		
 		$this->userDemoIds = array(6,7); 
 		
 		$crmSecurityLevel = paramload('CRM','seclevel'); 
@@ -277,7 +277,8 @@ class rccontrolpanel {
 							 
 		 case 'cpchartshow'	: 	if ($report = GetReq('report')) {//ajax call
 									$this->hasgraph = _m("swfcharts.create_chart_data use $report");
-									$this->gotourl = seturl('t=cpchartshow&group='.GetReq('group').'&ai=1&report='.$report.'&statsid=');
+									//$this->gotourl = seturl('t=cpchartshow&group='.GetReq('group').'&ai=1&report='.$report.'&statsid=');
+									$this->gotourl = _m("cmsrt.seturl use t=cpchartshow&group=".GetReq('group')."&ai=1&report=$report&statsid=+++1");
 								}
 								break;	   			 
 	   	
@@ -494,12 +495,16 @@ document.addEventListener('keydown', function(event) {
 			$tdata = _m("cmsrt.select_template use $template+1");
 			
 			for ($y=$y=(date('Y')-2); $y<=intval(date('Y')); $y++) {
-				$yearsli .= '<li>'. seturl('t='.$t.'&month='.$month.'&year='.$y, $y) .'</li>';
+				//$yearsli .= '<li>'. seturl('t='.$t.'&month='.$month.'&year='.$y, $y) .'</li>';
+				$_ur = _m("cmsrt.seturl use t=$t&month=$month&year=$y+$y++1");
+				$yearsli .= '<li>'. $_ur .'</li>';
 			}
 		
 			for ($m=1;$m<=12;$m++) {
 				$mm = sprintf('%02d',$m);
-				$monthsli .= '<li>' . seturl('t='.$t.'&month='.$mm.'&year='.$year, $mm) .'</li>';
+				//$monthsli .= '<li>' . seturl('t='.$t.'&month='.$mm.'&year='.$year, $mm) .'</li>';
+				$_mr = _m("cmsrt.seturl use t=$t&month=$mm&year=$year+$mm++1");
+				$monthsli .= '<li>'. $_mr .'</li>';
 			}	  
 			
 			//call cpGet from rcpmenu not this (only def action)

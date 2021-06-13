@@ -264,12 +264,24 @@ EOF;
 				//one elm array with base64 encoded data
 				$contents.= $r; 
 			}	
-			$ret = @file_put_contents($this->savetmpfile($file) , base64_decode($contents), LOCK_EX);
 			
-			//return 'file ' . $fid . '->' . $file . '->' . $ret;	
+			//$ret = @file_put_contents($this->savetmpfile($file), base64_decode($contents), LOCK_EX);
+			//return 'file ' . $fid . '->' . $file . '->' . $ret;				
 			
-			$kbytes = _m("rccontrolpanel.bytesToSize1024 use $ret");
-			return $kbytes . ' downloaded';
+			$err =null;
+			if ($_file = $this->savetmpfile($file, $err)) {
+				
+				if (!$err) {
+					
+					$ret = @file_put_contents($_file , base64_decode($contents), LOCK_EX);
+			
+					$kbytes = $this->bytesToSize1024($ret); //_m("rccontrolpanel.bytesToSize1024 use $ret");
+					return $kbytes . ' downloaded';
+				}
+				//else
+				//return $err;
+			}
+			return 'Message: ' . $err;	
 		}	
 			
 		return false;	
@@ -485,7 +497,7 @@ Scan executed in $elapsed seconds.\r\n";
 				$queries+=1;
 			}	
 			$ret = file_put_contents($this->prpath . 'sqlupgrade.txt', $sql, LOCK_EX);
-			return $queries . ' queries executed.';			
+			return $queries . ' queries executed.<br/>';			
 		}
 		return false;
 	}
@@ -494,19 +506,7 @@ Scan executed in $elapsed seconds.\r\n";
 		$inif = $this->prpath . 'myconfig.txt.php';
 		@copy($inif, str_replace('.txt', '._xt', $inif)); //backup
 		
-		//$inidata = @file_get_contents($inifile);
-		include($inifile); //new conf .php type
-		
-		$fp = new fronthtmlpage(null);
-		$pini = $fp->process_commands($myconf); //$inidata);
-		unset ($fp);
-		
-		$inif_local = $this->prpath . 'ini.local';		
-		@file_put_contents($inif_local, $pini, LOCK_EX); //copy local		
-		
-		$ini_array = parse_ini_file($inif_local, true, INI_SCANNER_RAW);
-		//alternative after check 
-		//$ini_array = parse_ini_string($pini, true, INI_SCANNER_RAW);
+		$ini_array = parse_ini_file($inifile, true, INI_SCANNER_RAW);
 		
 		if (!empty($ini_array)) {
 		    $i = 0;
@@ -522,14 +522,27 @@ Scan executed in $elapsed seconds.\r\n";
 		return false;
 	}	
 
-	protected function savetmpfile($file=null) {
+	protected function savetmpfile($file=null, &$err=null) {
 		if (!$file) $file = 'file.tmp';
+		$backdir = '/_lastknowconf';
 		$tmp = '/cp/tmp'; 
 		$d = $this->urlpath . $tmp . $file;
 		
+		$err = null;
+		/*
+		if (is_file($d)) { //file exists
+			$err = "File ($file) exists";
+			return false;
+		}	
+		*/
+		
+		//last known conf backup
+		$backfile = str_replace($tmp, $tmp . $backdir, $d);
+		$this->mkdir(pathinfo($backfile, PATHINFO_DIRNAME));	
+		@copy($d, $backfile);
+		
 		//create dir if not exist
 		$this->mkdir(pathinfo($d, PATHINFO_DIRNAME));
-		
 		return ($d);
 	}	
 	
@@ -586,9 +599,14 @@ Scan executed in $elapsed seconds.\r\n";
 	protected function checkCRC() {
 		$version = $this->getVersion(); //current version
 		$errors = 0;
-		$backdir = '/lastknowconf';
+		$backdir = '/_lastknowconf';
 		$tmp = '/cp/tmp'; 
 		$localdir = $this->urlpath . $tmp;		
+		
+		$_errors = array();		
+		$updatefiles = array();
+		$updatefilesDate = array();
+		$updatefilesCRC = array();
 		
 		//call again server for hash list
 		$response = $this->serverRequest();
@@ -598,41 +616,52 @@ Scan executed in $elapsed seconds.\r\n";
 		foreach ($response as $r=>$el) {
 			$i=0;
 			foreach ($el as $e) { 
-				if ($i==0) {
-					//$ret .= $e;	
+				if ($i==0) {	
 					$crc = $e;
-					$ret .= $e;
+					//$ret .= $e;
+					$updatefilesCRC[$r] = $crc;
 				}	
 				elseif ($i==1) {
 					$date = $e;
-					$ret .= '&gt;' . $e;
+					//$ret .= '&gt;' . $e;
+					$updatefilesDate[$r] = $date;
 				}
 				elseif ($i==2) {
 					$file_path = $localdir . $e;
 					$thiscrc = hash_file("sha1", $file_path);
-					if ($crc == $thiscrc)
-						$ret .= '&gt;' . basename($file_path) . ': ok'; 
+					if ($crc == $thiscrc) { //crc remote and local check
+						
+						//$ret .= '&gt;' . basename($file_path) . ': ok'; 
+						$updatefiles[$r] = $file_path; //bypass
+					}	
 					else {
-						$ret .= '&gt;' . $thiscrc . '&gt;' . basename($file_path) . ': failed'; 
+						//$ret .= '&gt;' . $thiscrc . '&gt;' . basename($file_path) . ': failed'; 
 						$errors += 1;
+						$_errors[] = basename($file_path) . ': failed';
 					}
 
-					$updatefiles[] = $file_path;		
+					//$updatefiles[] = $file_path;		
 				}
 				elseif ($i==3) 
 					$version = $e;
 					
 				$i+=1;
 			}	
-			$ret .= '<br/>';	
+			//$ret .= '<br/>';	
 		}
+		//print_r($updatefiles);
+		//print_r($updatefilesDate);
 		
+		/*
 		if ($errors>0) {
 			$ret .= 'Please repeat the upgrade procedure.';
 		}
 		else {
+		*/
+		
+		/* //MOVED BEFORE DOWNLOAD every single file
 			//backup original files (last known conf)
-			$ret .= 'Created last know configuration<br/>';			
+			$ret .= 'Create last know configuration<br/>';			
 			$this->mkdir($localdir . $backdir);
 			foreach ($updatefiles as $i=>$f) {
 				
@@ -642,40 +671,137 @@ Scan executed in $elapsed seconds.\r\n";
 				@copy(str_replace($tmp, '', $f), $backfile);
 				//$ret .= str_replace($tmp, '', $f) . '->' . $backfile . '<br/>';
 			}
-			
+		*/	
 			//do the copy replacing original files
-			$ret .= 'Updating...<br/>';
+			$ret .= 'Updating<br/>';
 			reset($updatefiles);
-			foreach ($updatefiles as $u=>$tmpfile) {				
-				$updfile = str_replace($tmp, '', $tmpfile);
-				//may the dir not exist
-				$this->mkdir(pathinfo($updfile, PATHINFO_DIRNAME));
-				if (@copy($tmpfile, $updfile))
-					@unlink($tmpfile);
-				//$ret .= $tmpfile . '->' . $updfile . '<br/>';
+			$_u = 0;
+			foreach ($updatefiles as $u=>$tmpfile) {	
 				
-				//save dirs to erase order by depth
-				/*$tmpdirname = pathinfo($tmpfile, PATHINFO_DIRNAME);
-				$ms = explode('/', $tmpdirname);
-				$depth = count($ms);
-				$id = array_pop($ms);
-				$tmpdir[$depth . $id] = $tmpdirname;	
-				//$ret .= $depth . $id . '->' . $tmpdirname . '<br/>';		*/
-			}	
-			
-			//clean dirs
-			/*rsort($tmpdir);
-			foreach ($tmpdir as $d=>$dir) {
-				if (is_dir($dir))
-					rmdir($dir);
-				$ret .= $d .'->' . $dir . '<br/>';
-			}*/			
+				$backfile = str_replace($tmp, $tmp . $backdir, $tmpfile);
+				
+				if (strstr($tmpfile,'.sql')) {//common update, must be admindb
+				
+					if ((is_file($backfile)) && (filesize($tmpfile) === filesize($backfile))) {}
+					else {
+						$ret .= 'Update DB...<br/>';
+						if ($ret .= $this->_execsql($tmpfile))
+							$ret .= '..ok<br/>';
+					}
+				}	
+				elseif (strstr($tmpfile,'.conf')) {//update ini
+				
+					if ((is_file($backfile)) && (filesize($tmpfile) === filesize($backfile))) {}
+					else {
+						$ret .= 'Update INI...<br/>';
+						if ($this->_execini($tmpfile))
+							$ret .= '..ok<br/>';	
+					}
+				}	
+				else {
+					
+					$ret .= 'Copy '. $tmpfile . "<br/>";
+					$updfile = str_replace($tmp, '', $tmpfile);					
+					
+					if ((is_file($backfile)) && (filesize($tmpfile) === filesize($backfile))) {
+						$ret .= 'Bypass copying:' . $tmpfile . '->' . $updfile . '<br/>';
+					}
+					else {
+						
+						$tmpfileDate = date("Y-m-d H:i:s", filemtime($tmpfile));
+						$tmpfileCRC = hash_file("sha1", $tmpfile);						
+						
+						$tmpdate_local = new DateTime($tmpfileDate, new DateTimeZone('Europe/Athens'));
+						$tmpdate_remote = new DateTime($updatefilesDate[$u], new DateTimeZone('Europe/Athens'));
+						
+						$diff = date_diff($tmpdate_local, $tmpdate_remote);
+						$tmpdate_diff = $diff->format('%i minutes');
+						
+						$hours = $diff->h;
+						$hours = $hours + ($diff->days*24);
+						
+						$ret .= " file data: ({$tmpfileDate} - {$updatefilesDate[$u]}) -> {$hours} <br/>";	
+												
+						//may the dir not exist
+						$this->mkdir(pathinfo($updfile, PATHINFO_DIRNAME));
+						
+						if (@copy($tmpfile, $updfile)) {
+							
+							//@unlink($tmpfile);
+							$ret .= " ...ok ({$tmpfileDate} - {$updatefilesDate[$u]}) -> {$hours} <br/>";
+							$_u += 1;
+						}
+						else	
+							$ret .= 'Error copying:' . $tmpfile . '->' . $updfile . '<br/>';						
+					}
+					/*
+					if (is_file($tmpfile)) {
+						$tmpfileDate = date("Y-m-d H:i:s", filemtime($tmpfile));
+						$tmpfileCRC = hash_file("sha1", $tmpfile);						
+						
+						$tmpdate_local = new DateTime($tmpfileDate, new DateTimeZone('Europe/Athens'));
+						$tmpdate_remote = new DateTime($updatefilesDate[$u], new DateTimeZone('Europe/Athens'));
+						
+						$diff = date_diff($tmpdate_local, $tmpdate_remote);
+						$tmpdate_diff = $diff->format('%i minutes');
+						
+						$hours = $diff->h;
+						$hours = $hours + ($diff->days*24);
+						
+						$ret .= " file exists ({$tmpfileDate} - {$updatefilesDate[$u]}) -> {$hours} <br/>";	
+						
+						//last known conf check CRC
+						if (filesize($tmpfile) === filesize($backfile))
+							$bypass = true;
+					}
+					else {
+						$tmpfileDate = null;
+						$hours = 0;			
+						
+						$ret .= "-> {$hours}<br/>";
+						$bypass = false;
+					}	
+					
+					if ($bypass) {
+						$ret .= 'Bypass copying:' . $tmpfile . '->' . $updfile . '<br/>';
+					}
+					else {
+						//may the dir not exist
+						$this->mkdir(pathinfo($updfile, PATHINFO_DIRNAME));
+						
+						if (@copy($tmpfile, $updfile)) {
+							
+							//@unlink($tmpfile);
+							$ret .= " ...ok ({$tmpfileDate} - {$updatefilesDate[$u]}) -> {$hours} <br/>";
+							$_u += 1;
+						}
+						else	
+							$ret .= 'Error copying:' . $tmpfile . '->' . $updfile . '<br/>';
+					}	
+					*/
+					//$ret = $tmpfile . '->' . $updfile . '<br/>';
+				}
+			}			
 			
 			//save current version
 			$this->setVersion($version);
-			$ret .= 'Finished successfully<br/>';
+			
+			if (!empty($_errors)) {
+				
+				foreach ($_errors as $e=>$err)
+					$ret .= $err . '<br/>';
+				$ret .= '<br/>Finished with ' . $errors . ' error(s)<br/>';
+			}	
+			else
+				$ret .= '<br/>Finished successfully<br/>';
+		/*	
+				
+			foreach ($_updates as $e=>$upd)
+				$ret .= $upd . '<br/>';
+			$ret .= '<br/>Finished with ' . $_u . ' updated objects<br/>';
+						
 		}
-
+		*/
 		return ($ret);	
 	}	
 	
@@ -701,6 +827,11 @@ Scan executed in $elapsed seconds.\r\n";
     {
         return 0755;
     }
+	
+    public function bytesToSize1024($bytes, $precision = 2) {
+        $unit = array('B','KB','MB','GB');
+        return @round($bytes / pow(1024, ($i = floor(log($bytes, 1024)))), $precision).' '.$unit[$i];
+    }  	
 
 };
 }

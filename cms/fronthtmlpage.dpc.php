@@ -354,9 +354,12 @@ class fronthtmlpage {
 		$icon_file = $this->urlpath . '/images/editpage.png';
 		
         SetSessionParam('authverify',1);		
-			
+		/*	
 		$ret .= $notheme ? seturl("modify=".urlencode(base64_encode('stereobit'))."&turl=".$target_url.$mynewquery):
 		                   seturl("modify=".urlencode(base64_encode('stereobit'))."&turl=".$target_url.$mynewquery,$this->editmode_point); 	
+		*/		
+		$modurl = "modify=" . urlencode(base64_encode('stereobit')). "&turl=". $target_url . $mynewquery;		
+		$ret .= ($notheme) ? _m("cmsrt.seturl use $modurl+++1") : _m("cmsrt.seturl use $modurl+{$this->editmode_point}++1");				   
 			
 		return ($ret);
 	}

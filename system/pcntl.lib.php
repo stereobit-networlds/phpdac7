@@ -212,22 +212,25 @@ parse_ini_string_m:
 	
 	protected function _loadinifiles() {
 
-		if (is_readable("config.ini.php")) {//in root	  
+		if (is_readable(getcwd() . "/cp/config.ini.php")) {//first in cp (speed for root app)
+			//echo '->cp/';
+			include(getcwd() . "/cp/config.ini.php");
+			$config = @parse_ini_string($conf, 1, INI_SCANNER_RAW);//NORMAL);
+			include(getcwd() . "/cp/myconfig.txt.php");	
+			$myconfig = parse_ini_string($myconf, 1, INI_SCANNER_RAW);				
+		}
+		elseif (is_readable("config.ini.php")) {//in root	  
 			include("config.ini.php");
 			$config = @parse_ini_string($conf, 1, INI_SCANNER_RAW);//NORMAL); 
-			//$config = $this->parse_ini_string_m($conf);
 			include("myconfig.txt.php");
 			$myconfig = parse_ini_string($myconf, 1, INI_SCANNER_RAW);			
-			//$myconfig = $this->parse_ini_string_m($myconf);
 		}	
-		elseif (is_readable("cp/config.ini.php")) {//in cp
+		/*elseif (is_readable("cp/config.ini.php")) {//in cp
 			include("cp/config.ini.php");
 			$config = @parse_ini_string($conf, 1, INI_SCANNER_RAW);//NORMAL);
-			//$config = $this->parse_ini_string_m($conf);
 			include("cp/myconfig.txt.php");	
-			$myconfig = parse_ini_string($myconf, 1, INI_SCANNER_RAW);		
-			//$myconfig = $this->parse_ini_string_m($myconf);		
-		}		
+			$myconfig = parse_ini_string($myconf, 1, INI_SCANNER_RAW);			
+		}*/		
 		else
 			die("Configuration error, config.ini not exist!");	
 		/*
@@ -242,7 +245,16 @@ parse_ini_string_m:
 		
 		SetGlobal('config',$config);   
 	  	  
-		//$this->preprocessor = new CCPP($config);
+		//register global params called from system.lib
+		//global $g_mylans, $g_encodingsperlan, $g_langdb, $g_accents;
+		SetGlobal('g_mylans', arrayload('SHELL','languages')); 
+		SetGlobal('g_encodingsperlan', arrayload('SHELL','char_set'));
+		SetGlobal('g_langdb', paramload('SHELL','langdb'));
+		SetGlobal('g_accents', paramload('SHELL','langaccents')); 
+		//echo '................';
+		//print_r($g_mylans);
+		
+		return true;
 	}  	
    
 	//overwrite
@@ -315,10 +327,11 @@ parse_ini_string_m:
             $this->preprocessor = new CCPP(GetGlobal('config'));
 			$code = $this->preprocessor->execute($this->code, 0, true);
 			
-			if ($file = explode(PHP_EOL,$code)) { 
+			if ($file = explode(PHP_EOL, $code)) { 
 				//clean php tags
 				array_pop($file);//last line
 				array_shift($file);//first line
+				//print_r($file);
 			}			
 	    }
 	    else
@@ -330,21 +343,16 @@ parse_ini_string_m:
 		    if ($trimedline = trim($line)) {
 				if ((substr_compare($trimedline, '#',0,1)!=0) && 
 				    (substr_compare($trimedline, '/',0,1)!=0)) {
-						
-					//echo $trimedline."<br>";
-					//$lines[] = $trimedline;
-					
-					//one or more spaces between
-                    //echo preg_replace('/\s\s+/', ' ', $trimedline) . '<br/>'; 
+
 					$lines[] = preg_replace('/\s\s+/', ' ', $trimedline);
 				} 
 			}
 		}
 		//print_r($lines);
 		//implode lines because one line may have more than one cmds sep by ;
-		$toktext = implode("",$lines);
+		$toktext = implode("", $lines);
 		//tokenize
-		$token = explode(";",$toktext);
+		$token = explode(";", $toktext);
         SetGlobal("__COMPILE",serialize($token)); //save the global....			
 	   
 	    try {	
@@ -397,7 +405,18 @@ parse_ini_string_m:
 								        else 
 											$this->set_include("$dpc.$dpc",'dpc');//same name for dir + class
 									}		 
-									break;	
+									break;
+
+				 case 'trait'   :	//include NOT load a set of traits		
+									$dpcs = explode(",",$part[1]);
+									//print_r($dpcs);
+									foreach ($dpcs as $did=>$dpc) {
+										if (strstr($dpc,'.')) 
+											$this->set_include($dpc,'trait');
+								        else 
+											$this->set_include("$dpc.$dpc",'trait');//same name for dir + class
+									}		 
+									break;									
 								
 				 case 'instance':	if ($m = $part[1]) {
 										if (strstr($m,'->')) {
@@ -615,6 +634,11 @@ parse_ini_string_m:
 	public function getqueue() {
    
         return ($this->myaction);
+	}	
+	
+	public function getEventName() {
+		
+		return (array_key_exists('FormAction', $_POST)) ? $_POST['FormAction'] : $_GET['t'];
 	}	
    	
    
@@ -917,7 +941,12 @@ parse_ini_string_m:
 		}	  
 	
 		return false; 	  		
-	}	
+	}
+
+	public function newDpc($dpc) {
+		
+		return $this->_new($dpc, 'dac');
+	}		
 
 	//override
 	protected function set_instance($dpc,$instname,$p=null) {

@@ -14,6 +14,7 @@ include networlds.clientdpc;
 public cms.cmsrt;
 #ifdef SES_LOGIN
 public cms.rcupgrade;
+public cp.rcconfig;
 public cp.rcpmenu;
 #endif
 public cp.rccontrolpanel;

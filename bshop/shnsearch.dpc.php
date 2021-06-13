@@ -65,7 +65,9 @@ class shnsearch {
 		$this->meter = 0; 
 		$this->pager = 10;
 
-		$this->text2find = GetParam('Input') ? GetParam('Input') : GetReq('input');		
+		$this->text2find = GetParam('Input') ? addslashes(str_replace(array('+',"'"),'', GetParam('Input'))) : 
+								(GetReq('input') ? addslashes(str_replace(array('+',"'"),'', GetReq('input'))) : null);		
+		//echo $this->text2find . '>>>>>>>>>>>';
 		
 		//default phrase, a character when click for a category search without a phrase
 		$this->_catAllSearch = _m('cmsrt.paramload use ESHOP+searchallkeyword') ?: 'all'; //'*' 	
@@ -188,7 +190,9 @@ class shnsearch {
 		$diff = ($max - $min);
 		$step = ($diff<=100) ? 1 : 10;//($max-$min) / 10;	
 
-		$inp = $_GET['input'];
+		//$inp = $_GET['input'];
+		$inp = addslashes(str_replace(array('+',"'"),'', GetReq('input')));
+		
 		if (strstr($inp, ',')) {
 			//multiple values
 			$fl = explode(',', $inp);
@@ -294,7 +298,10 @@ jQuery(document).ready(function () {
 	}	
 	
     public function form($entry="",$cmd=null,$message=null)  {
-		$entry = GetParam('input');
+		//$entry = GetParam('input');
+		$entry = $entry ? addslashes(str_replace(array('+',"'"),'', $entry)) : 
+						  addslashes(str_replace(array('+',"'"),'', GetReq('input')));
+		
 		$this->scase = GetParam('searchcase') ? true : false;
 		$this->stype = GetParam('searchtype') ? GetParam('searchtype') : null;
 	  

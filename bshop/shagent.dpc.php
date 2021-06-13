@@ -252,7 +252,9 @@ function agentEndDiv() {
 			return 1; else return 0;
 }
 function agentDiv(div,offset=0,margin=100) {
-	if (!div) return agentEndDiv();
+	//if (!div) return agentEndDiv();
+	if (document.getElementById(div)) {} else return agentEndDiv();
+	
 	if (($(window).scrollTop() >= $('#'+div).offset().top + offset) &&
 		($(window).scrollTop() <= $('#'+div).offset().top + offset + margin))
 		return 1; else return 0;	

@@ -12,7 +12,7 @@ $__EVENTS['CMSSUBSCRIBE_DPC'][2]='subscribe';
 $__EVENTS['CMSSUBSCRIBE_DPC'][3]='advsubscribe';
 $__EVENTS['CMSSUBSCRIBE_DPC'][4]='subscribeajax';
 $__EVENTS['CMSSUBSCRIBE_DPC'][5]='unsubscribeajax';
-$__EVENTS['CMSSUBSCRIBE_DPC'][6]='shsubscribe'; //copmatibility
+$__EVENTS['CMSSUBSCRIBE_DPC'][6]='shsubscribe'; //compatibility
 
 $__ACTIONS['CMSSUBSCRIBE_DPC'][0]='cmssubscribe';
 $__ACTIONS['CMSSUBSCRIBE_DPC'][1]='unsubscribe';
@@ -43,16 +43,14 @@ $__LOCALE['CMSSUBSCRIBE_DPC'][17]='SUBSCRIBE_CNF;Subscribers List;Λίστα Σ�
 $__LOCALE['CMSSUBSCRIBE_DPC'][18]='_CLICKHERE; click here.; πατηστε εδω.';
 $__LOCALE['CMSSUBSCRIBE_DPC'][19]='Subscription enabled;Subscription enabled;Ενεργοποίηση συνδρομητή';
 $__LOCALE['CMSSUBSCRIBE_DPC'][20]='Subscription disabled;Subscription disabled;Απενεργοποίηση συνδρομητή';
+$__LOCALE['CMSSUBSCRIBE_DPC'][21]='_MSGGDPR;Please approve terms in alignment with GDPR ; Παρακαλώ αποδεχθείτε τους όρους χρήσης σύμφωνα με GDPR ';
+$__LOCALE['CMSSUBSCRIBE_DPC'][22]='_SUBGDPR;Approve terms in alignment with GDPR; Aποδοχή όρων χρήσης σύμφωνα με GDPR';
 
 $__PARSECOM['CMSSUBSCRIBE_DPC']['quickform']='_QUICKSHSUBSCRIBE_';
 
 class cmssubscribe {
-    var $path, $urlpath, $inpath;
-    var $title,$msg;
-	var $subject,$body;
-	var $subject2,$body2;	
-	var $tell_it, $tell_from;
-	var $tell_user, $owner;
+    var $path, $urlpath, $title, $msg, $subject, $body, $subject2, $body2;	
+	var $tell_it, $tell_from, $tell_user, $owner, $gdpr;
 
 	public function __construct() {
 	
@@ -61,12 +59,12 @@ class cmssubscribe {
       $this->path = paramload('SHELL','prpath');  	
 	  
 	  $this->urlpath = paramload('SHELL','urlpath');
-	  $this->inpath = paramload('ID','hostinpath');		   
+	  /*$this->inpath = paramload('ID','hostinpath');		   
 	  
 	  $this->t_advsubscr = localize('_MSG4',getlocal());
 	  $this->mesout = paramload('CMSSUBSCRIBE','umsg');	
-	  $this->t_entermail = paramload('SHSUBSCRIBE','say');
-	  
+	  $this->t_entermail = paramload('CMSSUBSCRIBE','say');
+	  */
 	  $this->domain = paramload('CMSSUBSCRIBE','domain');
 	  $this->tell_it = remote_paramload('CMSSUBSCRIBE','tellsubscriptionto',$this->path);
 	  $this->tell_from = remote_paramload('CMSSUBSCRIBE','tellsubscriptionfrom',$this->path);
@@ -80,8 +78,9 @@ class cmssubscribe {
 	  $this->body2 = remote_paramload('CMSSUBSCRIBE','bodytotellatdel',$this->path);		
 	  
 	  $this->tell_user = remote_paramload('CMSSUBSCRIBE','telluser',$this->path);  
-	  $this->owner = $this->tell_user; //remote_paramload('SHSUBSCRIBE','telluser',$this->path);  
+	  $this->owner = remote_paramload('INDEX','e-mail',$this->path);  
 
+	  $this->gdpr = remote_paramload('CMSSUBSCRIBE','gdpr',$this->path);  	
 	}
 	
     public function event($event) {	
@@ -116,9 +115,10 @@ class cmssubscribe {
     protected function form($action=null)  { 	
         
 		switch ($action) {	   
-			case 'unsubscribe' : $stemplate= "unsubscribe"; break;
+			case 'unsubscribe' : $stemplate = "unsubscribe"; //$this->gdpr ? "unsubscrgdpr" : "unsubscribe"; 
+								 break;
 			case 'subscribe'   :
-			default 		   : $stemplate= "subscribe";
+			default 		   : $stemplate = $this->gdpr ? "subscribegdpr" : "subscribe";
 		}
 
 
@@ -142,17 +142,22 @@ class cmssubscribe {
 	}
 
 	
-	public function dosubscribe($mail=null,$bypasscheck=null,$telltouser=null) {
+	public function dosubscribe($smail=null,$bypasscheck=null,$telltouser=null) {
 		$db = GetGlobal('db');
 		$name = $name ? $name : 'unknown';
 		$dlist = 'default';		
 		$mail_tell_user = isset($telltouser) ? $telltouser : $this->tell_user;	
-		$mail = $mail ? $mail : GetParam('submail');	 
+		
+		$thismail = $smail ? addslashes(str_replace('+','', $smail)) : null;
+		$submail = GetParam('submail') ? addslashes(str_replace('+','', GetParam('submail'))) : null;
+		$mail = $thismail ? strtolower($thismail) : strtolower($submail);	//GetParam('submail'); 
 		if (!$mail) return;	   
 	   
 		$dtime = date('Y-m-d h:i:s');	   	
+		
+		$gdpr_check = $this->gdpr ? (GetParam('gdpr') ? true : false) : true; //true by default
 	   
-		if ($this->checkmail($mail))  {
+		if (($this->checkmail($mail)) && ($gdpr_check))  {
 			
 			$tokens[] = $mail;	
 			$mailbody = _m('cmsrt._ct use subinsert+' . serialize($tokens));			
@@ -171,22 +176,20 @@ class cmssubscribe {
 					$this->msg =  localize('_MSG6',getlocal());			 
 				 
 				if ($this->tell_it) {//tell to me
-					//$this->mailto($this->tell_from,$this->tell_it,$this->subject,$mailbody);
-					$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
+					$body = str_replace('+','<SYN/>',$mailbody); 
 					$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+{$this->tell_it}+{$this->subject}+$body");
 				}	
 				 			     							  
 				//tell to subscriber
-				if ($mail_tell_user>0) {	   
-					//$this->mailto($this->tell_from,$mail,$this->subject,$mailbody);	 
-					$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
+				if ($mail_tell_user>0) {	    
+					$body = str_replace('+','<SYN/>',$mailbody);
 					$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+$mail+{$this->subject}+$body");
 				}	
 		  }		  
           else {
 				$sSQL = "insert into ulists (email,startdate,active,lid,listname,name,owner) " .
 						"values (" .
-						$db->qstr(strtolower($mail)) . "," . $db->qstr($dtime) . "," .
+						$db->qstr($mail) . "," . $db->qstr($dtime) . "," .
 						"1,1,'$dlist'," . $db->qstr($name) . ",". $db->qstr($this->owner). ")";   			   
 				$db->Execute($sSQL,1);	
 			   
@@ -195,30 +198,38 @@ class cmssubscribe {
 				 
 				//echo $sSQL;
 				if ($this->tell_it) {//tell to me
-					//$this->mailto($this->tell_from,$this->tell_it,$this->subject,$mailbody);
-					$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
+					$body = str_replace('+','<SYN/>',$mailbody); 
 					$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+{$this->tell_it}+{$this->subject}+$body");
 				}	
 				 			     							  
-				//tell to subscriber	   
-				//$this->mailto($this->tell_from,$mail,$this->subject,$mailbody);	 	 	 
-				$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
-				$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+$mail+{$this->subject}+$body");
+				//tell to subscriber
+				if ($mail_tell_user>0) {	
+					$body = str_replace('+','<SYN/>',$mailbody); 
+					$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+$mail+{$this->subject}+$body");
+				}
 		  }
 		  
 		  $this->update_statistics('subscribe', $mail);
 	   }
 	   else {
-			if (!$bypasscheck)
-				$this->msg = localize('_MSG5',getlocal());		   	 
+			if (!$bypasscheck) {
+				
+				if ($gdpr_check === false)
+					$this->msg = localize('_MSGGDPR',getlocal());
+				
+				$this->msg .= localize('_MSG5',getlocal());		   	 
+			}	
 	   }	   
 	}
 	
-	public function dounsubscribe($mail=null,$telltouser=null) {
+	public function dounsubscribe($smail=null,$telltouser=null) {
 		$db = GetGlobal('db');	
 		$mail_tell_user = isset($telltouser) ? $telltouser : $this->tell_user;
 		$ulistname = GetParam('ulistname') ? GetParam('ulistname') : 'default';	    
-		$mail = $mail ? $mail : GetParam('submail'); 
+		
+		$thismail = $smail ? addslashes(str_replace('+','', $smail)) : null;
+		$submail = GetParam('submail') ? addslashes(str_replace('+','', GetParam('submail'))) : null;
+		$mail = $thismail ? strtolower($thismail) : strtolower($submail);	//GetParam('submail'); 		
 		if (!$mail) return;		   
 	   
 		if ($this->checkmail($mail))  {
@@ -235,15 +246,13 @@ class cmssubscribe {
 			$this->msg = localize('_MSG8',getlocal());
 		    
 			if ($this->tell_it) {//tell to me
-				//$this->mailto($this->tell_from,$this->tell_it,$this->subject2,$mailbody);
-				$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
+				$body = str_replace('+','<SYN/>',$mailbody); 
 				$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+{$this->tell_it}+{$this->subject2}+$body");
 			}	
 				 			     							  
 			//tell to subscriber   
-			if ($mail_tell_user>0) { 			 
-				//$this->mailto($this->tell_from,$mail,$this->subject2,$mailbody);	 	  
-				$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
+			if ($mail_tell_user>0) { 			 	  
+				$body = str_replace('+','<SYN/>',$mailbody); 
 				$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+$mail+{$this->subject2}+$body");		
 			}		
 			

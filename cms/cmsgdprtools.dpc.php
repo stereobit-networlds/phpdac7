@@ -40,6 +40,8 @@ $__LOCALE['CMSGDPRTOOLS_DPC'][14]='_GETDATA;Press here;Αποθήκευση';
 $__LOCALE['CMSGDPRTOOLS_DPC'][15]='_GETDATEAPPROVE;Approval date;Ημερομηνία αποδοχής';
 $__LOCALE['CMSGDPRTOOLS_DPC'][16]='_NOTAPPROVED;Not approved;Δεν έχει γίνει αποδοχή';
 $__LOCALE['CMSGDPRTOOLS_DPC'][17]='_userdeletefinalquestion;Warning: your personal data will be erased;Προσοχή: θα γίνει διαγραφή των προσωπικών σας στοιχείων';
+$__LOCALE['CMSGDPRTOOLS_DPC'][18]='_MSGGDPR;Please approve terms in alignment with GDPR ; Παρακαλώ αποδεχθείτε τους όρους χρήσης σύμφωνα με GDPR ';
+$__LOCALE['CMSGDPRTOOLS_DPC'][19]='_SUBGDPR;Approve terms in alignment with GDPR; Aποδοχή όρων χρήσης σύμφωνα με GDPR';
 
 //$__PARSECOM['CMSGDPRTOOLS_DPC']['quickform']='_QUICKSHSUBSCRIBE_';
 require_once(_r('cms/cmssubscribe.dpc.php'));
@@ -557,17 +559,23 @@ $(document).ready(function () {
 	}
 	
 	//override, gdpr=1
-	public function dosubscribe($mail=null,$bypasscheck=null,$telltouser=null) {
+	public function dosubscribe($smail=null,$bypasscheck=null,$telltouser=null) {
 		$db = GetGlobal('db');
 		$name = $name ? $name : 'unknown';
 		$dlist = 'default';		
-		$mail_tell_user = isset($telltouser) ? $telltouser : $this->tell_user;	
-		$mail = $mail ? $mail : GetParam('submail');	 
-		if (!$mail) return;	   
+		$mail_tell_user = isset($telltouser) ? $telltouser : $this->tell_user;
+			   
+		$thismail = $smail ? addslashes(str_replace('+','', $smail)) : null;
+		$submail = GetParam('submail') ? addslashes(str_replace('+','', GetParam('submail'))) : null;
+		$mail = $thismail ? strtolower($thismail) : strtolower($submail);	//GetParam('submail'); 
+		if (!$mail) return;		
 	   
-		$dtime = date('Y-m-d h:i:s');	   	
+		$dtime = date('Y-m-d h:i:s');
+
+		$gdpr_check = $this->gdpr ? (GetParam('gdpr') ? true : false) : true; //true by default	
 	   
-		if ($this->checkmail($mail))  {
+		//if ($this->checkmail($mail))  {
+		if (($this->checkmail($mail)) && ($gdpr_check))  {	
 			
 			$tokens[] = $mail;	
 			$mailbody = _m('cmsrt._ct use subinsert+' . serialize($tokens));			
@@ -614,17 +622,24 @@ $(document).ready(function () {
 					$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+{$this->tell_it}+{$this->subject}+$body");
 				}	
 				 			     							  
-				//tell to subscriber	   
-				$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
-				$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+$mail+{$this->subject}+$body");
+				//tell to subscriber
+				if ($mail_tell_user>0) {	
+					$body = str_replace('+','<SYN/>',$mailbody); //_v("cmsrt.mbody use $mailbody");
+					$mailerr = _m("cmsrt.cmsMail use {$this->tell_from}+$mail+{$this->subject}+$body");
+				}
 			}
 		  
 			$this->update_statistics('subscribe', $mail);
 			return true;
 	    }
 
-		if (!$bypasscheck)
-			$this->msg = localize('_MSG5',getlocal());		   	 
+		if (!$bypasscheck) {
+			
+			if ($gdpr_check === false)
+					$this->msg = localize('_MSGGDPR',getlocal());
+			
+			$this->msg .= localize('_MSG5',getlocal());		   	 
+		}	
 
 		return false;	   
 	}

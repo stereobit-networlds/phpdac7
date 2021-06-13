@@ -76,7 +76,6 @@ class rckategories extends shkategories {
     var $title, $path;
 	var $post, $msg;
 	var $urlbase;	
-	//var $cptemplate;
 	var $ckeditor4, $cke4_inline, $ckjs;
 
 	public function __construct() {
@@ -84,19 +83,13 @@ class rckategories extends shkategories {
 		shkategories::__construct();  
 	  	
 		$this->title = localize('RCKATEGORIES_DPC',getlocal());	 
-		//$this->urlbase = paramload('SHELL','urlbase');
-		//$this->urlbase = (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://';
-		//$this->urlbase.= (strstr($_SERVER['HTTP_HOST'], 'www')) ? $_SERVER['HTTP_HOST'] : 'www.' . $_SERVER['HTTP_HOST'];		
 		$this->urlbase = _v('cmsrt.httpurl');
 		
 		$csep = remote_paramload('SHKATEGORIES','csep',$this->path); 
 		$this->cseparator = $csep ? $csep : '^';	
 		
 		$this->post = false;  
-		$this->msg = null; 		
-	
-		//$this->ajaxLink = seturl('t=cpvstatsshow&statsid=');
-		//$this->cptemplate = remote_paramload('FRONTHTMLPAGE','cptemplate',$this->path);	  
+		$this->msg = null; 		 
 		
 		$this->ckeditor4 = remote_paramload('CKEDITOR','ckeditor4',$this->path);
 		$this->cke4_inline = $this->ckeditor4 ? true/*false*/ : false; 
@@ -194,15 +187,8 @@ class rckategories extends shkategories {
 		return ($out);
     }	
 	
-	//call from html
-	/*public function javascript() {
-		$editurl = seturl("t=cpeditframe&id=");
-		$out = "function edit_cat() { var str = arguments[0]; sndReqArg('$editurl'+str,'editcat');}";		
-		return ($out);
-	}*/
-	
-	/*not used */
-    protected function set_viewable() {
+	//not used 
+    /*protected function set_viewable() {
 		$g = GetReq('g');	 
 		$group = explode($this->cseparator,$g);
 		$cat = $group[count($group)-1];
@@ -217,7 +203,7 @@ class rckategories extends shkategories {
 		}	  
     }
 	
-    /*not used */
+    //not used 
     protected function menu($adv=null) {
 		$g = GetReq('cat');	   
 		$out .= $this->msg; 
@@ -231,7 +217,8 @@ class rckategories extends shkategories {
 	   
 		return ($out);
     }
-  
+	*/
+	
     //export text ... bug in first sub tree (write main cat 2 times)
     protected function generate_categories($keys=false,$current=null,$leaf=null,$depth=0) {
   
@@ -372,7 +359,7 @@ class rckategories extends shkategories {
         $width = $width ? $width : null; //wide
         $mode = $mode ? $mode : 'd';
 		$noctrl = $noctrl ? 0 : 1;
-        $editlink = $editlink ? $editlink : seturl("t=cpeditcat&cat={cat2}");
+        $editlink = $editlink ? $editlink : _m("cmsrt.seturl use t=cpeditcat&cat={cat2}+++1"); //seturl("t=cpeditcat&cat={cat2}");
 		$title = $this->title;						
 	
 	    if (!defined('MYGRID_DPC')) 
@@ -418,7 +405,7 @@ class rckategories extends shkategories {
         $width = $width ? $width : null; //wide
         $mode = $mode ? $mode : 'd';
 		$noctrl = $noctrl ? 0 : 1;
-        $editlink = $editlink ? $editlink : seturl("t=cpeditcat&cat={cat2}");
+        $editlink = $editlink ? $editlink : _m("cmsrt.seturl use t=cpeditcat&cat={cat2}+++1"); //seturl("t=cpeditcat&cat={cat2}");
 		$title = $this->title;				
 	
 	    if (!defined('MYGRID_DPC')) 
@@ -789,8 +776,6 @@ class rckategories extends shkategories {
 		$cats[] = $ret->fields['cat4'];
 		$cats[] = $ret->fields['cat5'];
 		
-		//$cat = implode($this->cseparator,$cats);
-		//$editurl = seturl("t=cpeditcat&editmode=1&cat=".$cat);//$id;
 		$frame = '';
 		$editurl = null;
 		//get all/last cat
@@ -819,7 +804,7 @@ class rckategories extends shkategories {
 		$rd = $this->add_category2(null,300,12, $editlink, 'e', true);
 
 		if ($cat) {//preselected cat
-			//$editurl = seturl("t=cpeditcat&editmode=1&cat=".$cat);//$id;
+
 			$editurl = $this->urlbase . "/cp/cpmhtmleditor.php?t=cpmhtmleditor&iframe=1&htmlfile=&type=.html&id=".$cat;
 			$init_content = "<iframe src =\"$editurl\" width=\"100%\" height=\"350px\"><p>Your browser does not support iframes</p></iframe>";    
 		}

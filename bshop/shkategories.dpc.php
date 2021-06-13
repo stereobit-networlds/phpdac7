@@ -29,6 +29,8 @@ $__LOCALE['SHKATEGORIES_DPC'][1]='SHSUBKATEGORIES_;Subcategories;Υποκατη�
 $__LOCALE['SHKATEGORIES_DPC'][2]='_cfounded; categories found; κατηγορίες βρέθηκαν';
 
 class shkategories {
+	
+	use systemlib;
 
     var $title, $path, $nav_on, $urlpath, $inpath, $httpurl;
 	var $menu, $title2, $resourcepath, $resourcefilepath;
@@ -217,7 +219,7 @@ class shkategories {
 		return null; 
 	}
 	
-	public function show_category_image() {
+	public function show_category_image($url=false, $default=null) {
 		$cat = GetReq('cat');
 		$t = GetReq('t');
 
@@ -237,7 +239,7 @@ class shkategories {
 
 					if (@is_file($alsoseedir.$catname)) {
 						$image = $this->showcatimagepath.$catname;
-						$htmlret = "<img src='$image' alt='' />";//file_get_contents($alsoseedir.$catname);
+						$htmlret = $url ? $image : "<img src='$image' alt='' />";//file_get_contents($alsoseedir.$catname);
 						$ret = $htmlret;
 						return ($ret);
 					}
@@ -251,7 +253,7 @@ class shkategories {
 	  
 				if (@is_file($alsoseedir.$tname)) {
 					$image = $this->showcatimagepath.$tname;
-					$htmlret = "<img src='$image' alt='' />";//file_get_contents($alsoseedir.$catname);
+					$htmlret = $url ? $image : "<img src='$image' alt='' />";//file_get_contents($alsoseedir.$catname);
 					$ret = $htmlret;
 					return ($ret);
 				}		 
@@ -1553,7 +1555,7 @@ class shkategories {
 		$mytemplate = _m('cmsrt.select_template use ' . str_replace('.htm', '', $tfile));
 		return ($mytemplate);	 
     }		
-	
+	/*
 	//tokens method	
 	protected function combine_tokens(&$template_contents, $tokens, $execafter=null) {
 	
@@ -1607,7 +1609,7 @@ class shkategories {
 	    }
 		return ($nret);
 	} 	
-	
+	*/
 	
 	/*********************** API *********************************/	
 	
